@@ -54,6 +54,8 @@ class HazardEntry:
     disposal: str | None = None
     notes: tuple[str, ...] = ()
     aliases: tuple[str, ...] = ()
+    search_aliases: tuple[str, ...] = ()
+    pubchem_cid: int | None = None
     sds_ref: str | None = None
     clp_bands: tuple[ClpBand, ...] = ()
     incompatibilities: tuple[str, ...] = ()
@@ -87,6 +89,7 @@ class SdsFetchResult:
     incompatibilities: tuple[str, ...] = ()
     exothermicity: ExothermicityLevel | None = None
     reaction_notes: tuple[str, ...] = ()
+    density_g_ml: Decimal | None = None
     sources: tuple[str, ...] = ()
 
 

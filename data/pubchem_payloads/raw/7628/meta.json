@@ -1,0 +1,34 @@
+{
+  "cid": 7628,
+  "hazard_key": "H3BO3",
+  "display_name": "Borsyra",
+  "captured_at": "2026-01-31T14:32:55.051633+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/7628",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/7628/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 735,
+      "file": "data/pubchem_payloads/raw/7628/linkout.json",
+      "sha256": "d9f2ed47772db9418c3cade283ac21b1cd0c8d2f38210b63636a71fa2c0c00f6"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/7628/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 295932,
+      "file": "data/pubchem_payloads/raw/7628/lcss.json",
+      "sha256": "7d2ac153015b4e074b2a13a3ca0d13dbd02c770db7324906b517b1ea9c55caa9"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/7628/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 227578,
+      "file": "data/pubchem_payloads/raw/7628/safety.json",
+      "sha256": "5467f5ceb81e0981441a15aa36de70457e997929749173f3851d0c109b54cd8a"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/7628.png"
+}

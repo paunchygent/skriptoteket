@@ -1,0 +1,2346 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 5284346,
+    "RecordTitle": "Barium chloride, dihydrate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 19,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 6,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                      "Type": "Icon",
+                      "Extra": "Acute Toxic"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 6,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                          "Type": "Icon",
+                          "Extra": "Acute Toxic"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H301 (87.4%): Toxic if swallowed [Danger Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H302 (12.6%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 36,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (51.7%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H332 (100%): Harmful if inhaled [Warning Acute toxicity, inhalation]",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P264, P264+P265, P270, P271, P280, P301+P316, P301+P317, P304+P340, P305+P351+P338, P317, P321, P330, P337+P317, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                        },
+                        {
+                          "Start": 52,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 63,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 74,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 90,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 96,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 102,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 108,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 119,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 129,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 230 reports by companies from 7 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 177,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73116"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                          "Type": "Icon",
+                          "Extra": "Acute Toxic"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H301: Toxic if swallowed [Danger Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 26,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H315: Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 30,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 37,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 31,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                      "Markup": [
+                        {
+                          "Start": 70,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H402: Harmful to aquatic life [Hazardous to the aquatic environment, acute hazard]"
+                    },
+                    {
+                      "String": "H412: Harmful to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P261, P264, P264+P265, P270, P271, P273, P280, P301+P316, P302+P352, P304+P340, P305+P351+P338, P308+P316, P319, P321, P330, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 53,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                        },
+                        {
+                          "Start": 64,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 75,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 86,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 102,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                        },
+                        {
+                          "Start": 113,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 119,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 125,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 131,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 142,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 153,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 164,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 175,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 185,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 31,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H371: May cause damage to organs [Warning Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P261, P264, P270, P271, P304+P340, P308+P316, P319, P321, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 24,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 30,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                        },
+                        {
+                          "Start": 52,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 58,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 64,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 75,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 85,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10326-27-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10326-27-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10326-27-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10326-27-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10326-27-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10326-27-9"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "barium(2+);dichloride;dihydrate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "BARIUM CHLORIDE DIHYDRATE"
+                    },
+                    {
+                      "String": "10326-27-9"
+                    },
+                    {
+                      "String": "Barium dichloride dihydrate"
+                    },
+                    {
+                      "String": "DTXSID2020131"
+                    },
+                    {
+                      "String": "BARYTA MURIATICA"
+                    },
+                    {
+                      "String": "EL5GJ3U77E"
+                    },
+                    {
+                      "String": "DTXCID00131"
+                    },
+                    {
+                      "String": "CHEBI:86153"
+                    },
+                    {
+                      "String": "RefChem:57578"
+                    },
+                    {
+                      "String": "600-412-6"
+                    },
+                    {
+                      "String": "Barium chloride, dihydrate"
+                    },
+                    {
+                      "String": "BaCl2.2H2O"
+                    },
+                    {
+                      "String": "BaCl2O2"
+                    },
+                    {
+                      "String": "SCHEMBL194477"
+                    },
+                    {
+                      "String": "barium chloride--water (1/2)"
+                    },
+                    {
+                      "String": "BARYTA MURIATICA [HPUS]"
+                    },
+                    {
+                      "String": "CHEMBL3185957"
+                    },
+                    {
+                      "String": "Barium chloride--water (1/2/2)"
+                    },
+                    {
+                      "String": "Barium chloride dihydrate ACS grade"
+                    },
+                    {
+                      "String": "Tox21_200488"
+                    },
+                    {
+                      "String": "AKOS025243259"
+                    },
+                    {
+                      "String": "BARIUM CHLORIDE DIHYDRATE [MI]"
+                    },
+                    {
+                      "String": "NCGC00248739-01"
+                    },
+                    {
+                      "String": "NCGC00258042-01"
+                    },
+                    {
+                      "String": "CAS-10326-27-9"
+                    },
+                    {
+                      "String": "Q27158937"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "BaCl2.2H2O"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "BaCl2. 2H2O",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        },
+                        {
+                          "Start": 9,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "BaCl2H4O2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "244.26"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/Ba.2ClH.2H2O/h;2*1H;2*1H2/q+2;;;;/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "PWHCIQQGOQTFAE-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Barium chloride dihydrate is a white crystalline solid with a bitter, salty taste. (NTP, 1992)",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 25,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20chloride%20dihydrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-5284346"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White solid; [ICSC] White powder, soluble in water; [MSDSonline] Crystallizes from aqueous solutions as dihydrate; Water of crystallization lost at 110 to 160 deg C; [Ullmann]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 115,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE SOLID IN VARIOUS FORMS."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Metals, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1765 °F (NTP, 1992)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "113Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "greater than or equal to 100 mg/mL at 68 °F (NTP, 1992)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/100ml at 26Â °C: 37.5 (good)",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.097 at 75 °F (NTP, 1992) - Denser than water; will sink",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.86 g/cmÂ³"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Flash point data for this chemical are not available. It is probably combustible. (NTP, 1992)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Decomposes on heating. This produces toxic fumes."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Reactivity Profile",
+            "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "BARIUM CHLORIDE DIHYDRATE may react violently with BrF3 and 2-furan percarboxylic acid in its anhydrous form. (NTP, 1992)",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 25,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/BARIUM%20CHLORIDE%20DIHYDRATE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-5284346"
+                        },
+                        {
+                          "Start": 60,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/2-furan",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-8029"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Air and Water Reactions",
+            "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Water soluble."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Reactive Group",
+            "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+            "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Non-Redox-Active Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SYMPTOMS: Symptoms of exposure to this chemical may include skin, eye and bronchial irritation, dermatitis, conjunctivitis, arterial hypotension, muscle twitching, excessive salivation, vomiting, colic, convulsive tremors, slow and hard pulse, elevated blood pressure and hemorrhaging in the stomach, intestines and kidneys."
+                        },
+                        {
+                          "String": "ACUTE/CHRONIC HAZARDS: This chemical may cause irritation to the skin, eyes and respiratory tract. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A skin, eye, and respiratory tract irritant; May cause cardiac and nervous system effects; [ICSC] See Barium.",
+                          "Markup": [
+                            {
+                              "Start": 102,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough. Sore throat. See Ingestion."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "Skin Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "Ingestion Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Abdominal pain. Nausea. Diarrhoea. Vomiting. Weakness. Dullness. Unconsciousness."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Carcinogen Classification",
+                "Description": "This section provides the International Agency for Research on Cancer (IARC) Carcinogenic Classification and related monograph links.  In the IARC Carcinogenic classification, chemicals are categorized into four groups: Group 1 (carcinogenic to humans), Group 2A (probably carcinogenic to humans), Group 2B (possibly carcinogenic to humans), and Group 3 (not classifiable as to its carcinogenicity to humans).",
+                "URL": "https://monographs.iarc.who.int/agents-classified-by-the-iarc/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  }
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Substance",
+                    "URL": "https://doi.org/10.22427/NTP-DATA-DTXSID2020131",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Barium Chloride Dihydrate"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "NTP Technical Report",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TR-432: Toxicology and Carcinogenesis Studies of Barium Chloride Dihydrate (CASRN 10326-27-9) in F344/N Rats and B6C3F1 Mice (Drinking Water Studies)  (1994 )",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "URL": "https://ntp.niehs.nih.gov/go/tr432abs"
+                            },
+                            {
+                              "Start": 49,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20Chloride%20Dihydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5284346"
+                            },
+                            {
+                              "Start": 82,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/10326-27-9",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5284346"
+                            },
+                            {
+                              "Start": 135,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Peer Review Date",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "06/22/93",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 8,
+                              "URL": "https://ntp.niehs.nih.gov/data/tr/400s/tr432levels"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Conclusion for Male Rat",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "  No Evidence",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ntp/ntpne.png",
+                              "Type": "Icon",
+                              "Extra": "No Evidence"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Conclusion for Female Rat",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "  No Evidence",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ntp/ntpne.png",
+                              "Type": "Icon",
+                              "Extra": "No Evidence"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Conclusion for Male Mice",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "  No Evidence",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ntp/ntpne.png",
+                              "Type": "Icon",
+                              "Extra": "No Evidence"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Conclusion for Female Mice",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "  No Evidence",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ntp/ntpne.png",
+                              "Type": "Icon",
+                              "Extra": "No Evidence"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Under the conditions of these 2-year drinking water studies, there was no evidence of carcinogenic activity of barium chloride dihydrate in male or female F344/N rats that received 500, 1,250, or 2,500 ppm. There was no evidence of carcinogenic activity of barium chloride dihydrate in male or female B6C3F1 mice that received 500, 1,250, or 2,500 ppm.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 111,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride%20dihydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5284346"
+                            },
+                            {
+                              "Start": 257,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride%20dihydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5284346"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There were chemical-related increased incidences of nephropathy in male and female mice."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance can be absorbed into the body by inhalation of its aerosol and by ingestion."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "50 mg Ba/m3 (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "50.0 [mg/m3], as Ba"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evaporation at 20Â °C is negligible; a harmful concentration of airborne particles can, however, be reached quickly when dispersed, especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.5 [mg/m3], as Ba"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.5 [mg/m3], as Ba"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.5 mg/m"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is irritating to the eyes, skin and respiratory tract. The substance may cause effects on the nervous system. Exposure could cause hypokalaemia. This may result in cardiac disorders and muscular disorders. Exposure could cause death."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "RECOMMENDED RESPIRATOR: Where the neat test chemical is weighed and diluted, wear a NIOSH-approved half face respirator equipped with a combination filter cartridge, i.e. organic vapor/acid gas/HEPA (specific for organic vapors, HCl, acid gas, SO2 and a high efficiency particulate filter). (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Exposure Prevention",
+                    "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "PREVENT DISPERSION OF DUST! STRICT HYGIENE!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety spectacles or eye protection in combination with breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use ventilation (not if powder), local exhaust or breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Separated from food and feedstuffs."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "First Aid",
+        "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+        "Information": [
+          {
+            "ReferenceNumber": 1,
+            "Reference": [
+              "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+            ],
+            "ExtendedReference": [
+              {
+                "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                "Matched": {
+                  "PCLID": 900163266,
+                  "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                }
+              }
+            ],
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "EYES: First check the victim for contact lenses and remove if present. Flush victim's eyes with water or normal saline solution for 20 to 30 minutes while simultaneously calling a hospital or poison control center. Do not put any ointments, oils, or medication in the victim's eyes without specific instructions from a physician. IMMEDIATELY transport the victim after flushing eyes to a hospital even if no symptoms (such as redness or irritation) develop.",
+                  "Markup": [
+                    {
+                      "Start": 96,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    },
+                    {
+                      "Start": 105,
+                      "Length": 13,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/normal%20saline",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-5234"
+                    }
+                  ]
+                },
+                {
+                  "String": "SKIN: IMMEDIATELY flood affected skin with water while removing and isolating all contaminated clothing. Gently wash all affected skin areas thoroughly with soap and water. If symptoms such as redness or irritation develop, IMMEDIATELY call a physician and be prepared to transport the victim to a hospital for treatment.",
+                  "Markup": [
+                    {
+                      "Start": 43,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    },
+                    {
+                      "Start": 166,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    }
+                  ]
+                },
+                {
+                  "String": "INHALATION: IMMEDIATELY leave the contaminated area; take deep breaths of fresh air. IMMEDIATELY call a physician and be prepared to transport the victim to a hospital even if no symptoms (such as wheezing, coughing, shortness of breath, or burning in the mouth, throat, or chest) develop. Provide proper respiratory protection to rescuers entering an unknown atmosphere. Whenever possible, Self-Contained Breathing Apparatus (SCBA) should be used; if not available, use a level of protection greater than or equal to that advised under Protective Clothing."
+                },
+                {
+                  "String": "INGESTION: If the victim is conscious and not convulsing, give 1 or 2 glasses of water to dilute the chemical and IMMEDIATELY call a hospital or poison control center. Generally, the induction of vomiting is NOT recommended outside of a physician's care due to the risk of aspirating the chemical into the victim's lungs. However, if the victim is conscious and not convulsing and if medical help is not readily available, consider the risk of inducing vomiting because of the high toxicity of the chemical ingested. Ipecac syrup or salt water may be used in such an emergency. IMMEDIATELY transport the victim to a hospital. If the victim is convulsing or unconscious, do not give anything by mouth, ensure that the victim's airway is open and lay the victim on his/her side with the head lower than the body. DO NOT INDUCE VOMITING. IMMEDIATELY transport the victim to a hospital. (NTP, 1992)",
+                  "Markup": [
+                    {
+                      "Start": 81,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    },
+                    {
+                      "Start": 538,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Nonfire Spill Response",
+            "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SMALL SPILLS AND LEAKAGE: If you spill this chemical, you should dampen the solid spill material with water, then transfer the dampened material to a suitable container. Use absorbent paper dampened with water to pick up any remaining material. Seal your contaminated clothing and the absorbent paper in a vapor-tight plastic bag for eventual disposal. Wash all contaminated surfaces with a soap and water solution. Do not reenter the contaminated area until the Safety Officer (or other responsible person) has verified that the area has been properly cleaned.",
+                      "Markup": [
+                        {
+                          "Start": 102,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 204,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 400,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "STORAGE PRECAUTIONS: You should store this material in a refrigerator. (NTP, 1992)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Do NOT let this chemical enter the environment. Sweep spilled substance into covered sealable containers. If appropriate, moisten first to prevent dusting. Carefully collect remainder. Then store and dispose of according to local regulations."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "19847",
+        "Name": "BARIUM CHLORIDE DIHYDRATE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/19847",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 756853
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID2020131",
+        "Name": "Barium chloride dihydrate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID2020131",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1148620
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "600-412-6",
+        "Name": "barium chloride dihydrate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.120.932",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2087912
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "EL5GJ3U77E",
+        "Name": "BARIUM CHLORIDE DIHYDRATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/EL5GJ3U77E",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5827207
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0615",
+        "Name": "BARIUM CHLORIDE, DIHYDRATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0615",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260503
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "9fb5a9e4fbbcbbb234ca411a3f9f15da",
+        "Name": "Barium chloride, dihydrate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37138985
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz7973",
+        "Name": "Barium chloride dihydrate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/7973",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17280824
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "73116",
+        "Name": "barium chloride dihydrate (EC: 600-412-6)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73116",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1872722,
+        "SortOrder": 3230
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R01_B_063",
+        "Name": "Barium chloride, dihydrate - FY2019 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/19-mhlw-2063e.html",
+        "ANID": 39313003,
+        "SortOrder": 2019
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "NITE-CMC",
+        "SourceID": "309",
+        "Name": "Barium chloride, dihydrate - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0302e.html",
+        "ANID": 2265591,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "NTP Technical Reports",
+        "SourceID": "3533361833",
+        "Name": "Barium Chloride Dihydrate",
+        "Description": "The NTP technical reports provide the long-term NTP toxicology and carcinogenicity studies that usually involve exposing laboratory animals (rats and mice) to a substance for a period of two years. These studies are designed and conducted to characterize and evaluate the toxicologic potential, including carcinogenic activity, of selected substances. Substances selected for NTP toxicology and carcinogenesis studies are chosen primarily on the basis of human exposure, level of production, and chemical structure. Substance selection is not an indicator of a substance's carcinogenic potential.",
+        "URL": "https://ntp.niehs.nih.gov/data/tr",
+        "LicenseURL": "https://ntp.niehs.nih.gov/support/policies",
+        "ANID": 45735640
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

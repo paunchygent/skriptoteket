@@ -1,0 +1,34 @@
+{
+  "cid": 24261,
+  "hazard_key": "SiO2",
+  "display_name": "Kiseldioxid",
+  "captured_at": "2026-01-31T16:45:37.966666+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24261",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24261/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 736,
+      "file": "data/pubchem_payloads/raw/24261/linkout.json",
+      "sha256": "ecabd2954856d4ae75b819d859502268640b12c9a221c8cbf47380f26003ab99"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24261/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 502496,
+      "file": "data/pubchem_payloads/raw/24261/lcss.json",
+      "sha256": "55e06d4dcffc7f5fd7efa9877a6790269131d09285ef771e3ec8b65d13082eb6"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24261/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 298290,
+      "file": "data/pubchem_payloads/raw/24261/safety.json",
+      "sha256": "0895dea8c602e03f7fc7f8e4d29e1fe0f1a190d8fdaa5e8289f5d12b561a40a3"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24261.png"
+}

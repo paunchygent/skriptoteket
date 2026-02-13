@@ -1,0 +1,34 @@
+{
+  "cid": 5359268,
+  "hazard_key": "Al",
+  "display_name": "Aluminium (Al)",
+  "captured_at": "2026-01-31T14:13:55.994784+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5359268",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5359268/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1334,
+      "file": "data/pubchem_payloads/raw/5359268/linkout.json",
+      "sha256": "446c9ee6340dd4ea67c2f54e0955817c570128a017de69c59080f23edd431962"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5359268/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 693921,
+      "file": "data/pubchem_payloads/raw/5359268/lcss.json",
+      "sha256": "6d96c332d77d4200bab538665304817f396f3204a4960e7133557c23488b4d5e"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5359268/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 523273,
+      "file": "data/pubchem_payloads/raw/5359268/safety.json",
+      "sha256": "cfe38a9b87bf84c806b779f81c72be4d4947f31b06ab51d7ed629a0b9db8d104"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5359268.png"
+}

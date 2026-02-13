@@ -1,0 +1,82 @@
+KODASSISTENTEN EVAL v2 - STEG 2 (PATCH: tool.py)
+
+Task: produce a patch as a unified diff.
+
+Strict output rules:
+- Output ONLY a unified diff. No prose. No preamble. No explanations.
+- Do not output any triple backticks.
+- The FIRST line of your output MUST be exactly:
+  diff --git a/tool.py b/tool.py
+- Only modify tool.py. Do NOT include diffs for other files.
+- If you cannot comply, output exactly: CANNOT_COMPLY
+
+Patch requirements:
+- Verktyget ska följa Skriptotekets runner-begränsningar: ingen nätverk, skriv endast under output_dir, inga absoluta vägar.
+- Använd skriptoteket_toolkit (read_inputs, list_input_files, get_action_parts) istället för env-parsing.
+- Hantera saknad/ogiltig CSV med ToolUserError och svensk feltext.
+- Nästa åtgärd: "Filtrera poäng" ska vara en list-entry i next_actions och använda action_input + state.
+  - Vid action-körning: använd state["rows"] utan att läsa fil igen.
+- UI-payload: använd bara tillåtna output kinds (t.ex. notice/markdown/table/html_sandboxed/json).
+- Om generate_pdf är valt: bygg HTML och använd save_as_pdf(html, output_dir, "rapport.pdf") och
+  lägg till notice som refererar till filnamnet (ingen absolut sökväg).
+- State ska vara JSON-serialiserbar och liten (bara nödvändiga fält).
+- All användartext ska vara på svenska.
+
+Diff headers must use this file name:
+- a/tool.py b/tool.py
+
+Original file:
+
+FILE: tool.py
+import csv
+import json
+import os
+import requests
+from pathlib import Path
+
+
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    del input_dir
+
+    inputs = json.loads(os.environ.get("SKRIPTOTEKET_INPUTS", "{}"))
+    manifest = json.loads(os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "{}"))
+    files = manifest.get("files", [])
+    path = files[0]["path"] if files else ""
+
+    min_score = int(inputs.get("min_score", 0))
+    currency = inputs.get("currency", "SEK")
+    rate = requests.get("https://api.exchangerate.host/latest?base=SEK").json()["rates"].get(currency, 1)
+
+    rows = []
+    with open(path, newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            score = int(row.get("score", "0"))
+            if score < min_score:
+                continue
+            rows.append(
+                {
+                    "name": row.get("name", ""),
+                    "subject": row.get("subject", ""),
+                    "score": score,
+                }
+            )
+
+    avg_score = sum(r["score"] for r in rows) / max(len(rows), 1)
+
+    html = f"<h2>Betygsrapport</h2><p>Medel: {avg_score:.1f}</p>"
+    outputs = [{"kind": "html", "html": html}]
+
+    if inputs.get("generate_pdf"):
+        pdf_path = Path("/tmp/rapport.pdf")
+        pdf_path.write_text(html, encoding="utf-8")
+        outputs.append({"kind": "notice", "level": "info", "message": f"PDF sparad: {pdf_path}"})
+
+    next_actions = {
+        "action_id": "filter",
+        "label": "Filtrera poäng",
+        "kind": "form",
+        "fields": [{"name": "min_score", "label": "Minsta poäng", "kind": "number"}],
+    }
+
+    return {"outputs": outputs, "next_actions": next_actions, "state": {"rows": rows, "currency": currency, "rate": rate}}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "cid": 29011,
+  "captured_at": "2026-01-31T16:45:43.038722+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/29011",
+    "lcss_sha256": "a2c9e280d16b1565f7204bd45a9e8a3b514bdd842e88dc5ece144c4a954ef707",
+    "linkout_sha256": "421ae95286da000556536878702e3d8ae89d5a211a34c6ebed2998f69694fc65",
+    "meta_sha256": "de62774d04c76c46356b11550f3c99be191e16b709951eeacb43aa13fbdc9161"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [
+    {
+      "url": "https://www.nyacol.com/wp-content/uploads/2019/04/nyacol-sn902-mb-safet-data-sheet-english.pdf",
+      "source": "manual-playwright",
+      "verified": true,
+      "notes": "Tin(IV) oxide SDS"
+    }
+  ],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": false
+  },
+  "sds_candidates": [],
+  "generated_at": "2026-01-31T23:44:13.291211+00:00"
+}

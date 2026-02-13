@@ -1,0 +1,34 @@
+{
+  "cid": 14798,
+  "hazard_key": "NaOH",
+  "display_name": "Natriumhydroxid",
+  "captured_at": "2026-01-31T16:58:43.586198+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14798",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14798/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14798/linkout.json",
+      "sha256": "319b56ed3ec52690347ec4a7f15ff50e3679a93542f8c97740b56b5a2a65570d"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14798/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 409430,
+      "file": "data/pubchem_payloads/raw/14798/lcss.json",
+      "sha256": "af5f49d7c0bcd303830f491df419ffe8b335b8834caaf78f96a40c17684c8306"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14798/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 463452,
+      "file": "data/pubchem_payloads/raw/14798/safety.json",
+      "sha256": "2125bfc564df7a011648c68dfc6f30a02f25ae1dd43598248be92908fec33987"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14798.png"
+}

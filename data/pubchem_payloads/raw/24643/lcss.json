@@ -1,0 +1,1208 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24643,
+    "RecordTitle": "Cobaltous chloride hexahydrate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 18,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 10,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                      "Type": "Icon",
+                      "Extra": "Corrosive"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    },
+                    {
+                      "Start": 2,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                      "Type": "Icon",
+                      "Extra": "Health Hazard"
+                    },
+                    {
+                      "Start": 3,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                      "Type": "Icon",
+                      "Extra": "Environmental Hazard"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        },
+                        {
+                          "Start": 3,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302+H332 (17.5%): Harmful if swallowed or if inhaled [Warning Acute toxicity, oral; acute toxicity, inhalation]",
+                      "Markup": [
+                        {
+                          "Start": 55,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H302 (99.2%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 36,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H317 (88.9%): May cause an allergic skin reaction [Warning Sensitization, Skin]",
+                      "Markup": [
+                        {
+                          "Start": 51,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318 (17.5%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H332 (27.8%): Harmful if inhaled [Warning Acute toxicity, inhalation]",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H334 (99.2%): May cause allergy or asthma symptoms or breathing difficulties if inhaled [Danger Sensitization, respiratory]",
+                      "Markup": [
+                        {
+                          "Start": 89,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H341 (89.7%): Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                      "Markup": [
+                        {
+                          "Start": 52,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H350 (71.4%): May cause cancer [Danger Carcinogenicity]",
+                      "Markup": [
+                        {
+                          "Start": 32,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H350i (27.8%): May cause cancer by inhalation [Danger Carcinogenicity]",
+                      "Markup": [
+                        {
+                          "Start": 47,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H360 (78.6%): May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                      "Markup": [
+                        {
+                          "Start": 56,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H360F (27.8%): May damage fertility [Danger Reproductive toxicity]",
+                      "Markup": [
+                        {
+                          "Start": 37,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H400 (98.4%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 42,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410 (98.4%): Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 68,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P203, P233, P260, P261, P264, P264+P265, P270, P271, P272, P273, P280, P284, P301+P317, P302+P352, P304+P340, P305+P354+P338, P317, P318, P321, P330, P333+P317, P342+P316, P362+P364, P391, P403, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P233"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 24,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 30,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 53,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P272"
+                        },
+                        {
+                          "Start": 59,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 65,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 71,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P284"
+                        },
+                        {
+                          "Start": 77,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 88,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 99,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 110,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 126,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 132,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                        },
+                        {
+                          "Start": 138,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 144,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 150,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P333+P317"
+                        },
+                        {
+                          "Start": 161,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P342+P316"
+                        },
+                        {
+                          "Start": 172,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 183,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 189,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403"
+                        },
+                        {
+                          "Start": 195,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 205,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 126 reports by companies from 15 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 178,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/64031"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 28,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H317: May cause an allergic skin reaction [Warning Sensitization, Skin]",
+                      "Markup": [
+                        {
+                          "Start": 43,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H334: May cause allergy or asthma symptoms or breathing difficulties if inhaled [Danger Sensitization, respiratory]",
+                      "Markup": [
+                        {
+                          "Start": 81,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H350i: May cause cancer by inhalation [Danger Carcinogenicity]",
+                      "Markup": [
+                        {
+                          "Start": 39,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H360F: May damage fertility [Danger Reproductive toxicity]",
+                      "Markup": [
+                        {
+                          "Start": 29,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                      "Markup": [
+                        {
+                          "Start": 70,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P203, P233, P260, P261, P264, P264+P265, P270, P271, P272, P280, P284, P301+P317, P302+P352, P304+P340, P305+P354+P338, P317, P318, P319, P321, P330, P333+P317, P342+P316, P362+P364, P403, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P233"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 24,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 30,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 53,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P272"
+                        },
+                        {
+                          "Start": 59,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 65,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P284"
+                        },
+                        {
+                          "Start": 71,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 82,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 93,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 104,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 120,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 126,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                        },
+                        {
+                          "Start": 132,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 138,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 144,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 150,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P333+P317"
+                        },
+                        {
+                          "Start": 161,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P342+P316"
+                        },
+                        {
+                          "Start": 172,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 183,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403"
+                        },
+                        {
+                          "Start": 189,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 199,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7791-13-1"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "cobalt(2+);dichloride;hexahydrate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cobalt chloride hexahydrate"
+                    },
+                    {
+                      "String": "7791-13-1"
+                    },
+                    {
+                      "String": "Cobalt dichloride hexahydrate"
+                    },
+                    {
+                      "String": "Chlorek cobaltawy"
+                    },
+                    {
+                      "String": "Cobalt chloride, hexahydrate"
+                    },
+                    {
+                      "String": "cobalt chloride hydrate"
+                    },
+                    {
+                      "String": "Cobaltous chloride, hexahydrate"
+                    },
+                    {
+                      "String": "cobalt (II) chloride hexahydrate"
+                    },
+                    {
+                      "String": "Chlorek cobaltawy [Polish]"
+                    },
+                    {
+                      "String": "17AVG63ZBC"
+                    },
+                    {
+                      "String": "Cobalt chloride (CoCl2), hexahydrate"
+                    },
+                    {
+                      "String": "Cobaltous chloride hexahydrate"
+                    },
+                    {
+                      "String": "CCRIS 7729"
+                    },
+                    {
+                      "String": "COBALT(II) CHLORIDE, HEXAHYDRATE"
+                    },
+                    {
+                      "String": "CHEBI:53503"
+                    },
+                    {
+                      "String": "cobalt(2+) dichloride hexahydrate"
+                    },
+                    {
+                      "String": "Cobalt(II) chloride--water (1/7)"
+                    },
+                    {
+                      "String": "COBALTOUS CHLORIDE HEXAHYDRATE [MI]"
+                    },
+                    {
+                      "String": "COBALT CHLORIDE HEXAHYDRATE [WHO-DD]"
+                    },
+                    {
+                      "String": "RefChem:578229"
+                    },
+                    {
+                      "String": "616-574-6"
+                    },
+                    {
+                      "String": "COBALT(II) CHLORIDE HEXAHYDRATE"
+                    },
+                    {
+                      "String": "cobalt(2+);dichloride;hexahydrate"
+                    },
+                    {
+                      "String": "Cl2CoO6"
+                    },
+                    {
+                      "String": "Epitope ID:119681"
+                    },
+                    {
+                      "String": "UNII-17AVG63ZBC"
+                    },
+                    {
+                      "String": "SCHEMBL50980"
+                    },
+                    {
+                      "String": "cobaltous;dichloride;hexahydrate"
+                    },
+                    {
+                      "String": "DTXSID20999109"
+                    },
+                    {
+                      "String": "Cobalt(2+) chloride--water (1/2/6)"
+                    },
+                    {
+                      "String": "Cobalt(II) chloride hexahydrate, ACS grade"
+                    },
+                    {
+                      "String": "F492478"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cl2Co.6H2O"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cl2CoH12O6"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "237.93"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2ClH.Co.6H2O/h2*1H;;6*1H2/q;;+2;;;;;;/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "GFHNAMRJFCEERV-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11448",
+        "Name": "Cobalt(II) chloride, hexahydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39365052
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0007791131",
+        "Name": "Cobaltous chloride hexahydrate",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0007791131",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 824052
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "e8da1931057732f2ef8c14f8e04d62fd",
+        "Name": "Cobalt(II) chloride hexahydrate",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49732934
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID20999109",
+        "Name": "Cobalt(2+) chloride--water (1/2/6)",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID20999109",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 17661597
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "616-574-6",
+        "Name": "Cobalt(II) chloride hexahydrate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.119.108",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2101076
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "17AVG63ZBC",
+        "Name": "COBALTOUS CHLORIDE HEXAHYDRATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/17AVG63ZBC",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5862607
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "1ecb17a2b0827ff95d2b5acd61df1321",
+        "Name": "Cobalt (II) chloride",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162518
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11448",
+        "Name": "Cobalt(II) chloride, hexahydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400245
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "64031",
+        "Name": "Cobalt chloride (CoCl2), hexahydrate (EC: 616-574-6)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/64031",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1869969,
+        "SortOrder": 3126
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "5022",
+        "Name": "Cobalt(II) chloride, hexahydrate",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=5022",
+        "ANID": 9025775,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

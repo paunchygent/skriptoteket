@@ -1,0 +1,34 @@
+{
+  "cid": 6116,
+  "hazard_key": "Ca(C2H3O2)2",
+  "display_name": "Kalciumacetat",
+  "captured_at": "2026-01-31T14:42:33.172056+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6116",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6116/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1241,
+      "file": "data/pubchem_payloads/raw/6116/linkout.json",
+      "sha256": "79be74918b5aa4ef3ebdd3413da297d42642b0ce651fd8d3d1aa6dbdf36c184b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6116/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 93451,
+      "file": "data/pubchem_payloads/raw/6116/lcss.json",
+      "sha256": "b70409f0cc629222689b87cb5df0e296f10f6b0bf9c9b77705672eea2d93c7f8"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6116/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 49851,
+      "file": "data/pubchem_payloads/raw/6116/safety.json",
+      "sha256": "35bac0345b7ff9c5a2b38dd29c65860725280d9941eadd4325eba8b4db2f3011"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/6116.png"
+}

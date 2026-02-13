@@ -1,0 +1,34 @@
+{
+  "cid": 11029,
+  "hazard_key": "MgCO3",
+  "display_name": "Magnesit",
+  "captured_at": "2026-01-31T16:56:26.286547+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/11029",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/11029/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/11029/linkout.json",
+      "sha256": "e83aabaa850ebfcabb77a89052b42267b91d0e1a0c411226d9aa3e94271168d6"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/11029/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 172389,
+      "file": "data/pubchem_payloads/raw/11029/lcss.json",
+      "sha256": "4fdc3f41fcc4030b9729d27c3786f53696b845772cce548ab39f2608f41aca93"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/11029/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 116288,
+      "file": "data/pubchem_payloads/raw/11029/safety.json",
+      "sha256": "f0349cada525292bd59f1de61cdbfeb71b5566734db91e21be0fd4ba994a199e"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/11029.png"
+}

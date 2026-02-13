@@ -1,0 +1,34 @@
+{
+  "cid": 516892,
+  "hazard_key": "NaHCO3",
+  "display_name": "Natriumvätekarbonat",
+  "captured_at": "2026-01-31T18:41:19.460040+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516892",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/516892/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 697,
+      "file": "data/pubchem_payloads/raw/516892/linkout.json",
+      "sha256": "c5c2b122561171f691514e36e5a39679d316168238c7e368025bbecf167a5208"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516892/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 187827,
+      "file": "data/pubchem_payloads/raw/516892/lcss.json",
+      "sha256": "5aaa69b7013a27dd72e9ab1428828d05640c0a5322448a51f744895cf0e8687d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516892/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 142307,
+      "file": "data/pubchem_payloads/raw/516892/safety.json",
+      "sha256": "2e862e7b2cd4ce8a2bbf6d017d68347790e0425d63d719e364eef8b1a734214d"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/516892.png"
+}

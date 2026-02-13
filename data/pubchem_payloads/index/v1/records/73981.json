@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "cid": 73981,
+  "captured_at": "2026-01-31T16:56:17.978741+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/73981",
+    "lcss_sha256": "df3a9f8dddc3835514813b064c3028a86de5ef1519e0c21ecc12457d2fcd9c26",
+    "linkout_sha256": "67f839292a7e286957c7927c785081580a92ea0367b27a37353b03b4d592d343",
+    "meta_sha256": "f9a2aca001ac2930f94b0cd69d16f4f0384371f17aad4a5b9cf461b223bccdff"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.095263+00:00"
+}

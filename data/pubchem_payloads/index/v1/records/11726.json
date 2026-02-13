@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "cid": 11726,
+  "captured_at": "2026-01-31T18:42:10.940126+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/11726",
+    "lcss_sha256": "1d835e5529a3023f5d4fbec780b7c0fffa1047db40d66acb596dd521e0930ffe",
+    "linkout_sha256": "e3acea11d00e8c5607b8111ffbcec62fcb78263880d306b1a8cfd354f19131c1",
+    "meta_sha256": "52a72cf6500f9ee5fda069893feeef7622a8ff3e9fc9792d584a6a9fa29ac26e"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H360",
+      "H370",
+      "H372"
+    ],
+    "hazard_statements_sv": {
+      "H360": "Kan skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>"
+    },
+    "precautionary_codes": [
+      "P203",
+      "P260",
+      "P264",
+      "P270",
+      "P280",
+      "P308+P316",
+      "P318",
+      "P319",
+      "P321",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.167782+00:00"
+}

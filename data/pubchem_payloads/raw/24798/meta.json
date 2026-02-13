@@ -1,0 +1,34 @@
+{
+  "cid": 24798,
+  "hazard_key": "Ba(NO3)2",
+  "display_name": "Bariumnitrat",
+  "captured_at": "2026-01-31T14:17:42.314489+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24798",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24798/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24798/linkout.json",
+      "sha256": "6f00784b6049414a3d66ce23c9916277c45571e908a495a1f79741a11aa592cc"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24798/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 264785,
+      "file": "data/pubchem_payloads/raw/24798/lcss.json",
+      "sha256": "d62b5dd0b7dcb7c5ad3262cdf84b67e728effac0fe4847eae162ea3dd68bc1e9"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24798/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 278846,
+      "file": "data/pubchem_payloads/raw/24798/safety.json",
+      "sha256": "cc797fedc5a1935382a778cd908e831132f6903015d9e6bd8351351656f14308"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24798.png"
+}

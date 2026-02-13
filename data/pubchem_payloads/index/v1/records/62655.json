@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "cid": 62655,
+  "captured_at": "2026-01-31T18:40:11.589896+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/62655",
+    "lcss_sha256": "0dd2aa3720d2af23ef7cf774f124705b86651a1df0a9b5c6ae9349fbc4037919",
+    "linkout_sha256": "f21dfbd1fd43eeb27a368f95a05aaa0c3b614068a8e0468de4afb943abf6560b",
+    "meta_sha256": "753d54658e5ccfc6b30d42447592960c8c0622dc92a3cd7113d18e2259cceabc"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H272",
+      "H302",
+      "H315",
+      "H316",
+      "H317",
+      "H319",
+      "H320",
+      "H334",
+      "H335",
+      "H371"
+    ],
+    "hazard_statements_sv": {
+      "H272": "Kan intensifiera brand. Oxiderande.",
+      "H302": "Skadligt vid förtäring.",
+      "H315": "Irriterar huden.",
+      "H316": "Orsakar mild hudirritation.",
+      "H317": "Kan orsaka allergisk hudreaktion.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H320": "Orsakar ögonirritation.",
+      "H334": "Kan orsaka allergi- eller astmasymtom eller andningssvårigheter vid inandning.",
+      "H335": "Kan orsaka irritation i luftvägarna.",
+      "H371": "Kan orsaka organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>"
+    },
+    "precautionary_codes": [
+      "P210",
+      "P220",
+      "P233",
+      "P260",
+      "P261",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P271",
+      "P272",
+      "P280",
+      "P284",
+      "P301+P317",
+      "P302+P352",
+      "P304+P340",
+      "P305+P351+P338",
+      "P308+P316",
+      "P319",
+      "P321",
+      "P330",
+      "P332+P317",
+      "P333+P317",
+      "P337+P317",
+      "P342+P316",
+      "P362+P364",
+      "P370+P378",
+      "P403",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P220": "Hålls åtskilt från kläder och andra brännbara material.",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P272": "Nedstänkta arbetskläder får inte avlägsnas från arbetsplatsen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P284": "* [Vid otillräcklig ventilation], använd andningsskydd.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P333+P317": "Vid hudirritation eller utslag: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P342+P316": "Vid besvär i luftvägarna: Sök omedelbar läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P403": "Förvaras på väl ventilerad plats.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS03",
+      "GHS07",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1721.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.138372+00:00"
+}

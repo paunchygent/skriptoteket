@@ -1,0 +1,34 @@
+{
+  "cid": 24507,
+  "hazard_key": "K2SO4",
+  "display_name": "Kaliumsulfat",
+  "captured_at": "2026-01-31T16:44:29.751595+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24507",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24507/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 738,
+      "file": "data/pubchem_payloads/raw/24507/linkout.json",
+      "sha256": "c7d98ae3406691dd5359bc9daff94001304766e94486f1ebddf6aa112408de9a"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24507/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 89310,
+      "file": "data/pubchem_payloads/raw/24507/lcss.json",
+      "sha256": "f8fc3bfdb0ec249039d8645a1933ee969f2b8d49bba8f115c96b2aab4a330abf"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24507/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 47901,
+      "file": "data/pubchem_payloads/raw/24507/safety.json",
+      "sha256": "ba2a2ae245c62f70063d52e2befb0ccf6115d076bc616da60ac8f9c631943db9"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24507.png"
+}

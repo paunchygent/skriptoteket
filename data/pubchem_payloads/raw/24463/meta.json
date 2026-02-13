@@ -1,0 +1,34 @@
+{
+  "cid": 24463,
+  "hazard_key": "CuSO4·5H2O",
+  "display_name": "Kopparsulfat (pentahydrat)",
+  "captured_at": "2026-01-31T16:43:49.918809+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24463",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24463/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24463/linkout.json",
+      "sha256": "e02125d58fbe41656a784bc7434f84c9b28ca5dae17f9d48196d4ce74aafafa4"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24463/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 205598,
+      "file": "data/pubchem_payloads/raw/24463/lcss.json",
+      "sha256": "8b825dc9c0514f748ed84494425a979ee8e2eb910500bb88010d7a3f527da047"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24463/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 191344,
+      "file": "data/pubchem_payloads/raw/24463/safety.json",
+      "sha256": "e8c76a07280335a1ef29c524f9b73c38dded776134b1a90a5dd0abc9df3de24d"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24463.png"
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 6093258,
+  "hazard_key": "FeCl3·6H2O",
+  "display_name": "Järn(III)klorid (hexahydrat)",
+  "captured_at": "2026-01-31T14:35:57.314368+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6093258",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6093258/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/6093258/linkout.json",
+      "sha256": "f96130dced4d0ce08ee0ddd61fcbfecbef3e3548260aff038ba58611c7e03317"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6093258/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 50840,
+      "file": "data/pubchem_payloads/raw/6093258/lcss.json",
+      "sha256": "64ab573c250ab8d1c66b4e9032d0ef37e44f5f982a930a6468e2987be73a4a85"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6093258/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 39787,
+      "file": "data/pubchem_payloads/raw/6093258/safety.json",
+      "sha256": "800e045055ddd67711a7dd2d3d40c6f403bc2064297b0be54a527ec2ac5043be"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/6093258.png"
+}

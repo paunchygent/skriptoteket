@@ -1,0 +1,34 @@
+{
+  "cid": 6450,
+  "hazard_key": "C27H28Br2O5S",
+  "display_name": "Bromtymolblått",
+  "captured_at": "2026-01-31T14:33:03.077419+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6450",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6450/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 78,
+      "file": "data/pubchem_payloads/raw/6450/linkout.json",
+      "sha256": "b154feb8b83057cf011cf1f5b444c1d56583f65d2d41ee855efe3e9b35b13a06"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6450/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 49643,
+      "file": "data/pubchem_payloads/raw/6450/lcss.json",
+      "sha256": "d53d5a7fee7b3a315313db4f600f955ceba0ca02a8210f8508e4512b16f1669c"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6450/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 20501,
+      "file": "data/pubchem_payloads/raw/6450/safety.json",
+      "sha256": "746d3697b44b7b9bf967122f3efb87c8eeb72f10908a78de220a0733518febdc"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/6450.png"
+}

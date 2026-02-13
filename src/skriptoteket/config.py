@@ -60,8 +60,22 @@ class Settings(BaseSettings):
     SDS_CACHE_ROOT: Path | None = None
     SDS_FETCH_TIMEOUT_SECONDS: float = 40.0
     SDS_FETCH_USER_AGENT: str = "Skriptoteket/1.0 (SDS fetcher)"
+    SDS_FETCH_RETRY_ATTEMPTS: int = 3
+    SDS_FETCH_RETRY_BACKOFF_SECONDS: float = 0.5
+    SDS_FETCH_RETRY_BACKOFF_MAX_SECONDS: float = 5.0
+    SDS_FETCH_CID_CANDIDATE_LIMIT: int = 25
+    SDS_FETCH_AUTOCOMPLETE_LIMIT: int = 10
+    SDS_FETCH_LISTKEY_MAX_SECONDS: float = 10.0
+    SDS_FETCH_LISTKEY_POLL_SECONDS: float = 0.5
+    SDS_FETCH_CONCURRENCY: int = 4
+    SDS_CURATED_LINKOUTS_PATH: Path | None = Path("data/sds_linkouts/curated.json")
+    SDS_CURATED_META_PATH: Path | None = Path("data/sds_linkouts/curated_meta.json")
     PUBCHEM_BASE_URL: str = "https://pubchem.ncbi.nlm.nih.gov"
     PUBCHEM_TIMEOUT_SECONDS: float = 20.0
+    PUBCHEM_RATE_LIMIT_PER_SECOND: float = 2.0
+    PUBCHEM_MAX_IN_FLIGHT: int = 2
+    PUBCHEM_THROTTLE_YELLOW_DELAY_SECONDS: float = 0.5
+    PUBCHEM_THROTTLE_RED_DELAY_SECONDS: float = 1.5
 
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000

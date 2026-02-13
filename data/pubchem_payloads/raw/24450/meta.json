@@ -1,0 +1,34 @@
+{
+  "cid": 24450,
+  "hazard_key": "K2HPO4",
+  "display_name": "Dikaliumhydrogenfosfat",
+  "captured_at": "2026-01-31T14:33:28.791951+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24450",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24450/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 612,
+      "file": "data/pubchem_payloads/raw/24450/linkout.json",
+      "sha256": "f9acea1b0b8c393e388808618566e2a16f0bd9676e5a3933b8599508df748d11"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24450/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 98254,
+      "file": "data/pubchem_payloads/raw/24450/lcss.json",
+      "sha256": "801b0145614551d740592e5e7bad8e1a22f552ec6559dd9177322ed470fe734d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24450/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 47112,
+      "file": "data/pubchem_payloads/raw/24450/safety.json",
+      "sha256": "b05bf934551c8da808a5562fa69a5d5313c6e72a41c4e280aed44bb4349fda12"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24450.png"
+}

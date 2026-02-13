@@ -1,0 +1,34 @@
+{
+  "cid": 702,
+  "hazard_key": "C2H6O",
+  "display_name": "Etanol",
+  "captured_at": "2026-01-31T14:33:56.296722+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/702",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/702/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1326,
+      "file": "data/pubchem_payloads/raw/702/linkout.json",
+      "sha256": "9b0eb310241a30d963757860e3291fccbaa0f244e0ea0053a27bd121efa85cc8"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/702/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1715184,
+      "file": "data/pubchem_payloads/raw/702/lcss.json",
+      "sha256": "072ce572cf8c8bec0b6ff28e545b83ce727102024d0ab8163c8d42dbd6d51e72"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/702/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 540786,
+      "file": "data/pubchem_payloads/raw/702/safety.json",
+      "sha256": "652b822af788a885d602e612b0d10abbbb42a422eef0eee3f8daa9b02e73e5b8"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/702.png"
+}

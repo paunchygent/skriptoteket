@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "cid": 14829,
+  "captured_at": "2026-01-31T16:43:32.931565+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14829",
+    "lcss_sha256": "7135815234d6b4c909214e1bc6797ce4aacc2e54d774359ed283d765d47a689d",
+    "linkout_sha256": "aca31132626177e5afbef32676fbd68d915b19fb57defa2ca85cc40e55d3eb38",
+    "meta_sha256": "cf7a5538e3ead833de4ed2cc94b107bd3e184b57d3688798dfe639ff5314d819"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [
+    {
+      "url": "https://www.elementalmicroanalysis.com/documents/product/sds/COPPER-_II_-OXIDE_20240304_EN.pdf",
+      "source": "manual-playwright",
+      "verified": true,
+      "notes": "Copper(II) oxide SDS"
+    }
+  ],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": false
+  },
+  "sds_candidates": [],
+  "generated_at": "2026-01-31T23:44:13.290380+00:00"
+}

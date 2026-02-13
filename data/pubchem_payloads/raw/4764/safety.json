@@ -1,0 +1,2344 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 4764,
+    "RecordTitle": "Phenolphthalein",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H341: Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H350: May cause cancer [Danger Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361f ***: Suspected of damaging fertility [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P280, P318, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 0.2% (2  of 1181) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H341 (99.5%): Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 52,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H350 (99.7%): May cause cancer [Danger Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 32,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361 (90.5%): Suspected of damaging fertility or the unborn child [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 67,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P280, P318, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 1181 reports by companies from 22 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 179,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 2 of 1181 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 79,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 21 notifications provided by 1179 of 1181 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 103,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/7658"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H350: May cause cancer [Danger Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H401: Toxic to aquatic life [Hazardous to the aquatic environment, acute hazard]"
+                        },
+                        {
+                          "String": "H412: Harmful to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P273, P280, P318, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 34,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 63,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 63,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 63,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H341: Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H351: Suspected of causing cancer [Warning Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 35,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360: May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 63,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P264, P270, P280, P318, P319, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 62,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 62,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 62,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H317: May cause an allergic skin reaction [Warning Sensitization, Skin]",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 37,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H341: Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H351: Suspected of causing cancer [Warning Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 35,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361: Suspected of damaging fertility or the unborn child [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 62,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P261, P264, P264+P265, P270, P272, P280, P302+P352, P305+P351+P338, P318, P319, P321, P333+P317, P337+P317, P362+P364, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P272"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 64,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 86,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 98,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P333+P317"
+                            },
+                            {
+                              "Start": 109,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 120,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 131,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 141,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H341: Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H350: May cause cancer [Danger Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361f: Suspected of damaging fertility [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P280, P318, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Muta. 2 (99.5%)"
+                        },
+                        {
+                          "String": "Carc. 1B (99.7%)"
+                        },
+                        {
+                          "String": "Repr. 2 (90.5%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Carcinogenicity - category 1B"
+                        },
+                        {
+                          "String": "Germ cell mutagenicity - category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - category 2"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 62,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2"
+                        },
+                        {
+                          "String": "Skin sensitization - Category 1"
+                        },
+                        {
+                          "String": "Germ cell mutagenicity - Category 2"
+                        },
+                        {
+                          "String": "Carcinogenicity - Category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (digestive system, kidney, central nervous system)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 63,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Germ cell mutagenicity - Category 2"
+                        },
+                        {
+                          "String": "Carcinogenicity - Category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 1B"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (intestine)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Carcinogenicity - Category 1B"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Acute) - Category 2"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Long-term) - Category 3"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 65,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Carcinogens"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Carc. 1B"
+                        },
+                        {
+                          "String": "Muta. 2"
+                        },
+                        {
+                          "String": "Repr. 2"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SYMPTOMS: Exposure to this compound may cause purging, collapse and erythematous, itching skin rash that may progress to persistent ulceration. Acute exposure may cause hypotension, vomiting, watery or bloody diarrhea, pallor, rapid heart rate, coma and death. Other symptoms include burning pain in the mouth and stomach and tenesmus. Eye contact may result in edema of the eyelids and conjunctival ecchymoses. It may also result in irritation, redness and pain. It has occasionally caused albuminuria and hemoglobinurea. It may also cause skin rash. Other symptoms include pink coloring of the urine and feces, allergic reactions including fixed-drug eruption, Stevens-Johnson syndrome (resembles lupus erythematosus), osteomalacia, protein-losing gastroenteropathy, and fluid and electrolyte deficits. Exposure has also caused cerebral and pulmonary edema, oliguria and severe acidosis. Hypothermia has also been reported. Other symptoms include abdominal cramps, cardiac and respiratory distress, lack of sphincter control, flaccid paralysis, fixed mydriasis, intense cyanosis, undetectable blood pressure or pulse, toxic epidermal necrolysis, and bullous lesions on the hands, lips, mouth and tongue."
+                        },
+                        {
+                          "String": "ACUTE/CHRONIC HAZARDS: This compound may cause skin, eye and gastrointestinal tract irritation. When heated to decomposition it emits acrid smoke and fumes. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Literature sources indicate that this compound is nonflammable. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Reported health effects include itching rash after skin contact and purging and collapse after ingestion; [CAMEO] Dust may be irritating if inhaled, but probably not irritating to the skin; [CHEMINFO]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EYES: First check the victim for contact lenses and remove if present. Flush victim's eyes with water or normal saline solution for 20 to 30 minutes while simultaneously calling a hospital or poison control center. Do not put any ointments, oils, or medication in the victim's eyes without specific instructions from a physician. IMMEDIATELY transport the victim after flushing eyes to a hospital even if no symptoms (such as redness or irritation) develop.",
+                          "Markup": [
+                            {
+                              "Start": 96,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 105,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/normal%20saline",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN: IMMEDIATELY flood affected skin with water while removing and isolating all contaminated clothing. Gently wash all affected skin areas thoroughly with soap and water. If symptoms such as redness or irritation develop, IMMEDIATELY call a physician and be prepared to transport the victim to a hospital for treatment.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 166,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "INHALATION: IMMEDIATELY leave the contaminated area; take deep breaths of fresh air. If symptoms (such as wheezing, coughing, shortness of breath, or burning in the mouth, throat, or chest) develop, call a physician and be prepared to transport the victim to a hospital. Provide proper respiratory protection to rescuers entering an unknown atmosphere. Whenever possible, Self-Contained Breathing Apparatus (SCBA) should be used; if not available, use a level of protection greater than or equal to that advised under Protective Clothing."
+                        },
+                        {
+                          "String": "INGESTION: DO NOT INDUCE VOMITING. If the victim is conscious and not convulsing, give 1 or 2 glasses of water to dilute the chemical and IMMEDIATELY call a hospital or poison control center. Be prepared to transport the victim to a hospital if advised by a physician. If the victim is convulsing or unconscious, do not give anything by mouth, ensure that the victim's airway is open and lay the victim on his/her side with the head lower than the body. DO NOT INDUCE VOMITING. IMMEDIATELY transport the victim to a hospital. (NTP, 1992)",
+                          "Markup": [
+                            {
+                              "Start": 105,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 6,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fires involving this material can be controlled with a dry chemical, carbon dioxide or Halon extinguisher. A water spray may also be used. (NTP, 1992)",
+                      "Markup": [
+                        {
+                          "Start": 69,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        },
+                        {
+                          "Start": 87,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Halon",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6391"
+                        },
+                        {
+                          "Start": 109,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Isolation and Evacuation",
+                "Description": "Isolation and evacuation measures to take when a large amount of this chemical is accidentally released in an emergency.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 128 [Flammable Liquids (Water-Immiscible)]:",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "IMMEDIATE PRECAUTIONARY MEASURE: Isolate spill or leak area for at least 50 meters (150 feet) in all directions."
+                        },
+                        {
+                          "String": "LARGE SPILL: Consider initial downwind evacuation for at least 300 meters (1000 feet)."
+                        },
+                        {
+                          "String": "FIRE: If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15",
+                        "Matched": {
+                          "PCLID": 900016375,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": A high-efficiency particulate arrestor (HEPA) or charcoal filters can be used to minimize amt of carcinogen in exhausted air ventilated safety cabinets, lab hoods, glove boxes or animal rooms ... Filter housing that is designed so that used filters can be transferred into plastic bag without contaminating maintenance staff is avail commercially. Filters should be placed in plastic bags immediately after removal ... The plastic bag should be sealed immediately ... The sealed bag should be labelled properly ... Waste liquids ... should be placed or collected in proper containers for disposal. The lid should be secured & the bottles properly labelled. Once filled, bottles should be placed in plastic bag, so that outer surface ... is not contaminated ... The plastic bag should also be sealed & labelled. ... Broken glassware ... should be decontaminated by solvent extraction, by chemical destruction, or in specially designed incinerators. /Chemical Carcinogens/",
+                          "Markup": [
+                            {
+                              "Start": 80,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/charcoal",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5462310"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less   inherent propensity for occupational exposure or environmental contamination.  Recycle any  unused portion of the material for its approved use or return it to the manufacturer or  supplier.  Ultimate disposal of the chemical must consider: the material's impact on air  quality; potential migration in soil or water; effects on animal, aquatic, and plant life;  and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 406,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 14"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 14",
+                        "Matched": {
+                          "PCLID": 900136323,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 14"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": There is no universal method of disposal that has been proved satisfactory for all carcinogenic compounds & specific methods of chem destruction ... published have not been tested on all kinds of carcinogen-containing waste. ... summary of avail methods & recommendations ... /given/ must be treated as guide only. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15",
+                        "Matched": {
+                          "PCLID": 900016375,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": ... Incineration may be only feasible method for disposal of contaminated laboratory waste from biological expt. However, not all incinerators are suitable for this purpose. The most efficient type ... is probably the gas-fired type, in which a first-stage combustion with a less than stoichiometric air:fuel ratio is followed by a second stage with excess air. Some ... are designed to accept ... aqueous & organic-solvent solutions, otherwise it is necessary ... to absorb soln onto suitable combustible material, such as sawdust. Alternatively, chem destruction may be used, esp when small quantities ... are to be destroyed in laboratory. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15",
+                        "Matched": {
+                          "PCLID": 900016375,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 15"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": HEPA (high-efficiency particulate arrestor) filters ... can be disposed of by incineration. For spent charcoal filters, the adsorbed material can be stripped off at high temp & carcinogenic wastes generated by this treatment conducted to & burned in an incinerator. ... LIQUID WASTE: ... Disposal should be carried out by incineration at temp that ... ensure complete combustion. SOLID WASTE: Carcasses of lab animals, cage litter & misc solid wastes ... should be disposed of by incineration at temp high enough to ensure destruction of chem carcinogens or their metabolites. /Chemical Carcinogens/",
+                          "Markup": [
+                            {
+                              "Start": 133,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/charcoal",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5462310"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Disposal Methods (Complete) data for PHENOLPHTHALEIN (6 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 90,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/4161#section=Disposal-Methods-(Complete)"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/PHENOLPHTHALEIN",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4764"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Contaminated protective clothing should be segregated in such a manner so that there is no direct personal contact by personnel who handle, dispose, or clean the clothing. Quality assurance to ascertain the completeness of the cleaning procedures should be implemented before the decontaminated protective clothing is returned for reuse by the workers. Contaminated clothing should not be taken home at end of shift, but should remain at employee's place of work for cleaning."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8",
+                        "Matched": {
+                          "PCLID": 900095610,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": Smoking, drinking, eating, storage of food or of food & beverage containers or utensils, & the application of cosmetics should be prohibited in any laboratory. All personnel should remove gloves, if worn, after completion of procedures in which carcinogens have been used. They should ... wash ... hands, preferably using dispensers of liq detergent, & rinse ... thoroughly. Consideration should be given to appropriate methods for cleaning the skin, depending on nature of the contaminant. No standard procedure can be recommended, but the use of organic solvents should be avoided. Safety pipettes should be used for all pipetting. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8",
+                        "Matched": {
+                          "PCLID": 900095610,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": In animal laboratory, personnel should remove their outdoor clothes & wear protective suits (preferably disposable, one-piece & close-fitting at ankles & wrists), gloves, hair covering & overshoes. ... Clothing should be changed daily but ... discarded immediately if obvious contamination occurs ... /also,/ workers should shower immediately. In chemical laboratory, gloves & gowns should always be worn ... however, gloves should not be assumed to provide full protection. Carefully fitted masks or respirators may be necessary when working with particulates or gases, & disposable plastic aprons might provide addnl protection. If gowns are of distinctive color, this is a reminder that they should not be worn outside of lab. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8",
+                        "Matched": {
+                          "PCLID": 900095610,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": ... Operations connected with synth & purification ... should be carried out under well-ventilated hood. Analytical procedures ... should be carried out with care & vapors evolved during ... procedures should be removed. ... Expert advice should be obtained before existing fume cupboards are used ... & when new fume cupboards are installed. It is desirable that there be means for decreasing the rate of air extraction, so that carcinogenic powders can be handled without ... powder being blown around the hood. Glove boxes should be kept under negative air pressure. Air changes should be adequate, so that concn of vapors of volatile carcinogens will not occur. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Preventive Measures (Complete) data for PHENOLPHTHALEIN (10 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 94,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/4161#section=Preventive-Measures-(Complete)"
+                            },
+                            {
+                              "Start": 49,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/PHENOLPHTHALEIN",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4764"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SMALL SPILLS AND LEAKAGE: Should a spill occur while you are handling this chemical, FIRST REMOVE ALL SOURCES OF IGNITION, then you should dampen the solid spill material with 60-70% ethanol and transfer the dampened material to a suitable container. Use absorbent paper dampened with 60-70% ethanol to pick up any remaining material. Seal the absorbent paper, and any of your clothes, which may be contaminated, in a vapor-tight plastic bag for eventual disposal. Solvent wash all contaminated surfaces with 60-70% ethanol followed by washing with a soap and water solution. Do not reenter the contaminated area until the Safety Officer (or other responsible person) has verified that the area has been properly cleaned.",
+                          "Markup": [
+                            {
+                              "Start": 183,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-702"
+                            },
+                            {
+                              "Start": 292,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-702"
+                            },
+                            {
+                              "Start": 516,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-702"
+                            },
+                            {
+                              "Start": 560,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "STORAGE PRECAUTIONS: You should store this material at ambient temperatures. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13",
+                        "Matched": {
+                          "PCLID": 900010660,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": Storage site should be as close as practical to lab in which carcinogens are to be used, so that only small quantities required for ... expt need to be carried. Carcinogens should be kept in only one section of cupboard, an explosion-proof refrigerator or freezer (depending on chemicophysical properties ...) that bears appropriate label. An inventory ... should be kept, showing quantity of carcinogen & date it was acquired ... Facilities for dispensing ... should be contiguous to storage area. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "RECOMMENDED RESPIRATOR: Where the neat test chemical is weighed and diluted, wear a NIOSH-approved half face respirator equipped with an organic vapor/acid gas cartridge (specific for organic vapors, HCl, acid gas and SO2) with a dust/mist filter. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8",
+                        "Matched": {
+                          "PCLID": 900095610,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 8"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": ... Dispensers of liq detergent /should be available./ ... Safety pipettes should be used for all pipetting. ... In animal laboratory, personnel should ... wear protective suits (preferably disposable, one-piece & close-fitting at ankles & wrists), gloves, hair covering & overshoes. ... In chemical laboratory, gloves & gowns should always be worn ... however, gloves should not be assumed to provide full protection. Carefully fitted masks or respirators may be necessary when working with particulates or gases, & disposable plastic aprons might provide addnl protection. ... Gowns ... /should be/ of distinctive color, this is a reminder that they are not to be worn outside the laboratory. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Insoluble in water."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Esters, Sulfate Esters, Phosphate Esters, Thiophosphate Esters, and Borate Esters",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Phenols and Cresols"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PHENOLPHTHALEIN is incompatible with alkaloids. (NTP, 1992)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/PHENOLPHTHALEIN",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4764"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "Shipment Methods and Regulations",
+                "Description": "Shipment methods and regulations of this compound.  The information in this section includes the U.S. Hazardous Materials Regulations (49 CFR Subchapter C), the International Air Transport Association (IATA) Dangerous Goods Regulations, the International Maritime Dangerous Goods (IMDG) Code, and other regulations.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13",
+                        "Matched": {
+                          "PCLID": 900010660,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": Procurement ... of unduly large amt ... should be avoided. To avoid spilling, carcinogens should be transported in securely sealed glass bottles or ampoules, which should themselves be placed inside strong screw-cap or snap-top container that will not open when dropped & will resist attack from the carcinogen. Both bottle & the outside container should be appropriately labelled. ... National post offices, railway companies, road haulage companies & airlines have regulations governing transport of hazardous materials. These authorities should be consulted before ... material is shipped. /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13",
+                        "Matched": {
+                          "PCLID": 900010660,
+                          "Citation": "Montesano, R., H. Bartsch, E.Boyland, G. Della Porta, L. Fishbein, R. A. Griesemer, A.B. Swan, L. Tomatis, and W. Davis (eds.). Handling Chemical Carcinogens in the Laboratory: Problems of Safety. IARC Scientific Publications No. 33. Lyon, France: International Agency for Research on Cancer, 1979., p. 13"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRECAUTIONS FOR \"CARCINOGENS\": When no regulations exist, the following procedure must be adopted. The carcinogen should be enclosed in a securely sealed, watertight container (primary container), which should be enclosed in a second, unbreakable, leakproof container that will withstand chem attack from the carcinogen (secondary container). The space between primary & secondary container should be filled with absorbent material, which would withstand chem attack from the carcinogen & is sufficient to absorb the entire contents of the primary container in the event of breakage or leakage. Each secondary container should then be enclosed in a strong outer box. The space between the secondary container & the outer box should be filled with an appropriate quantity of shock-absorbent material. Sender should use fastest & most secure form of transport & notify recipient of its departure. If parcel is not received when expected, carrier should be informed so that immediate effort can be made to find it. Traffic schedules should be consulted to avoid ... arrival on weekend or holiday ... /Chemical Carcinogens/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Label",
+                "Description": "U.S. Department of Transportation (DOT) hazard warning label for the chemical (such as flammable liquid or corrosive). This label must be displayed on shipped packages, railroad tank cars, and tank trucks according to specifications described in 49 CFR 172.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Combustible Liquid"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: 1(3H)-Isobenzofuranone, 3,3-bis(4-hydroxyphenyl)-",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 22,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/1%283H%29-Isobenzofuranone",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6885"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Name": "California Safe Cosmetics Program (CSCP) Reportable Ingredient",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Hazard Traits - Carcinogenicity"
+                    },
+                    {
+                      "String": "Authoritative List - EC Annex VI CMRs - Cat. 1B; IARC Carcinogens - 2B; NTP RoC - reasonable; Prop 65"
+                    },
+                    {
+                      "String": "Report - regardless of intended function of ingredient in the product"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 01-12-2020 https://echa.europa.eu/registration-dossier/-/registered-dossier/2203",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 69,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/2203"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "REACH Substances of Very High Concern (SVHC)",
+                "Reference": [
+                  "https://echa.europa.eu/candidate-list-table"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "https://echa.europa.eu/candidate-list-table",
+                    "Matched": {
+                      "PCLID": 900163269,
+                      "Citation": "https://echa.europa.eu/candidate-list-table"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Substance: Phenolphthalein",
+                      "Markup": [
+                        {
+                          "Start": 11,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phenolphthalein",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-4764"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "EC: 201-004-7"
+                    },
+                    {
+                      "String": "Date of inclusion: >19-Dec-2011"
+                    },
+                    {
+                      "String": "Reason for inclusion: Carcinogenic (Article 57a)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 54,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Phenolphthalein: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phenolphthalein",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-4764"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 65,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 310.545; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of February 10, 2004: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 310.545; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of February 10, 2004: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900140819,
+                          "Citation": "21 CFR 310.545; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of February 10, 2004: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Drug products containing certain active ingredients offered over-the-counter (OTC) for  certain uses. A number of active ingredients have been present in OTC drug products for various uses, as described below. However, based on evidence currently available, there are inadequate data to establish general recognition of the safety and effectiveness of these ingredients for the specified uses: Danthron phenolphthalein is included in laxative drug products.",
+                          "Markup": [
+                            {
+                              "Start": 394,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Danthron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-2950"
+                            },
+                            {
+                              "Start": 403,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phenolphthalein",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4764"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - 1(3H)-Isobenzofuranone, 3,3-bis(4-hydroxyphenyl)-: Human health tier II assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 22,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/1%283H%29-Isobenzofuranone",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6885"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "National Toxicology Program. Eleventh Report on Carcinogens (2005). The Report on Carcinogens is an informational scientific and public health document that identifies and discusses substances (including agents, mixtures, or exposure circumstances) that may pose a carcinogenic hazard to human health. Phenolphthalein (77-09-8) is listed as reasonably anticipated to be a human carcinogen.[Available from, as of July 31, 2009: http://ntp.niehs.nih.gov/ntp/roc/eleventh/profiles/s145phen.pdf]",
+                          "Markup": [
+                            {
+                              "Start": 302,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phenolphthalein",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4764"
+                            },
+                            {
+                              "Start": 319,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/77-09-8",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4764"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_986",
+        "Name": "1(3H)-Isobenzofuranone, 3,3-bis(4-hydroxyphenyl)-",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39348892
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_986",
+        "Name": "1(3H)-Isobenzofuranone, 3,3-bis(4-hydroxyphenyl)-",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39386293
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "California Safe Cosmetics Program (CSCP) Product Database",
+        "SourceID": "35f8815212d0e7fe308e71b3d559defb",
+        "Name": "Phenolphthalein",
+        "Description": "The California Safe Cosmetics Program (CSCP) is charged with implementing the California Safe Cosmetics Act (CSCA) and the Cosmetic Fragrance and Flavor Ingredient Right to Know Act (CFFIRKA). The goal of CSCP is to collect and share information on hazardous and potentially hazardous ingredients in cosmetics sold in California and to make this information available to the public.",
+        "URL": "https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/OHB/CSCP/Pages/About-CSCP.aspx",
+        "LicenseURL": "https://www.cdph.ca.gov/Pages/Conditions-of-Use.aspx",
+        "ANID": 39996327
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "201-004-7",
+        "Name": "Phenolphthalein",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.000.914",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1977278
+      },
+      {
+        "ReferenceNumber": 54,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "b583e7056b1bda73e594d69a22faee7f",
+        "Name": "Phenolphthalein",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162151
+      },
+      {
+        "ReferenceNumber": 65,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "4110",
+        "Name": "phenolphthalein",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/4110.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2271063
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "20885",
+        "Name": "PHENOLPHTHALEIN",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/20885",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 760295
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "4161",
+        "Name": "PHENOLPHTHALEIN",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/4161",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 2894
+      },
+      {
+        "ReferenceNumber": 72,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "604-076-00-1",
+        "Name": "phenolphthalein",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 393035,
+        "SortOrder": 100000
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "7658",
+        "Name": "Phenolphthalein (EC: 201-004-7)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/7658",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1853224,
+        "SortOrder": 4181
+      },
+      {
+        "ReferenceNumber": 64,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R06_C_018_JNIOSH,MOE",
+        "Name": "3,3-Bis(4-hydroxyphenyl)isobenzofuran-1(3H)-one - FY2024 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/24-jniosh-2058e.html",
+        "ANID": 53255041,
+        "SortOrder": 2024
+      },
+      {
+        "ReferenceNumber": 63,
+        "SourceName": "NITE-CMC",
+        "SourceID": "2_074",
+        "Name": "3,3-Bis(4-hydroxyphenyl)isobenzofuran-1(3H)-one - FY2008 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/08-meti-0084e.html",
+        "ANID": 39311557,
+        "SortOrder": 2008
+      },
+      {
+        "ReferenceNumber": 62,
+        "SourceName": "NITE-CMC",
+        "SourceID": "8",
+        "Name": "Phenolphthalein - FY2007 (Hazardous substance)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/07-mhlw-0050e.html",
+        "ANID": 8787063,
+        "SortOrder": 2007
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "3462",
+        "Name": "phenolphthalein",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=3462",
+        "ANID": 2282201,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz1978",
+        "Name": "Phenolphthalein",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/1978",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277433
+      }
+    ]
+  }
+}

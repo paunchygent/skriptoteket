@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "cid": 61520,
+  "captured_at": "2026-01-31T18:43:15.018058+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/61520",
+    "lcss_sha256": "33335d3725aa4b7e36a7b2af26b2afaaa42db843c18974c1f80e101291e82808",
+    "linkout_sha256": "3835595540340b226c537ace3aa5d56405f3e45fc40025a6a3141ed2dff192f8",
+    "meta_sha256": "e087000b62f804df96805b1285ce0d363d9d9a7d8c0e3c938d9ed645b5b4c5eb"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [
+    {
+      "url": "https://www.chemicalbook.com/msds/strontium-chloride.pdf",
+      "source": "manual-playwright",
+      "verified": true,
+      "notes": "Strontium chloride SDS"
+    }
+  ],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": false
+  },
+  "sds_candidates": [],
+  "generated_at": "2026-01-31T23:44:13.292605+00:00"
+}

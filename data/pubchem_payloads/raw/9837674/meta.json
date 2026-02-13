@@ -1,0 +1,34 @@
+{
+  "cid": 9837674,
+  "hazard_key": "Cu(NO3)2·3H2O",
+  "display_name": "Koppar(II)nitrat (trihydrat)",
+  "captured_at": "2026-01-31T16:43:11.208942+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/9837674",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/9837674/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/9837674/linkout.json",
+      "sha256": "0d4a3e94f80bc5312bc6c816951f5d19242c7d80f0db30be62d6ad3af318cf34"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/9837674/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 56689,
+      "file": "data/pubchem_payloads/raw/9837674/lcss.json",
+      "sha256": "74c91e1ce9cb7b473ff2eaef0a6fe12cde4725aaa5c975a773a39d3da45f2479"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/9837674/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 46401,
+      "file": "data/pubchem_payloads/raw/9837674/safety.json",
+      "sha256": "8dd1beee69b01e2745ad7f7df68017bc97f1128f8100fdc74a098cce68a1ea92"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/9837674.png"
+}

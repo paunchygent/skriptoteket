@@ -1,0 +1,34 @@
+{
+  "cid": 5360315,
+  "hazard_key": "MgCl2",
+  "display_name": "Magnesiumklorid",
+  "captured_at": "2026-01-31T16:56:34.376020+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5360315",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5360315/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/5360315/linkout.json",
+      "sha256": "37962e74b9ab06d5f2c866c14f1936d9ddb3e90d17d999d6782fe74fd1e9fb6b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5360315/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 111239,
+      "file": "data/pubchem_payloads/raw/5360315/lcss.json",
+      "sha256": "3b6156f27ed326209da8daf12b024f352960f52252790172a7fa09a43250cfd2"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5360315/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 87231,
+      "file": "data/pubchem_payloads/raw/5360315/safety.json",
+      "sha256": "07cdc4a7a707107316b5480ac393fa0e1a97747719de9c61f1c78a9c0942985c"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5360315.png"
+}

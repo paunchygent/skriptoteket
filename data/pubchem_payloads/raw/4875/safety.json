@@ -1,0 +1,2067 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 4875,
+    "RecordTitle": "Potassium Iodide",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 13% (94  of 721) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302 (16.2%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H315 (28.4%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 38,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H317 (20.8%): May cause an allergic skin reaction [Warning Sensitization, Skin]",
+                          "Markup": [
+                            {
+                              "Start": 51,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319 (30.1%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H334 (11.7%): May cause allergy or asthma symptoms or breathing difficulties if inhaled [Danger Sensitization, respiratory]",
+                          "Markup": [
+                            {
+                              "Start": 89,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372 (43.6%): Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 78,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H373 (11.4%): May causes damage to organs through prolonged or repeated exposure [Warning Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H411 (14%): Toxic to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P233, P260, P261, P264, P264+P265, P270, P271, P272, P273, P280, P284, P301+P317, P302+P352, P304+P340, P305+P351+P338, P319, P321, P330, P332+P317, P333+P317, P337+P317, P342+P316, P362+P364, P391, P403, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P233"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P272"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P284"
+                            },
+                            {
+                              "Start": 71,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 82,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 93,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 104,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 120,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 126,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 132,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 138,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 149,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P333+P317"
+                            },
+                            {
+                              "Start": 160,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 171,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P342+P316"
+                            },
+                            {
+                              "Start": 182,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 193,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 199,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403"
+                            },
+                            {
+                              "Start": 209,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 721 reports by companies from 53 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 178,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 94 of 721 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 79,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 51 notifications provided by 627 of 721 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 101,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116893"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H320: Causes eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 29,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360: May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H362: May cause harm to breast-fed children [Reproductive toxicity, effects on or via lactation]"
+                        },
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P263, P264, P264+P265, P270, P280, P305+P351+P338, P308+P316, P318, P319, P321, P337+P317, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P263"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 63,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 86,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 113,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H320: Causes eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 29,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361: Suspected of damaging fertility or the unborn child [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P264, P264+P265, P270, P280, P305+P351+P338, P318, P319, P337+P317, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 57,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 63,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 69,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 90,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 30,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 4 (16.2%)"
+                        },
+                        {
+                          "String": "Skin Irrit. 2 (28.4%)"
+                        },
+                        {
+                          "String": "Skin Sens. 1B (20.8%)"
+                        },
+                        {
+                          "String": "Eye Irrit. 2 (30.1%)"
+                        },
+                        {
+                          "String": "Resp. Sens. 1 (11.7%)"
+                        },
+                        {
+                          "String": "STOT RE 1 (43.6%)"
+                        },
+                        {
+                          "String": "STOT RE 2 (11.4%)"
+                        },
+                        {
+                          "String": "Aquatic Chronic 2 (14%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 45,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2B"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (thyroid, skin, systemic toxicity)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2B"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 1B, Additional category: Effects on or via lactation"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (thyroid)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (skin, thyroid, systemic toxicity)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May irritate eyes or open cuts. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Reference": [
+                      "Quick CPC - Forsberg K, Mansdorf SZ. Quick Selection Guide to Chemical Protective Clothing, 5th Ed. Hoboken, NJ: Wiley-Interscience, 2007."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Quick CPC - Forsberg K, Mansdorf SZ. Quick Selection Guide to Chemical Protective Clothing, 5th Ed. Hoboken, NJ: Wiley-Interscience, 2007.",
+                        "Matched": {
+                          "PCLID": 900175938,
+                          "Citation": "Quick CPC - Forsberg K, Mansdorf SZ. Quick Selection Guide to Chemical Protective Clothing, 5th Ed. Hoboken, NJ: Wiley-Interscience, 2007."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A skin and eye irritant; [CAMEO] Emergency treatment: Iodides; After ingestion, hypersensitivity reactions, e.g., angioedema and urticaria, may occur; Chronic ingestion may cause various skin diseases, goiter, hypothyroidism, and congenital thyroid effects; [HSDB] May cause sensitization by skin contact; [Quick CPC] See Iodine for the TLV of Iodides.",
+                          "Markup": [
+                            {
+                              "Start": 322,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Flush all affected areas with water. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational exposure or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal, aquatic, and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 399,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Thomson/Micromedex. Drug Information for the Health Care Professional. Volume 1,  Greenwood Village, CO. 2006."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Thomson/Micromedex. Drug Information for the Health Care Professional. Volume 1,  Greenwood Village, CO. 2006.",
+                        "Matched": {
+                          "PCLID": 900051234,
+                          "Citation": "Thomson/Micromedex. Drug Information for the Health Care Professional. Volume 1,  Greenwood Village, CO. 2006."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store below 40 °C (104 °F), preferably between 15 and 30 °C (59 and 86 °F), unless otherwise specified by manufacturer. Store in a tight container."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.01 [ppm], inhalable fraction and vapor (iodides)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(a); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(a); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900063668,
+                          "Citation": "40 CFR 180.940(a); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food.  (a) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-contact surfaces in public eating places, dairy-processing equipment, and food-processing equipment and utensils.  Potassium iodide is included on this list. Limit: When ready for use, the total end-use concentration of all iodide-producing chemicals in the solution is not to exceed 25 ppm of titratable iodine.",
+                          "Markup": [
+                            {
+                              "Start": 642,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 751,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 832,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(b); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(b); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900111303,
+                          "Citation": "40 CFR 180.940(b); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (b) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Dairy processing equipment, and food-processing equipment and utensils. Potassium iodide is included on this list. Limit: When ready for use, the total end-use concentration of all iodide-producing chemicals in the solution is not to exceed 25 ppm of titratable iodine.",
+                          "Markup": [
+                            {
+                              "Start": 597,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 706,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 787,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(c); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(c); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900008830,
+                          "Citation": "40 CFR 180.940(c); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (c) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-processing equipment and utensils. Potassium iodide is included on this list. Limit: When ready for use, the total end-use concentration of all iodide-producing chemicals in the solution is not to exceed 25 ppm of titratable iodine.",
+                          "Markup": [
+                            {
+                              "Start": 565,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 674,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 755,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Goggles or face shield. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Water soluble."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Salts, Basic"
+                        },
+                        {
+                          "String": "Reducing Agents, Weak"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potassium iodide is a weak reducing agent, and may react with strong or weak oxidizing agents.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Bromine trifluoride rapidly attacks potassium iodide [Mellor 2, Supp. 1:164, 165. 1956].",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Bromine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24594"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "National Fire Protection Association. Fire Protection Guide on Hazardous Materials. 7th ed. Boston, Mass.: National Fire Protection Association, 1978., p. 491M-189"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Fire Protection Association. Fire Protection Guide on Hazardous Materials. 7th ed. Boston, Mass.: National Fire Protection Association, 1978., p. 491M-189",
+                        "Matched": {
+                          "PCLID": 900136429,
+                          "Citation": "National Fire Protection Association. Fire Protection Guide on Hazardous Materials. 7th ed. Boston, Mass.: National Fire Protection Association, 1978., p. 491M-189"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A sample of fluorine perchlorate exploded on contact with a potassium iodide solution.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/fluorine%20perchlorate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-13022374"
+                            },
+                            {
+                              "Start": 60,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 801"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 801",
+                        "Matched": {
+                          "PCLID": 900004255,
+                          "Citation": "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 801"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatibilities: mercurous chloride in presence of an excess of potassium iodide produces metallic mercury & mercuric iodide, the latter forming the soluble double salt, potassium mercuric iodide.",
+                          "Markup": [
+                            {
+                              "Start": 19,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/mercurous%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24182"
+                            },
+                            {
+                              "Start": 66,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 101,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Mercury",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Mercury"
+                            },
+                            {
+                              "Start": 111,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/mercuric%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24485"
+                            },
+                            {
+                              "Start": 172,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20mercuric%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24542"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Potassium iodide (KI)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-4875"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "EFSA Legal Basis",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Commission Regulation (EU) No 188/2011",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 38,
+                          "URL": "https://doi.org/doi:10.2903/j.efsa.2013.2923"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Status Regulation (EC)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "05/751/EC, Reg. (EU) No 116/2014"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 20-02-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/13207",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/13207"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Active Update: 20-12-2022 https://echa.europa.eu/registration-dossier/-/registered-dossier/5883",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 69,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/5883"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Active Update: 13-10-2016 https://echa.europa.eu/registration-dossier/-/registered-dossier/18150",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/18150"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 44,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Potassium iodide: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-4875"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(ME) MAINE 340 ug/L /Iodide ion/",
+                          "Markup": [
+                            {
+                              "Start": 21,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iodide%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-30165"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(a); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(a); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900063668,
+                          "Citation": "40 CFR 180.940(a); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food.  (a) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-contact surfaces in public eating places, dairy-processing equipment, and food-processing equipment and utensils.  Potassium iodide is included on this list. Limit: When ready for use, the total end-use concentration of all iodide-producing chemicals in the solution is not to exceed 25 ppm of titratable iodine.",
+                          "Markup": [
+                            {
+                              "Start": 642,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 751,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 832,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(b); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(b); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900111303,
+                          "Citation": "40 CFR 180.940(b); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (b) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Dairy processing equipment, and food-processing equipment and utensils. Potassium iodide is included on this list. Limit: When ready for use, the total end-use concentration of all iodide-producing chemicals in the solution is not to exceed 25 ppm of titratable iodine.",
+                          "Markup": [
+                            {
+                              "Start": 597,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 706,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 787,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(c); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(c); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900008830,
+                          "Citation": "40 CFR 180.940(c); U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (c) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-processing equipment and utensils. Potassium iodide is included on this list. Limit: When ready for use, the total end-use concentration of all iodide-producing chemicals in the solution is not to exceed 25 ppm of titratable iodine.",
+                          "Markup": [
+                            {
+                              "Start": 565,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 674,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 755,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 259"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 259",
+                        "Matched": {
+                          "PCLID": 900072112,
+                          "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 259"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "As the federal pesticide law FIFRA directs, EPA is conducting a comprehensive review of older pesticides to consider their health and environmental effects and make decisions about their future use. Under this pesticide reregistration program, EPA examines health and safety data for pesticide active ingredients initially registered before November 1, 1984, and determines whether they are eligible for reregistration. In addition, all pesticides must meet the new safety standard of the Food Quality Protection Act of 1996. Pesticides for which EPA had not issued Registration Standards prior to the effective date of FIFRA '88 were divided into three lists based upon their potential for human exposure and other factors, with List B containing pesticides of greater concern and List D pesticides of less concern. Potassium Iodide is found on List C. Case No: 3080; Pesticide type: fungicide, herbicide, antimicrobial; Case Status: OPP is reviewing data from the pesticide's producers regarding its human health and/or environmental effects, or OPP is determining the pesticide's eligibility for reregistration and developing the RED document.; Active ingredient (AI): potassium iodide;  AI Status: The producers of the pesticide have made commitments to conduct the studies and pay the fees required for reregistration, and are meeting those commitments in a timely manner.",
+                          "Markup": [
+                            {
+                              "Start": 817,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20Iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 1172,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "DHHS/FDA; Electronic Orange Book-Approved Drug Products with Therapeutic Equivalence  Evaluations. Available from, as of March 3, 2006: https://www.fda.gov/cder/ob/"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "DHHS/FDA; Electronic Orange Book-Approved Drug Products with Therapeutic Equivalence  Evaluations. Available from, as of March 3, 2006: https://www.fda.gov/cder/ob/",
+                        "Matched": {
+                          "PCLID": 906283214,
+                          "Citation": "DHHS/FDA; Electronic Orange Book-Approved Drug Products with Therapeutic Equivalence  Evaluations. Available from, as of March 3, 2006: https://www.fda.gov/cder/ob/"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The Approved Drug Products with Therapeutic Equivalence  Evaluations List identifies currently marketed over-the-counter drug products, incl potassium iodide, approved on the basis of safety and  effectiveness by FDA under sections 505 of the Federal Food, Drug, and Cosmetic Act.",
+                          "Markup": [
+                            {
+                              "Start": 141,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 172.375; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 172.375; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900075313,
+                          "Citation": "21 CFR 172.375; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potassium iodide is a food additive permitted for direct addition to food for human consumption, as long as 1) the quantity of the substance added to food does not exceed the amount reasonably required to accomplish its intended physical, nutritive, or other technical effect in food, and 2) any substance intended for use in or on food is of appropriate food grade and is prepared and handled as a food ingredient.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 184.1634; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 184.1634; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900040335,
+                          "Citation": "21 CFR 184.1634; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Substance added directly to human food affirmed as generally recognized as safe (GRAS)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 582.5634; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 582.5634; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900043213,
+                          "Citation": "21 CFR 582.5634; U.S. National Archives and Records Administration's Electronic Code of  Federal Regulations. Available from, as of March 3, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potassium iodide used as a nutrient and/or dietary supplement in animal drugs, feeds, and related products is generally recognized as safe when used in table salt as a source of dietary iodine in accordance with good manufacturing or feeding practice.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            },
+                            {
+                              "Start": 152,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/table%20salt",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            },
+                            {
+                              "Start": 186,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more FDA Requirements (Complete) data for POTASSIUM IODIDE (6 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 91,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5040#section=FDA-Requirements-(Complete)"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/POTASSIUM%20IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Potassium iodide (KI): Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-4875"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Potassium iodide (KI): Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20iodide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-4875"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "FDA, Center for Drug Evaluation and Research; Guidance Document:  Potassium Iodide as a Thyroid Blocking Agent in Radiation Emergencies; December 2001. Available at http://www.fda.gov/cder/guidance/4825fnl.htm as of March 12, 2006",
+                          "Markup": [
+                            {
+                              "Start": 66,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20Iodide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4875"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11215",
+        "Name": "Potassium iodide (KI)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39369239
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11215",
+        "Name": "Potassium iodide (KI)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39401032
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "ed0c945031fa92af7313e9f3df15e87f",
+        "Name": "Potassium iodide",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49736831
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "EU Pesticides Database",
+        "SourceID": "1201",
+        "Name": "Potassium iodide",
+        "Description": "EU Pesticides Database contains pesticides and related chemical information, approval status, and the maximum residue levels.",
+        "URL": "https://ec.europa.eu/food/plant/pesticides/eu-pesticides-database/start/screen/active-substances/details/1201",
+        "ANID": 2136142
+      },
+      {
+        "ReferenceNumber": 31,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-659-4",
+        "Name": "Potassium iodide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.782",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981341
+      },
+      {
+        "ReferenceNumber": 44,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "4c2e564e0639bdcf1a479215be0506dc",
+        "Name": "Potassium iodide",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162090
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "9014",
+        "Name": "POTASSIUM IODIDE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/9014",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 760485
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "116893",
+        "Name": "Potassium iodide (EC: 231-659-4)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116893",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1885403,
+        "SortOrder": 3721
+      },
+      {
+        "ReferenceNumber": 46,
+        "SourceName": "NITE-CMC",
+        "SourceID": "H27_B_019_C_040B_P",
+        "Name": "Potassium iodide - FY2015 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/15-mhlw-0040e.html",
+        "ANID": 39312843,
+        "SortOrder": 2015
+      },
+      {
+        "ReferenceNumber": 45,
+        "SourceName": "NITE-CMC",
+        "SourceID": "22A4012",
+        "Name": "Potassium iodide - FY2010 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/10-mhlw-0012e.html",
+        "ANID": 8787867,
+        "SortOrder": 2010
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2028",
+        "Name": "Potassium iodide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2028",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277476
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5040",
+        "Name": "POTASSIUM IODIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5040",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3130
+      }
+    ]
+  }
+}

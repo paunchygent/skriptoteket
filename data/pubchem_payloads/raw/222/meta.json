@@ -1,0 +1,34 @@
+{
+  "cid": 222,
+  "hazard_key": "NH3",
+  "display_name": "Ammoniak (NH3)",
+  "captured_at": "2026-01-31T14:09:16.369238+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/222",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/222/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1823,
+      "file": "data/pubchem_payloads/raw/222/linkout.json",
+      "sha256": "0451f91887d6c62f707fccb16e3cd0723ce89b7dcee2c238fa026ceba40264fd"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/222/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 664605,
+      "file": "data/pubchem_payloads/raw/222/lcss.json",
+      "sha256": "727574ce10a7c13560780ba0b406649dfa9ba48d2946aabd527084ab16ecfa76"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/222/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 628277,
+      "file": "data/pubchem_payloads/raw/222/safety.json",
+      "sha256": "fe29c59d0683bff734c5720d8b7c7c88e4d4c0493a88b146076ad33ef9776c3f"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/222.png"
+}

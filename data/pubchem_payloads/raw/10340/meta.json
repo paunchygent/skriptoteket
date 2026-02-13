@@ -1,0 +1,34 @@
+{
+  "cid": 10340,
+  "hazard_key": "Na2CO3",
+  "display_name": "Natriumkarbonat",
+  "captured_at": "2026-01-31T16:57:25.390889+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/10340",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/10340/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1840,
+      "file": "data/pubchem_payloads/raw/10340/linkout.json",
+      "sha256": "5b05ec31d2103efe59cd375785272b585926b04a47e58f19b03bd1520f85ea96"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/10340/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 211971,
+      "file": "data/pubchem_payloads/raw/10340/lcss.json",
+      "sha256": "282c96b1228b8bcaa5595cf1e164a19ea58fdcf3936993c5977d8c5f1a94760c"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/10340/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 157199,
+      "file": "data/pubchem_payloads/raw/10340/safety.json",
+      "sha256": "b1b472ce615b2cfeb2b62e99778f8a78ab6645ee2df43251cb98cda086ac882e"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/10340.png"
+}

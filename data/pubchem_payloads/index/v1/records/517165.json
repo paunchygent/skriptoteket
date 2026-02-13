@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "cid": 517165,
+  "captured_at": "2026-01-31T14:09:22.897655+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/517165",
+    "lcss_sha256": "c5f42028d22735c84f6d95bc0f35054209a167400d076f7ba4f953eaa1a4fdbe",
+    "linkout_sha256": "786c8b2bc5a183310f4d566df732455bd83187960097cf435fb3cb3575ccf1aa",
+    "meta_sha256": "60d46ac7bbb897fb5f9d131c657742dc3d77339b9a9baab807f98f1af78e430c"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/0085.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:02.948969+00:00"
+}

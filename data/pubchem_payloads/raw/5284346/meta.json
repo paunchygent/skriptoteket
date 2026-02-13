@@ -1,0 +1,34 @@
+{
+  "cid": 5284346,
+  "hazard_key": "BaCl2·2H2O",
+  "display_name": "Bariumklorid (dihydrat)",
+  "captured_at": "2026-01-31T14:17:33.681124+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5284346",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5284346/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/5284346/linkout.json",
+      "sha256": "3e4fae667599da865f7c615ed7536d3d938373914020aea5aca0f51f1a6e44b0"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5284346/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 110225,
+      "file": "data/pubchem_payloads/raw/5284346/lcss.json",
+      "sha256": "0467340388850e122fabb19b69622baf6a9f7f5a4120478b6740bb09be959d3f"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5284346/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 91018,
+      "file": "data/pubchem_payloads/raw/5284346/safety.json",
+      "sha256": "85d95f6e65156348efa4f3e16949765cbfa38fbbe60251e13f00da366c1aca8e"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5284346.png"
+}

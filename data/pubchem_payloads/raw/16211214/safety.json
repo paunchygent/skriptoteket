@@ -1,0 +1,3421 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 16211214,
+    "RecordTitle": "Borax (B4Na2O7.10H2O)",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 39,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 39,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 39,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H360FD: May damage fertility; May damage the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 39,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P280, P318, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for < 0.1% (1  of 2865) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 86,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319 (12.6%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360 (93.2%): May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 56,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P264+P265, P280, P305+P351+P338, P318, P337+P317, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 39,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 45,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 56,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 66,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 2865 reports by companies from 31 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 179,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 1 of 2865 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 79,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 30 notifications provided by 2864 of 2865 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 103,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/113652"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H315: Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 37,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360: May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H413: May cause long lasting harmful effects to aquatic life [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P261, P264, P264+P265, P270, P271, P273, P280, P302+P352, P304+P340, P305+P351+P338, P308+P316, P318, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 70,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 81,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 97,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 108,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 114,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 120,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 126,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 137,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 148,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 159,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 170,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 180,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H303: May be harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 35,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H315: Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 37,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361: Suspected of damaging fertility or the unborn child [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H373: May causes damage to organs through prolonged or repeated exposure [Warning Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 74,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P264, P264+P265, P270, P280, P301+P317, P302+P352, P305+P351+P338, P308+P316, P318, P319, P321, P332+P317, P337+P317, P362+P364, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 63,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 79,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 90,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 102,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 108,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 119,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 141,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 151,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H360FD: May damage fertility; May damage the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P280, P318, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 20,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye Irrit. 2 (12.6%)"
+                        },
+                        {
+                          "String": "Repr. 1B (93.2%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Reproductive toxicity - category 1B"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity (Oral) - Category 5"
+                        },
+                        {
+                          "String": "Skin corrosion/irritation - Category 2"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2A-2B"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (kidney, nervous system, respiratory system)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (nervous system, kidney, respiratory system), \u000ACategory 2 (testis)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin corrosion/irritation - Category 2"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 1B"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (central nervous system, gastrointestinal tract),  \u000ACategory 3 (respiratory tract irritation)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (respiratory organs, nervous system)"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Long-term) - Category 4"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 39,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Repr. 1B"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EPA Safer Chemical",
+                "Description": "EPA labels products so that consumers can easily choose ones that are safer for people and the environment. When consumers see the Safer Choice label on a product, they can be confident that the ingredients have been through a rigorous EPA review. The label means that EPA scientists have evaluated every ingredient in the product to ensure it meets Safer Choice's stringent criteria. When people use Safer Choice products, they are protecting their families and the environment by making safer chemical choices.",
+                "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+                "Information": [
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "EPA Safer Chemical",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical: Borax"
+                        },
+                        {
+                          "String": " Yellow triangle - The chemical has met Safer Choice Criteria for its functional ingredient-class, but has some hazard profile issues. Specifically, a chemical with this code is not associated with a low level of hazard concern for all human health and environmental endpoints. (See Safer Choice Criteria). While it is a best-in-class chemical and among the safest available for a particular function, the function fulfilled by the chemical should be considered an area for safer chemistry innovation.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/epasafe/yellow.svg",
+                              "Type": "Icon",
+                              "Extra": "Yellow triangle"
+                            },
+                            {
+                              "Start": 282,
+                              "Length": 21,
+                              "URL": "https://www.epa.gov/saferchoice/standard#tab-2"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Reference": [
+                      "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.",
+                        "Matched": {
+                          "PCLID": 900176185,
+                          "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The basis for the TLV for inorganic borate compounds is irritation of the nose and respiratory tract. Studies of workers exposed to sodium borate dusts found no evidence of pulmonary function or reproductive impairment. [ACGIH] Repeated skin exposure may cause dermatitis; Toxic by ingestion with effects on the liver, kidneys, and CNS; [ICSC]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/borate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26574"
+                            },
+                            {
+                              "Start": 132,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20borate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-160998"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm",
+                        "Matched": {
+                          "PCLID": 906277018,
+                          "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists.  Documentation of Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices for 2001. Cincinnati, OH. 2001., p. 1"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists.  Documentation of Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices for 2001. Cincinnati, OH. 2001., p. 1",
+                        "Matched": {
+                          "PCLID": 906274318,
+                          "Citation": "American Conference of Governmental Industrial Hygienists.  Documentation of Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices for 2001. Cincinnati, OH. 2001., p. 1"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... Borax ... /is an irritant/ ... when in contact with mucous membranes of the eyes, nose and other sites in the respiratory tract and skin."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 380"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 380",
+                        "Matched": {
+                          "PCLID": 900070220,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 380"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... May produce irritation of the nasal mucous membranes, the respiratory tract, and eyes. /Boron compounds/",
+                          "Markup": [
+                            {
+                              "Start": 92,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Flammable Limits",
+                "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 48,
+                    "Name": "Flammability",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible Solid (an inherent fire retardant)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Explosive Limits and Potential",
+                "Description": "This section shows lower and upper explosive limits of this chemical and other information on its explosive potential.  Explosive limits specify the concentration range of a material in air which will burn or explode in the presence of an ignition source. There are two types of explosive limits: lower explosive limit (LEL) and upper explosive limit (UEL). The explosive limits are usually given as the percent by volume of the material in the air (e.g., 5%).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-209"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-209",
+                        "Matched": {
+                          "PCLID": 906295277,
+                          "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-209"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A mixture of hydrated borax and zirconium explodes when heated.",
+                          "Markup": [
+                            {
+                              "Start": 32,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zirconium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zirconium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "OSHA Standards",
+                "Description": "Occupational Safety and Health Administration (OSHA) standards are rules that describe the methods that employers must use to protect their employees from hazards. These standards limit the amount of hazardous chemicals workers can be exposed to, require the use of certain safe practices and equipment, and require employers to monitor hazards and keep records of workplace injuries and illnesses.",
+                "URL": "https://www.osha.gov/laws-regs",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997.",
+                        "Matched": {
+                          "PCLID": 900049544,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Vacated 1989 OSHA PEL TWA 10 mg/cu m is still enforced in some states. /Borates, tetra, sodium salts (decahydrate)/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "NIOSH Recommendations",
+                "Description": "The National Institute for Occupational Safety and Health (NIOSH) recommendations for chemical safety concerning this compound.",
+                "URL": "https://www.cdc.gov/niosh/index.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg",
+                        "Matched": {
+                          "PCLID": 900071263,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommended Exposure Limit: 10 Hour Time-Weighted Average: 5 mg/cu m."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 29,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse and then wash skin with water and soap.",
+                      "Markup": [
+                        {
+                          "Start": 30,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse with plenty of water (remove contact lenses if easily possible).",
+                      "Markup": [
+                        {
+                          "Start": 21,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth. Do NOT induce vomiting. Refer for medical attention ."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 48,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(General first aid procedures)",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 28,
+                              "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: Irrigate immediately  - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 124,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: Soap wash  - If this chemical contacts the skin, wash the contaminated skin with soap and water.",
+                          "Markup": [
+                            {
+                              "Start": 96,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Breathing: Respiratory support"
+                        },
+                        {
+                          "String": "Swallow: Medical attention immediately  - If this chemical has been swallowed, get medical attention immediately."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 29,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear self contained breathing apparatus for fire fighting if necessary."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use extinguishing measures that are appropriate to local circumstances and the surrounding environment."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting. Carefully collect remainder. Then store and dispose of according to local regulations."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use personal protective equipment. Avoid dust formation. Avoid breathing vapours, mist or gas. Ensure adequate ventilation. Evacuate personnel to safe areas. Avoid breathing dust."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Pick up and arrange disposal without creating dust. Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Prevent further leakage or spillage if safe to do so. Do not let product enter drains."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 411,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Wastewater from contaminant suppression, cleaning of protective clothing/equipment, or  contaminated sites should be contained and evaluated for subject chemical or decomposition  product concentrations. Concentrations shall be lower than applicable environmental  discharge or disposal criteria. Alternatively, pretreatment and/or discharge to a permitted  wastewater treatment facility is acceptable only after review by the governing authority and  assurance that \"pass through\" violations will not occur. Due consideration shall be given to  remediation worker exposure (inhalation, dermal and ingestion) as well as fate during  treatment, transfer and disposal. If it is not practicable to manage the chemical in this  fashion, it must be evaluated in accordance with EPA 40 CFR Part 261, specifically Subpart  B, in order to determine the appropriate local, state and federal requirements for disposal."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Product: Offer surplus and non-recyclable solutions to a licensed disposal company. Contact a licensed professional waste disposal service to dispose of this material. Dissolve or mix the material with a combustible solvent and burn in a chemical incinerator equipped with an afterburner and scrubber."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Contaminated packaging: Dispose of as unused product."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Contaminated protective clothing should be segregated in such a manner so that there is no direct personal contact by personnel who handle, dispose, or clean the clothing. Quality assurance to ascertain the completeness of the cleaning procedures should be implemented before the decontaminated protective clothing is returned for reuse by the workers. Contaminated clothing should not be taken home at end of shift, but should remain at employee's place of work for cleaning."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Weed Science Society of America. Herbicide Handbook. 5th ed. Champaign, Illinois: Weed Science Society of America, 1983., p. 64"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Weed Science Society of America. Herbicide Handbook. 5th ed. Champaign, Illinois: Weed Science Society of America, 1983., p. 64",
+                        "Matched": {
+                          "PCLID": 900049411,
+                          "Citation": "Weed Science Society of America. Herbicide Handbook. 5th ed. Champaign, Illinois: Weed Science Society of America, 1983., p. 64"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep out of reach of children ... Wash thoroughly after handling."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The scientific literature for the use of contact lenses by industrial workers is inconsistent. The benefits or detrimental effects of wearing contact lenses depend not only upon the substance, but also on factors including the form of the substance, characteristics and duration of the exposure, the uses of other eye protection equipment, and the hygiene of the lenses. However, there may be individual substances whose irritating or corrosive properties are such that the wearing of contact lenses would be harmful to the eye. In those specific cases, contact lenses should not be worn. In any event, the usual eye protection equipment should be worn even when contact lenses are in place."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg",
+                        "Matched": {
+                          "PCLID": 900071263,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The worker should wash daily at the end of each work shift, and prior to eating, drinking, smoking, etc."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Preventive Measures (Complete) data for BORAX (7 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 83,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/328#section=Preventive-Measures-(Complete)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Well closed. Dry."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of May 18, 2005: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of May 18, 2005: https://www.inchem.org/documents/icsc/icsc/eics0567.htm",
+                        "Matched": {
+                          "PCLID": 900129361,
+                          "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of May 18, 2005: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Separated from acids."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep container tightly closed in a dry and well-ventilated place."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 26,
+                "Name": "Maximum Allowable Concentration (MAK)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.75 [mg/m3], inhalable fraction[German Research Foundation (DFG)]"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Recommended Exposure Limit (REL)",
+                "Description": "The recommended exposure limit (REL) is the maximum amount or concentration of a chemical that a worker may be exposed to.  The RELs are guidelines established and recommended by the NIOSH (National Institute for Occupational Safety and Health).  The RELs can be given in three ways. [1] Time-weighted average (REL-TWA): average exposure based on up to10h/day, 40h/week work schedule. [2] Short-term exposure limit (REL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (REL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#exposure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 37,
+                    "Name": "REL-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1 mg/m³"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 48,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 5 mg/m3",
+                          "Markup": [
+                            {
+                              "Start": 10,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 48,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "none See Appendix G",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxg.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 48,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "N.D."
+                        },
+                        {
+                          "String": "See: IDLH INDEX ",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 11,
+                              "URL": "https://www.cdc.gov/niosh/idlh/intridl4.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2.0 [mg/m3], inhalable fraction"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "TLV-STEL",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "6.0 [mg/m3], inhalable fraction"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. ACGIH, Cincinnati, OH 2014, p. 14"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. ACGIH, Cincinnati, OH 2014, p. 14",
+                        "Matched": {
+                          "PCLID": 906292599,
+                          "Citation": "American Conference of Governmental Industrial Hygienists. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. ACGIH, Cincinnati, OH 2014, p. 14"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "8 hr Time Weighted Avg (TWA): 2 mg/cu m, inhalable fraction; 15 min Short Term Exposure Limit (STEL): 6 mg/cu m, inhalable fraction. /Borate compounds, Inorganic/",
+                          "Markup": [
+                            {
+                              "Start": 134,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Borate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26574"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. ACGIH, Cincinnati, OH 2014, p. 14"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. ACGIH, Cincinnati, OH 2014, p. 14",
+                        "Matched": {
+                          "PCLID": 906292599,
+                          "Citation": "American Conference of Governmental Industrial Hygienists. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. ACGIH, Cincinnati, OH 2014, p. 14"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A4; Not classifiable as a human carcinogen. /Borate compounds, Inorganic/",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Borate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26574"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(inhalable fraction): 2 mg/m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Name": "TLV-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2 mg/m³ (inhalable particulate matter) [2004]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Name": "TLV-STEL (Short Term Exposure Limit)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "6 mg/m³ (inhalable particulate matter) [2004]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Other Standards Regulations and Guidelines",
+                "Description": "Safety and hazard standards, regulations, and guidelines for this this compound that is not shown in other sections.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists. Documentation of the Threshold Limit Values and Biological Exposure Indices. 5th ed. Cincinnati, OH: American Conference of Governmental Industrial Hygienists, 1986., p. 60"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists. Documentation of the Threshold Limit Values and Biological Exposure Indices. 5th ed. Cincinnati, OH: American Conference of Governmental Industrial Hygienists, 1986., p. 60",
+                        "Matched": {
+                          "PCLID": 900068738,
+                          "Citation": "American Conference of Governmental Industrial Hygienists. Documentation of the Threshold Limit Values and Biological Exposure Indices. 5th ed. Cincinnati, OH: American Conference of Governmental Industrial Hygienists, 1986., p. 60"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Both Belgium (1974) and the Netherlands (1976) have adopted the values of 5 mg/cu m for decahydrate ..."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 135"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 135",
+                        "Matched": {
+                          "PCLID": 906287281,
+                          "Citation": "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 135"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Limit for livestock is 5 ug/ml boron in water. /Boron/",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            },
+                            {
+                              "Start": 40,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evaporation at 20Â °C is negligible; a harmful concentration of airborne particles can, however, be reached quickly , especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is irritating to the eyes, skin and respiratory tract. The substance may cause effects on the central nervous system and kidneys. This may result in impaired functions."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Repeated or prolonged contact with skin may cause dermatitis. The substance may have effects on the testes. Animal tests show that this substance possibly causes toxicity to human reproduction or development."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.1121 (USEPA); ; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.1121 (USEPA); ; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse",
+                        "Matched": {
+                          "PCLID": 900086595,
+                          "Citation": "40 CFR 180.1121 (USEPA); ; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "An exemption from the requirement of a tolerance is established for residues of the pesticidal chemical boric acid and its salts, borax (sodium borate decahydrate), disodium octaborate tetrahydrate, boric oxide (boric anhydride), sodium borate and sodium metaborate, in or on raw agricultural commodities when used as an active ingredient in insecticides, herbicides, or fungicides preharvest or postharvest in accordance with good agricultural practices.",
+                          "Markup": [
+                            {
+                              "Start": 104,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 137,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20borate%20decahydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211214"
+                            },
+                            {
+                              "Start": 165,
+                              "Length": 32,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/disodium%20octaborate%20tetrahydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-90478478"
+                            },
+                            {
+                              "Start": 212,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20anhydride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-11073337"
+                            },
+                            {
+                              "Start": 230,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20borate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-160998"
+                            },
+                            {
+                              "Start": 248,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20metaborate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-145326"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm",
+                        "Matched": {
+                          "PCLID": 906277018,
+                          "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/Workers should wear/ protective gloves. Local exhaust or breathing protection /are needed/."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm",
+                        "Matched": {
+                          "PCLID": 906277018,
+                          "Citation": "IPCS, CEC; International Chemical Safety Card on Borax. (April 1997). Available from, as of January 29, 2014: https://www.inchem.org/documents/icsc/icsc/eics0567.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear goggles or eye protection in combination with breathing protection if powder."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Provide appropriate exhaust ventilation at places where dust is formed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900090853,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Tetraborate Decahydrate. Product number: S9640, Version 4.6 (Revision Date 06/12/2014). Available from, as of August 25, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye/face protection: Safety glasses with side-shields conforming to EN166 Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Personal Protective Equipment (PPE) (Complete) data for BORAX (7 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 99,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/328#section=Personal-Protective-Equipment-(PPE)-(Complete)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Respirator Recommendations",
+                "Description": "This section provides a list of allowable respirators to be used for this chemical, according to the NIOSH's Respirator Selection Recommendations.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread",
+                "Information": [
+                  {
+                    "ReferenceNumber": 48,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PREVENT DISPERSION OF DUST! STRICT HYGIENE!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use local exhaust or breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves. Protective clothing."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety spectacles or eye protection in combination with breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg",
+                        "Matched": {
+                          "PCLID": 900071263,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. Department of Health & Human Services, Centers for Disease Control & Prevention. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2010-168 (2010). Available from:  https://www.cdc.gov/niosh/npg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zirconium, strong acids, metallic salts.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zirconium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zirconium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Reynolds, J.E.F., Prasad, A.B. (eds.) Martindale-The Extra Pharmacopoeia. 28th ed. London: The Pharmaceutical Press, 1982., p. 337"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Reynolds, J.E.F., Prasad, A.B. (eds.) Martindale-The Extra Pharmacopoeia. 28th ed. London: The Pharmaceutical Press, 1982., p. 337",
+                        "Matched": {
+                          "PCLID": 900116857,
+                          "Citation": "Reynolds, J.E.F., Prasad, A.B. (eds.) Martindale-The Extra Pharmacopoeia. 28th ed. London: The Pharmaceutical Press, 1982., p. 337"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatible with alkaloidal salts, mercuric chloride, zinc sulfate, and other metallic salts. ... With gums and mineral acids.",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/mercuric%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24085"
+                            },
+                            {
+                              "Start": 55,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "EC Classification",
+                "Description": "European Commission (EC) classification for hazardous material.",
+                "URL": "https://ec.europa.eu/growth/sectors/chemicals/classification-labelling_en",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "R: 60-61; S: 53-45; Symbol: T"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Borax (B4Na2O7.10H2O)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Name": "California Safe Cosmetics Program (CSCP) Reportable Ingredient",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Hazard Traits - Reproductive Toxicity"
+                    },
+                    {
+                      "String": "Authoritative List - EC Annex VI CMRs - Cat. 1B"
+                    },
+                    {
+                      "String": "Report - if used as a fragrance or flavor ingredient"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sodium tetraborate, decahydrate: HSNO Approval: HSR002914 Approved with controls",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/HSNO",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-11389353"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Federal Drinking Water Guidelines",
+                "Description": "Federal drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 600 ug/L /Boron/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(CA) CALIFORNIA 1000 ug/L /Boron/",
+                          "Markup": [
+                            {
+                              "Start": 27,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(NH) NEW HAMPSHIRE 630 ug/L /Boron/",
+                          "Markup": [
+                            {
+                              "Start": 29,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(ME) MAINE 1,400 ug/L /Boron/",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(MN) MINNESOTA 1,000 ug/L /Boron/",
+                          "Markup": [
+                            {
+                              "Start": 27,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(WI) WISCONSIN 960 ug/L /Boron/",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Boron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Boron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.1121 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.1121 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse",
+                        "Matched": {
+                          "PCLID": 900119711,
+                          "Citation": "40 CFR 180.1121 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "An exemption from the requirement of a tolerance is established for residues of the pesticidal chemical boric acid and its salts, borax (sodium borate decahydrate), disodium octaborate tetrahydrate, boric oxide (boric anhydride), sodium borate and sodium metaborate, in or on raw agricultural commodities when used as an active ingredient in insecticides, herbicides, or fungicides preharvest or postharvest in accordance with good agricultural practices.",
+                          "Markup": [
+                            {
+                              "Start": 104,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 137,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20borate%20decahydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211214"
+                            },
+                            {
+                              "Start": 165,
+                              "Length": 32,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/disodium%20octaborate%20tetrahydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-90478478"
+                            },
+                            {
+                              "Start": 212,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20anhydride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-11073337"
+                            },
+                            {
+                              "Start": 230,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20borate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-160998"
+                            },
+                            {
+                              "Start": 248,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20metaborate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-145326"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Prevention, Pesticides and Toxic Substances; Report of the Food Quality Protection Act (FQPA) Tolerance Reassessment Eligibility Decision (TRED) for Boric Acid/Sodium Borate Salts p.11 (July 2006). Available from, as of February 21, 2014: https://www.epa.gov/pesticides/reregistration/status.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Prevention, Pesticides and Toxic Substances; Report of the Food Quality Protection Act (FQPA) Tolerance Reassessment Eligibility Decision (TRED) for Boric Acid/Sodium Borate Salts p.11 (July 2006). Available from, as of February 21, 2014: https://www.epa.gov/pesticides/reregistration/status.htm",
+                        "Matched": {
+                          "PCLID": 900043731,
+                          "Citation": "USEPA/Office of Prevention, Pesticides and Toxic Substances; Report of the Food Quality Protection Act (FQPA) Tolerance Reassessment Eligibility Decision (TRED) for Boric Acid/Sodium Borate Salts p.11 (July 2006). Available from, as of February 21, 2014: https://www.epa.gov/pesticides/reregistration/status.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The Agency has reassessed the current exemptions from the requirement for tolerances from boric acid/sodium borate salts (see Table 6 for tolerance exemptions). As a result of this assessment, the Agency determined that the active tolerances exemptions should be maintained and are considered reassessed as safe under section 408(q) of the FFDCA. It should be noted however that the higher application rates for the swimming pool uses resulted in residential post-application scenarios which exceed the Agency's LOC. The high rates for these pool and spa uses must be deleted from the end-use product labels. Registrants have agreed to amend their labels by removing the higher application rates to Agency acceptable levels. Taking into consideration the available information on all uses; including the inert ingredient uses, of boric acid, sodium metaborate, and sodium tetraborate, there is a reasonable certainty that no harm to any population subgroup will result from aggregate exposure when considering dietary exposure and all other remaining non-occupational sources of pesticide exposure for which there is reliable information. Therefore, the three exemptions from the requirement of a tolerance established for residues of boric acid, sodium metraborate, and sodium tetraborate in/on raw agricultural commodities under 40 CFR 180.920 and the exemptions for tolerances established for the boric acid/sodium borate salts under 40 CFR section180.1121 are considered reassessed as safe under section 408(q) of the FFDCA.",
+                          "Markup": [
+                            {
+                              "Start": 90,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 830,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 842,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20metaborate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-145326"
+                            },
+                            {
+                              "Start": 865,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20tetraborate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10219853"
+                            },
+                            {
+                              "Start": 1235,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 1247,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sodium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Sodium"
+                            },
+                            {
+                              "Start": 1271,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20tetraborate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10219853"
+                            },
+                            {
+                              "Start": 1400,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Prevention, Pesticides and Toxic Substances; Reregistration Eligibility Decision Document - Boric Acid and its Sodium Salts p.34 (September 1993). Available from, as of February 21, 2014: https://www.epa.gov/pesticides/reregistration/status.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Prevention, Pesticides and Toxic Substances; Reregistration Eligibility Decision Document - Boric Acid and its Sodium Salts p.34 (September 1993). Available from, as of February 21, 2014: https://www.epa.gov/pesticides/reregistration/status.htm",
+                        "Matched": {
+                          "PCLID": 900052109,
+                          "Citation": "USEPA/Office of Prevention, Pesticides and Toxic Substances; Reregistration Eligibility Decision Document - Boric Acid and its Sodium Salts p.34 (September 1993). Available from, as of February 21, 2014: https://www.epa.gov/pesticides/reregistration/status.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Based on the reviews of the generic data for the active ingredients of boric acid and its sodium salts, the Agency has sufficient information on the health effects of boric acid and its sodium salts and their potential for causing adverse effects in fish and wildlife and the environment. Therefore, the Agency concludes that products containing boric acid and its sodium salts for all uses are eligible for reregistration. The Agency has determined that boric acid and its sodium salts, labeled and used as specified in the RED document, will not pose unreasonable risks or adverse effects to humans or the environment.",
+                          "Markup": [
+                            {
+                              "Start": 71,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 167,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 346,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            },
+                            {
+                              "Start": 455,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 90"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 90",
+                        "Matched": {
+                          "PCLID": 900076365,
+                          "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 90"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "As the federal pesticide law FIFRA directs, EPA is conducting a comprehensive review of older pesticides to consider their health and environmental effects and make decisions about their continued use. Under this pesticide reregistration program, EPA examines newer health and safety data for pesticide active ingredients initially registered before November 1, 1984, and determines whether the use of the pesticide does not pose unreasonable risk in accordance to newer safety standards, such as those described in the Food Quality Protection Act of 1996. Borax is found on List A, which contains most pesticides that are used on foods and, hence, have a high potential for human exposure. List A consists of the 194 chemical cases (or 350 individual active ingredients) for which EPA issued registration standards prior to FIFRA '88. Case No: 0024; Pesticide type: insecticide, fungicide herbicide; Registration Standard Date: 11/01/85; Case Status: RED Approved 9/93; OPP has made a decision that some/all uses of the pesticide are eligible for reregistration, as reflected in a Reregistration Eligibility Decision (RED) document.; Active ingredient (AI): borax; Data Call-in (DCI) Date(s): 2/16/94; AI Status: OPP has completed a Reregistration Eligibility Decision (RED) for the case/AI."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 175.105 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 175.105 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse",
+                        "Matched": {
+                          "PCLID": 900100506,
+                          "Citation": "21 CFR 175.105 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Borax is an indirect food additive for use only as a component of adhesives."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 177.2800 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 177.2800 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse",
+                        "Matched": {
+                          "PCLID": 900140500,
+                          "Citation": "21 CFR 177.2800 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 21, 2014: https://www.ecfr.gov/cgi-bin/ECFR?page=browse"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Textiles & textile fibers may be safely used as articles or components of articles intended for use in producing, manufacturing, packing, processing, preparing, treating, packaging, transporting, or holding food, subject to the provisions of this section. Borax is included on this list for use as a preservative only."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Boric acid and precursors to boric acid: Environment tier II assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Boric%20acid",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-7628"
+                        },
+                        {
+                          "Start": 48,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/boric%20acid",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-7628"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Borax (Na2(B4O7).10H2O): Human health tier II assessment"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "USEPA/Office of Prevention, Pesticides and Toxic Substances; Reregistration Eligibility Decision Document - Boric Acid and its Sodium Salts (September 1993). The RED summarizes the risk assessment conclusions and  outlines any risk reduction measures necessary for the pesticide to continue to be registered in the U.S.[Available from, as of February 21, 2014: http://www.epa.gov/pesticides/reregistration/status.htm]",
+                          "Markup": [
+                            {
+                              "Start": 108,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Boric%20Acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "USEPA/Office of Prevention, Pesticides and Toxic Substances; Report of the Food Quality Protection Act (FQPA) Tolerance Reassessment Eligibility Decision (TRED) for Boric Acid/Sodium Borate Salts (July 2006). EPA issues a TRED for a pesticide that requires tolerance reassessment decisions, but does not require a reregistration eligibility decision at present because: the pesticide was initially registered after November 1, 1984, and by law is not included within the scope of the reregistration program; EPA completed a RED for the pesticide before FQPA was enacted on August 3, 1996; or the pesticide is not registered for use in the U.S. but tolerances are established that allow crops treated with the pesticide to be imported from other countries.[Available from, as of February 21, 2014: http://www.epa.gov/pesticides/reregistration/status.htm]",
+                          "Markup": [
+                            {
+                              "Start": 165,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Boric%20Acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "California Environmental Protection Agency/Department of Pesticide Regulation; Toxicology Data Review Summaries. Boric Acid and related inorganic Borates.[Available from, as of May 6, 2005: http://www.cdpr.ca.gov/docs/risk/toxsums/toxsumlist.htm]",
+                          "Markup": [
+                            {
+                              "Start": 113,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Boric%20Acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7628"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_6284",
+        "Name": "Borax (B4Na2O7.10H2O)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39352109
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_6284",
+        "Name": "Borax (B4Na2O7.10H2O)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39377444
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "California Safe Cosmetics Program (CSCP) Product Database",
+        "SourceID": "5fd358e149b46ead55d586643a5d6c76",
+        "Name": "Disodium tetraborate decahydrate",
+        "Description": "The California Safe Cosmetics Program (CSCP) is charged with implementing the California Safe Cosmetics Act (CSCA) and the Cosmetic Fragrance and Flavor Ingredient Right to Know Act (CFFIRKA). The goal of CSCP is to collect and share information on hazardous and potentially hazardous ingredients in cosmetics sold in California and to make this information available to the public.",
+        "URL": "https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/OHB/CSCP/Pages/About-CSCP.aspx",
+        "LicenseURL": "https://www.cdph.ca.gov/Pages/Conditions-of-Use.aspx",
+        "ANID": 39994948
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "9c237e2c1588946cf99f03086766e369",
+        "Name": "Sodium tetraborate, decahydrate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142459
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "EPA Safer Choice",
+        "SourceID": "1303-96-4",
+        "Name": "Borax",
+        "Description": "The Safer Choice of the U.S. Environmental Protection Agency (EPA) helps consumers, businesses, and purchasers find products that perform and are safer for human health and the environment.",
+        "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 2128141
+      },
+      {
+        "ReferenceNumber": 39,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "005-011-00-4[4]",
+        "Name": "disodium tetraborate decahydrate",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 27259873,
+        "SortOrder": 100000
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "113652",
+        "Name": "Disodium tetraborate decahydrate (EC: 603-411-9)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/113652",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1884451,
+        "SortOrder": 5865
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "NITE-CMC",
+        "SourceID": "H29_B_092",
+        "Name": "Sodium tetraborate decahydrate [Borax] - FY2017 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/17-mhlw-2092e.html",
+        "ANID": 39312529,
+        "SortOrder": 2017
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "NITE-CMC",
+        "SourceID": "198",
+        "Name": "Borax - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0195e.html",
+        "ANID": 8787676,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "1627",
+        "Name": "disodium tetraborate decahydrate",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=1627",
+        "ANID": 2280406,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz309",
+        "Name": "Sodium borate, decahydrate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/309",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17276128
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "328",
+        "Name": "BORAX",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/328",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 276
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0567",
+        "Name": "SODIUM BORATE, DECAHYDRATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0567",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260460
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "Occupational Safety and Health Administration (OSHA)",
+        "SourceID": "199",
+        "Name": "SODIUM TETRABORATE DECAHYDRATE",
+        "Description": "The OSHA Occupational Chemical Database contains over 800 entries with information such as physical properties, exposure guidelines, etc.",
+        "URL": "https://www.osha.gov/chemicaldata/199",
+        "LicenseNote": "Materials created by the federal government are generally part of the public domain and may be used, reproduced and distributed without permission. Therefore, content on this website which is in the public domain may be used without the prior permission of the U.S. Department of Labor (DOL). Warning: Some content - including both images and text - may be the copyrighted property of others and used by the DOL under a license.",
+        "LicenseURL": "https://www.dol.gov/general/aboutdol/copyright",
+        "ANID": 3410675
+      },
+      {
+        "ReferenceNumber": 48,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0058",
+        "Name": "Borates, tetra, sodium salts (Decahydrate)",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0058.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266357
+      }
+    ]
+  }
+}

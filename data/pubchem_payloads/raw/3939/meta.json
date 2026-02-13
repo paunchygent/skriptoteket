@@ -1,0 +1,34 @@
+{
+  "cid": 3939,
+  "hazard_key": "LiOH",
+  "display_name": "Litiumhydroxid",
+  "captured_at": "2026-01-31T16:56:01.841762+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/3939",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/3939/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 595,
+      "file": "data/pubchem_payloads/raw/3939/linkout.json",
+      "sha256": "ace1d6ea17f748f389c4e2953ec769750d3df681bea3871bed3a4fbd1f9e671f"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/3939/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 142633,
+      "file": "data/pubchem_payloads/raw/3939/lcss.json",
+      "sha256": "1d86998d12cc00ee81be234311540ab976ec27d043df8e466940d445a3de119d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/3939/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 142143,
+      "file": "data/pubchem_payloads/raw/3939/safety.json",
+      "sha256": "cfde44e34d33805933d319c9d58fa78a747cb625694f210424483cc816e8d58d"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/3939.png"
+}

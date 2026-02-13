@@ -1,0 +1,34 @@
+{
+  "cid": 16211566,
+  "hazard_key": "Fe(NO3)3·9H2O",
+  "display_name": "Järn(III)nitrat (nonahydrat)",
+  "captured_at": "2026-01-31T14:42:03.380008+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/16211566",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/16211566/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82,
+      "file": "data/pubchem_payloads/raw/16211566/linkout.json",
+      "sha256": "651d4f7d2adc79a8e7c4dc8f972b6ccf9093edde93ffbd5623d2a80340e68444"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16211566/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 42848,
+      "file": "data/pubchem_payloads/raw/16211566/lcss.json",
+      "sha256": "0836e34065d3144db9e8cfc5a76d432ae34125ccccc26579c04f1d3d5f52c742"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16211566/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 30563,
+      "file": "data/pubchem_payloads/raw/16211566/safety.json",
+      "sha256": "3e4c7dd747863042e358efae68d9d082a615592cf2b1d7fea780df24a887422c"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/16211566.png"
+}

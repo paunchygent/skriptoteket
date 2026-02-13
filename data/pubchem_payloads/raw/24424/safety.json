@@ -1,0 +1,3642 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24424,
+    "RecordTitle": "Zinc Sulfate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 50,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 50,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 50,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 50,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P264+P265, P270, P273, P280, P301+P317, P305+P354+P338, P317, P330, P391, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 68,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 84,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 0.1% (1  of 928) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302 (94.2%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318 (99.8%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H400 (96.6%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410 (94.2%): Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 68,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P264+P265, P270, P273, P280, P301+P317, P305+P354+P338, P317, P330, P391, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 68,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 84,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 928 reports by companies from 16 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 178,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 1 of 928 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 78,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 15 notifications provided by 927 of 928 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 101,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73013"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            },
+                            {
+                              "Start": 3,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361: Suspected of damaging fertility or the unborn child [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H371: May cause damage to organs [Warning Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P264, P264+P265, P270, P273, P280, P301+P317, P305+P354+P338, P308+P316, P317, P318, P319, P330, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 85,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 91,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 97,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 109,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 115,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 125,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 44,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 44,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 44,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 44,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P270, P301+P317, P330, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 33,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P264+P265, P270, P273, P280, P301+P317, P305+P354+P338, P317, P330, P391, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 68,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 84,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 4 (94.2%)"
+                        },
+                        {
+                          "String": "Eye Dam. 1 (99.8%)"
+                        },
+                        {
+                          "String": "Aquatic Acute 1 (96.6%)"
+                        },
+                        {
+                          "String": "Aquatic Chronic 1 (94.2%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity - category 4"
+                        },
+                        {
+                          "String": "Eye damage - category 1"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (acute) - category 1"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (chronic) - category 1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity (Oral) - Category 4"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 1"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 2 (respiratory system, gastrointestinal tract)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (gastrointestinal tract)"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Acute) - Category 1"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Long-term) - Category 1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 44,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity (Oral) - Category 4"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 1"
+                        },
+                        {
+                          "String": "Germ cell mutagenicity - Category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (kidney, liver, respiratory system)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (pancreas, adrenal gland, cardiovascular system)"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Acute) - Category 1"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Long-term) - Category 1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 50,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 4 *"
+                        },
+                        {
+                          "String": "Eye Dam. 1"
+                        },
+                        {
+                          "String": "Aquatic Acute 1"
+                        },
+                        {
+                          "String": "Aquatic Chronic 1"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation of dust causes irritation of nose and throat. Ingestion can cause irritation or corrosion of the alimentary tract. Contact with eyes or skin causes irritation. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                        },
+                        {
+                          "String": "Some may burn but none ignite readily. Containers may explode when heated. Some may be transported hot. For UN3508, Capacitor, asymmetric, be aware of possible short circuiting as this product is transported in a charged state. Polymeric beads, expandable (UN2211) may evolve flammable vapours. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 30,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Toxic by ingestion; Long-term therapeutic doses may inhibit the absorption of copper; Zinc sulfate was used as an emetic (dose of 1-2 grams in a glass of water) in the past, but it can cause kidney injury. The dust is irritating to the nose and throat. Subjects receiving 200 mg three times a day for 18 weeks showed no signs of kidney or liver injury. Ingestion of 28 grams was lethal in one poisoning case. Autopsy showed pancreatic hemorrhage and renal damage. [HSDB] See Zinc.",
+                          "Markup": [
+                            {
+                              "Start": 78,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 86,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            },
+                            {
+                              "Start": 154,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 475,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1143"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1143",
+                        "Matched": {
+                          "PCLID": 900122512,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1143"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Non-combustible"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Clayton, G. D. and F. E. Clayton (eds.). Patty's Industrial Hygiene and Toxicology: Volume 2A, 2B, 2C: Toxicology. 3rd ed. New York: John Wiley Sons, 1981-1982., p. 2039"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Clayton, G. D. and F. E. Clayton (eds.). Patty's Industrial Hygiene and Toxicology: Volume 2A, 2B, 2C: Toxicology. 3rd ed. New York: John Wiley Sons, 1981-1982., p. 2039",
+                        "Matched": {
+                          "PCLID": 900151060,
+                          "Citation": "Clayton, G. D. and F. E. Clayton (eds.). Patty's Industrial Hygiene and Toxicology: Volume 2A, 2B, 2C: Toxicology. 3rd ed. New York: John Wiley Sons, 1981-1982., p. 2039"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zinc salts of strong mineral acids are astringent, corrosive to skin ... /Zinc salts/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation of dust causes irritation of nose and throat. ... Contact with eyes or skin causes irritation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 33,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest. Seek medical attention if you feel unwell."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse skin with plenty of water or shower.",
+                      "Markup": [
+                        {
+                          "Start": 26,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse with plenty of water for several minutes (remove contact lenses if easily possible).",
+                      "Markup": [
+                        {
+                          "Start": 21,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth. Give one or two glasses of water to drink. Refer for medical attention .",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "INHALATION: move to fresh air."
+                        },
+                        {
+                          "String": "INGESTION: induce vomiting, followed by prompt and complete gastric lavage, cathartics, and demulcents."
+                        },
+                        {
+                          "String": "EYES or SKIN: flush with water. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 4,
+                "Reference": [
+                  "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                    "Matched": {
+                      "PCLID": 900163263,
+                      "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                    },
+                    {
+                      "String": "CAUTION: Fire involving Safety devices (UN3268) and Fire suppressant dispersing devices (UN3559) may have a delayed activation and a risk of hazardous projectiles. Extinguish the fire at a safe distance."
+                    },
+                    {
+                      "String": "SMALL FIRE: Dry chemical, CO2, water spray or regular foam.",
+                      "Markup": [
+                        {
+                          "Start": 31,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "LARGE FIRE: Water spray, fog or regular foam. Do not scatter spilled material with high-pressure water streams. If it can be done safely, move undamaged containers away from the area around the fire. Dike runoff from fire control for later disposal.",
+                      "Markup": [
+                        {
+                          "Start": 12,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 97,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "FIRE INVOLVING TANKS: Cool containers with flooding quantities of water until well after fire is out. Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank. ALWAYS stay away from tanks in direct contact with flames. (ERG, 2024)",
+                      "Markup": [
+                        {
+                          "Start": 66,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144",
+                        "Matched": {
+                          "PCLID": 900093616,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material on fire or involved in fire: Extinguish fire using agent suitable for type of surrounding fire. Material itself does not burn or burns with difficulty."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Isolation and Evacuation",
+                "Description": "Isolation and evacuation measures to take when a large amount of this chemical is accidentally released in an emergency.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                        },
+                        {
+                          "String": "IMMEDIATE PRECAUTIONARY MEASURE: Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "SPILL: Increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "FIRE: If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Do NOT let this chemical enter the environment. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144",
+                        "Matched": {
+                          "PCLID": 900093616,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Environmental considerations: Land spill: Dig a pit, pond, lagoon, or holding area to contain liquid or solid material. /SRP: If time permits, pits, ponds, lagoons, soak holes, or holding areas should be contained with a flexible impermeable membrane liner./ Cover solids with a plastic sheet to prevent dissolving in rain or fire fighting water.",
+                          "Markup": [
+                            {
+                              "Start": 340,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144",
+                        "Matched": {
+                          "PCLID": 900093616,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Environmental considerations: Water spill: Neutralize with agricultural lime, crushed limestone or sodium bicarbonate. Add soda ash. Adjust pH to neutral (pH= 7). Use mechanical dredges or lifts to remove immobilized masses of pollutants and precipitates.",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 99,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20bicarbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-516892"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational exposure or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal, aquatic, and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 399,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-93 (1982)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-93 (1982)",
+                        "Matched": {
+                          "PCLID": 900119510,
+                          "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-93 (1982)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical Treatability of Zinc; Concentration Process: Ultrafiltration; Chemical Classification: Metals; Scale of Study: Continuous flow, pilot scale; Type of Wastewater Used: Industrial wastewater; Results of Study: 0.38 ppm effluent concentration. /Zinc/",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 250,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-202 (1982)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-202 (1982)",
+                        "Matched": {
+                          "PCLID": 900126077,
+                          "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-202 (1982)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical Treatability of Zinc; Concentration Process: Miscellaneous sorbents; Chemical Classification: Metals; Scale of Study: Literature review; Type of Wastewater Used: Unknown; Results of Study: Final concentration reduced to 0.1 ppb; SiO2 + CaO slags used. /Zinc/",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 262,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Patterson JW; Industrial Wastewater Treatment Technolgy 2nd Edition p.444 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Patterson JW; Industrial Wastewater Treatment Technolgy 2nd Edition p.444 (1985)",
+                        "Matched": {
+                          "PCLID": 900072919,
+                          "Citation": "Patterson JW; Industrial Wastewater Treatment Technolgy 2nd Edition p.444 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The proprietary Sulfex process (Permutit Co) has been applied to zinc wastes. The process involves addition of ferrous sulfide, which gradually releases sulfide to precipitate the zinc ... . /Zinc/",
+                          "Markup": [
+                            {
+                              "Start": 16,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfex",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5362487"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 111,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ferrous%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14828"
+                            },
+                            {
+                              "Start": 180,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 192,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Disposal Methods (Complete) data for ZINC SULFATE (11 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 88,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1063#section=Disposal-Methods-(Complete)"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ZINC%20SULFATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144",
+                        "Matched": {
+                          "PCLID": 900093616,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 1144"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material not on fire and not involved in fire: Keep material out of water sources and sewers. Build dikes to contain flow if necessary. Keep upwind. Avoid breathing vapors or dust. Wash away any material which may have contacted the body with copious amounts of water or soap and water.",
+                          "Markup": [
+                            {
+                              "Start": 71,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 265,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 283,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The scientific literature for the use of contact lenses in industry is conflicting. The benefit or detrimental effects of wearing contact lenses depend not only upon the substance, but also on factors including the form of the substance, characteristics and duration of the exposure, the uses of other eye protection equipment, and the hygiene of the lenses. However, there may be individual substances whose irritating or corrosive properties are such that the wearing of contact lenses would be harmful to the eye. In those specific cases, contact lenses should not be worn. In any event, the usual eye protection equipment should be worn even when contact lenses are in place."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 1340"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 1340",
+                        "Matched": {
+                          "PCLID": 900155152,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 1340"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Prevention ... /of metal fume fever/ is a matter of keeping exposure of workers below level of concn currently accepted as satisfactory for working with the metal in industry, preferably by employment of proper local exhaust ventilation to collect fumes at their source. Acceptable respirators are avail commercially but should be used only under suitable conditions. /Zinc/",
+                          "Markup": [
+                            {
+                              "Start": 369,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45",
+                        "Matched": {
+                          "PCLID": 900085132,
+                          "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "In all cases where zinc is heated to the point where fume is produced, it is most important to ensure that adequate ventilation is provided. Individual protection is best ensured by education of the worker concerning metal-fume fever & the provision of local exhaust ventilation, or, in some situations by wearing of supplied-air hood or mask.",
+                          "Markup": [
+                            {
+                              "Start": 19,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                        },
+                        {
+                          "String": "Do not touch or walk through spilled material. Stop leak if you can do it without risk. Prevent dust cloud. For Asbestos, avoid inhalation of dust. Cover spill with plastic sheet or tarp to minimize spreading. Do not clean up or dispose of, except under supervision of a specialist."
+                        },
+                        {
+                          "String": "SMALL DRY SPILL: With clean shovel, place material into clean, dry container and cover loosely; move containers from spill area."
+                        },
+                        {
+                          "String": "SMALL SPILL: Pick up with sand or other non-combustible absorbent material and place into containers for later disposal."
+                        },
+                        {
+                          "String": "LARGE SPILL: Dike far ahead of liquid spill for later disposal. Cover powder spill with plastic sheet or tarp to minimize spreading. Prevent entry into waterways, sewers, basements or confined areas. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dry. Provision to contain effluent from fire extinguishing. Store in an area without drain or sewer access."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "McEvoy, G.K. (ed.). American Hospital Formulary Service.   AHFS Drug Information. American Society of Health-System   Pharmacists, Bethesda, MD. 2006., p. 2761"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "McEvoy, G.K. (ed.). American Hospital Formulary Service.   AHFS Drug Information. American Society of Health-System   Pharmacists, Bethesda, MD. 2006., p. 2761",
+                        "Matched": {
+                          "PCLID": 900109839,
+                          "Citation": "McEvoy, G.K. (ed.). American Hospital Formulary Service.   AHFS Drug Information. American Society of Health-System   Pharmacists, Bethesda, MD. 2006., p. 2761"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zinc sulfate ophthalmic solutions should be stored in tightly closed containers at temperatures not exceeding 40 °C,  freezing should be avoided.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45",
+                        "Matched": {
+                          "PCLID": 900085132,
+                          "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Finely divided ... zinc compounds, can be fire and explosion hazard if stored in damp places, sources of spontaneous combustion. /Zinc cmpd/",
+                          "Markup": [
+                            {
+                              "Start": 19,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Osol, A. (ed.). Remington's Pharmaceutical Sciences. 16th ed. Easton, Pennsylvania: Mack Publishing Co., 1980., p. 1109"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Osol, A. (ed.). Remington's Pharmaceutical Sciences. 16th ed. Easton, Pennsylvania: Mack Publishing Co., 1980., p. 1109",
+                        "Matched": {
+                          "PCLID": 900102835,
+                          "Citation": "Osol, A. (ed.). Remington's Pharmaceutical Sciences. 16th ed. Easton, Pennsylvania: Mack Publishing Co., 1980., p. 1109"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "There is ... /a/ tendency for solutions of zinc sulfate to form slight cloudiness due to seperation of basic salt formed through partial hydrolysis.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Name": "Maximum Allowable Concentration (MAK)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.1 [mg/m3] (respirable fraction), 2 mg/m3 (inhalable fraction) for Zn inorg. cmpnds[German Research Foundation (DFG)]"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Occupational Exposure Limits (OEL)",
+                "Description": "In general, the occupational exposure limit (OEL) indicates the level of admissible exposure, for a length of time (usually 8 hours), to a chemical or physical hazard that is not likely to affect the health of a worker. The OELs for chemical substances are established based on the chemical properties of the substance, experimental studies on animals and humans, toxicological and epidemiological data. These limits are set out by many professional organizations and government agencies around the world, such as the American Conference of Governmental Industrial Hygienists (ACGIH), and the National Institute for Occupational Safety and Health (NIOSH) in the United States. Different organizations may use different terminology for the OEL. For example, the ACGIH term for OEL is \"Threshold Limit Value\" (TLV)® while the NIOSH term is \"recommended exposure limits\" (REL). This section also includes MAK (maximale arbeitsplatzkonzentration), similar to threshold limit value, specifies the maximum concentration level of a toxic substance in air at a workplace.",
+                "URL": "https://www.ccohs.ca/oshanswers/hsprograms/occ_hygiene/occ_exposure_limits.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "MAK (Maximale Arbeitsplatz Konzentration)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(respirable fraction): 0.1 mg/m"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly when dispersed, especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is severely irritating to the eyes. The substance is irritating to the gastrointestinal tract and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900048570,
+                          "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of zinc sulfate (basic and monohydrate) are exempted from the requirement of a tolerance when used as a coating agent in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900048570,
+                          "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of zinc sulfate (basic and monohydrate) are exempted from the requirement of a tolerance when used as a solid diluent, carrier in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900093562,
+                          "Citation": "40 CFR 180.930; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zinc sulfate (basic and monohydrate) is exempted from the requirement of a tolerance when used as a water repellant, desiccant, and coating agent in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            },
+                            {
+                              "Start": 100,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust mask; goggles or face shield; protective gloves (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document -Zinc salts. EPA-738-F-92-007 August 192. Available from, as of June 29, 2006: https://www.epa.gov/REDs/factsheets/4099fact.pdf"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document -Zinc salts. EPA-738-F-92-007 August 192. Available from, as of June 29, 2006: https://www.epa.gov/REDs/factsheets/4099fact.pdf",
+                        "Matched": {
+                          "PCLID": 900126951,
+                          "Citation": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document -Zinc salts. EPA-738-F-92-007 August 192. Available from, as of June 29, 2006: https://www.epa.gov/REDs/factsheets/4099fact.pdf"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... Recommended appropriate protective equipment including protective eyewear, long-sleeved shirts and long-legged pants, rubber gloves, and boots. /zinc salts/",
+                          "Markup": [
+                            {
+                              "Start": 149,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/NIOSH approved respirator/; goggles or face shield; protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PREVENT DISPERSION OF DUST!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use local exhaust or breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety spectacles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Water soluble. Efflorescent in air. Aqueous solutions are acidic.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Salts, Acidic"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acidic salts, such as ZINC SULFATE, are generally soluble in water. The resulting solutions contain moderate concentrations of hydrogen ions and have pH's of less than 7.0. They react as acids to neutralize bases. These neutralizations generate heat, but less or far less than is generated by neutralization of inorganic acids, inorganic oxoacids, and carboxylic acid. They usually do not react as either oxidizing agents or reducing agents but such behavior is not impossible. Many of these compounds catalyze organic reactions.",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ZINC%20SULFATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            },
+                            {
+                              "Start": 61,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 127,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "Standard Transportation Number",
+                "Description": "This section provides the Standard Transportation Commodity Code (STCC) for this chemical.  The STCC is a seven digit numeric code representing 38 commodity groupings and used on waybills and other shipping documents.  If the first two digits of an STCC are 48 or 49, the STCC is also called the Hazardous Materials Response Code (HMRC) or Hazmat STCC, and is used when transporting a hazardous material or dangerous good by rail in North America. ",
+                "URL": "https://public.railinc.com/resources/standard-transportation-commodity-code",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 637 86; Zinc sulfate, hazardous substance, solid, not otherwise specified",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Label",
+                "Description": "U.S. Department of Transportation (DOT) hazard warning label for the chemical (such as flammable liquid or corrosive). This label must be displayed on shipped packages, railroad tank cars, and tank trucks according to specifications described in 49 CFR 172.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Class 9"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EC Classification",
+                "Description": "European Commission (EC) classification for hazardous material.",
+                "URL": "https://ec.europa.eu/growth/sectors/chemicals/classification-labelling_en",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Symbol: Xn, N; R: 22-41-50/53; S: (2)-22-26-39-46-60-61"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "UN Classification",
+                "Description": "Classification of this chemical, according to the Agreement concerning the International Carriage of Dangerous Goods by Road (ADR).  ADR is a United Nations treaty that governs transnational transport of hazardous materials.",
+                "URL": "https://unece.org/about-adr",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN Hazard Class: 9; UN Pack Group: III"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Sulfuric acid, zinc salt (1:1)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 24,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfuric%20acid%2C%20zinc%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24424"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 27-03-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/15488",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/15488"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Cease Manufacture Update: 28-05-2018 https://echa.europa.eu/registration-dossier/-/registered-dossier/25400",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/25400"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 41,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Zinc sulphate: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 13,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulphate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24424"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Federal Drinking Water Guidelines",
+                "Description": "Federal drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 5000 ug/L /Zinc/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 2000 ug/L /Zinc, Lifetime health advisory/",
+                          "Markup": [
+                            {
+                              "Start": 15,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(AZ) ARIZONA 5000 ug/l /Zinc/",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(MN) MINNESOTA 2000 ug/l /Zinc/",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Clean Water Act Requirements",
+                "Description": "The Clean Water Act (CWA) of 1972 establishes the basic structure for regulating discharges of pollutants into the waters of the United States and regulating quality standards for surface waters.  Under CWA, the U.S. Environmental Protection Agency (EPA) developed the Toxic Pollutant List (40 CFR Part 401.15) and the Priority Pollutant List (40 CFR Part 423, Appendix A). These lists are to be used by EPA and States to develop the Effluent Guidelines regulations and ensure water quality criteria and standards.",
+                "URL": "https://www.epa.gov/laws-regulations/summary-clean-water-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 116.4; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 116.4; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900128004,
+                          "Citation": "40 CFR 116.4; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zinc sulfate is designated as a hazardous substance under section 311(b)(2)(A) of the Federal Water Pollution Control Act and further regulated by the Clean Water Act Amendments of 1977 and 1978. These regulations apply to discharges of this substance. This designation includes any isomers and hydrates, as well as any solutions and mixtures containing this substance.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            },
+                            {
+                              "Start": 94,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 157,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 401.15; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 401.15; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900035990,
+                          "Citation": "40 CFR 401.15; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Toxic pollutant designated pursuant to section 307(a)(1) of the Federal Water Pollution Control Act and is subject to effluent limitations. /Zinc and compounds/",
+                          "Markup": [
+                            {
+                              "Start": 72,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 141,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/OWRS; Quality Criteria for Water 1986 Zinc (1986) EPA 440/5-86-001"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/OWRS; Quality Criteria for Water 1986 Zinc (1986) EPA 440/5-86-001",
+                        "Matched": {
+                          "PCLID": 900156937,
+                          "Citation": "USEPA/OWRS; Quality Criteria for Water 1986 Zinc (1986) EPA 440/5-86-001"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For total recoverable zinc the criterion-to protect freshwater aquatic life ... is 47 ng/L as a 24 hr average ... at hardnesses of 50, 100, and 200 mg/l as CaCO3 the concentration of total recoverable zinc should not exceed 180, 320, 570 ug/L at any time. /Soluble zinc salts/",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 201,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 265,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/OWRS; Quality Criteria for Water 1986 Zinc (1986) EPA 440/5-86-001"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/OWRS; Quality Criteria for Water 1986 Zinc (1986) EPA 440/5-86-001",
+                        "Matched": {
+                          "PCLID": 900156937,
+                          "Citation": "USEPA/OWRS; Quality Criteria for Water 1986 Zinc (1986) EPA 440/5-86-001"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For total recoverable zinc the criterion to protect saltwater aquatic life ... is 58 ug/L as a 24 hr average and the concentration should not exceed 170 ug/L at any time. /Soluble zinc salts/",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 180,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "CERCLA Reportable Quantities",
+                "Description": "The CERCLA reportable quantity for a hazardous substance is the minimum quantity of the substance which, if released, must be reported, under the Comprehensive Environmental Response, Compensation, and Liability Act of 1980 (CERCLA, also commonly known as Superfund).",
+                "URL": "https://www.epa.gov/epcra/cercla-and-epcra-continuous-release-reporting",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 302.4; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 302.4; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906293601,
+                          "Citation": "40 CFR 302.4; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Persons in charge of vessels or facilities are required to notify the National Response Center (NRC) immediately, when there is a release of this designated  hazardous substance, in an amount equal to or greater than its reportable quantity of 1,000 lb or 454 kg. The  toll free number of the NRC is (800) 424-8802. The rule for determining when notification is required is stated in 40 CFR 302.4 (section IV. D.3.b)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900048570,
+                          "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of zinc sulfate (basic and monohydrate) are exempted from the requirement of a tolerance when used as a coating agent in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900048570,
+                          "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of zinc sulfate (basic and monohydrate) are exempted from the requirement of a tolerance when used as a solid diluent, carrier in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900093562,
+                          "Citation": "40 CFR 180.930; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zinc sulfate (basic and monohydrate) is exempted from the requirement of a tolerance when used as a water repellant, desiccant, and coating agent in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            },
+                            {
+                              "Start": 100,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Zinc Salts EPA 738-F-92-007 August 1992. Available from, as of June 26, 2006: https://www.epa.gov/pesticides/reregistration/status.htm"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Zinc Salts EPA 738-F-92-007 August 1992. Available from, as of June 26, 2006: https://www.epa.gov/pesticides/reregistration/status.htm",
+                        "Matched": {
+                          "PCLID": 900044570,
+                          "Citation": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Zinc Salts EPA 738-F-92-007 August 1992. Available from, as of June 26, 2006: https://www.epa.gov/pesticides/reregistration/status.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The Agency has sufficient information on the human health effects of zinc salts and on it potential for causing effects in fish and wildlife and the environment when used to control moss and fungus growth in outdoor residential areas, on structures, in pressure-treated lumber and incorporated into fibers used in carpet. The Agency concludes that products containing zinc salts for these uses ar eligible for reregistration. Only certain generic physical chemistry data studies on zinc salts still are needed as comfirmatory information. The Agency has determined tha zinc salt containing products, labeled and used as specified in this Reregistration Eligibility Document will not pose unreasonable risks or adverse effects to humans or the environment.",
+                          "Markup": [
+                            {
+                              "Start": 69,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 368,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 482,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 569,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 346"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 346",
+                        "Matched": {
+                          "PCLID": 900129302,
+                          "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 346"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "As the federal pesticide law FIFRA directs, EPA is conducting a comprehensive review of older pesticides to consider their health and environmental effects and make decisions about their future use. Under this pesticide reregistration program, EPA examines health and safety data for pesticide active ingredients initially registered before November 1, 1984, and determines whether they are eligible for reregistration. In addition, all pesticides must meet the new safety standard of the Food Quality Protection Act of 1996. Pesticides for which EPA had not issued Registration Standards prior to the effective date of FIFRA, as amended in 1988, were divided into three lists based upon their potential for human exposure and other factors, with List B containing pesticides of greater concern and List D pesticides of less concern. Zinc sulfate, basic is found on List D. Case No: 4099; Pesticide type: fungicide, herbicide, antimicrobial; Case Status: RED Approved 09/92; OPP has made a decision that some/all uses of the pesticide are eligible for reregistration, as reflected in a Reregistration Eligibility Decision (RED) document .; Active ingredient (AI): Zinc sulfate, basic; AI Status: The active ingredient is no longer contained in any registered pesticide products ... \"cancelled.\"",
+                          "Markup": [
+                            {
+                              "Start": 834,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            },
+                            {
+                              "Start": 1164,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.8997; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.8997; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900087421,
+                          "Citation": "21 CFR 182.8997; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This substance is generally recognized as safe when used as a nutrient in accordance with good manufacturing practice."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 582.5997; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 582.5997; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900065851,
+                          "Citation": "21 CFR 582.5997; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This substance is generally recognized as safe when used as a nutrient and/or dietary supplement in accordance with good manufacturing or feeding practice."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.90; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.90; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900005951,
+                          "Citation": "21 CFR 182.90; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Substances migrating to food from paper and paperboard products used in food packaging that are generally recognized as safe for their intended use, within the meaning of section 409 of the Act. Zinc sulfate is included on this list.",
+                          "Markup": [
+                            {
+                              "Start": 195,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 582.80; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 582.80; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900151338,
+                          "Citation": "21 CFR 582.80; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 21, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Trace minerals added to animal feeds as nutritional dietary supplements are generally recognized as safe when added at levels consistent with good feeding practice. Zinc sulfate is included on this list.",
+                          "Markup": [
+                            {
+                              "Start": 165,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more FDA Requirements (Complete) data for ZINC SULFATE (8 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 87,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1063#section=FDA-Requirements-(Complete)"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ZINC%20SULFATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24424"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Soluble zinc salts: Human health tier II assessment",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11272",
+        "Name": "Sulfuric acid, zinc salt (1:1)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39360687
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11272",
+        "Name": "Sulfuric acid, zinc salt (1:1)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400779
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-793-3",
+        "Name": "Zinc sulphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.904",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2009637
+      },
+      {
+        "ReferenceNumber": 41,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "a30b6c4874ca5eba281e40ffd3e41b9f",
+        "Name": "Zinc sulphate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162195
+      },
+      {
+        "ReferenceNumber": 45,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "2044",
+        "Name": "zinc sulfate",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/2044.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2270520
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "4826",
+        "Name": "ZINC SULFATE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/4826",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 761522
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1698",
+        "Name": "ZINC SULFATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1698",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2261489
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "1063",
+        "Name": "ZINC SULFATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1063",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 971
+      },
+      {
+        "ReferenceNumber": 50,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "030-006-00-9[2]",
+        "Name": "zinc sulphate (anhydrous)",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 27260019,
+        "SortOrder": 100000
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "73013",
+        "Name": "Zinc sulphate (EC: 231-793-3)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73013",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1872695,
+        "SortOrder": 3928
+      },
+      {
+        "ReferenceNumber": 43,
+        "SourceName": "NITE-CMC",
+        "SourceID": "25B0002",
+        "Name": "Zinc sulfate - FY2013 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/13-mhlw-2002e.html",
+        "ANID": 2264317,
+        "SortOrder": 2013
+      },
+      {
+        "ReferenceNumber": 44,
+        "SourceName": "NITE-CMC",
+        "SourceID": "247",
+        "Name": "Zinc sulphate - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0240e.html",
+        "ANID": 8787887,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 31,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "4738",
+        "Name": "zinc sulphate (anhydrous)",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=4738",
+        "ANID": 2283463,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2079",
+        "Name": "Zinc sulfate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2079",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277564
+      }
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "cid": 176,
+  "captured_at": "2026-01-31T18:48:48.674172+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/176",
+    "lcss_sha256": "d8134fab4f222bf43db0b68d7e4ade0d1b4014519a270dc24852f12f35a68912",
+    "linkout_sha256": "2f28a4747786ec7c13fb12cb2645a38b017842aa1d0b0f2142615fc777d228c7",
+    "meta_sha256": "fcaeb154addad4a965818654118858a4dbca1d42b1abf701b9a136088c273dab"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H226",
+      "H303",
+      "H312",
+      "H314",
+      "H318",
+      "H334",
+      "H370",
+      "H371",
+      "H402"
+    ],
+    "hazard_statements_sv": {
+      "H226": "Brandfarlig vätska och ånga.",
+      "H303": "Kan vara skadligt vid förtäring.",
+      "H312": "Skadligt vid hudkontakt.",
+      "H314": "Orsakar allvarliga frätskador på hud och ögon.",
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H334": "Kan orsaka allergi- eller astmasymtom eller andningssvårigheter vid inandning.",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H371": "Kan orsaka organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H402": "Skadligt för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P233",
+      "P240",
+      "P241",
+      "P242",
+      "P243",
+      "P260",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P271",
+      "P273",
+      "P280",
+      "P284",
+      "P301+P317",
+      "P301+P330+P331",
+      "P302+P352",
+      "P302+P361+P354",
+      "P303+P361+P353",
+      "P304+P340",
+      "P305+P354+P338",
+      "P308+P316",
+      "P316",
+      "P317",
+      "P321",
+      "P342+P316",
+      "P362+P364",
+      "P363",
+      "P370+P378",
+      "P403",
+      "P403+P235",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P240": "Jorda och potentialförbind behållare och mottagarutrustning.",
+      "P241": "* Använd explosionssäker [elektrisk/ventilations-/belysnings-/...]utrustning.",
+      "P242": "Använd verktyg som inte ger upphov till gnistor.",
+      "P243": "Vidta åtgärder mot statisk elektricitet.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P284": "* [Vid otillräcklig ventilation], använd andningsskydd.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P301+P330+P331": "VID FÖRTÄRING: Skölj munnen. Framkalla INTE kräkning.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P302+P361+P354": "VID HUDKONTAKT: Ta omedelbart av alla förorenade kläder. Skölj genast huden med vatten i flera minuter.",
+      "P303+P361+P353": "VID HUDKONTAKT (även håret): Ta omedelbart av alla nedstänkta kläder. Skölj huden med vatten [eller duscha].",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P316": "Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P342+P316": "Vid besvär i luftvägarna: Sök omedelbar läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P363": "Nedstänkta kläder ska tvättas innan de används igen.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P403": "Förvaras på väl ventilerad plats.",
+      "P403+P235": "Förvaras på väl ventilerad plats. Förvaras svalt.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS02",
+      "GHS05",
+      "GHS07",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/0004.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.214684+00:00"
+}

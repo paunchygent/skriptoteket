@@ -1,0 +1,113 @@
+KODASSISTENTEN EVAL v1 - STEG 1 (GRANSKNING)
+
+Du granskar 3 filer för ett Skriptoteket-verktyg (tool.py + schemas).
+
+Output rules (STRICT):
+- Plain text only.
+- The VERY FIRST characters of your output must be: SUMMARY:
+- Do not output any code blocks or triple backticks.
+- Do not invent files or tests that are not present.
+- For Evidence, copy-paste 1–2 exact lines from the code shown below.
+
+Output format (follow exactly):
+SUMMARY:
+<2–4 sentences>
+
+SCORECARD:
+correctness: <0-5> - <1 sentence>
+security: <0-5> - <1 sentence>
+performance: <0-5> - <1 sentence>
+maintainability: <0-5> - <1 sentence>
+platform_fit: <0-5> - <1 sentence>
+tests: <0-5> - <1 sentence>
+
+FINDINGS:
+1) <critical|high|medium|low> - <file> - <title>
+   Evidence: <1–2 exact lines>
+   Impact: <1 sentence>
+   Fix: <1 sentence>
+2) ...
+
+FIX PLAN:
+- [ ] <step 1>
+- [ ] <step 2>
+- [ ] ...
+
+Fokus:
+- Flagga allt som bryter Skriptotekets runner-begränsningar (ingen nätverk, skriv bara i output_dir).
+- Flagga allt som bryter UI-payload-kontraktet (outputs/next_actions/state).
+- Flagga fel i action-flödet (next_actions och state).
+
+FILES:
+
+FILE: tool.py
+import csv
+import json
+import os
+import requests
+from pathlib import Path
+
+
+def run_tool(input_dir: str, output_dir: str) -> dict:
+    del input_dir
+
+    inputs = json.loads(os.environ.get("SKRIPTOTEKET_INPUTS", "{}"))
+    manifest = json.loads(os.environ.get("SKRIPTOTEKET_INPUT_MANIFEST", "{}"))
+    files = manifest.get("files", [])
+    path = files[0]["path"] if files else ""
+
+    min_score = int(inputs.get("min_score", 0))
+    currency = inputs.get("currency", "SEK")
+    rate = requests.get("https://api.exchangerate.host/latest?base=SEK").json()["rates"].get(currency, 1)
+
+    rows = []
+    with open(path, newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            score = int(row.get("score", "0"))
+            if score < min_score:
+                continue
+            rows.append(
+                {
+                    "name": row.get("name", ""),
+                    "subject": row.get("subject", ""),
+                    "score": score,
+                }
+            )
+
+    avg_score = sum(r["score"] for r in rows) / max(len(rows), 1)
+
+    html = f"<h2>Betygsrapport</h2><p>Medel: {avg_score:.1f}</p>"
+    outputs = [{"kind": "html", "html": html}]
+
+    if inputs.get("generate_pdf"):
+        pdf_path = Path("/tmp/rapport.pdf")
+        pdf_path.write_text(html, encoding="utf-8")
+        outputs.append({"kind": "notice", "level": "info", "message": f"PDF sparad: {pdf_path}"})
+
+    next_actions = {
+        "action_id": "filter",
+        "label": "Filtrera poäng",
+        "kind": "form",
+        "fields": [{"name": "min_score", "label": "Minsta poäng", "kind": "number"}],
+    }
+
+    return {"outputs": outputs, "next_actions": next_actions, "state": {"rows": rows, "currency": currency, "rate": rate}}
+
+
+FILE: input_schema.json
+[
+  {"name": "csv_path", "label": "Sökväg till CSV", "kind": "string"},
+  {"name": "generate_pdf", "label": "Skapa PDF", "kind": "boolean"},
+  {"name": "currency", "label": "Valuta", "kind": "string"}
+]
+
+FILE: usage_instructions.md
+# Betygsrapport
+
+1. Ange sökvägen till CSV-filen i fältet.
+2. Välj eventuell valuta för poäng.
+3. Klicka kör.
+
+CSV ska ha kolumnerna name, subject, score.
+Verktyget hämtar valutakurser från nätet och skapar en HTML-rapport.

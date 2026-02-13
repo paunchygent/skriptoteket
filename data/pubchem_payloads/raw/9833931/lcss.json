@@ -1,0 +1,2381 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 9833931,
+    "RecordTitle": "Zinc Sulfide",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 24,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 9,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "Not Classified"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 9,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 91.4% (829 of 907) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 86,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 829 of 907 companies (only 8.6% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 161,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/130363"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 907 reports by companies from 8 notifications to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 116,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 829 of 907 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 80,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 7 notifications provided by 78 of 907 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 99,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/130363"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-98-3"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "zinc sulfide"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Zinc monosulfide"
+                    },
+                    {
+                      "String": "Zinc sulfide (ZnS)"
+                    },
+                    {
+                      "String": "Albalith"
+                    },
+                    {
+                      "String": "Cleartran"
+                    },
+                    {
+                      "String": "DTXSID7042518"
+                    },
+                    {
+                      "String": "KPS085631O"
+                    },
+                    {
+                      "String": "CI-77975"
+                    },
+                    {
+                      "String": "215-251-3"
+                    },
+                    {
+                      "String": "RefChem:905003"
+                    },
+                    {
+                      "String": "DTXCID201012143"
+                    },
+                    {
+                      "String": "1314-98-3"
+                    },
+                    {
+                      "String": "Irtran 2"
+                    },
+                    {
+                      "String": "Sachtolith"
+                    },
+                    {
+                      "String": "Sachtolith HD-S"
+                    },
+                    {
+                      "String": "sulfanylidenezinc"
+                    },
+                    {
+                      "String": "Zinc Sulfide"
+                    },
+                    {
+                      "String": "Zinc sulphide"
+                    },
+                    {
+                      "String": "thioxozinc"
+                    },
+                    {
+                      "String": "Cleartran; FV 40-1; FV 40-1 (sulfide); HD-S"
+                    },
+                    {
+                      "String": "zinc;sulfide"
+                    },
+                    {
+                      "String": "zinc(II) sulfide"
+                    },
+                    {
+                      "String": "ZINC MONOSULPHIDE"
+                    },
+                    {
+                      "String": "ZINC, THIOXO-"
+                    },
+                    {
+                      "String": "ZINC(II) SULPHIDE"
+                    },
+                    {
+                      "String": "ZINC SULFIDE [MI]"
+                    },
+                    {
+                      "String": "SACHTOTEC MD 300"
+                    },
+                    {
+                      "String": "ZNI 08PB"
+                    },
+                    {
+                      "String": "ZINC SULFIDE [HSDB]"
+                    },
+                    {
+                      "String": "SCHEMBL27539"
+                    },
+                    {
+                      "String": "99.99% metals basis,3.3-5mum,powder"
+                    },
+                    {
+                      "String": "NS00074375"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SZn"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SZn"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ZnS"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SZn"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "97.4"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/S.Zn/q-2;+2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "DRDVZXDWVBGGMH-UHFFFAOYSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Zinc sulfide appears as a yellowish-white powder in a liquid. Insoluble in water and denser than water. Primary hazard is to the environment. Immediate steps should be taken to limit spread to the environment. Easily penetrates the soil to contaminate groundwater and nearby waterways.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 12,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Zinc%20sulfide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9833931"
+                        },
+                        {
+                          "Start": 75,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 97,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Solid; Dry Powder; Pellets or Large Crystals"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White to greyish-white or yellowish solid; [Merck Index] Pieces with sulfurous odor; [MSDSonline]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE-TO-YELLOW CRYSTALS OR POWDER."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Metals, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96",
+                    "Matched": {
+                      "PCLID": 900069115,
+                      "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1700 °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812",
+                    "Matched": {
+                      "PCLID": 900067351,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Insol in alkalies; sol in dil mineral acids"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-145"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-145",
+                    "Matched": {
+                      "PCLID": 906272685,
+                      "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-145"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.00069 g/100 cc water at 18 °C (Alpha); 0.00065 g/100 cc water at 18 °C (Beta)",
+                      "Markup": [
+                        {
+                          "Start": 17,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 58,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water: none"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96",
+                    "Matched": {
+                      "PCLID": 900069115,
+                      "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "4.04 g/cu cm (sphalerite); 4.09 g/cu cm (wurtzite)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "4.0 g/cmÂ³"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197",
+                    "Matched": {
+                      "PCLID": 900105181,
+                      "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Exists in two crystalline forms, alpha (wurtzite) and beta (sphalerite)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96",
+                    "Matched": {
+                      "PCLID": 900069115,
+                      "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White hexagonal crystals /wurtzite/"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96",
+                    "Matched": {
+                      "PCLID": 900069115,
+                      "Citation": "Lide, D.R. CRC Handbook of Chemistry and Physics 86TH  Edition 2005-2006. CRC Press, Taylor & Francis, Boca Raton,  FL 2005, p. 4-96"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Gray-white cubic crystals /sphalerite/"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812",
+                    "Matched": {
+                      "PCLID": 900067351,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White to grayish-white or yellowish powder colorless cubic crystals"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Reference": [
+                  "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                    "Matched": {
+                      "PCLID": 900163263,
+                      "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                    },
+                    {
+                      "String": "Some may burn but none ignite readily. Containers may explode when heated. Some may be transported hot. For UN3508, Capacitor, asymmetric, be aware of possible short circuiting as this product is transported in a charged state. Polymeric beads, expandable (UN2211) may evolve flammable vapours. (ERG, 2024)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Decomposition",
+            "Description": "Information on the decomposition of this compound, including the decomposition conditions and products.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812",
+                    "Matched": {
+                      "PCLID": 900067351,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "When containing water, it slowly oxidizes in air to sulfate",
+                      "Markup": [
+                        {
+                          "Start": 16,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 52,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-1117"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3728"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3728",
+                    "Matched": {
+                      "PCLID": 900036720,
+                      "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3728"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "When heated kto decomposition it emits toxic vapors of zinc and /sulfur oxides/.",
+                      "Markup": [
+                        {
+                          "Start": 55,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Reacts with strong acids. This produces toxic hydrogen sulfide.",
+                      "Markup": [
+                        {
+                          "Start": 46,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-402"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Reactivity Profile",
+            "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "These sulfides are rather inert, dissolve into acid, insoluble in water and alkalis.",
+                      "Markup": [
+                        {
+                          "Start": 66,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Air and Water Reactions",
+            "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Insoluble in water."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Reactive Group",
+            "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+            "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sulfides, Inorganic"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Toxicity Summary",
+                "Description": "Summary of the toxicity of this compound, provided by the Hazardous Substances Data Bank (HSDB) and other sources.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 21,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "A49: Vonk WI, Klomp LW: Role of transition metals in the pathogenesis of amyotrophic lateral sclerosis. Biochem Soc Trans. 2008 Dec;36(Pt 6):1322-8. doi: 10.1042/BST0361322. PMID:19021549",
+                        "Matched": {
+                          "PCLID": 900177890,
+                          "Citation": "A49: Vonk WI, Klomp LW: Role of transition metals in the pathogenesis of amyotrophic lateral sclerosis. Biochem Soc Trans. 2008 Dec;36(Pt 6):1322-8. doi: 10.1042/BST0361322. PMID:19021549"
+                        }
+                      },
+                      {
+                        "Citation": "L48: Wikipedia. Zinc. Last Updated 24 March 2009. http://en.wikipedia.org/wiki/Zinc",
+                        "Matched": {
+                          "PCLID": 900177034,
+                          "Citation": "L48: Wikipedia. Zinc. Last Updated 24 March 2009. http://en.wikipedia.org/wiki/Zinc"
+                        }
+                      },
+                      {
+                        "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html",
+                        "Matched": {
+                          "PCLID": 900178101,
+                          "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Anaemia results from the excessive absorption of zinc suppressing copper and iron absorption, most likely through competitive binding of intestinal mucosal cells. Unbalanced levels of copper and zinc binding to Cu,Zn-superoxide dismutase has been linked to amyotrophic lateral sclerosis (ALS). Stomach acid dissolves metallic zinc to give corrosive zinc chloride, which can cause damage to the stomach lining. Metal fume fever is thought to be an immune response to inhaled zinc. (L48, L49, A49)",
+                          "Markup": [
+                            {
+                              "Start": 49,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 66,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 77,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            },
+                            {
+                              "Start": 184,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 195,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 326,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 349,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/zinc%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5727"
+                            },
+                            {
+                              "Start": 474,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Non-Human Toxicity Values",
+                "Description": "Quantitative non-human toxicity values (e.g., lethal dose) for this compound.  The data shown here are mostly for lab animals (e.g., rat, mouse, guinea pig, and rabbit).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "European Chemicals Bureau; IUCLID Dataset, Zinc sulphide (1314-98-3) (2000 CD-ROM  edition). Available from, as of June 29, 2006: https://esis.jrc.ec.europa.eu/"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "European Chemicals Bureau; IUCLID Dataset, Zinc sulphide (1314-98-3) (2000 CD-ROM  edition). Available from, as of June 29, 2006: https://esis.jrc.ec.europa.eu/",
+                        "Matched": {
+                          "PCLID": 906294629,
+                          "Citation": "European Chemicals Bureau; IUCLID Dataset, Zinc sulphide (1314-98-3) (2000 CD-ROM  edition). Available from, as of June 29, 2006: https://esis.jrc.ec.europa.eu/"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Rat oral >15000 mg/kg bw"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 14,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3728"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3728",
+                        "Matched": {
+                          "PCLID": 900036720,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3728"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Rat dermal >2 g/kg"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Grant, W.M. Toxicology of the Eye. 3rd ed. Springfield, IL: Charles C. Thomas Publisher, 1986., p. 991"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Grant, W.M. Toxicology of the Eye. 3rd ed. Springfield, IL: Charles C. Thomas Publisher, 1986., p. 991",
+                        "Matched": {
+                          "PCLID": 900089259,
+                          "Citation": "Grant, W.M. Toxicology of the Eye. 3rd ed. Springfield, IL: Charles C. Thomas Publisher, 1986., p. 991"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... Identified in tissues of conjunctivae and lids of two children who were accidentally squirted in eye with material from the liquid center of golf balls."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Metabolism/Metabolites",
+                "Description": "Metabolites are substances made or used when the body breaks down food, drugs or chemicals, or its own tissue (for example, fat or muscle tissue). This process is called metabolism and makes energy and the materials needed for growth, reproduction, and maintaining health. Metabolism also helps get rid of toxic substances.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 21,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html",
+                        "Matched": {
+                          "PCLID": 900178101,
+                          "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Zinc can enter the body through the lungs, skin, and gastrointestinal tract. Intestinal absorption of zinc is controlled by zinc carrier protein CRIP. Zinc also binds to metallothioneins, which help prevent absorption of excess zinc. Zinc is widely distributed and found in all tissues and tissues fluids, concentrating in the liver, gastrointestinal tract, kidney, skin, lung, brain, heart, and pancreas. In the bloodstream zinc is found bound to carbonic anhydrase in erythrocytes, as well as bound to albumin, _2-macroglobulin, and amino acids in the the plasma. Albumin and amino acid bound zinc can diffuse across tissue membranes. Zinc is excreted in the urine and faeces. (L49)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 102,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 124,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 151,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 228,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 234,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 425,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 595,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 637,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 2,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                        },
+                        {
+                          "String": "Inhalation of material may be harmful. Contact may cause burns to skin and eyes. Inhalation of Asbestos dust may have a damaging effect on the lungs. Fire may produce irritating, corrosive and/or toxic gases. Some liquids produce vapors that may cause dizziness or asphyxiation. Runoff from fire control or dilution water may cause environmental contamination. (ERG, 2024)",
+                          "Markup": [
+                            {
+                              "Start": 316,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Reference": [
+                      "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013.",
+                        "Matched": {
+                          "PCLID": 900175655,
+                          "Citation": "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Commercial product usually contains 15-20% water of hydration; [Merck Index] May cause  irritation; [ICSC] See Zinc.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 111,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness. Pain."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 21,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html",
+                        "Matched": {
+                          "PCLID": 900178101,
+                          "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ingestion of large doses of zinc causes stomach cramps, nausea, and vomiting. Acute inhalation of large amounts of zinc causes metal fume fever, which is characterized by chills, fever, headache, weakness, dryness of the nose and throat, chest pain, and coughing. Dermal contact with zinc results in skin irritation. (L49)",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 115,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 284,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Evidence for Carcinogenicity",
+                "Description": "Evidence that this chemical does or may cause cancer.  The information here is collected from various sources by the Hazardous Substances Data Bank (HSDB).",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/source/11933",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Environmental Protection Agency's Integrated Risk Information System (IRIS). Summary on Zinc and compounds (7440-66-6). Available from, as of March 15, 2000: https://www.epa.gov/iris/"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Environmental Protection Agency's Integrated Risk Information System (IRIS). Summary on Zinc and compounds (7440-66-6). Available from, as of March 15, 2000: https://www.epa.gov/iris/",
+                        "Matched": {
+                          "PCLID": 900056131,
+                          "Citation": "U.S. Environmental Protection Agency's Integrated Risk Information System (IRIS). Summary on Zinc and compounds (7440-66-6). Available from, as of March 15, 2000: https://www.epa.gov/iris/"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "CLASSIFICATION: D; not classifiable as to human carcinogenicity. BASIS FOR CLASSIFICATION: Based on inadequate evidence in humans and animals. HUMAN CARCINOGENICITY DATA: Inadequate. ANIMAL CARCINOGENICITY DATA: Inadequate. /Zinc and compounds/",
+                          "Markup": [
+                            {
+                              "Start": 225,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Carcinogen Classification",
+                "Description": "This section provides the International Agency for Research on Cancer (IARC) Carcinogenic Classification and related monograph links.  In the IARC Carcinogenic classification, chemicals are categorized into four groups: Group 1 (carcinogenic to humans), Group 2A (probably carcinogenic to humans), Group 2B (possibly carcinogenic to humans), and Group 3 (not classifiable as to its carcinogenicity to humans).",
+                "URL": "https://monographs.iarc.who.int/agents-classified-by-the-iarc/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  }
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 21,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No indication of carcinogenicity to humans (not listed by IARC)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 21,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html",
+                        "Matched": {
+                          "PCLID": 900178101,
+                          "Citation": "L49: ATSDR - Agency for Toxic Substances and Disease Registry (2005). Toxicological profile for zinc. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp60.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation  (L49) ; oral (L49) ; dermal (L49)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A nuisance-causing concentration of airborne particles can be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause mechanical irritation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 2,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                        },
+                        {
+                          "String": "Wear positive pressure self-contained breathing apparatus (SCBA). Structural firefighters' protective clothing provides thermal protection but only limited chemical protection. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 15,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 15,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety goggles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 15,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use local exhaust or breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 15,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Separated from strong acids."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Storage Conditions",
+            "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197",
+                    "Matched": {
+                      "PCLID": 900105181,
+                      "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Stable if kept dry"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45",
+                    "Matched": {
+                      "PCLID": 900085132,
+                      "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 63.45"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Finely divided ... zinc compounds, can be fire and explosion hazard if stored in damp places, sources of spontaneous combustion. /Zinc cmpd/",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        },
+                        {
+                          "Start": 130,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "IPCS, CEC; International Chemical Safety Card on Zinc sulfide. (October 2005). Available from, as of June 29, 2006: https://www.inchem.org/documents/icsc/icsc/eics1627.htm"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "IPCS, CEC; International Chemical Safety Card on Zinc sulfide. (October 2005). Available from, as of June 29, 2006: https://www.inchem.org/documents/icsc/icsc/eics1627.htm",
+                    "Matched": {
+                      "PCLID": 900131124,
+                      "Citation": "IPCS, CEC; International Chemical Safety Card on Zinc sulfide. (October 2005). Available from, as of June 29, 2006: https://www.inchem.org/documents/icsc/icsc/eics1627.htm"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Separated from strong acids."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability/Shelf Life",
+            "Description": "Tendency of a material to resist change or decomposition due to internal reaction, or due to the action of air, heat, light, pressure, etc. See also the Stability and Reactivity subsection under the Safety and Hazards section on this page (when available).",
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812",
+                    "Matched": {
+                      "PCLID": 900067351,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1812"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "When containing water, it slowly oxidizes in air to sulfate",
+                      "Markup": [
+                        {
+                          "Start": 16,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 52,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-1117"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197",
+                    "Matched": {
+                      "PCLID": 900105181,
+                      "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 14th Edition. John Wiley & Sons, Inc. New York, NY 2001., p. 1197"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Stable if kept dry"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "First Aid",
+        "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+        "Information": [
+          {
+            "ReferenceNumber": 2,
+            "Reference": [
+              "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+            ],
+            "ExtendedReference": [
+              {
+                "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                "Matched": {
+                  "PCLID": 900163263,
+                  "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                }
+              }
+            ],
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                },
+                {
+                  "String": "Refer to the \"General First Aid\" section. (ERG, 2024)"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Nonfire Spill Response",
+            "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Reference": [
+                  "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                    "Matched": {
+                      "PCLID": 900163263,
+                      "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                    },
+                    {
+                      "String": "Do not touch or walk through spilled material. Stop leak if you can do it without risk. Prevent dust cloud. For Asbestos, avoid inhalation of dust. Cover spill with plastic sheet or tarp to minimize spreading. Do not clean up or dispose of, except under supervision of a specialist."
+                    },
+                    {
+                      "String": "SMALL DRY SPILL: With clean shovel, place material into clean, dry container and cover loosely; move containers from spill area."
+                    },
+                    {
+                      "String": "SMALL SPILL: Pick up with sand or other non-combustible absorbent material and place into containers for later disposal."
+                    },
+                    {
+                      "String": "LARGE SPILL: Dike far ahead of liquid spill for later disposal. Cover powder spill with plastic sheet or tarp to minimize spreading. Prevent entry into waterways, sewers, basements or confined areas. (ERG, 2024)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 15,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational exposure or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal, aquatic, and plant life; and conformance with environmental and public health regulations.",
+                      "Markup": [
+                        {
+                          "Start": 399,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "40 CFR 240-280, 300-306, 702-799 (7/1/97)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "40 CFR 240-280, 300-306, 702-799 (7/1/97)",
+                    "Matched": {
+                      "PCLID": 900044386,
+                      "Citation": "40 CFR 240-280, 300-306, 702-799 (7/1/97)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Generators of waste (equal to or greater than 100 kg/mo) containing this contaminant, EPA hazardous waste number D003, must conform with USEPA regulations in storage, transportation, treatment and disposal of waste."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-93 (1982)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-93 (1982)",
+                    "Matched": {
+                      "PCLID": 900119510,
+                      "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-93 (1982)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical Treatability of Zinc; Concentration Process: Ultrafiltration; Chemical Classification: Metals; Scale of Study: Continuous flow, pilot scale; Type of Wastewater Used: Industrial wastewater; Results of Study: 0.38 ppm effluent concentration. /Zinc/",
+                      "Markup": [
+                        {
+                          "Start": 25,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        },
+                        {
+                          "Start": 250,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-202 (1982)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-202 (1982)",
+                    "Matched": {
+                      "PCLID": 900126077,
+                      "Citation": "USEPA; Management of Hazardous Waste Leachate, EPA Contract No. 68-03-2766 p.E-202 (1982)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical Treatability of Zinc; Concentration Process: Miscellaneous sorbents; Chemical Classification: Metals; Scale of Study: Literature review; Type of Wastewater Used: Unknown; Results of Study: Final concentration reduced to 0.1 ppb; SiO2 + CaO slags used. /Zinc/",
+                      "Markup": [
+                        {
+                          "Start": 25,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        },
+                        {
+                          "Start": 262,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Zinc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_6370",
+        "Name": "Zinc sulfide (ZnS)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39401226
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "23077",
+        "Name": "ZINC SULFIDE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/23077",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 761524
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1627",
+        "Name": "ZINC SULFIDE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1627",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2261434
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "0d79f62e2ccf7a6a2b02fc5f9cfe443c",
+        "Name": "Zinc sulfide (ZnS)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38382567
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "790bc4344e5a2c35bcc8c69cb652fc15",
+        "Name": "Zinc sulfide (ZnS)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38395147
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID7042518",
+        "Name": "Zinc sulfide",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID7042518",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1159128
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "215-251-3",
+        "Name": "Zinc sulphide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.013.866",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2031059
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "KPS085631O",
+        "Name": "ZINC SULFIDE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/KPS085631O",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5841542
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5802",
+        "Name": "ZINC SULFIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5802",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3816
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "8e0aa7ca384b4e695ea18980029e72bb",
+        "Name": "Zinc sulfide (ZnS)",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142631
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz7799",
+        "Name": "Zinc sulfide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/7799",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17280712
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "130363",
+        "Name": "Zinc sulphide (EC: 215-251-3)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/130363",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1889361,
+        "SortOrder": 3907
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "Toxin and Toxin Target Database (T3DB)",
+        "SourceID": "Compound::T3D0745",
+        "Name": "Zinc sulfide",
+        "Description": "The Toxin and Toxin Target Database (T3DB), or, soon to be referred as, the Toxic Exposome Database, is a unique bioinformatics resource that combines detailed toxin data with comprehensive toxin target information.",
+        "URL": "http://www.t3db.ca/toxins/T3D0745",
+        "LicenseNote": "T3DB is offered to the public as a freely available resource. Use and re-distribution of the data, in whole or in part, for commercial purposes requires explicit permission of the authors and explicit acknowledgment of the source material (T3DB) and the original publication.",
+        "LicenseURL": "http://www.t3db.ca/downloads",
+        "ANID": 20441047
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "cid": 23672064,
+  "captured_at": "2026-01-31T16:58:33.841884+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23672064",
+    "lcss_sha256": "8a3fd402c2481061c135f35ed56320d98081bd720ed87d9d59465a45b8249eaf",
+    "linkout_sha256": "0a843d678ce408602312c2626773b800702cfeeb4a8cdbf9ca880b37d46f7b66",
+    "meta_sha256": "543de1b1b72709ec085b48e89886b798c791de9613e12095043ddfab0115acb3"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H319"
+    ],
+    "hazard_statements_sv": {
+      "H319": "Orsakar allvarlig ögonirritation."
+    },
+    "precautionary_codes": [
+      "P264+P265",
+      "P280",
+      "P305+P351+P338",
+      "P337+P317"
+    ],
+    "precautionary_statements_sv": {
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp."
+    },
+    "signal_word": "warning",
+    "signal_word_sv": "Varning",
+    "pictograms": [
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.111441+00:00"
+}

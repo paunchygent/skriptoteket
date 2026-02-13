@@ -1,0 +1,2051 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 11726,
+    "RecordTitle": "Manganese carbonate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 30,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "3D Conformer",
+        "Description": "A three-dimensional (3D) structure representation of the compound.  This 3D structure is not experimentally determined, but computed by PubChem.  This structure may or may not be the same as the inherent structure of the compound you would expect to see in vacuum or in the gas phase, because the underlying computational algorithm aims to generate a protein-bound structure, which would be observed in a protein-ligand complex.  More detailed information on this conformer model can be found in Kim et al., J. Cheminform. 2013, 5, 1.",
+        "URL": "https://doi.org/10.1186/1758-2946-5-1",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 30,
+            "Name": "3D Conformer of Parent",
+            "Description": "Carbonic Acid",
+            "Value": {
+              "Number": [
+                767
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 9,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                      "Type": "Icon",
+                      "Extra": "Health Hazard"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 9,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 54% (147 of 272) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 84,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H372 (40.1%): Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                      "Markup": [
+                        {
+                          "Start": 78,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P264, P270, P319, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 28,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 272 reports by companies from 7 notifications to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 116,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 147 of 272 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 80,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 5 notifications provided by 125 of 272 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 100,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/102699"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H360: May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 31,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                      "Markup": [
+                        {
+                          "Start": 70,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P203, P260, P264, P270, P280, P308+P316, P318, P319, P321, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 24,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 30,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 53,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 59,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 31,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                      "Markup": [
+                        {
+                          "Start": 70,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P264, P270, P308+P316, P319, P321, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 51,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 3,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "17375-37-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "17375-37-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "598-62-9"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "manganese(2+) carbonate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "MANGANESE CARBONATE"
+                    },
+                    {
+                      "String": "598-62-9"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate"
+                    },
+                    {
+                      "String": "Manganous carbonate"
+                    },
+                    {
+                      "String": "Manganese(2+) carbonate"
+                    },
+                    {
+                      "String": "Natural rhodochrosite"
+                    },
+                    {
+                      "String": "Manganese carbonate (1:1)"
+                    },
+                    {
+                      "String": "Manganese carbonate (MnCO3)"
+                    },
+                    {
+                      "String": "Manganese(2+) carbonate (1:1)"
+                    },
+                    {
+                      "String": "Carbonic acid, manganese(2+) salt (1:1)"
+                    },
+                    {
+                      "String": "9ZV57512ZM"
+                    },
+                    {
+                      "String": "MANGANUM CARBONICUM"
+                    },
+                    {
+                      "String": "DTXSID1042108"
+                    },
+                    {
+                      "String": "NSC-83512"
+                    },
+                    {
+                      "String": "carbonic acid manganese"
+                    },
+                    {
+                      "String": "RefChem:55543"
+                    },
+                    {
+                      "String": "DTXCID9022108"
+                    },
+                    {
+                      "String": "209-942-9"
+                    },
+                    {
+                      "String": "Carbonic acid, manganese salt"
+                    },
+                    {
+                      "String": "manganese(2+);carbonate"
+                    },
+                    {
+                      "String": "17375-37-0"
+                    },
+                    {
+                      "String": "MFCD00011116"
+                    },
+                    {
+                      "String": "manganese(ii)carbonate"
+                    },
+                    {
+                      "String": "Manganesecarbonate"
+                    },
+                    {
+                      "String": "CCRIS 3660"
+                    },
+                    {
+                      "String": "HSDB 790"
+                    },
+                    {
+                      "String": "EINECS 209-942-9"
+                    },
+                    {
+                      "String": "Manganese (II) carbonate"
+                    },
+                    {
+                      "String": "NSC 83512"
+                    },
+                    {
+                      "String": "UNII-9ZV57512ZM"
+                    },
+                    {
+                      "String": "manganous;carbonate"
+                    },
+                    {
+                      "String": "EINECS 241-414-3"
+                    },
+                    {
+                      "String": "CMnO3"
+                    },
+                    {
+                      "String": "EC 209-942-9"
+                    },
+                    {
+                      "String": "SCHEMBL32918"
+                    },
+                    {
+                      "String": "MANGANESE CARBONATE [MI]"
+                    },
+                    {
+                      "String": "MANGANESE CARBONATE [HSDB]"
+                    },
+                    {
+                      "String": "MANGANUM CARBONICUM [HPUS]"
+                    },
+                    {
+                      "String": "CARBONIC ACID,MANGANESE SALT"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate, Mn 44%"
+                    },
+                    {
+                      "String": "MANGANESE CARBONATE [WHO-DD]"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate, min. 90%"
+                    },
+                    {
+                      "String": "AKOS015903237"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate, p.a., 44%"
+                    },
+                    {
+                      "String": "FM145373"
+                    },
+                    {
+                      "String": "NS00080594"
+                    },
+                    {
+                      "String": "F510105"
+                    },
+                    {
+                      "String": "Q414659"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate, 99.985% (metals basis)"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate, >=99.9% trace metals basis"
+                    },
+                    {
+                      "String": "Manganese(II) carbonate hydrate, 44-46% Mn basis (KT)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CMnO3"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "114.947"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/CH2O3.Mn/c2-1(3)4;/h(H2,2,3,4);/q;+2/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "XMWCXZJXESXBBY-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Solid; Liquid; Dry Powder"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rose-colored crystals; [HSDB] Tarnishes to light brown; [Merck Index] Hygroscopic solid; Practically insoluble in water: 0.065 g/L @ 25 deg C; [MSDSonline]",
+                      "Markup": [
+                        {
+                          "Start": 114,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Manganese Compounds, Inorganic",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Manganese"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-69"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-69",
+                    "Matched": {
+                      "PCLID": 900017297,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-69"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Decomposes >200 °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V15 (95) 997"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V15 (95) 997",
+                    "Matched": {
+                      "PCLID": 900026077,
+                      "Citation": "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V15 (95) 997"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility product in water: 8.8X10-11",
+                      "Markup": [
+                        {
+                          "Start": 22,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 977"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 977",
+                    "Matched": {
+                      "PCLID": 900108403,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 977"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sol in dil acid; insol in water or alcohol",
+                      "Markup": [
+                        {
+                          "Start": 26,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.) Handbook of Chemistry and Physics. 69th ed. Boca Raton, FL: CRC Press Inc., 1988-1989., p. B-105"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics. 69th ed. Boca Raton, FL: CRC Press Inc., 1988-1989., p. B-105",
+                    "Matched": {
+                      "PCLID": 900053527,
+                      "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics. 69th ed. Boca Raton, FL: CRC Press Inc., 1988-1989., p. B-105"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SOL IN AQ CARBON DIOXIDE; INSOL IN AMMONIA",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CARBON%20DIOXIDE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/AMMONIA",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-222"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 697"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 697",
+                    "Matched": {
+                      "PCLID": 900055999,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 697"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Soluble in dilute inorganic acids; almost insoluble in common organic acids, both concentrated and dilute."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-69"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-69",
+                    "Matched": {
+                      "PCLID": 900017297,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-69"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.7"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 977"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 977",
+                    "Matched": {
+                      "PCLID": 900108403,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 977"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Pink to almost white powder when freshly precipitated; rhombohedral, calcite structure"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 697"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 697",
+                    "Matched": {
+                      "PCLID": 900055999,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 697"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rose-colored crystals, almost white when precipitated."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V15 (95) 997"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V15 (95) 997",
+                    "Matched": {
+                      "PCLID": 900026077,
+                      "Citation": "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V15 (95) 997"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Pink solid trigonal"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Toxicity Summary",
+                "Description": "Summary of the toxicity of this compound, provided by the Hazardous Substances Data Bank (HSDB) and other sources.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html",
+                        "Matched": {
+                          "PCLID": 900176840,
+                          "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Manganese is a cellular toxicant that can impair transport systems, enzyme activities, and receptor functions. It primarily targets the central nervous system, particularily the globus pallidus of the basal ganglia. It is believed that the manganese ion, Mn(II), enhances the autoxidation or turnover of various intracellular catecholamines, leading to increased production of free radicals, reactive oxygen species, and other cytotoxic metabolites, along with a depletion of cellular antioxidant defense mechanisms, leading to oxidative damage and selective destruction of dopaminergic neurons. In addition to dopamine, manganese is thought to perturbations other neurotransmitters, such as GABA and glutamate. In order to produce oxidative damage, manganese must first overwhelm the antioxidant enzyme manganese superoxide dismutase. The neurotoxicity of Mn(II) has also been linked to its ability to substitute for Ca(II) under physiological conditions. It can enter mitochondria via the calcium uniporter and inhibit mitochondrial oxidative phosphorylation. It may also inhibit the efflux of Ca(II), which can result in a loss of mitochondrial membrane integrity. Mn(II) has been shown to inhibit mitochondrial aconitase activity to a significant level, altering amino acid metabolism and cellular iron homeostasis. (L228)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 240,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/manganese%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-27854"
+                            },
+                            {
+                              "Start": 611,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/dopamine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-681"
+                            },
+                            {
+                              "Start": 621,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 692,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/GABA",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-119"
+                            },
+                            {
+                              "Start": 701,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/glutamate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14598502"
+                            },
+                            {
+                              "Start": 750,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 804,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/manganese%20superoxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14801"
+                            },
+                            {
+                              "Start": 991,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Calcium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Calcium"
+                            },
+                            {
+                              "Start": 1302,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:8475509",
+                      "Komura J et al.; Toxicology Letters 66 (3): 287-294 (1993)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:8475509",
+                        "Matched": {
+                          "PCLID": 17856518,
+                          "Citation": "Komura J, Sakamoto M. Subcellular and gel chromatographic distribution of manganese in the mouse brain: relation to the chemical form of chronically-ingested manganese. Toxicol Lett. 1993 Mar;66(3):287–94. doi: 10.1016/0378-4274(93)90010-u. PMID: 8475509.",
+                          "PMID": 8475509,
+                          "DOI": "10.1016/0378-4274(93)90010-u"
+                        }
+                      },
+                      {
+                        "Citation": "Komura J et al.; Toxicology Letters 66 (3): 287-294 (1993)",
+                        "Matched": {
+                          "PCLID": 900127573,
+                          "Citation": "Komura J et al.; Toxicology Letters 66 (3): 287-294 (1993)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The subcellular distribution of manganese (Mn) in brains of mice chronically admin Mn in different chemical forms with food was examined using gel chromatography. Male ddY-mice were divided into five groups of six animals each, & Groups 1 to 4 were given 2 grams/kilogram Mn of standard laboratory mouse chow) in the form of manganese chloride (MnCl2), manganese acetate (MnAc), manganese carbonate (MnCO3), or manganese oxide (MnO2), in the diets for 12 months, while Group 5 served as control. 24 hr after the last feed, animals were decapitated & brains were rapidly removed for study of the different regions (corpus striatum (CS), hypothalamus, midbrain, cerebral cortex (CC), hippocampus, cerebellum, & medulla oblongata). Subcellular fractions (mitochondrial, microsomal & cytosolic) & gel chromatography fractions were analyzed for Mn contents using flame atomizer absorption spectrophotometry. Results showed that CC levels of Mn in mice exposed to the nearly insoluble MnCO3 & MnO2 were higher than in controls, while Mn concns in the CS were similar to those in controls. Microsomal Mn in treated mice was also higher than in controls. The gel chromatographic profile of CS showed that 20% Mn was in the high molecular weight (MW) fractions, 45% was in the middle MW fractions, while 32% was in the low MW fractions. The % Mn in high MW fractions was higher (29% to 49%) in the Mn treated groups, than in controls. The % of Mn in low MW fractions of the MnO2 exposed group (9%) was lower than in the MnCl2, MnAc, & MnCO3 exposed groups (42%, 36%, & 38%, respectively). The authors conclude that the brain regional distribution of Mn from the virtually insoluble cmpds is different from that of soluble Mn cmpds, & that striatal subcellular & gel chromatographic profiles are similar for the divalent Mn cmpds. They add that there is more Mn associated with fast migrating ligands in the striatal cytosol of the Mn treated groups than in the controls, & that these binding characteristics are different from those of other organs.",
+                          "Markup": [
+                            {
+                              "Start": 32,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 325,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/manganese%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26003"
+                            },
+                            {
+                              "Start": 353,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/manganese%20acetate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-57484760"
+                            },
+                            {
+                              "Start": 379,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/manganese%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-11726"
+                            },
+                            {
+                              "Start": 411,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/manganese%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-160959"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Metabolism/Metabolites",
+                "Description": "Metabolites are substances made or used when the body breaks down food, drugs or chemicals, or its own tissue (for example, fat or muscle tissue). This process is called metabolism and makes energy and the materials needed for growth, reproduction, and maintaining health. Metabolism also helps get rid of toxic substances.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html",
+                        "Matched": {
+                          "PCLID": 900176840,
+                          "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Manganese is absorbed mainly via ingestion, but can also be inhaled. It binds to alpha-2-macroglobulin, albumin, or transferrin in the plasma and is distributed to the brain and all other mammalian tissues, though it tends to accumulate more in the liver, pancreas, and kidney. Manganese is capable of existing in a number of oxidation states and is believed to undergo changes in oxidation state within the body. Manganese oxidation state can influence tissue toxicokinetic behavior, and possibly toxicity. Manganese is excreted primarily in the faeces. (L228)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 278,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 414,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            },
+                            {
+                              "Start": 508,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "An irritant; Toxic if absorbed; [MSDSonline] See Manganese and linked occupational diseases.",
+                          "Markup": [
+                            {
+                              "Start": 49,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html",
+                        "Matched": {
+                          "PCLID": 900176840,
+                          "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Manganese mainly affects the nervous system and may cause behavioral changes and other nervous system effects, which include movements that may become slow and clumsy. This combination of symptoms when sufficiently severe is referred to as “manganism”. (L228)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Carcinogen Classification",
+                "Description": "This section provides the International Agency for Research on Cancer (IARC) Carcinogenic Classification and related monograph links.  In the IARC Carcinogenic classification, chemicals are categorized into four groups: Group 1 (carcinogenic to humans), Group 2A (probably carcinogenic to humans), Group 2B (possibly carcinogenic to humans), and Group 3 (not classifiable as to its carcinogenicity to humans).",
+                "URL": "https://monographs.iarc.who.int/agents-classified-by-the-iarc/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  }
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No indication of carcinogenicity to humans (not listed by IARC)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html",
+                        "Matched": {
+                          "PCLID": 900176840,
+                          "Citation": "L228: ATSDR - Agency for Toxic Substances and Disease Registry (2008). Toxicological profile for manganese. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp151.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oral (L228) ; inhalation (L228)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 190"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 190",
+                        "Matched": {
+                          "PCLID": 906272306,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 190"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "500 mg/cu m /Manganese compounds and fume (as Mn)/",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Manganese",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Manganese"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.02 [mg/m3], as Mn (respirable fraction), 0.1 mg/m3, as Mn (inhalable fraction)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.1001(d) (7/1/2000)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.1001(d) (7/1/2000)",
+                        "Matched": {
+                          "PCLID": 900089432,
+                          "Citation": "40 CFR 180.1001(d) (7/1/2000)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Manganese carbonate is exempted from the requirement of a tolerance when used as a plant nutrient in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops only.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Manganese%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-11726"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Storage Conditions",
+            "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 817"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 817",
+                    "Matched": {
+                      "PCLID": 900013783,
+                      "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 817"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "KEEP WELL CLOSED"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability/Shelf Life",
+            "Description": "Tendency of a material to resist change or decomposition due to internal reaction, or due to the action of air, heat, light, pressure, etc. See also the Stability and Reactivity subsection under the Safety and Hazards section on this page (when available).",
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 817"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 817",
+                    "Matched": {
+                      "PCLID": 900013783,
+                      "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 817"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "GRADUALLY BECOMES LIGHT BROWN IN AIR"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_5146",
+        "Name": "Carbonic acid, manganese(2+) salt (1:1)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400109
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0000598629",
+        "Name": "Manganese carbonate",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0000598629",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 775314
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0017375370",
+        "Name": "Carbonic acid, manganese salt",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0017375370",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 849076
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "85efd4a6effa1b9c37b184b13aeb4147",
+        "Name": "Carbonic acid, manganese(2+) salt (1:1)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38386346
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "c9cbf71e1fa70858c26217e26a404a4e",
+        "Name": "Carbonic acid, manganese(2+) salt (1:1)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38392614
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID1042108",
+        "Name": "Manganese(II) carbonate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID1042108",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1158724
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "209-942-9",
+        "Name": "Manganese carbonate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.009.040",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1979210
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "241-414-3",
+        "Name": "Carbonic acid, manganese salt",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.037.634",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2022246
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "9ZV57512ZM",
+        "Name": "MANGANESE CARBONATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/9ZV57512ZM",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5824298
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "790",
+        "Name": "MANGANESE CARBONATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/790",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 713
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "2d21eb4f88235ba39d922e77aef1c425",
+        "Name": "Manganese carbonate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37155328
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2551",
+        "Name": "Manganese(II) carbonate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2551",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277825
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "102699",
+        "Name": "Manganese carbonate (EC: 209-942-9)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/102699",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1881300,
+        "SortOrder": 3272
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "NITE-CMC",
+        "SourceID": "H28_B_051,C_092B",
+        "Name": "Manganese carbonate - FY2016 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/16-mhlw-0130e.html",
+        "ANID": 39312405,
+        "SortOrder": 2016
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "NITE-CMC",
+        "SourceID": "496",
+        "Name": "Manganese carbonate - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0489e.html",
+        "ANID": 8787610,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "Toxin and Toxin Target Database (T3DB)",
+        "SourceID": "Compound::T3D1145",
+        "Name": "Manganese carbonate",
+        "Description": "The Toxin and Toxin Target Database (T3DB), or, soon to be referred as, the Toxic Exposome Database, is a unique bioinformatics resource that combines detailed toxin data with comprehensive toxin target information.",
+        "URL": "http://www.t3db.ca/toxins/T3D1145",
+        "LicenseNote": "T3DB is offered to the public as a freely available resource. Use and re-distribution of the data, in whole or in part, for commercial purposes requires explicit permission of the authors and explicit acknowledgment of the source material (T3DB) and the original publication.",
+        "LicenseURL": "http://www.t3db.ca/downloads",
+        "ANID": 20441344
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

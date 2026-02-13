@@ -1,0 +1,3217 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 6093286,
+    "RecordTitle": "Barium hydroxide",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 1.1% (7  of 662) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                              "Type": "Icon",
+                              "Extra": "Acute Toxic"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H290 (18.9%): May be corrosive to metals [Warning Corrosive to Metals]",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H301 (18.9%): Toxic if swallowed [Danger Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H302+H332 (19%): Harmful if swallowed or if inhaled [Warning Acute toxicity, oral; acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 53,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H302 (80.1%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H314 (76.9%): Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 55,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318 (60.3%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H332 (62.8%): Harmful if inhaled [Warning Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H412 (18.9%): Harmful to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P234, P260, P261, P264, P264+P265, P270, P271, P273, P280, P301+P316, P301+P317, P301+P330+P331, P302+P361+P354, P304+P340, P305+P354+P338, P316, P317, P321, P330, P363, P390, P405, P406, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P234"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                            },
+                            {
+                              "Start": 70,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 81,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                            },
+                            {
+                              "Start": 97,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                            },
+                            {
+                              "Start": 113,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 124,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 140,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 152,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 158,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 164,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                            },
+                            {
+                              "Start": 170,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P390"
+                            },
+                            {
+                              "Start": 176,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 182,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P406"
+                            },
+                            {
+                              "Start": 192,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 662 reports by companies from 19 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 178,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 7 of 662 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 78,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 18 notifications provided by 655 of 662 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 101,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/91146"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H315: Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 37,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P261, P264, P264+P265, P270, P271, P280, P301+P317, P302+P352, P304+P340, P305+P351+P338, P308+P316, P319, P321, P330, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 69,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 107,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 113,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 119,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 125,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 136,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 147,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 158,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 169,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 179,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H314: Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H371: May cause damage to organs [Warning Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P261, P264, P264+P265, P270, P271, P280, P301+P317, P301+P330+P331, P302+P361+P354, P304+P340, P305+P354+P338, P308+P316, P316, P317, P319, P321, P330, P363, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                            },
+                            {
+                              "Start": 90,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 101,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 117,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 128,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 134,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 140,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 152,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 158,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                            },
+                            {
+                              "Start": 164,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 175,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 185,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 8,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Met. Corr. 1 (18.9%)"
+                        },
+                        {
+                          "String": "Acute Tox. 3 (18.9%)"
+                        },
+                        {
+                          "String": "Acute Tox. 4 (80.1%)"
+                        },
+                        {
+                          "String": "Skin Corr. 1A (76.9%)"
+                        },
+                        {
+                          "String": "Eye Dam. 1 (60.3%)"
+                        },
+                        {
+                          "String": "Acute Tox. 4 (62.8%)"
+                        },
+                        {
+                          "String": "Aquatic Chronic 3 (18.9%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity (Oral) - Category 4"
+                        },
+                        {
+                          "String": "Skin corrosion/irritation - Category 1"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 1"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 2 (nervous system, muscle), \u000ACategory 3 (respiratory tract irritation)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity (Oral) - Category 4"
+                        },
+                        {
+                          "String": "Skin corrosion/irritation - Category 2"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2A"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (nervous system, cardiovascular system, muscular system, kidney, gastrointestinal tract)_x000D_ \u000ACategory 3 (respiratory tract irritation)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (cardiovascular system, nervous system, muscular system, kidney)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aqueous solutions may cause severe burns to eyes and skin irritation; [HSDB] A corrosive substance that can cause injury to the skin, eyes, and respiratory tract; Inhalation may cause chemical pneumonitis and pulmonary edema; [MSDSonline] See Barium.",
+                          "Markup": [
+                            {
+                              "Start": 243,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Zenz, C., O.B. Dickerson, E.P. Horvath. Occupational Medicine. 3rd ed. St. Louis, MO., 1994, p. 598"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Zenz, C., O.B. Dickerson, E.P. Horvath. Occupational Medicine. 3rd ed. St. Louis, MO., 1994, p. 598",
+                        "Matched": {
+                          "PCLID": 900127859,
+                          "Citation": "Zenz, C., O.B. Dickerson, E.P. Horvath. Occupational Medicine. 3rd ed. St. Louis, MO., 1994, p. 598"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aqueous solutions of barium hydroxide and barium oxide are strongly alkaline and can cause ... skin irritation.",
+                          "Markup": [
+                            {
+                              "Start": 21,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-62392"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists. Documentation of the TLV's and BEI's with Other World Wide Occupational Exposure Values. CD-ROM Cincinnati, OH 45240-4148 2010."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists. Documentation of the TLV's and BEI's with Other World Wide Occupational Exposure Values. CD-ROM Cincinnati, OH 45240-4148 2010.",
+                        "Matched": {
+                          "PCLID": 900053874,
+                          "Citation": "American Conference of Governmental Industrial Hygienists. Documentation of the TLV's and BEI's with Other World Wide Occupational Exposure Values. CD-ROM Cincinnati, OH 45240-4148 2010."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Barium hydroxide and barium oxide are strongly alkaline in aqueous solution, causing severe burns of the eye and irritation of the skin.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            },
+                            {
+                              "Start": 21,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-62392"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 1"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 1",
+                        "Matched": {
+                          "PCLID": 906275927,
+                          "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 1"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Soluble barium compounds may cause local irritation of the eyes, nose, throat, bronchial tubes, and skin. /Soluble barium cmpd (as barium)/",
+                          "Markup": [
+                            {
+                              "Start": 8,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 115,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 131,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EPA Hazardous Waste Number",
+                "Description": "Identifier for hazardous waste containing this chemical.",
+                "URL": "https://www.epa.gov/hw/defining-hazardous-waste-listed-characteristic-and-mixed-radiological-wastes",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "D005; A waste containing barium may or may not be characterized as a hazardous waste following testing by the Toxicity Characteristic Leaching Procedure as prescribed by the Resource Conservation and Recovery Act (RCRA) regulations. /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 234,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107",
+                        "Matched": {
+                          "PCLID": 906286867,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material involved in fire: Extinguish fire using agent suitable for type of surrounding fire. (Material itself does not burn or burns with difficulty.) Use water in flooding quantities as fog. Apply water from as far a distance as possible. /Barium hydroxide monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 159,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 202,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 245,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107",
+                        "Matched": {
+                          "PCLID": 906286867,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Environmental considerations - land spill: Dig a pit, pond, lagoon, holding area to contain liquid or solid material. /SRP: If time permits, pits, ponds, lagoons, soak holes, or holding areas should be sealed with an impermeable flexible membrane liner./ Cover solids with a plastic sheet to prevent dissolving in rain or fire fighting water. Dike surface flow using soil, sand bags, foamed polyurethane, or foamed concrete. Neutralize with vinegar or other dilute acid. Absorb bulk liquid with fly ash or cement powder. /Barium hydroxide monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 336,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 441,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/vinegar",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-176"
+                            },
+                            {
+                              "Start": 522,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107",
+                        "Matched": {
+                          "PCLID": 906286867,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Environmental considerations - water spill: Use natural barriers or oil spill control booms to limit spill travel. Neutralize with dilute acid. /Barium hydroxide monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 145,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 57"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 57",
+                        "Matched": {
+                          "PCLID": 906296458,
+                          "Citation": "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 57"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The sulfate may be brushed up and treated as normal refuse. Soluble barium salts should be scooped up and treated as for waste disposal. Wash the spill area thoroughly with water. /Soluble barium salts/",
+                          "Markup": [
+                            {
+                              "Start": 4,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 173,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 5"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 5",
+                        "Matched": {
+                          "PCLID": 900029820,
+                          "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 5"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If soluble barium compounds are spilled, the following steps should be taken: 1. Ventilate area of spill. 2. Collect spilled material in the most convenient and safe manner and deposit in sealed containers for reclamation or for disposal in a secured sanitary landfill. Liquid containing soluble barium compounds should be absorbed in vermiculite, dry sand, earth, or a similar material. /Soluble barium compounds (as barium)/",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 296,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 397,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 418,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 100"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 100",
+                        "Matched": {
+                          "PCLID": 900029281,
+                          "Citation": "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 100"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The European Community guidelines regard sol barium salts as moderately dangerous for water quality (LD50 5-50 mg/kg) and their removal may be accomplished by diluted sulfuric acid and subsequent neutralization. /Sol barium salts/",
+                          "Markup": [
+                            {
+                              "Start": 86,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 167,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfuric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1118"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 240-280, 300-306, 702-799 (7/1/2010)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 240-280, 300-306, 702-799 (7/1/2010)",
+                        "Matched": {
+                          "PCLID": 900012941,
+                          "Citation": "40 CFR 240-280, 300-306, 702-799 (7/1/2010)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Generators of waste (equal to or greater than 100 kg/mo) containing this contaminant, EPA hazardous waste number D005, must conform with USEPA regulations in storage, transportation, treatment and disposal of waste."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA; Manual of Treatment Techniques for Meeting the Interim Primary Drinking Water Regulations (1977) EPA 600/8-77-005 as cited in USEPA; Health Advisories for Legionella and Seven Inorganics p.9 (1987) Pb87-235586"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA; Manual of Treatment Techniques for Meeting the Interim Primary Drinking Water Regulations (1977) EPA 600/8-77-005 as cited in USEPA; Health Advisories for Legionella and Seven Inorganics p.9 (1987) Pb87-235586",
+                        "Matched": {
+                          "PCLID": 906282432,
+                          "Citation": "USEPA; Manual of Treatment Techniques for Meeting the Interim Primary Drinking Water Regulations (1977) EPA 600/8-77-005 as cited in USEPA; Health Advisories for Legionella and Seven Inorganics p.9 (1987) Pb87-235586"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... Ion exchange, lime softening and reverse osmosis are effective to remove barium from drinking water. Conventional coagulation/filtration processes are not effective to remove barium from drinking water. /Barium ion/",
+                          "Markup": [
+                            {
+                              "Start": 77,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 98,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 179,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 200,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 208,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-104810"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 57"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 57",
+                        "Matched": {
+                          "PCLID": 906296458,
+                          "Citation": "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 57"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Package lots. Place in a separate labeled container for recycling or disposal. Small quantities. Wear nitrile rubber gloves, laboratory coat, and eye protection. Avoid breathing dust. Dissolve the barium salt in the minimum volume of water. For each gram of barium salt, add 15 mL of 10% sodium sulfate solution. Let stand for 1 week. Test for completeness of precipitation by adding a few drops of 10% sodium sulfate solution. If required, add more sodium sulfate solution until no further precipitation occurs. Decant supernatant liquid or filter solid. Treat solid as normal refuse. Wash liquid into drain. /Barium salt/",
+                          "Markup": [
+                            {
+                              "Start": 234,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 288,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 403,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 450,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107",
+                        "Matched": {
+                          "PCLID": 906286867,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material not involved in fire: Keep material out of water sources and sewers. /Barium hydroxide monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 55,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 82,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107",
+                        "Matched": {
+                          "PCLID": 906286867,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personnel protection: Keep upwind. Avoid breathing vapors or dusts. Avoid bodily contact with the material ... Do not handle broken packages unless wearing appropriate personal protective equipment. Wash away any material which may have contacted the body with copious amounts of water or soap and water. /Barium hydroxide monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 280,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 298,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 306,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The scientific literature for the use of contact lenses by industrial workers is inconsistent. The benefits or detrimental effects of wearing contact lenses depend not only upon the substance, but also on factors including the form of the substance, characteristics and duration of the exposure, the uses of other eye protection equipment, and the hygiene of the lenses. However, there may be individual substances whose irritating or corrosive properties are such that the wearing of contact lenses would be harmful to the eye. In those specific cases, contact lenses should not be worn. In any event, the usual eye protection equipment should be worn even when contact lenses are in place."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 3"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 3",
+                        "Matched": {
+                          "PCLID": 906289258,
+                          "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 3"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If employees' clothing has had any possibility of being contaminated with barium carbonate, barium chloride, barium nitrate ... or liq containing these cmpd, employees should change into uncontaminated clothing before leaving the work premises. ... Clothing contaminated with barium carbonate, barium chloride, barium nitrate ... should be placed in closed containers for storage until it can be discarded or until provision is made for the removal of contaminant from the clothing. If the clothing is to be laundered or otherwise cleaned to remove the contaminant, the person performing the operation should be informed of contaminant's hazardous properties. ... Non-impervious clothing which becomes contaminated with barium carbonate, barium chloride, barium nitrate ... should be removed promptly and not reworn until the contaminant is removed from the clothing. /Soluble barium cmpd/",
+                          "Markup": [
+                            {
+                              "Start": 74,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10563"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-25204"
+                            },
+                            {
+                              "Start": 109,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24798"
+                            },
+                            {
+                              "Start": 276,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10563"
+                            },
+                            {
+                              "Start": 294,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-25204"
+                            },
+                            {
+                              "Start": 311,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24798"
+                            },
+                            {
+                              "Start": 720,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10563"
+                            },
+                            {
+                              "Start": 738,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-25204"
+                            },
+                            {
+                              "Start": 755,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24798"
+                            },
+                            {
+                              "Start": 877,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Preventive Measures (Complete) data for Barium hydroxide (12 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 95,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1605#section=Preventive-Measures-(Complete)"
+                            },
+                            {
+                              "Start": 49,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ:  Merck and Co., Inc., 2006., p. 164"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ:  Merck and Co., Inc., 2006., p. 164",
+                        "Matched": {
+                          "PCLID": 900075794,
+                          "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ:  Merck and Co., Inc., 2006., p. 164"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep tightly closed. /Barium hydroxide, octahydrate/",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 29,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%2C%20octahydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-17749109"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Reynolds, J.E.F., Prasad, A.B. (eds.) Martindale-The Extra Pharmacopoeia. 28th ed. London: The Pharmaceutical Press, 1982., p. 42"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Reynolds, J.E.F., Prasad, A.B. (eds.) Martindale-The Extra Pharmacopoeia. 28th ed. London: The Pharmaceutical Press, 1982., p. 42",
+                        "Matched": {
+                          "PCLID": 900083752,
+                          "Citation": "Reynolds, J.E.F., Prasad, A.B. (eds.) Martindale-The Extra Pharmacopoeia. 28th ed. London: The Pharmaceutical Press, 1982., p. 42"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store in airtight containers. /Barium hydroxide lime/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Name": "Maximum Allowable Concentration (MAK)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.5 [mg/m3], as Ba, inhalable fraction(soluble compds)[German Research Foundation (DFG)]"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.5 [mg/m3], as Ba"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "50.0 [mg/m3], as Ba"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.5 [mg/m3], as Ba"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Other Standards Regulations and Guidelines",
+                "Description": "Safety and hazard standards, regulations, and guidelines for this this compound that is not shown in other sections.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Appendix L to Part 110--Illustrative List of Byproduct Materials Under NRC Export/Import Licensing Authority. 58 FR 13005, Mar. 9, 1993, as amended at 59 FR 48998, Sept. 26, 1994. Redesignated and amended at 61 FR 35603, 35607, July 8, 1996; 65 FR 70292, Nov. 22, 2000; 71 FR 20339, Apr. 20, 2006; 75 FR 44093, Jul. 28, 2010. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part110/part110-appl.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Appendix L to Part 110--Illustrative List of Byproduct Materials Under NRC Export/Import Licensing Authority. 58 FR 13005, Mar. 9, 1993, as amended at 59 FR 48998, Sept. 26, 1994. Redesignated and amended at 61 FR 35603, 35607, July 8, 1996; 65 FR 70292, Nov. 22, 2000; 71 FR 20339, Apr. 20, 2006; 75 FR 44093, Jul. 28, 2010. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part110/part110-appl.html",
+                        "Matched": {
+                          "PCLID": 900007563,
+                          "Citation": "Appendix L to Part 110--Illustrative List of Byproduct Materials Under NRC Export/Import Licensing Authority. 58 FR 13005, Mar. 9, 1993, as amended at 59 FR 48998, Sept. 26, 1994. Redesignated and amended at 61 FR 35603, 35607, July 8, 1996; 65 FR 70292, Nov. 22, 2000; 71 FR 20339, Apr. 20, 2006; 75 FR 44093, Jul. 28, 2010. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part110/part110-appl.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Barium byproduct materials under NRC export/import licensing authority: Barium-131, Barium-133, Barium-140: Any accelerator-produced, extracted, or converted for use for a commercial, medical, or research activity.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 72,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium-131",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6337061"
+                            },
+                            {
+                              "Start": 84,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium-133",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5491664"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium-140",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6335490"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Appendix B to Part 30--Quantities of Licensed Material Requiring Labeling. 35 FR 6425, Apr. 22, 1970, as amended at 36 FR 16898, Aug. 26, 1971; 38 FR 29314, Oct. 24, 1973; 39 FR 23991, June 28, 1974; 45 FR 71763, Oct. 30, 1980. Redesignated at 56 FR 23391, May 21, 1991, and further redesignated at 58 FR 67659, Dec. 22, 1993. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part030/part030-appb.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Appendix B to Part 30--Quantities of Licensed Material Requiring Labeling. 35 FR 6425, Apr. 22, 1970, as amended at 36 FR 16898, Aug. 26, 1971; 38 FR 29314, Oct. 24, 1973; 39 FR 23991, June 28, 1974; 45 FR 71763, Oct. 30, 1980. Redesignated at 56 FR 23391, May 21, 1991, and further redesignated at 58 FR 67659, Dec. 22, 1993. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part030/part030-appb.html",
+                        "Matched": {
+                          "PCLID": 900106001,
+                          "Citation": "Appendix B to Part 30--Quantities of Licensed Material Requiring Labeling. 35 FR 6425, Apr. 22, 1970, as amended at 36 FR 16898, Aug. 26, 1971; 38 FR 29314, Oct. 24, 1973; 39 FR 23991, June 28, 1974; 45 FR 71763, Oct. 30, 1980. Redesignated at 56 FR 23391, May 21, 1991, and further redesignated at 58 FR 67659, Dec. 22, 1993. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part030/part030-appb.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Table: Quantities of Licensed Material Requiring Labeling [Table#3315]",
+                          "Markup": [
+                            {
+                              "Start": 58,
+                              "Length": 12,
+                              "Type": "Inline Table",
+                              "Extra": "[Table#3315]"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "[Table#3315]",
+                    "Value": {
+                      "Binary": [
+                        "Ik1hdGVyaWFscyIsIk1pY3JvY3VyaWVzIgoiQmFyaXVtLTEzMSIsIjEwIgoiQmFyaXVtLTEzMyIsIjEwIgoiQmFyaXVtLTE0MCIsIjEwIgo="
+                      ],
+                      "MimeType": "text/csv"
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Part 30.72 Schedule C--Quantities of radioactive materials requiring consideration of the need for an emergency plan for responding to a release.  54 FR 14061, Apr. 7, 1989, as amended at 61 FR 9902, Mar. 12, 1996; 72 FR 55926, Oct. 1, 2007. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part030/part030-0072.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Part 30.72 Schedule C--Quantities of radioactive materials requiring consideration of the need for an emergency plan for responding to a release.  54 FR 14061, Apr. 7, 1989, as amended at 61 FR 9902, Mar. 12, 1996; 72 FR 55926, Oct. 1, 2007. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part030/part030-0072.html",
+                        "Matched": {
+                          "PCLID": 906278211,
+                          "Citation": "Part 30.72 Schedule C--Quantities of radioactive materials requiring consideration of the need for an emergency plan for responding to a release.  54 FR 14061, Apr. 7, 1989, as amended at 61 FR 9902, Mar. 12, 1996; 72 FR 55926, Oct. 1, 2007. Available from, as of November 11, 2010: https://www.nrc.gov/reading-rm/doc-collections/cfr/part030/part030-0072.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For combinations of radioactive materials, consideration of the need for an emergency plan is required if the sum of the ratios of the quantity of each radioactive material authorized to the quantity listed for that material in Schedule C exceeds one."
+                        },
+                        {
+                          "String": "Table: Quantities of Radioactive Materials Requiring Emergency Plan for Responding to a Release. [Table#3316]",
+                          "Markup": [
+                            {
+                              "Start": 97,
+                              "Length": 12,
+                              "Type": "Inline Table",
+                              "Extra": "[Table#3316]"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "[Table#3316]",
+                    "Value": {
+                      "Binary": [
+                        "IlJhZGlvYWN0aXZlIG1hdGVyaWFsIiwiUmVsZWFzZSBmcmFjdGlvbiIsIlF1YW50aXR5IChjdXJpZXMpIgoiQmFyaXVtLTEzMyIsIi4wMSIsIjEwLDAwMCIKIkJhcml1bS0xNDAiLCIuMDEiLCIzMCwwMDAiCg=="
+                      ],
+                      "MimeType": "text/csv"
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107",
+                        "Matched": {
+                          "PCLID": 906286867,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 107"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear appropriate chemical protective gloves, boots and goggles. /Barium hydroxide monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 65,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 3"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 3",
+                        "Matched": {
+                          "PCLID": 906289258,
+                          "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 3"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Employees should be provided with and required to use impervious clothing, gloves, face shields (eight inch minimum), and other appropriate protective clothing necessary to prevent repeated or prolonged skin contact with barium carbonate, barium chloride, barium nitrate, or liq containing these cmpd. ... Employees should be provided with and required to use dust and splash proof safety goggles where barium carbonate, barium chloride, barium nitrate, or liq containing these cmpd may contact the eyes. /Barium compounds/",
+                          "Markup": [
+                            {
+                              "Start": 221,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10563"
+                            },
+                            {
+                              "Start": 239,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-25204"
+                            },
+                            {
+                              "Start": 256,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24798"
+                            },
+                            {
+                              "Start": 403,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10563"
+                            },
+                            {
+                              "Start": 421,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-25204"
+                            },
+                            {
+                              "Start": 438,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24798"
+                            },
+                            {
+                              "Start": 506,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sittig, M. Handbook of Toxic and Hazardous Chemicals and   Carcinogens, 1985. 2nd ed. Park Ridge, NJ: Noyes Data   Corporation, 1985., p. 106"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sittig, M. Handbook of Toxic and Hazardous Chemicals and   Carcinogens, 1985. 2nd ed. Park Ridge, NJ: Noyes Data   Corporation, 1985., p. 106",
+                        "Matched": {
+                          "PCLID": 900147054,
+                          "Citation": "Sittig, M. Handbook of Toxic and Hazardous Chemicals and   Carcinogens, 1985. 2nd ed. Park Ridge, NJ: Noyes Data   Corporation, 1985., p. 106"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/NIOSH approved respirators,/ or goggles may be needed where amounts of significant soluble or alkaline forms are encountered, as well as protective clothing.  /Soluble or alkaline barium compounds/",
+                          "Markup": [
+                            {
+                              "Start": 181,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear appropriate personal protective clothing to prevent skin contact. /Soluble barium compounds (as Ba) except barium sulfate/",
+                          "Markup": [
+                            {
+                              "Start": 80,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 112,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24414"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Personal Protective Equipment (PPE) (Complete) data for Barium hydroxide (11 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 111,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1605#section=Personal-Protective-Equipment-(PPE)-(Complete)"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 56"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 56",
+                        "Matched": {
+                          "PCLID": 900056868,
+                          "Citation": "M.A. Armour; Hazardous Laboratory Chemicals Disposal Guide 3RD Edition. Lewis Publishers, Boca Raton, FL 2003, p. 56"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chlorinated rubber reacts violently or explosively with barium hydroxide.",
+                          "Markup": [
+                            {
+                              "Start": 56,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 343"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 343",
+                        "Matched": {
+                          "PCLID": 900078059,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 343"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatible with chlorinated rubber."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "DOT Emergency Guidelines",
+                "Description": "U.S. Department of Transportation (DOT) Emergency Guidelines for this chemical.  The information in this section is collected from the Hazardous Substances Data Bank (HSDB).  For updated emergency guidelines, see the DOT Emergency Response Guidebook.",
+                "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154: SUBSTANCES - TOXIC AND/OR CORROSIVE (NON-COMBUSTIBLE)/ Health: TOXIC; inhalation, ingestion, or skin contact with material may cause severe injury or death. Contact with molten substance may cause severe burns to skin and eyes. Avoid any skin contact. Effects of contact or inhalation may be delayed. Fire may produce irritating, corrosive and/or toxic gases. Runoff from fire control or dilution water may be corrosive and/or toxic and cause pollution. /Barium compound, NOS/",
+                          "Markup": [
+                            {
+                              "Start": 409,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 467,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154: SUBSTANCES - TOXIC AND/OR CORROSIVE (NON-COMBUSTIBLE)/ Fire or Explosion: Non-combustible, substance itself does not burn but may decompose upon heating to produce corrosive and/or toxic fumes. Some are oxidizers and may ignite combustibles (wood, paper, oil, clothing, etc.). Contact with metals may evolve flammable hydrogen gas. Containers may explode when heated. /Barium compound, NOS/",
+                          "Markup": [
+                            {
+                              "Start": 330,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            },
+                            {
+                              "Start": 381,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154: SUBSTANCES - TOXIC AND/OR CORROSIVE (NON-COMBUSTIBLE)/ Public Safety: CALL Emergency Response Telephone Number ... As an immediate precautionary measure, isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids. Keep unauthorized personnel away. Stay upwind. Keep out of low areas. Ventilate enclosed areas. /Barium compound, NOS/",
+                          "Markup": [
+                            {
+                              "Start": 399,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154: SUBSTANCES - TOXIC AND/OR CORROSIVE (NON-COMBUSTIBLE)/ Protective Clothing: Wear positive pressure self-contained breathing apparatus (SCBA). Wear chemical protective clothing that is specifically recommended by the manufacturer. It may provide little or no thermal protection. Structural firefighters' protective clothing provides limited protection in fire situations ONLY; it is not effective in spill situations where direct contact with the substance is possible. /Barium compound, NOS/",
+                          "Markup": [
+                            {
+                              "Start": 482,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more DOT Emergency Guidelines (Complete) data for Barium hydroxide (8 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 99,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1605#section=DOT-Emergency-Guidelines-(Complete)"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipping Name/ Number DOT/UN/NA/IMO",
+                "Description": "When dangerous goods are transported/shipped, one of the proper shipping names (along with corresponding identification numbers) shown in Dangerous Goods List of the applicable transport regulations (e.g., IATA-DGR, IMO-IMDG code, and 49 CFR 171-180) must be used to meet labelling, marking, and documentation requirements.  This section provides this chemical's appropriate shipping names and identification numbers, such as the U.S. Department of Transportation (DOT) identification number (also known as \"United Nations (UN) number\" or \"North America (NA) number\") and the International Maritime Organization (IMO)'s International Maritime Dangerous Goods (IMDG) Code.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IMO 6.1; Barium compounds, not otherwise specified",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN 1564; Barium compounds, not otherwise specified",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Standard Transportation Number",
+                "Description": "This section provides the Standard Transportation Commodity Code (STCC) for this chemical.  The STCC is a seven digit numeric code representing 38 commodity groupings and used on waybills and other shipping documents.  If the first two digits of an STCC are 48 or 49, the STCC is also called the Hazardous Materials Response Code (HMRC) or Hazmat STCC, and is used when transporting a hazardous material or dangerous good by rail in North America. ",
+                "URL": "https://public.railinc.com/resources/standard-transportation-commodity-code",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 352 38; Barium hydroxide monohydrate",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 28,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16211219"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipment Methods and Regulations",
+                "Description": "Shipment methods and regulations of this compound.  The information in this section includes the U.S. Hazardous Materials Regulations (49 CFR Subchapter C), the International Air Transport Association (IATA) Dangerous Goods Regulations, the International Maritime Dangerous Goods (IMDG) Code, and other regulations.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "49 CFR 171.2 (7/1/99)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "49 CFR 171.2 (7/1/99)",
+                        "Matched": {
+                          "PCLID": 900075241,
+                          "Citation": "49 CFR 171.2 (7/1/99)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No person may /transport,/ offer or accept a hazardous material for transportation in commerce unless that person is registered in conformance ... and the hazardous material is properly classed, described, packaged, marked, labeled, and in condition for shipment as required or authorized by ... /the hazardous materials regulations (49 CFR 171-177)./"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "IATA. Dangerous Goods Regulations. 40th Ed. Montreal, Canada  and Geneva, Switzerland: International Air Transport  Association, Dangerous Goods Regulations, 1999., p. 114"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "IATA. Dangerous Goods Regulations. 40th Ed. Montreal, Canada  and Geneva, Switzerland: International Air Transport  Association, Dangerous Goods Regulations, 1999., p. 114",
+                        "Matched": {
+                          "PCLID": 900032940,
+                          "Citation": "IATA. Dangerous Goods Regulations. 40th Ed. Montreal, Canada  and Geneva, Switzerland: International Air Transport  Association, Dangerous Goods Regulations, 1999., p. 114"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Air Transport Association (IATA) Dangerous Goods Regulations are published by the IATA Dangerous Goods Board pursuant to IATA Resolutions 618 and 619 and constitute a manual of industry carrier regulations to be followed by all IATA Member airlines when transporting hazardous materials."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "IMDG; International Maritime Dangerous Goods Code; International Maritime Organization p.6079 (1998)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "IMDG; International Maritime Dangerous Goods Code; International Maritime Organization p.6079 (1998)",
+                        "Matched": {
+                          "PCLID": 900106252,
+                          "Citation": "IMDG; International Maritime Dangerous Goods Code; International Maritime Organization p.6079 (1998)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Maritime Dangerous Goods Code lays down basic principles for transporting hazardous chemicals. Detailed recommendations for individual substances and a number of recommendations for good practice are included in the classes dealing with such substances. A general index of technical names has also been compiled. This index should always be consulted when attempting to locate the appropriate procedures to be used when shipping any substance or article."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Barium hydroxide (Ba(OH)2)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6093286"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 08-05-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/14609",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/14609"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Cease Manufacture Update: 24-04-2013 https://echa.europa.eu/registration-dossier/-/registered-dossier/5778",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 69,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/5778"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Barium hydroxide: HSNO Approval: HSR007245 Approved with controls",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6093286"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/HSNO",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-11389353"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Federal Drinking Water Standards",
+                "Description": "Federal drinking water standards (e.g. maximum containment level (MCL)) for this chemical.  These standards are legally enforceable.",
+                "URL": "https://www.epa.gov/dwreginfo/drinking-water-regulations",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 141.62 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 141.62 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900039206,
+                          "Citation": "40 CFR 141.62 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Maximum Contaminant Level:  2 mg/L /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 141.51 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 141.51 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900015551,
+                          "Citation": "40 CFR 141.51 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Maximum Contaminant Level Goal:  2 mg/L /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 2000 ug/L /Barium/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Federal Drinking Water Guidelines",
+                "Description": "Federal drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 2000 ug/L /Barium/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Standards",
+                "Description": "State drinking water standards (e.g. maximum containment level (MCL)) for this chemical.  These standards are legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(CA) CALIFORNIA 1000 ug/L /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 27,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(AZ) ARIZONA 1,500 ug/L /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(MN) MINNESOTA 2000 ug/L /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "CERCLA Reportable Quantities",
+                "Description": "The CERCLA reportable quantity for a hazardous substance is the minimum quantity of the substance which, if released, must be reported, under the Comprehensive Environmental Response, Compensation, and Liability Act of 1980 (CERCLA, also commonly known as Superfund).",
+                "URL": "https://www.epa.gov/epcra/cercla-and-epcra-continuous-release-reporting",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 302.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 302.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900003908,
+                          "Citation": "40 CFR 302.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Persons in charge of vessels or facilities are required to notify the National Response Center (NRC) immediately, when there is a release of this designated hazardous substance, in an amount equal to or greater than its reportable quantity of 1000 lb or 454 kg. The toll free number of the NRC is (800) 424-8802. The rule for determining when notification is required is stated in 40 CFR 302.4 (section IV. D.3.b). /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 416,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "RCRA Requirements",
+                "Description": "The Resource Conservation and Recovery Act (RCRA) is the public law that creates the framework for the proper management of hazardous and non-hazardous solid waste. The law describes the waste management program mandated by Congress that gave EPA authority to develop the RCRA program. The term RCRA is often used interchangeably to refer to the law, regulations and EPA policy and guidance.",
+                "URL": "https://www.epa.gov/rcra",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 261.24 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010 https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 261.24 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010 https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900083404,
+                          "Citation": "40 CFR 261.24 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 18, 2010 https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "D005; A solid waste containing barium may or may not become characterized as a hazardous waste when subjected to the Toxicity Characteristic Leaching Procedure listed in 40 CFR 261.24, and if so characterized, must be managed as a hazardous waste. /Barium/",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 249,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "European Commission, ESIS; IUCLID Dataset, Barium hydroxide (17194-00-2) 2000 CD-ROM edition) contains information on use, toxicology, and environmental effects of this chemical as supplied to the European Union by industry.[Available from, as of August 9, 2010: http://esis.jrc.ec.europa.eu/]",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Barium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            },
+                            {
+                              "Start": 61,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/17194-00-2",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6093286"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "U.S. Dept Health & Human Services/Agency for Toxic Substances & Disease Registry;  Toxicological Profile for Barium and Barium Compounds (August 2007) Toxicological Profile 24. The ATSDR toxicological profile succinctly characterizes the toxicologic and adverse health effects information for a hazardous substance.[Available from, as of July 23, 2010: http://www.atsdr.cdc.gov/toxprofiles/index.asp]",
+                          "Markup": [
+                            {
+                              "Start": 109,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            },
+                            {
+                              "Start": 120,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Barium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Barium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_9776",
+        "Name": "Barium hydroxide (Ba(OH)2)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39377477
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "241-234-5",
+        "Name": "Barium hydroxide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.037.470",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1982157
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "c8f0b3ebca470ad8ef603909e3861409",
+        "Name": "Barium hydroxide",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37145825
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "91146",
+        "Name": "Barium hydroxide (EC: 241-234-5)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/91146",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1877939,
+        "SortOrder": 3662
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "NITE-CMC",
+        "SourceID": "H28_B_006,C_009B",
+        "Name": "Barium hydroxide - FY2016 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/16-mhlw-0085e.html",
+        "ANID": 39313149,
+        "SortOrder": 2016
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "NITE-CMC",
+        "SourceID": "311",
+        "Name": "Barium hydroxide - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0304e.html",
+        "ANID": 8788048,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz3804",
+        "Name": "Barium hydroxide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/3804",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17278616
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "1605",
+        "Name": "Barium hydroxide",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/1605",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 1342
+      }
+    ]
+  }
+}

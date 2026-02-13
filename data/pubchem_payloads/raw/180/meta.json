@@ -1,0 +1,34 @@
+{
+  "cid": 180,
+  "hazard_key": "C3H6O",
+  "display_name": "Aceton",
+  "captured_at": "2026-01-31T14:13:45.991198+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/180",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/180/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1326,
+      "file": "data/pubchem_payloads/raw/180/linkout.json",
+      "sha256": "57e4572969bdc36c8e5686ced402d92c8345aecb56bcca511ce03adc106cd0fa"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/180/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 491166,
+      "file": "data/pubchem_payloads/raw/180/lcss.json",
+      "sha256": "e43c8b949664232f3fd5db42eda697cf8a86018edbfa596ba3f1f8eba4655589"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/180/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 443769,
+      "file": "data/pubchem_payloads/raw/180/safety.json",
+      "sha256": "6dd745259a9a2e24362232bb21ea68c3d29e0629ce7a27f54bfce6c80866c996"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/180.png"
+}

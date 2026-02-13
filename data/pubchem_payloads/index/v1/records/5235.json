@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "cid": 5235,
+  "captured_at": "2026-01-31T16:58:24.173995+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5235",
+    "lcss_sha256": "d7f4c70da83b7a41ea3b9bb97715cc288165f889a1e8846ae33f47a705385348",
+    "linkout_sha256": "5a626f184f06f0de75df8f6bd0fb47583df8da9a6c716ea3fb282585ab8dd3c5",
+    "meta_sha256": "7ca8a0a1161be6d0889dfbeefcd57b51b8122b527879b95c7674b4383cb28d48"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H301",
+      "H314",
+      "H315",
+      "H318",
+      "H319",
+      "H341",
+      "H361",
+      "H370",
+      "H372",
+      "H373",
+      "H402",
+      "H412"
+    ],
+    "hazard_statements_sv": {
+      "H301": "Giftigt vid förtäring. 2 : 5",
+      "H314": "Orsakar allvarliga frätskador på hud och ögon.",
+      "H315": "Irriterar huden.",
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H341": "Misstänks kunna orsaka genetiska defekter <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H361": "Misstänks kunna skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H373": "Kan orsaka organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H402": "Skadligt för vattenlevande organismer.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P203",
+      "P260",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P273",
+      "P280",
+      "P301+P316",
+      "P301+P330+P331",
+      "P302+P352",
+      "P302+P361+P354",
+      "P304+P340",
+      "P305+P351+P338",
+      "P305+P354+P338",
+      "P308+P316",
+      "P316",
+      "P317",
+      "P318",
+      "P319",
+      "P321",
+      "P330",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P363",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P301+P316": "VID FÖRTÄRING: Sök omedelbar läkarhjälp.",
+      "P301+P330+P331": "VID FÖRTÄRING: Skölj munnen. Framkalla INTE kräkning.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P302+P361+P354": "VID HUDKONTAKT: Ta omedelbart av alla förorenade kläder. Skölj genast huden med vatten i flera minuter.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P316": "Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P363": "Nedstänkta kläder ska tvättas innan de används igen.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS06",
+      "GHS07",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1699.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.114289+00:00"
+}

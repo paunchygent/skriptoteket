@@ -1,0 +1,34 @@
+{
+  "cid": 3084026,
+  "hazard_key": "SrSO4",
+  "display_name": "Celestin",
+  "captured_at": "2026-01-31T14:33:09.526565+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/3084026",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/3084026/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/3084026/linkout.json",
+      "sha256": "1289af47f6ec600dc3280894974f710ca56fa12a076c500c02d8a65700aa5016"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/3084026/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 46718,
+      "file": "data/pubchem_payloads/raw/3084026/lcss.json",
+      "sha256": "b9408697819787a4a23f917813d5144fc3ffea3640a1e83df724b6b3e546d7b5"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/3084026/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 30929,
+      "file": "data/pubchem_payloads/raw/3084026/safety.json",
+      "sha256": "8e661ed7dbcca0a0684783d2f13d65c17f5d52a93735ed2af46e97c7a3112689"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/3084026.png"
+}

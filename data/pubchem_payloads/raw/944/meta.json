@@ -1,0 +1,34 @@
+{
+  "cid": 944,
+  "hazard_key": "HNO3",
+  "display_name": "Salpetersyra (HNO3)",
+  "captured_at": "2026-01-31T18:42:51.615708+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/944",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/944/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 691,
+      "file": "data/pubchem_payloads/raw/944/linkout.json",
+      "sha256": "7c7120d5ad00f4eedba6a94cdfa25752a405bc7643a1ee109f2b7f445723c2a8"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/944/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 420236,
+      "file": "data/pubchem_payloads/raw/944/lcss.json",
+      "sha256": "dcf19b834a5eb68099a9ba366ae73e95dd080cd8a377d9a9f487cfd12e5b3c5d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/944/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 460180,
+      "file": "data/pubchem_payloads/raw/944/safety.json",
+      "sha256": "5a0a96b177cc16478966b0934181557e19a8f3c9db3cd19e793400aa9170d430"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/944.png"
+}

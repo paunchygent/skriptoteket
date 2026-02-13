@@ -1,0 +1,34 @@
+{
+  "cid": 23672064,
+  "hazard_key": "NaH2PO4",
+  "display_name": "Natriumdihydrogenfosfat",
+  "captured_at": "2026-01-31T16:58:33.841884+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23672064",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/23672064/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82,
+      "file": "data/pubchem_payloads/raw/23672064/linkout.json",
+      "sha256": "0a843d678ce408602312c2626773b800702cfeeb4a8cdbf9ca880b37d46f7b66"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23672064/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 137808,
+      "file": "data/pubchem_payloads/raw/23672064/lcss.json",
+      "sha256": "8a3fd402c2481061c135f35ed56320d98081bd720ed87d9d59465a45b8249eaf"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23672064/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 100781,
+      "file": "data/pubchem_payloads/raw/23672064/safety.json",
+      "sha256": "adfc7a4a5545b0720fe1f828ba0378ad728734e6d4426af5281173c624c30e56"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/23672064.png"
+}

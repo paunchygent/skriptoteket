@@ -263,7 +263,7 @@ class ReagentPrepChefChemistryHeuristics(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     incompatibilities: list[str] = Field(default_factory=list)
-    exothermicity: Literal["none", "low", "medium", "high"] = "none"
+    exothermicity: Literal["none", "low", "medium", "high"] | None = None
     reaction_notes: list[str] = Field(default_factory=list)
 
 

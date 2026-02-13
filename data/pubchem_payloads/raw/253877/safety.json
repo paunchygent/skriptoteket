@@ -1,0 +1,1858 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 253877,
+    "RecordTitle": "Potassium Bromide",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 3.2% (17  of 538) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H315 (12.6%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 38,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319 (91.4%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335 (12.3%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P261, P264, P264+P265, P271, P280, P302+P352, P304+P340, P305+P351+P338, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 57,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 73,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 79,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 85,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 107,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 118,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 129,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 139,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 538 reports by companies from 17 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 178,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 17 of 538 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 79,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 16 notifications provided by 521 of 538 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 101,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/135373"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 37,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264+P265, P280, P305+P351+P338, and P337+P317",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 11,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 37,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin Irrit. 2 (12.6%)"
+                        },
+                        {
+                          "String": "Eye Irrit. 2A (91.4%)"
+                        },
+                        {
+                          "String": "STOT SE 3 (12.3%)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SYMPTOMS: Symptoms of exposure to this compound include central nervous system depression and skin eruptions. Other symptoms include vomiting, irritability, ataxia, mental confusion and coma. It may cause drowsiness, mania, hallucinations and skin rashes. It may also cause vertigo, neurological signs, sensory disturbances, increased spinal fluid pressures and, rarely, death. Exposure may lead to dermatitis, urticaria with occasional blepharitis and conjunctivitis, disturbances of color vision, retrobulbar neuritis and eye disturbances such as mydriasis, blurring or indistinctness of vision, apparent movement or wiggling, change in apparent size of objects and, rarely, photophobia and diplopia. It may also lead to depression, profound stupor and psychoses. Nausea, mental dullness, memory lapses and mental derangement may occur. Mental deterioration may also occur. Other symptoms include pulmonary edema, abdominal pain, paralysis, anorexia, tremor, emaciation, headache, pneumonia, slurred speech, delusions and psychotic behavior. Exposure may cause coughing, sore throat, shortness of breath and dizziness. It may irritate the skin, eyes and respiratory tract. Skin contact may cause redness, pain and burns. Eye contact may cause redness and pain."
+                        },
+                        {
+                          "String": "ACUTE/CHRONIC HAZARDS: This chemical is toxic by ingestion and inhalation. It is an irritant of the skin, eyes and respiratory tract. When heated to decomposition it emits toxic fumes of bromine. (NTP, 1992)",
+                          "Markup": [
+                            {
+                              "Start": 187,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Bromine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Bromine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Flash point data for this chemical are not available; however, it is probably nonflammable. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Reference": [
+                      "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013.",
+                        "Matched": {
+                          "PCLID": 900175655,
+                          "Citation": "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause CNS depression in large doses; [Merck Index] Findings in poisoning cases after ingestion of 12-50 grams include vomiting, diarrhea, kidney failure, liver injury, and hemolysis; [HSDB] Bromide salts were used in the past as sedatives; Not a skin irritant; Ingestion of large amounts will cause nausea and vomiting; No concern for chronic effects when used in sanitizers for food processing equipment; [Reference #1] See Bromine.",
+                          "Markup": [
+                            {
+                              "Start": 429,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Bromine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Bromine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Critical Temperature & Pressure",
+                "Description": "The critical temperature of a substance is the temperature at and above which vapor of the substance cannot be liquefied, no matter how much pressure is applied. The critical pressure of a substance is the pressure required to liquefy a gas at its critical temperature.",
+                "URL": "https://chem.libretexts.org/Bookshelves/General_Chemistry/Book%3A_ChemPRIME_(Moore_et_al.)/10%3A_Solids_Liquids_and_Solutions/10.13%3A_Critical_Temperature_and_Pressure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Daubert, T.E., R.P. Danner. Physical and Thermodynamic Properties of Pure Chemicals Data Compilation. Washington, D.C.: Taylor and Francis, 1989."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Daubert, T.E., R.P. Danner. Physical and Thermodynamic Properties of Pure Chemicals Data Compilation. Washington, D.C.: Taylor and Francis, 1989.",
+                        "Matched": {
+                          "PCLID": 900145536,
+                          "Citation": "Daubert, T.E., R.P. Danner. Physical and Thermodynamic Properties of Pure Chemicals Data Compilation. Washington, D.C.: Taylor and Francis, 1989."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Critical temperature = 3520.00 K; critical pressure = 1.1552X10+7 Pa"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EYES: First check the victim for contact lenses and remove if present. Flush victim's eyes with water or normal saline solution for 20 to 30 minutes while simultaneously calling a hospital or poison control center. Do not put any ointments, oils, or medication in the victim's eyes without specific instructions from a physician. IMMEDIATELY transport the victim after flushing eyes to a hospital even if no symptoms (such as redness or irritation) develop.",
+                          "Markup": [
+                            {
+                              "Start": 96,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 105,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/normal%20saline",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN: IMMEDIATELY flood affected skin with water while removing and isolating all contaminated clothing. Gently wash all affected skin areas thoroughly with soap and water. If symptoms such as redness or irritation develop, IMMEDIATELY call a physician and be prepared to transport the victim to a hospital for treatment.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 166,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "INHALATION: IMMEDIATELY leave the contaminated area; take deep breaths of fresh air. If symptoms (such as wheezing, coughing, shortness of breath, or burning in the mouth, throat, or chest) develop, call a physician and be prepared to transport the victim to a hospital. Provide proper respiratory protection to rescuers entering an unknown atmosphere. Whenever possible, Self-Contained Breathing Apparatus (SCBA) should be used; if not available, use a level of protection greater than or equal to that advised under Protective Clothing."
+                        },
+                        {
+                          "String": "INGESTION: DO NOT INDUCE VOMITING. If the victim is conscious and not convulsing, give 1 or 2 glasses of water to dilute the chemical and IMMEDIATELY call a hospital or poison control center. Be prepared to transport the victim to a hospital if advised by a physician. If the victim is convulsing or unconscious, do not give anything by mouth, ensure that the victim's airway is open and lay the victim on his/her side with the head lower than the body. DO NOT INDUCE VOMITING. IMMEDIATELY transport the victim to a hospital. (NTP, 1992)",
+                          "Markup": [
+                            {
+                              "Start": 105,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fires involving this material can be controlled with a dry chemical, carbon dioxide or Halon extinguisher. A water spray may also be used. (NTP, 1992)",
+                      "Markup": [
+                        {
+                          "Start": 69,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        },
+                        {
+                          "Start": 87,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Halon",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6391"
+                        },
+                        {
+                          "Start": 109,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Suitable extinguishing media: Use water spray, alcohol-resistant foam, dry chemical or carbon dioxide.",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Advice for firefighters: Wear self-contained breathing apparatus for firefighting if necessary."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ACCIDENTAL RELEASE MEASURES: Personal precautions, protective equipment and emergency procedures: Use personal protective equipment. Avoid dust formation. Avoid breathing vapors, mist or gas. Ensure adequate ventilation. Avoid breathing dust. Environmental precautions: Do not let product enter drains. Methods and materials for containment and cleaning up: Pick up and arrange disposal without creating dust. Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in air, soil or water; effects on animal, aquatic and plant life; and conformance with environmental and public health regulations. If it is possible or reasonable use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 238,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Product: Offer surplus and non-recyclable solutions to a licensed disposal company. Contact a licensed professional waste disposal service to dispose of this material; Contaminated packaging: Dispose of as unused product."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ACCIDENTAL RELEASE MEASURES: Personal precautions, protective equipment and emergency procedures: Use personal protective equipment. Avoid dust formation. Avoid breathing vapors, mist or gas. Ensure adequate ventilation. Avoid breathing dust. Environmental precautions: Do not let product enter drains."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Precautions for safe handling: Further processing of solid materials may result in the formation of combustible dusts. The potential for combustible dust formation should be taken into consideration before additional processing occurs.Avoid contact with skin and eyes. Avoid formation of dust and aerosols. Provide appropriate exhaust ventilation at places where dust is formed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Appropriate engineering controls: Handle in accordance with good industrial hygiene and safety practice. Wash hands before breaks and at the end of workday."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Gloves must be inspected prior to use. Use proper glove removal technique (without touching glove's outer surface) to avoid skin contact with this product. Dispose of contaminated gloves after use in accordance with applicable laws and good laboratory practices. Wash and dry hands."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants. Ensure that the local ventilation moves the contaminant away from the worker."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SMALL SPILLS AND LEAKAGE: If you spill this chemical, you should dampen the solid spill material with water, then transfer the dampened material to a suitable container. Use absorbent paper dampened with water to pick up any remaining material. Seal your contaminated clothing and the absorbent paper in a vapor-tight plastic bag for eventual disposal. Wash all contaminated surfaces with a soap and water solution. Do not reenter the contaminated area until the Safety Officer (or other responsible person) has verified that the area has been properly cleaned.",
+                          "Markup": [
+                            {
+                              "Start": 102,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 204,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 400,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "STORAGE PRECAUTIONS: You should store this chemical under refrigerated temperatures, and protect it from moisture. Keep it away from oxidizing materials. If possible, it would be prudent to store this compound under inert atmosphere. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIH; DailyMed. Current Medication Information for K-Brovet 250 (Potassium Bromide Tablet, Chewable) (Updated: December 27, 2017). Available from, as of January 16, 2019: https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a2462704-1d66-4d53-8ecd-22f72439cdb6"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIH; DailyMed. Current Medication Information for K-Brovet 250 (Potassium Bromide Tablet, Chewable) (Updated: December 27, 2017). Available from, as of January 16, 2019: https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a2462704-1d66-4d53-8ecd-22f72439cdb6",
+                        "Matched": {
+                          "PCLID": 900029645,
+                          "Citation": "NIH; DailyMed. Current Medication Information for K-Brovet 250 (Potassium Bromide Tablet, Chewable) (Updated: December 27, 2017). Available from, as of January 16, 2019: https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a2462704-1d66-4d53-8ecd-22f72439cdb6"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store in a tightly sealed container at room temperature (59-86 °F)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep container tightly closed in a dry and well-ventilated place. Hygroscopic."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(a) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(a) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900132223,
+                          "Citation": "40 CFR 180.940(a) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food.  (a) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-contact surfaces in public eating places, dairy-processing equipment, and food-processing equipment and utensils. Potassium bromide is included on this list. Limit: When ready for use, the end-use concentration is not to exceed 46 ppm total available halogen.",
+                          "Markup": [
+                            {
+                              "Start": 641,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900088318,
+                          "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (c) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: food-processing equipment and utensils.  Potassium bromide is included on this list. Limit: When ready for use, the end-use concentration of all bromide-producing chemicals in the solution is not to exceed 200 ppm total available halogen.",
+                          "Markup": [
+                            {
+                              "Start": 566,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 670,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-18541942"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "RECOMMENDED RESPIRATOR: Where the neat test chemical is weighed and diluted, wear a NIOSH-approved half face respirator equipped with an organic vapor/acid gas cartridge (specific for organic vapors, HCl, acid gas and SO2) with a dust/mist filter. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye/face protection: Safety glasses with side-shields conforming to EN166. Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin protection: Handle with gloves."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Body Protection: Complete suit protecting against chemicals. The type of protective equipment must be selected according to the concentration and amount of the dangerous substance at the specific workplace."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection: For nuisance exposures use type P95 (US) or type P1 (EU EN 143) particle respirator. For higher level protection use type OV/AG/P99 (US) or type ABEK-P2 (EU EN 143) respirator cartridges. Use respirators and components tested and approved under appropriate government standards such as NIOSH (US) or CEN (EU)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Water soluble."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Non-Redox-Active Inorganic Compounds"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "POTASSIUM BROMIDE is not in generally strongly reactive. A weak reducing agent, incompatible with oxidizing agents. Also incompatible with salts of mercury and silver. Violent reactions occur with bromine trifluoride. May react with nitrous ether spirit, many alkaloidal salts and starch. May also react with acids (NTP, 1992). Reacts with concentrated sulfuric acid to generate fumes of hydrogen bromide.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/POTASSIUM%20BROMIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 148,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Mercury",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Mercury"
+                            },
+                            {
+                              "Start": 160,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Silver",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Silver"
+                            },
+                            {
+                              "Start": 197,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bromine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24594"
+                            },
+                            {
+                              "Start": 353,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfuric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1118"
+                            },
+                            {
+                              "Start": 388,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-260"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900029812,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Potassium Bromide. Product Number: 221864, Version 5.8 (Revision Date 09/14/2017). Available from, as of January 14, 2019: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatible materials: Strong oxidizing agents, Strong acids, Heavy metal salts, Aluminum, Potassium.",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-36"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-36",
+                        "Matched": {
+                          "PCLID": 900007606,
+                          "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-36"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/Potassium bromide is/ rapidly attacked by bromine trifluoride ...",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 43,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bromine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24594"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Potassium bromide (KBr)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-253877"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 29-06-2020 https://echa.europa.eu/registration-dossier/-/registered-dossier/13209",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/13209"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Potassium bromide: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-253877"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(a) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(a) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900132223,
+                          "Citation": "40 CFR 180.940(a) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food.  (a) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-contact surfaces in public eating places, dairy-processing equipment, and food-processing equipment and utensils. Potassium bromide is included on this list. Limit: When ready for use, the end-use concentration is not to exceed 46 ppm total available halogen.",
+                          "Markup": [
+                            {
+                              "Start": 641,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900088318,
+                          "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of November 29, 2018: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (c) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to: Food-processing equipment and utensils.  Potassium bromide is included on this list. Limit: When ready for use, the end-use concentration of all bromide-producing chemicals in the solution is not to exceed 200 ppm total available halogen.",
+                          "Markup": [
+                            {
+                              "Start": 566,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 670,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-18541942"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Potassium Bromide (April 1991). Available from, as of December 4, 2018: https://iaspub.epa.gov/apex/pesticides/f?p=chemicalsearch:1"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Potassium Bromide (April 1991). Available from, as of December 4, 2018: https://iaspub.epa.gov/apex/pesticides/f?p=chemicalsearch:1",
+                        "Matched": {
+                          "PCLID": 900093888,
+                          "Citation": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Potassium Bromide (April 1991). Available from, as of December 4, 2018: https://iaspub.epa.gov/apex/pesticides/f?p=chemicalsearch:1"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Section 4(g)(2)(A) of FIFRA calls for the Agency to determine, after submission of relevant data concerning an active ingredient, whether products containing the active ingredient are eligible for reregistration. the Agency has previously identified and required the submittal of all the generic (ie, active-ingredient specific) data required to support reregistration of products containing potassium bromide as an active ingredient. The Agency has completed its review of these generic data and has determined that the data are sufficient to support reregistration of products containing potassium bromide.",
+                          "Markup": [
+                            {
+                              "Start": 392,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 590,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 144"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 144",
+                        "Matched": {
+                          "PCLID": 900009485,
+                          "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 144"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "As the federal pesticide law FIFRA directs, EPA is conducting a comprehensive review of older pesticides to consider their health and environmental effects and make decisions about their continued use. Under this pesticide reregistration program, EPA examines newer health and safety data for pesticide active ingredients initially registered before November 1, 1984, and determines whether the use of the pesticide does not pose unreasonable risk in accordance to newer safety standards, such as those described in the Food Quality Protection Act of 1996. Potassium bromide is found on List A, which contains most pesticides that are used on foods and, hence, have a high potential for human exposure. List A consists of the 194 chemical cases (or 350 individual active ingredients) for which EPA issued registration standards prior to FIFRA '88. Case No: 0342; Pesticide type: antimicrobial; Registration Standard Date: 9/30/84 PB89-187256; Case Status: RED Approved 06/91; OPP has made a decision that some/all uses of the pesticide are eligible for reregistration, as reflected in a Reregistration Eligibility Decision (RED) document.; Active ingredient (AI): potassium bromide; AI Status: OPP has completed a Reregistration Eligibility Decision (RED) for the case/AI.",
+                          "Markup": [
+                            {
+                              "Start": 557,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 1164,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Potassium bromide (KBr): Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-253877"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Potassium bromide (KBr): Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-253877"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "USEPA/Office of Pesticide Programs; Reregistration Eligibility Decision Document - Potassium Bromide (April 1991). The RED summarizes the risk assessment conclusions and  outlines any risk reduction measures necessary for the pesticide to continue to be registered in the USA.[Available from, as of December 4, 2018: https://iaspub.epa.gov/apex/pesticides/f?p=chemicalsearch:1]",
+                          "Markup": [
+                            {
+                              "Start": 83,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20Bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "European Chemicals Bureau; IUCLID Dataset, Potassium bromide (7758-02-3) (2000 CD-ROM  edition). Summarizes information on use patterns, toxicity, and ecological effects submitted by industry to the European Union.[Available from, as of April 25, 2007: http://esis.jrc.ec.europa.eu/]",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20bromide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/7758-02-3",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-253877"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11289",
+        "Name": "Potassium bromide (KBr)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39360699
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11289",
+        "Name": "Potassium bromide (KBr)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39377597
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-830-3",
+        "Name": "Potassium bromide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.937",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981374
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "1177050e10854f37ed104dbefcdbf2ce",
+        "Name": "Potassium bromide",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37138183
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "20947",
+        "Name": "POTASSIUM BROMIDE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/20947",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 760464
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5044",
+        "Name": "Potassium bromide",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5044",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3134
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "135373",
+        "Name": "Potassium bromide (EC: 231-830-3)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/135373",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1890845,
+        "SortOrder": 3538
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz6785",
+        "Name": "Potassium bromide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/6785",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17280101
+      }
+    ]
+  }
+}

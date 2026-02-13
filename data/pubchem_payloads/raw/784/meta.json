@@ -1,0 +1,34 @@
+{
+  "cid": 784,
+  "hazard_key": "H2O2",
+  "display_name": "Väteperoxid (H2O2)",
+  "captured_at": "2026-01-31T14:10:24.335944+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/784",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/784/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 691,
+      "file": "data/pubchem_payloads/raw/784/linkout.json",
+      "sha256": "e3eeedfab95659a77a25ffb6a89ea33bab84967b206ef6534b95aca72acdf104"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/784/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 662349,
+      "file": "data/pubchem_payloads/raw/784/lcss.json",
+      "sha256": "68ee11a4b6e9d63500c0478382dda52463a1029ed69b0e34c1f19b873057c772"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/784/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 692769,
+      "file": "data/pubchem_payloads/raw/784/safety.json",
+      "sha256": "2d8d6fc440876b24c3f05cb5cafe223b4ca7ae5720d836492365a02cca5d2263"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/784.png"
+}

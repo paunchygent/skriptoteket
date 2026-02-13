@@ -1,0 +1,34 @@
+{
+  "cid": 24502,
+  "hazard_key": "K2Cr2O7",
+  "display_name": "Kaliumdikromat",
+  "captured_at": "2026-01-31T16:44:07.115555+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24502",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24502/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24502/linkout.json",
+      "sha256": "a956762aabad242d19f49643c035818834751bd1918ce73951b55e5a5c49f4ec"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24502/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 347986,
+      "file": "data/pubchem_payloads/raw/24502/lcss.json",
+      "sha256": "fa6758cfa59475201427f675e2177b04f4d26e0e611af0e5266ee316770bebe2"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24502/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 343343,
+      "file": "data/pubchem_payloads/raw/24502/safety.json",
+      "sha256": "2338a00bb13ff1d5cd04a7fd11383d697f518b1f9440338a85d65eb99a039e64"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24502.png"
+}

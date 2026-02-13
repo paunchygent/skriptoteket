@@ -1,0 +1,1939 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 517111,
+    "RecordTitle": "Ammonium Carbonate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302 (90.5%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P270, P301+P317, P330, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 33,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 1585 reports by companies from 4 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 117,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/128235"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 6.8% (16  of 234) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302 (92.3%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H412 (22.6%): Harmful to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P270, P273, P301+P317, P330, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 39,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 22,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 234 reports by companies from 8 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 177,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 16 of 234 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 79,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 7 notifications provided by 218 of 234 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 100,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/53134"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 4 (92.3%)"
+                        },
+                        {
+                          "String": "Aquatic Chronic 3 (22.6%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 4 (90.5%)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EPA Safer Chemical",
+                "Description": "EPA labels products so that consumers can easily choose ones that are safer for people and the environment. When consumers see the Safer Choice label on a product, they can be confident that the ingredients have been through a rigorous EPA review. The label means that EPA scientists have evaluated every ingredient in the product to ensure it meets Safer Choice's stringent criteria. When people use Safer Choice products, they are protecting their families and the environment by making safer chemical choices.",
+                "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+                "Information": [
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "EPA Safer Chemical",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical: Ammonium carbonate",
+                          "Markup": [
+                            {
+                              "Start": 10,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ammonium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            }
+                          ]
+                        },
+                        {
+                          "String": " Yellow triangle - The chemical has met Safer Choice Criteria for its functional ingredient-class, but has some hazard profile issues. Specifically, a chemical with this code is not associated with a low level of hazard concern for all human health and environmental endpoints. (See Safer Choice Criteria). While it is a best-in-class chemical and among the safest available for a particular function, the function fulfilled by the chemical should be considered an area for safer chemistry innovation.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/epasafe/yellow.svg",
+                              "Type": "Icon",
+                              "Extra": "Yellow triangle"
+                            },
+                            {
+                              "Start": 282,
+                              "Length": 21,
+                              "URL": "https://www.epa.gov/saferchoice/standard#tab-2"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation causes irritation of nose and throat. Ingestion may cause gastric irritation. Contact with eyes or skin causes irritation. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Special Hazards of Combustion Products: Toxic ammonia gas will form in fires.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonia",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-222"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Behavior in Fire: Decomposes, but reaction is not explosive. Ammonia gas is formed. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 61,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ammonia",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-222"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A skin and eye irritant; [CAMEO]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164",
+                        "Matched": {
+                          "PCLID": 900078583,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This material may burn but does not readily ignite."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Contact with eyes or skin causes irritation. If inhaled will cause difficulty in breathing."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Flammable Limits",
+                "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Nonflammable"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "INHALATION: leave contaminated area."
+                        },
+                        {
+                          "String": "INGESTION: give large amount of water.",
+                          "Markup": [
+                            {
+                              "Start": 32,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "EYES: flush with copious amounts of water.",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN: (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Suitable Extinguishing Media: use water spray, alcohol-resistant foam, dry chemical or carbon dioxide. Special protective equipment for fire-fighters: wear self contained breathing apparatus for fire fighting if necessary.",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164",
+                        "Matched": {
+                          "PCLID": 900078583,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use dry chemical, carbon dioxide; water spray; or alcohol foam extinguishers. Poisonous gases are produced in fire. If material or contaminated runoff enters waterways, notify downstream users of potentially contaminated waters. Notify local health and fire officials and pollution control agencies. From a secure, explosion-proof location, use water spray to cool exposed containers. If cooling streams are ineffective (venting sound increases in volume and pitch, tank discolors, or shows any signs of deforming), withdraw immediately to a secure position. ... The only respirators recommended for fire fighting are self-contained breathing apparatuses that have full face-pieces and are operated in a pressure-demand or other positive-pressure mode.",
+                          "Markup": [
+                            {
+                              "Start": 18,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            },
+                            {
+                              "Start": 34,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 345,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164",
+                        "Matched": {
+                          "PCLID": 900078583,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Spill handling: evacuate persons not wearing protective equipment from area of spill or leak until clean-up is complete. Remove all ignition sources. Collect powdered material in the most convenient and safe manner and deposit in sealed containers. Ventilate area after clean-up is complete. It may be necessary to contain and dispose of this chemical as a hazardous waste. If material or contaminated runoff enters waterways, notify downstream users of potentially contaminated waters. Contact your Department of Environmental Protections or your regional office of the federal EPA for specific recommendations."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 411,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ACCIDENTAL RELEASE MEASURES. Personal precautions:use personal protective equipment. Avoid dust formation. Avoid breathing vapors, mist or gas. Ensure adequate ventilation. Avoid breathing dust. Environmental precautions: prevent further leakage or spillage if safe to do so. Do not let product enter drains. Discharge into the environment must be avoided. Methods and materials for containment and cleaning up: pick up and arrange disposal without creating dust. Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164",
+                        "Matched": {
+                          "PCLID": 900078583,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 164"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Slowly deposit in a large container of water. Add excess amounts of soda ash and let stand for 24 hr. Decant to another container, neutralize with hydrochloric acid, and drain with an excess of water. Ship to landfill.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 147,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrochloric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-313"
+                            },
+                            {
+                              "Start": 194,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Remove contaminated clothing and shoes."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Precautions for safe handling. Avoid contact with skin and eyes. Avoid formation of dust and aerosols. Provide appropriate exhaust ventilation at places where dust is formed. Normal measures for preventive fire protection."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Handle with gloves. Gloves must be inspected prior to use. Use proper glove removal technique (without touching glove's outer surface) to avoid skin contact with this product. Dispose of contaminated gloves after use in accordance with applicable laws and good laboratory practices. Wash and dry hands."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Handle in accordance with good industrial hygiene and safety practice. Wash hands before breaks and at the end of workday."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Preventive Measures (Complete) data for AMMONIUM CARBONATE (10 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 97,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/6305#section=Preventive-Measures-(Complete)"
+                            },
+                            {
+                              "Start": 49,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/AMMONIUM%20CARBONATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep container tightly closed in a dry and well-ventilated place. Air sensitive."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163",
+                        "Matched": {
+                          "PCLID": 900097323,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store in tightly closed containers in a cool, well-ventilated area away from temperatures above 38 °C/ 100 °F"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust respirator; protection against ammonia vapors (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonia",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-222"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection. For nuisance exposures use type P95 (US) or type P1 (EU EN 143) particle respirator.For higher level protection use type OV/AG/P99 (US) or type ABEK-P2 (EU EN 143) respirator cartridges. Use respirators and components tested and approved under appropriate government standards such as NIOSH (US) or CEN (EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye protection: safety glasses with side-shields conforming to EN166. Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html",
+                        "Matched": {
+                          "PCLID": 900000314,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Ammonium Carbonate (Product number 207861). Version 4.0 (July 24, 2010). Available from, as of February 24, 2011: https://www.sigma-aldrich.com/safety-center/msds-search.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin and body protection: complete suit protecting against chemicals. The type of protective equipment must be selected according to the concentration and amount of the dangerous substance at the specific workplace."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163",
+                        "Matched": {
+                          "PCLID": 900097323,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear protective gloves and clothing"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163",
+                        "Matched": {
+                          "PCLID": 900097323,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 5th Edition Volume 1:  A-H,Volume 2: I-Z. William Andrew, Norwich, NY 2008, p. 163"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear dust proof chemical goggles and face shield unless full face-piece respiratory protection is worn."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Water soluble."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Salts, Acidic"
+                        },
+                        {
+                          "String": "Carbonate Salts"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Alerts",
+                "Description": "Special alerts if the chemical is especially reactive.",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactivity_alerts.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Decomposes at Elevated Temperatures ("
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "AMMONIUM CARBONATE decomposes when heated to give gaseous ammonia and gaseous carbon dioxide. Reaction is non-explosive. Causes decomposition of sodium hypochlorite within a few seconds [Mellor 2 Supp. 1:550 1956].",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/AMMONIUM%20CARBONATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonia",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-222"
+                            },
+                            {
+                              "Start": 78,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            },
+                            {
+                              "Start": 145,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20hypochlorite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23665760"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "Standard Transportation Number",
+                "Description": "This section provides the Standard Transportation Commodity Code (STCC) for this chemical.  The STCC is a seven digit numeric code representing 38 commodity groupings and used on waybills and other shipping documents.  If the first two digits of an STCC are 48 or 49, the STCC is also called the Hazardous Materials Response Code (HMRC) or Hazmat STCC, and is used when transporting a hazardous material or dangerous good by rail in North America. ",
+                "URL": "https://public.railinc.com/resources/standard-transportation-commodity-code",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 411 49; Ammonium carbonate",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ammonium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Carbonic acid, diammonium salt",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 30,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbonic%20acid%2C%20diammonium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-517111"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Carbonic acid, ammonium salt",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 28,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbonic%20acid%2C%20ammonium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-517111"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 11-12-2012 https://echa.europa.eu/registration-dossier/-/registered-dossier/1190",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 69,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/1190"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 30-05-2013 https://echa.europa.eu/registration-dossier/-/registered-dossier/11523",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/11523"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Active Update: 01-09-2010 https://echa.europa.eu/registration-dossier/-/registered-dossier/1806",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 69,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/1806"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Carbonic acid, ammonium salt: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 28,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbonic%20acid%2C%20ammonium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-517111"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 36,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Carbonic acid, diammonium salt: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 30,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbonic%20acid%2C%20diammonium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-517111"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 37,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Clean Water Act Requirements",
+                "Description": "The Clean Water Act (CWA) of 1972 establishes the basic structure for regulating discharges of pollutants into the waters of the United States and regulating quality standards for surface waters.  Under CWA, the U.S. Environmental Protection Agency (EPA) developed the Toxic Pollutant List (40 CFR Part 401.15) and the Priority Pollutant List (40 CFR Part 423, Appendix A). These lists are to be used by EPA and States to develop the Effluent Guidelines regulations and ensure water quality criteria and standards.",
+                "URL": "https://www.epa.gov/laws-regulations/summary-clean-water-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 116.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 116.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900115697,
+                          "Citation": "40 CFR 116.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ammonium carbonate is designated as a hazardous substance under section 311(b)(2)(A) of the Federal Water Pollution Control Act and further regulated by the Clean Water Act Amendments of 1977 and 1978. These regulations apply to discharges of this substance. This designation includes any isomers and hydrates, as well as any solutions and mixtures containing this substance.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ammonium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            },
+                            {
+                              "Start": 100,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 163,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "CERCLA Reportable Quantities",
+                "Description": "The CERCLA reportable quantity for a hazardous substance is the minimum quantity of the substance which, if released, must be reported, under the Comprehensive Environmental Response, Compensation, and Liability Act of 1980 (CERCLA, also commonly known as Superfund).",
+                "URL": "https://www.epa.gov/epcra/cercla-and-epcra-continuous-release-reporting",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 302.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 302.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900084262,
+                          "Citation": "40 CFR 302.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Persons in charge of vessels or facilities are required to notify the National Response Center (NRC) immediately, when there is a release of this designated hazardous substance, in an amount equal to or greater than its reportable quantity of 5000 lb or 2270 kg. The toll free number of the NRC is (800) 424-8802. The rule for determining when notification is required is stated in 40 CFR 302.4 (section IV. D.3.b)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 184.1137 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 184.1137 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906282967,
+                          "Citation": "21 CFR 184.1137 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Substance added directly to human food affirmed as generally recognized as safe (GRAS)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 582.1137 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 582.1137 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900081615,
+                          "Citation": "21 CFR 582.1137 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 23, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ammonium carbonate used as a general purpose food additive in animal drugs, feeds, and related products is generally recognized as safe when used in accordance with good manufacturing or feeding practice.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ammonium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Carbonic acid, ammonium salt: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 28,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbonic%20acid%2C%20ammonium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-517111"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 2,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Carbonic acid, diammonium salt: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 30,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbonic%20acid%2C%20diammonium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-517111"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Toxic Combustion Products",
+                "Description": "Toxic products (e.g., gases and vapors) produced from the combustion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Poisonous gases may be produced in fire."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "European Chemicals Bureau;IUCLID dataset for diammonium dicarbonate (506-87-6) (2000) contains information on use, toxicology, and environmental effects of this chemical as supplied to the European Union by industry.[Available from, as of February 23, 2011: http://esis.jrc.ec.europa.eu/]",
+                          "Markup": [
+                            {
+                              "Start": 69,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/506-87-6",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-517111"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_12638",
+        "Name": "Carbonic acid, ammonium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39358243
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_4583",
+        "Name": "Carbonic acid, diammonium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39358439
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_4583",
+        "Name": "Carbonic acid, diammonium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400088
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_12638",
+        "Name": "Carbonic acid, ammonium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400117
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "208-058-0",
+        "Name": "Diammonium carbonate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.007.326",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1978994
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "233-786-0",
+        "Name": "Ammonium carbonate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.030.702",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981633
+      },
+      {
+        "ReferenceNumber": 35,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "4d8fd20d35d5d4133aed04d9d0773326",
+        "Name": "Carbonic acid, ammonium salt",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37139055
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "c86f424e77e263673cbc661497adae74",
+        "Name": "Carbonic acid, diammonium salt",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37153039
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "0092",
+        "Name": "ammonium carbonate",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/0092.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2269082
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "2421",
+        "Name": "AMMONIUM CARBONATE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/2421",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 756687
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "6305",
+        "Name": "AMMONIUM CARBONATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/6305",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 4122
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "EPA Safer Choice",
+        "SourceID": "506-87-6",
+        "Name": "Ammonium carbonate",
+        "Description": "The Safer Choice of the U.S. Environmental Protection Agency (EPA) helps consumers, businesses, and purchasers find products that perform and are safer for human health and the environment.",
+        "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 2128099
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "128235",
+        "Name": "Ammonium carbonate (EC: 233-786-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/128235",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1888782,
+        "SortOrder": 4585
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "53134",
+        "Name": "Diammonium carbonate (EC: 208-058-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/53134",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1866675,
+        "SortOrder": 3234
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2033",
+        "Name": "Ammonium carbonate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2033",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277481
+      }
+    ]
+  }
+}

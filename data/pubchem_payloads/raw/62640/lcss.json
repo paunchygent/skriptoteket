@@ -1,0 +1,1939 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 62640,
+    "RecordTitle": "Zinc Sulfate Heptahydrate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 32,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 12,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                      "Type": "Icon",
+                      "Extra": "Corrosive"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    },
+                    {
+                      "Start": 2,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                      "Type": "Icon",
+                      "Extra": "Environmental Hazard"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302 (85.5%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 36,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H315 (14.3%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318 (85.7%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (14.3%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335 (14%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 46,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H400 (85%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410 (85.5%): Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 68,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P264, P264+P265, P270, P271, P273, P280, P301+P317, P302+P352, P304+P340, P305+P351+P338, P305+P354+P338, P317, P319, P321, P330, P332+P317, P337+P317, P362+P364, P391, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 58,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 80,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 96,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 112,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 118,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 124,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 130,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 136,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 147,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 158,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 169,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 175,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 186,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 196,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 399 reports by companies from 11 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 178,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/85897"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        },
+                        {
+                          "Start": 3,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 28,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H371: May cause damage to organs [Warning Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 60,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P264, P264+P265, P270, P273, P280, P301+P317, P305+P354+P338, P308+P316, P317, P330, P391, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 52,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 68,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                        },
+                        {
+                          "Start": 79,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 85,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 91,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 97,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 107,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Warning",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 28,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H316: Causes mild skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 35,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 37,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 60,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P264, P264+P265, P270, P271, P273, P280, P301+P317, P304+P340, P305+P351+P338, P319, P330, P332+P317, P337+P317, P391, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 58,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 85,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 91,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 97,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 108,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 119,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 125,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 136,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 146,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 28,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 60,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P264, P264+P265, P270, P273, P280, P301+P317, P305+P354+P338, P317, P330, P391, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 17,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 46,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 62,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 68,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 74,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 84,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7446-20-0"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "zinc;sulfate;heptahydrate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE"
+                    },
+                    {
+                      "String": "7446-20-0"
+                    },
+                    {
+                      "String": "Sulfuric acid, zinc salt (1:1), heptahydrate"
+                    },
+                    {
+                      "String": "N57JI2K7WP"
+                    },
+                    {
+                      "String": "ZINCUM SULPHURICUM"
+                    },
+                    {
+                      "String": "DTXSID0040175"
+                    },
+                    {
+                      "String": "CHEBI:32312"
+                    },
+                    {
+                      "String": "RefChem:1101168"
+                    },
+                    {
+                      "String": "DTXCID8020175"
+                    },
+                    {
+                      "String": "616-097-3"
+                    },
+                    {
+                      "String": "Zinc Sulfate Hydrate"
+                    },
+                    {
+                      "String": "zinc;sulfate;heptahydrate"
+                    },
+                    {
+                      "String": "zinc sulphate heptahydrate"
+                    },
+                    {
+                      "String": "Zinc sulfate (heptahydrate)"
+                    },
+                    {
+                      "String": "MFCD00149894"
+                    },
+                    {
+                      "String": "Zincsulfateheptahydrate"
+                    },
+                    {
+                      "String": "Zinc sulfate [JAN]"
+                    },
+                    {
+                      "String": "Sulfato de zinc"
+                    },
+                    {
+                      "String": "Zinc vitriol (heptahydrate)"
+                    },
+                    {
+                      "String": "White vitriol (heptahydrate)"
+                    },
+                    {
+                      "String": "CCRIS 5563"
+                    },
+                    {
+                      "String": "0.1M Zinc sulphate"
+                    },
+                    {
+                      "String": "Zinc sulfate (ZnSO4) heptahydrate"
+                    },
+                    {
+                      "String": "UNII-N57JI2K7WP"
+                    },
+                    {
+                      "String": "ZnSO4.7H2O"
+                    },
+                    {
+                      "String": "Zinc sulfate hydrate (1:1:7)"
+                    },
+                    {
+                      "String": "Sulfuric acid, zinc salt (1:1), heptahydrate (8CI,9CI); White vitriol; Zinc sulfate (ZnSO4) heptahydrate; Zinc sulfate heptahydrate; Zinc vitriol; Zinc(II) sulfate heptahydrate"
+                    },
+                    {
+                      "String": "Ophthazinc T (TN)"
+                    },
+                    {
+                      "String": "H14O11SZn"
+                    },
+                    {
+                      "String": "SCHEMBL66658"
+                    },
+                    {
+                      "String": "Zinc sulfate hydrate (JP18)"
+                    },
+                    {
+                      "String": "zinc(2+) sulfate heptahydrate"
+                    },
+                    {
+                      "String": "orb1741540"
+                    },
+                    {
+                      "String": "Zinc sulfate--water (1/1/7)"
+                    },
+                    {
+                      "String": "ZINCUM SULPHURICUM [HPUS]"
+                    },
+                    {
+                      "String": "ZINC SULFATE HYDRATE [JP]"
+                    },
+                    {
+                      "String": "ZINC SULPHATE (HEPTAHYDRATE)"
+                    },
+                    {
+                      "String": "zinc(2+) sulfate--water (1/7)"
+                    },
+                    {
+                      "String": "Zinc sulfate heptahydrate, ACS Grade"
+                    },
+                    {
+                      "String": "AKOS015907730"
+                    },
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE [MI]"
+                    },
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE [MART.]"
+                    },
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE [WHO-DD]"
+                    },
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE [WHO-IP]"
+                    },
+                    {
+                      "String": "NS00075677"
+                    },
+                    {
+                      "String": "D01081"
+                    },
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE [EP MONOGRAPH]"
+                    },
+                    {
+                      "String": "ZINC SULFATE HEPTAHYDRATE [USP MONOGRAPH]"
+                    },
+                    {
+                      "String": "ZINCI SULFAS HEPTAHYDRATE [WHO-IP LATIN]"
+                    },
+                    {
+                      "String": "A838141"
+                    },
+                    {
+                      "String": "F492463"
+                    },
+                    {
+                      "String": "Q27114864"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ZnSO4. 7H2O",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        },
+                        {
+                          "Start": 9,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H14O11SZn"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "287.6"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/H2O4S.7H2O.Zn/c1-5(2,3)4;;;;;;;;/h(H2,1,2,3,4);7*1H2;/q;;;;;;;;+2/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "RZLVQBNCHSJZPX-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "GRANULES OR CRYSTALLINE POWDER."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "100Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/100ml at 20Â °C: 54",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1.97 g/cmÂ³"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough. Sore throat. Shortness of breath."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Skin Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness. Pain. Loss of vision."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Ingestion Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Abdominal pain. Diarrhoea. Nausea. Vomiting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance can be absorbed into the body by inhalation of its aerosol and by ingestion."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evaporation at 20Â °C is negligible; a harmful concentration of airborne particles can, however, be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is irritating to the eyes, skin and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Exposure Prevention",
+                    "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 16,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "PREVENT DISPERSION OF DUST!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 16,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 16,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety goggles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 16,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use local exhaust or breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 16,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Well closed. Store in an area without drain or sewer access."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Do NOT let this chemical enter the environment. Sweep spilled substance into covered containers. Carefully collect remainder. Then store and dispose of according to local regulations."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11049",
+        "Name": "Sulfuric acid, zinc salt (1:1), heptahydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39361595
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0007446200",
+        "Name": "Zinc sulfate [JAN]",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0007446200",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 822055
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "e9e16838446a7f08ef9c7e2b020c6f85",
+        "Name": "Zinc sulphate heptahydrate",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49735580
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "abffa0ff48e81de7c676fb95cd9bbdcf",
+        "Name": "Sulfuric acid, zinc salt (1:1), heptahydrate",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38386545
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID0040175",
+        "Name": "Zinc sulfate heptahydrate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID0040175",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1157239
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "616-097-3",
+        "Name": "Zinc sulfate heptahydrate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.123.504",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2100695
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "N57JI2K7WP",
+        "Name": "ZINC SULFATE HEPTAHYDRATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/N57JI2K7WP",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5790025
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0349",
+        "Name": "ZINC SULFATE HEPTAHYDRATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0349",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260258
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "de473fc2dfe7621b7cf3b05113036b5a",
+        "Name": "Zinc sulphate, heptahydrate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37161606
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "85897",
+        "Name": "Zinc sulfate heptahydrate (EC: 616-097-3)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/85897",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1876410,
+        "SortOrder": 3399
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "NITE-CMC",
+        "SourceID": "25B0003",
+        "Name": "Zinc sulfate heptahydrate - FY2013 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/13-mhlw-2003e.html",
+        "ANID": 2264318,
+        "SortOrder": 2013
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "NITE-CMC",
+        "SourceID": "1108",
+        "Name": "Sulfuric acid, zinc salt (1:1), heptahydrate - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-1097e.html",
+        "ANID": 8787842,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "5178",
+        "Name": "7446-20-0",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=5178",
+        "ANID": 9025931,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

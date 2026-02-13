@@ -1,0 +1,3141 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 5352425,
+    "RecordTitle": "Lead",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 71,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 71,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 71,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H360FD: May damage fertility; May damage the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H362: May cause harm to breast-fed children [Reproductive toxicity, effects on or via lactation]"
+                        },
+                        {
+                          "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 71,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P263, P264, P270, P273, P280, P318, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P263"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 64,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H360FD: May damage fertility; May damage the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 59,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H362: May cause harm to breast-fed children [Reproductive toxicity, effects on or via lactation]"
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P263, P264, P270, P273, P280, P318, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P263"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 64,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 5.1% (127  of 2477) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 83,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302 (36.2%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H332 (38.4%): Harmful if inhaled [Warning Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360 (84.4%): May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 56,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H362 (44.3%): May cause harm to breast-fed children [Reproductive toxicity, effects on or via lactation]"
+                        },
+                        {
+                          "String": "H372 (50.5%): Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 78,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H373 (34.4%): May causes damage to organs through prolonged or repeated exposure [Warning Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H400 (57.9%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410 (61.9%): Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 68,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P261, P263, P264, P270, P271, P273, P280, P301+P317, P304+P340, P317, P318, P319, P330, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P263"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 76,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 82,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 88,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 94,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 100,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 106,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 116,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 2477 reports by companies from 93 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 179,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 127 of 2477 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 91 notifications provided by 2350 of 2477 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 103,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/14116"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 66,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 66,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 66,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 66,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P273, P391, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 16,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 65,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 65,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 65,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H341: Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H351: Suspected of causing cancer [Warning Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 35,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360: May damage fertility or the unborn child [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 65,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P264, P270, P280, P318, P319, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 41,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 41,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 41,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H341: Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H351: Suspected of causing cancer [Warning Carcinogenicity]",
+                          "Markup": [
+                            {
+                              "Start": 35,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H360Df: May damage the unborn child; Suspected of damaging fertility [Danger Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H373: May causes damage to organs through prolonged or repeated exposure [Warning Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 74,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H410: Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                          "Markup": [
+                            {
+                              "Start": 60,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 41,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P273, P280, P318, P319, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 42,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 34,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 4 (36.2%)"
+                        },
+                        {
+                          "String": "Acute Tox. 4 (38.4%)"
+                        },
+                        {
+                          "String": "Repr. 1A (84.4%)"
+                        },
+                        {
+                          "String": "Lact. (44.3%)"
+                        },
+                        {
+                          "String": "STOT RE 1 (50.5%)"
+                        },
+                        {
+                          "String": "STOT RE 2 (34.4%)"
+                        },
+                        {
+                          "String": "Aquatic Acute 1 (57.9%)"
+                        },
+                        {
+                          "String": "Aquatic Chronic 1 (61.9%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 41,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Carcinogenicity - category 2"
+                        },
+                        {
+                          "String": "Germ cell mutagenicity - category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity (repeated exposure) - category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - category 1A"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (acute) - category 1"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (chronic) - category 1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 65,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Germ cell mutagenicity - Category 2"
+                        },
+                        {
+                          "String": "Carcinogenicity - Category 2"
+                        },
+                        {
+                          "String": "Reproductive toxicity - Category 1A"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (hematopoietic system, kidney, central nervous system, peripheral nervous system, cardiovascular system, immune system)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 66,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Hazardous to the aquatic environment (Acute) - Category 1"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Long-term) - Category 1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 67,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Carcinogens, Teratogens"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 71,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Repr. 1A"
+                        },
+                        {
+                          "String": "Lact."
+                        },
+                        {
+                          "String": "Aquatic Acute 1"
+                        },
+                        {
+                          "String": "Aquatic Chronic 1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 72,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Repr. 1A"
+                        },
+                        {
+                          "String": "Lact."
+                        },
+                        {
+                          "String": "Aquatic Chronic 1"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Lead:"
+                        },
+                        {
+                          "String": "Exposure Routes: Inhalation, ingestion, skin and/or eye contact"
+                        },
+                        {
+                          "String": "Symptoms: Lassitude (weakness, exhaustion), insomnia; facial pallor; anorexia, weight loss, malnutrition; constipation, abdominal pain, colic; anemia; gingival lead line; tremor; paralysis wrist, ankles; encephalopathy; kidney disease; irritation eyes; hypertension"
+                        },
+                        {
+                          "String": "Target Organs: Eyes, gastrointestinal tract, central nervous system, kidneys, blood, gingival tissue (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Flash point data for this compound are not available, however, it is probably non-combustible. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Lead is a naturally occurring bluish-gray metal found in small amounts in the earth's crust. Lead can be found in all parts of our environment. Much of it comes from human activities including burning fossil fuels, mining, and manufacturing. Lead has many different uses. It is used in the production of batteries, ammunition, metal products (solder and pipes), and devices to shield X-rays. Because of health concerns, lead from gasoline, paints and ceramic products, caulking, and pipe solder has been dramatically reduced in recent years.CDC uses a blood lead reference value (BLRV) of 3.5 micrograms per deciliter (&#956;g/dL) to identify children with higher levels of lead in their blood compared to most children. This level is based on the 97.5th percentile of the blood lead values among U.S. children ages 1\"\"5 years from the 2015\"\"2016 and 2017\"\"2018 National Health and Nutrition Examination Survey cycles. Children with blood lead levels at or above the BLRV represent those at the top 2.5% with the highest blood lead levels. To learn more about CDC's updated recommendations on children's blood lead levels, please visit:http://www.cdc.gov/nceh/lead/ACCLPP/blood_lead_levels.htm."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Lead is used in the manufacture of batteries, metal products and ammunition. Exposure to lead can occur from breathing contaminated air in or near workplaces that process lead or lead materials, as well as from incidentally ingesting dust or paint chips in houses with lead-based paint. Lead can cause effects on the blood, as well as the nervous, immune, renal and cardiovascular systems. Early childhood and prenatal exposures are associated with slowed cognitive development, learning deficits and other effects. Exposure to high amounts of lead can cause gastrointestinal symptoms, severely damage the brain and kidneys, and may cause reproductive effects. Large doses of some lead compounds have caused cancer in lab animals."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Reference": [
+                      "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.: BEI Documentation",
+                      "Nordberg - Nordberg GF, Fowler BA, Nordberg M (eds). Handbook on the Toxicology of Metals, 4th Ed. Boston: Elsevier, 2015., p. 939-40",
+                      "LaDou - LaDou J, Harrison R (eds). Current Occupational & Environmental Medicine, 5th Ed. New York: McGraw-Hill, 2014., p. 265",
+                      "Rom - Rom WN (ed). _Environmental and Occupational Medicine, _4th Ed. Philadelphia: Lippincott Williams & Wilkins, 2007., p. 978",
+                      "Rom - Rom WN (ed). _Environmental and Occupational Medicine, _4th Ed. Philadelphia: Lippincott Williams & Wilkins, 2007., p. 966",
+                      "Zimmerman - Zimmerman HJ. Hepatotoxicity. Philadelphia: Lippincott Williams & Wilkins, 1999., p. 419",
+                      "Sullivan - Sullivan JB, Krieger GR (eds). Clinical Environmental Health and Toxic Exposures. Philadelphia: Lippincott Williams & Wilkins, 2001., p. 979",
+                      "PMID:21788910"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.: BEI Documentation",
+                        "Matched": {
+                          "PCLID": 900175690,
+                          "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.: BEI Documentation"
+                        }
+                      },
+                      {
+                        "Citation": "Nordberg - Nordberg GF, Fowler BA, Nordberg M (eds). Handbook on the Toxicology of Metals, 4th Ed. Boston: Elsevier, 2015., p. 939-40",
+                        "Matched": {
+                          "PCLID": 900175777,
+                          "Citation": "Nordberg - Nordberg GF, Fowler BA, Nordberg M (eds). Handbook on the Toxicology of Metals, 4th Ed. Boston: Elsevier, 2015., p. 939-40"
+                        }
+                      },
+                      {
+                        "Citation": "LaDou - LaDou J, Harrison R (eds). Current Occupational & Environmental Medicine, 5th Ed. New York: McGraw-Hill, 2014., p. 265",
+                        "Matched": {
+                          "PCLID": 900175842,
+                          "Citation": "LaDou - LaDou J, Harrison R (eds). Current Occupational & Environmental Medicine, 5th Ed. New York: McGraw-Hill, 2014., p. 265"
+                        }
+                      },
+                      {
+                        "Citation": "Rom - Rom WN (ed). _Environmental and Occupational Medicine, _4th Ed. Philadelphia: Lippincott Williams & Wilkins, 2007., p. 978",
+                        "Matched": {
+                          "PCLID": 900176121,
+                          "Citation": "Rom - Rom WN (ed). _Environmental and Occupational Medicine, _4th Ed. Philadelphia: Lippincott Williams & Wilkins, 2007., p. 978"
+                        }
+                      },
+                      {
+                        "Citation": "Rom - Rom WN (ed). _Environmental and Occupational Medicine, _4th Ed. Philadelphia: Lippincott Williams & Wilkins, 2007., p. 966",
+                        "Matched": {
+                          "PCLID": 900176220,
+                          "Citation": "Rom - Rom WN (ed). _Environmental and Occupational Medicine, _4th Ed. Philadelphia: Lippincott Williams & Wilkins, 2007., p. 966"
+                        }
+                      },
+                      {
+                        "Citation": "Zimmerman - Zimmerman HJ. Hepatotoxicity. Philadelphia: Lippincott Williams & Wilkins, 1999., p. 419",
+                        "Matched": {
+                          "PCLID": 906299490,
+                          "Citation": "Zimmerman - Zimmerman HJ. Hepatotoxicity. Philadelphia: Lippincott Williams & Wilkins, 1999., p. 419"
+                        }
+                      },
+                      {
+                        "Citation": "Sullivan - Sullivan JB, Krieger GR (eds). Clinical Environmental Health and Toxic Exposures. Philadelphia: Lippincott Williams & Wilkins, 2001., p. 979",
+                        "Matched": {
+                          "PCLID": 900175937,
+                          "Citation": "Sullivan - Sullivan JB, Krieger GR (eds). Clinical Environmental Health and Toxic Exposures. Philadelphia: Lippincott Williams & Wilkins, 2001., p. 979"
+                        }
+                      },
+                      {
+                        "Citation": "PMID:21788910",
+                        "Matched": {
+                          "PCLID": 12698031,
+                          "Citation": "Wilker E, Korrick S, Nie LH, Sparrow D, Vokonas P, Coull B, Wright RO, Schwartz J, Hu H. Longitudinal changes in bone lead levels: the VA Normative Aging Study. J Occup Environ Med. 2011 Aug;53(8):850–5. PMID: 21788910; PMCID: PMC3159960.",
+                          "PMID": 21788910,
+                          "PMCID": "PMC3159960",
+                          "DOI": "10.1097/jom.0b013e31822589a9"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "At blood lead levels above 900 ug/L (90 ug/dl), poisoning can cause acute lead encephalopathy. Peripheral neuropathy results from levels above 600 ug/L (60 ug/dl). Most reports of lead-related symptoms (fatigue, abdominal pain, and arthralgia) begin at blood levels greater than 600 ug/L. Typical concentrations of lead in surface water in the USA is between 5 and 30 ug/L. Typical intake of lead in the USA is 2 to 9 ug per day from food, water, and beverages. In an analysis of PbB and neurobehavioral test results from 40,000 participants from NHANES III, no statistically significant relationships between blood lead concentration and neurobehavioral test performance were found. . . . Tibia lead, representative of cortical bone, has a residence time of 25 to 30 years and serves as a biomarker of cumulative dose. . . . With additional study, lead in bone could be a viable measure of lead body burden, but at this point in time, the database is insufficient. [ACGIH: BEI Documentation] Heavy lead exposure causes anemia; Lead inhibits hemoglobin synthesis (ALAD and other enzymes), and also shortens lifespan of RBCs with resulting hemolysis. [Nordberg, p. 939-40] Exposure to high air concentrations of lead can precipitate hemolytic anemia. The anemia of chronic lead toxicity, the primary hematologic effect of lead exposures, is enhanced by shortened red cell survival as well as by inhibition of hemoglobin synthesis. [LaDou, p. 265] At blood levels above 50-60 ug/dl, suppression of heme synthesis causes anemia. [Rom, p. 978] Lead-exposed workers may develop proximal renal tubular damage and progressive renal insufficiency. [Rom, p. 966] Lead can produce slight hepatic injury in experimental animals. [Zimmerman, p. 419] There is strong positive data associating lead exposure with spontaneous abortions and prematurity in pregnant women, neurological dysfunction in children and decreased sperm counts in men. [ATSDR Case Studies #29] The OSHA standard requires periodic determination of blood lead in workers exposed at or above action level (30 ug/m3) for more than 30 days per year. [ATSDR ToxProfiles] About 90% of pre-1940 homes contain lead-based paints, while about 60% of 1960-1979 homes contain significant amounts of lead in paint. The use of lead piping and lead solder in plumbing has been prohibited since 1986. [Coluccio VM. Lead-Based Paint Hazards. Wiley, John & Sons; 1997, p. 8-15] Inorganic lead compounds are probable human carcinogens. Organic lead compounds are not classifiable. [IARC] In contrast to inorganic lead, organic compounds are absorbed readily through the skin and into the CNS. [Sullivan, p. 979] Trabecular lead (measured in the patella) reflects exposure in the last 10 years, while cortical bone (measured in the mid-tibia) reflects lifetime exposure. [PMID 21788910] Tetraethyl & tetramethyl lead (CAS # 78-00-2 & 75-74-1) are covered separately.",
+                          "Markup": [
+                            {
+                              "Start": 331,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 440,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 2862,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/78-00-2",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6511"
+                            },
+                            {
+                              "Start": 2872,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/75-74-1",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6394"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Flammable Limits",
+                "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 80,
+                    "Name": "Flammability",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible Solid in bulk form."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest. Refer immediately for medical attention."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 42,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Remove contaminated clothes. Rinse and then wash skin with water and soap.",
+                      "Markup": [
+                        {
+                          "Start": 59,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 42,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse with plenty of water (remove contact lenses if easily possible).",
+                      "Markup": [
+                        {
+                          "Start": 21,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 42,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth. Refer immediately for medical attention."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EYES: First check the victim for contact lenses and remove if present. Flush victim's eyes with water or normal saline solution for 20 to 30 minutes while simultaneously calling a hospital or poison control center. Do not put any ointments, oils, or medication in the victim's eyes without specific instructions from a physician. IMMEDIATELY transport the victim after flushing eyes to a hospital even if no symptoms (such as redness or irritation) develop.",
+                          "Markup": [
+                            {
+                              "Start": 96,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 105,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/normal%20saline",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN: IMMEDIATELY flood affected skin with water while removing and isolating all contaminated clothing. Gently wash all affected skin areas thoroughly with soap and water. If symptoms such as redness or irritation develop, IMMEDIATELY call a physician and be prepared to transport the victim to a hospital for treatment.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 166,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "INHALATION: IMMEDIATELY leave the contaminated area; take deep breaths of fresh air. IMMEDIATELY call a physician and be prepared to transport the victim to a hospital even if no symptoms (such as wheezing, coughing, shortness of breath, or burning in the mouth, throat, or chest) develop. Provide proper respiratory protection to rescuers entering an unknown atmosphere. Whenever possible, Self-Contained Breathing Apparatus (SCBA) should be used; if not available, use a level of protection greater than or equal to that advised under Protective Clothing."
+                        },
+                        {
+                          "String": "INGESTION: Some heavy metals are VERY TOXIC POISONS, especially if their salts are very soluble in water (e.g., lead, chromium, mercury, bismuth, osmium, and arsenic). IMMEDIATELY call a hospital or poison control center and locate activated charcoal, egg whites, or milk in case the medical advisor recommends administering one of them. Also locate Ipecac syrup or a glass of salt water in case the medical advisor recommends inducing vomiting. Usually, this is NOT RECOMMENDED outside of a physician's care. If advice from a physician is not readily available and the victim is conscious and not convulsing, give the victim a glass of activated charcoal slurry in water or, if this is not available, a glass of milk, or beaten egg whites and IMMEDIATELY transport victim to a hospital. If the victim is convulsing or unconscious, do not give anything by mouth, assure that the victim's airway is open and lay the victim on his/her side with the head lower than the body. DO NOT INDUCE VOMITING. IMMEDIATELY transport the victim to a hospital.",
+                          "Markup": [
+                            {
+                              "Start": 99,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 118,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chromium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Chromium"
+                            },
+                            {
+                              "Start": 128,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Mercury",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Mercury"
+                            },
+                            {
+                              "Start": 137,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Bismuth",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Bismuth"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Osmium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Osmium"
+                            },
+                            {
+                              "Start": 158,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Arsenic",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Arsenic"
+                            },
+                            {
+                              "Start": 242,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/charcoal",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5462310"
+                            },
+                            {
+                              "Start": 382,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 647,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/charcoal",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5462310"
+                            },
+                            {
+                              "Start": 666,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "OTHER: Since this chemical is a known or suspected carcinogen you should contact a physician for advice regarding the possible long term health effects and potential recommendation for medical monitoring. Recommendations from the physician will depend upon the specific compound, its chemical, physical and toxicity properties, the exposure level, length of exposure, and the route of exposure. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 80,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(General first aid procedures)",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 28,
+                              "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: Irrigate immediately  - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 124,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: Soap flush promptly  - If this chemical contacts the skin, promptly flush the contaminated skin with soap and water. If this chemical penetrates the clothing, promptly remove the clothing and flush the skin with water. If irritation persists after washing, get medical attention.",
+                          "Markup": [
+                            {
+                              "Start": 116,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 218,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Breathing: Respiratory support"
+                        },
+                        {
+                          "String": "Swallow: Medical attention immediately  - If this chemical has been swallowed, get medical attention immediately."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Reference": [
+                  "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                    "Matched": {
+                      "PCLID": 900163266,
+                      "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fires involving this material can be controlled with a dry chemical, carbon dioxide, foam, or Halon extinguisher. (NTP, 1992)",
+                      "Markup": [
+                        {
+                          "Start": 69,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        },
+                        {
+                          "Start": 94,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Halon",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6391"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 42,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Isolation and Evacuation",
+                "Description": "Isolation and evacuation measures to take when a large amount of this chemical is accidentally released in an emergency.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 171 [Substances (Low to Moderate Hazard)]:"
+                        },
+                        {
+                          "String": "IMMEDIATE PRECAUTIONARY MEASURE: Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "SPILL: Increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "FIRE: If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Do NOT let this chemical enter the environment. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting. Carefully collect remainder. Then store and dispose of according to local regulations."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "STORAGE PRECAUTIONS: You should store this chemical under refrigerated temperatures, and keep it away from oxidizing materials. (NTP, 1992)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store only in original container. Separated from food and feedstuffs and incompatible materials. See Chemical Dangers. Store in an area without drain or sewer access."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 40,
+                "Name": "Exposure Summary",
+                "Reference": [
+                  "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.",
+                  "TLVs and BEIs - _Threshold Limit Values for Chemical Substances and Physical Agents & Biological Exposure Indices. _Cincinnati: ACGIH, 2020."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.",
+                    "Matched": {
+                      "PCLID": 900176185,
+                      "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                    }
+                  },
+                  {
+                    "Citation": "TLVs and BEIs - _Threshold Limit Values for Chemical Substances and Physical Agents & Biological Exposure Indices. _Cincinnati: ACGIH, 2020.",
+                    "Matched": {
+                      "PCLID": 900176142,
+                      "Citation": "TLVs and BEIs - _Threshold Limit Values for Chemical Substances and Physical Agents & Biological Exposure Indices. _Cincinnati: ACGIH, 2020."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Biological Exposure Indices (BEI) [ACGIH] - Lead in blood = 200 ug/L (20 ug/100 ml); sampling time not critical; The BEI cannot be applied to exposure to tetraethyl lead or other organic lead compounds. [TLVs and BEIs]"
+                    },
+                    {
+                      "String": "TIH (Toxic Inhalation Hazard) - Term used to describe gases and volatile liquids that are toxic when inhaled. Some are TIH materials themselves, e.g., chlorine, and some release TIH gases when spilled in water, e.g., chlorosilanes. [ERG 2016].",
+                      "Markup": [
+                        {
+                          "Start": 151,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chlorine",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Chlorine"
+                        },
+                        {
+                          "Start": 204,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 40,
+                "Name": "Maximum Allowable Concentration (MAK)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.004 [mg/m3], as Pb, inhalable fraction (excluding Lead Arsenate and Lead Chromate)[German Research Foundation (DFG)]",
+                      "Markup": [
+                        {
+                          "Start": 52,
+                          "Length": 13,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Lead%20Arsenate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24572"
+                        },
+                        {
+                          "Start": 70,
+                          "Length": 13,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Lead%20Chromate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24460"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Recommended Exposure Limit (REL)",
+                "Description": "The recommended exposure limit (REL) is the maximum amount or concentration of a chemical that a worker may be exposed to.  The RELs are guidelines established and recommended by the NIOSH (National Institute for Occupational Safety and Health).  The RELs can be given in three ways. [1] Time-weighted average (REL-TWA): average exposure based on up to10h/day, 40h/week work schedule. [2] Short-term exposure limit (REL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (REL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#exposure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 69,
+                    "Name": "REL-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.05 mg/m³"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 80,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA (8-hour) 0.050 mg/m3 See Appendix C [*Note: The REL also applies to other lead compounds (as Pb) -- see Appendix C.]",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 25,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxc.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.05 [mg/m3]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 69,
+                    "Name": "PEL-TWA (8-Hour Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.05 mg/m³ [0.03 mg/m³ Action Level]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 80,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "[1910.1025] TWA 0.050 mg/m3 See Appendix C [*Note: The PEL also applies to other lead compounds (as Pb) -- see Appendix C.]",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxc.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100 mg Pb/m3 (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100.0 [mg/m3]"
+                        },
+                        {
+                          "String": "Excerpts from Documentation for IDLHs: Basis for revised IDLH: No inhalation toxicity data are available on which to base an IDLH for lead compounds."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 69,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100 mg/m³"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 80,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100 mg/m3 (as Pb)",
+                          "Markup": [
+                            {
+                              "Start": 8,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "See: 7439921",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 7,
+                              "URL": "https://www.cdc.gov/niosh/idlh/7439921.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.05 [mg/m3], as Pb"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.05 mg/m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 69,
+                    "Name": "TLV-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.05 mg/m³ (Lead and inorganic compounds, as Pb) [1991]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Occupational Exposure Limits (OEL)",
+                "Description": "In general, the occupational exposure limit (OEL) indicates the level of admissible exposure, for a length of time (usually 8 hours), to a chemical or physical hazard that is not likely to affect the health of a worker. The OELs for chemical substances are established based on the chemical properties of the substance, experimental studies on animals and humans, toxicological and epidemiological data. These limits are set out by many professional organizations and government agencies around the world, such as the American Conference of Governmental Industrial Hygienists (ACGIH), and the National Institute for Occupational Safety and Health (NIOSH) in the United States. Different organizations may use different terminology for the OEL. For example, the ACGIH term for OEL is \"Threshold Limit Value\" (TLV)® while the NIOSH term is \"recommended exposure limits\" (REL). This section also includes MAK (maximale arbeitsplatzkonzentration), similar to threshold limit value, specifies the maximum concentration level of a toxic substance in air at a workplace.",
+                "URL": "https://www.ccohs.ca/oshanswers/hsprograms/occ_hygiene/occ_exposure_limits.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "EU-OEL",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(binding): 0.15 mg/m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "MAK (Maximale Arbeitsplatz Konzentration)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "carcinogen category: 2; germ cell mutagen group: 3A."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation of high concentrations may cause effects on multiple organs. See Acute Hazards/Symptoms."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance may have effects on the blood, bone marrow, nervous system and kidneys. This may result in anaemia, encephalopathy (for example, convulsions), peripheral nerve disease, abdominal cramps, kidney impairment, cardiovascular disorders and hearing loss.  This substance is possibly carcinogenic to humans. Causes toxicity to human reproduction or development."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Lead:"
+                        },
+                        {
+                          "String": "Skin: PREVENT SKIN CONTACT - Wear appropriate personal protective clothing to prevent skin contact."
+                        },
+                        {
+                          "String": "Eyes: PREVENT EYE CONTACT - Wear appropriate eye protection to prevent eye contact."
+                        },
+                        {
+                          "String": "Wash skin: DAILY - The worker should wash daily at the end of each work shift, and prior to eating, drinking, smoking, etc."
+                        },
+                        {
+                          "String": "Remove: WHEN WET OR CONTAMINATED - Work clothing that becomes wet or significantly contaminated should be removed and replaced."
+                        },
+                        {
+                          "String": "Change: DAILY - Workers whose clothing may have become contaminated should change into uncontaminated clothing before leaving the work premises. (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Respirator Recommendations",
+                "Description": "This section provides a list of allowable respirators to be used for this chemical, according to the NIOSH's Respirator Selection Recommendations.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread",
+                "Information": [
+                  {
+                    "ReferenceNumber": 80,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(See OSHA respirator requirements for selected chemicals)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 57,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxe.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "NIOSH/OSHA"
+                        },
+                        {
+                          "String": "Up to 0.5 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 10) Any air-purifying respirator with an N100, R100, or P100 filter (including N100, R100, and P100 filtering facepieces) except quarter-mask respirators."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 10) Any supplied-air respirator"
+                        },
+                        {
+                          "String": "Up to 1.25 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 15,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 25) Any supplied-air respirator operated in a continuous-flow mode"
+                        },
+                        {
+                          "String": "(APF = 25) Any powered, air-purifying respirator with a high-efficiency particulate filter."
+                        },
+                        {
+                          "String": "Up to 2.5 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 50) Any air-purifying, full-facepiece respirator with an N100, R100, or P100 filter."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 50) Any supplied-air respirator that has a tight-fitting facepiece and is operated in a continuous-flow mode"
+                        },
+                        {
+                          "String": "(APF = 50) Any powered, air-purifying respirator with a tight-fitting facepiece and a high-efficiency particulate filter"
+                        },
+                        {
+                          "String": "(APF = 50) Any self-contained breathing apparatus with a full facepiece"
+                        },
+                        {
+                          "String": "(APF = 50) Any supplied-air respirator with a full facepiece"
+                        },
+                        {
+                          "String": "Up to 50 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 1000) Any supplied-air respirator operated in a pressure-demand or other positive-pressure mode"
+                        },
+                        {
+                          "String": "Up to 100 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 2000) Any supplied-air respirator that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode"
+                        },
+                        {
+                          "String": "Emergency or planned entry into unknown concentrations or IDLH conditions:"
+                        },
+                        {
+                          "String": "(APF = 10,000) Any self-contained breathing apparatus that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode"
+                        },
+                        {
+                          "String": "(APF = 10,000) Any supplied-air respirator that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode in combination with an auxiliary self-contained positive-pressure breathing apparatus"
+                        },
+                        {
+                          "String": "Escape:"
+                        },
+                        {
+                          "String": "(APF = 50) Any air-purifying, full-facepiece respirator with an N100, R100, or P100 filter."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Any appropriate escape-type, self-contained breathing apparatus"
+                        },
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Prevention",
+                "Description": "Precautionary measures to prevent fires from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Closed system, ventilation, explosion-proof electrical equipment and lighting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PREVENT DISPERSION OF DUST! STRICT HYGIENE!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use local exhaust or breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety spectacles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Insoluble in water."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Metals, Less Reactive"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "In the presence of carbon, the combination of chlorine trifluoride with aluminum, copper, lead, magnesium, silver, tin, or zinc results in a violent reaction [Mellor 2, Supp. 1: 1956]. A solution of sodium azide in copper pipe with lead joints formed copper and lead azide, both are detonating compounds [Klotz 1973]. Sodium acetylide becomes pyrophoric when mixed with metals like lead. Mixtures of trioxane with 60% hydrogen peroxide in contact with metallic lead when heated detonated. Lead containing rubber ignited in a nitric acid atmosphere. Lead is incompatible with strong oxidants such as: ammonium nitrate, chlorine trifluoride, hydrogen peroxide, etc.",
+                          "Markup": [
+                            {
+                              "Start": 19,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Carbon",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Carbon"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/chlorine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24637"
+                            },
+                            {
+                              "Start": 72,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 82,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 107,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Silver",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Silver"
+                            },
+                            {
+                              "Start": 115,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            },
+                            {
+                              "Start": 123,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            },
+                            {
+                              "Start": 199,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20azide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-33557"
+                            },
+                            {
+                              "Start": 215,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 251,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 262,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/lead%20azide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-61600"
+                            },
+                            {
+                              "Start": 318,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20acetylide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-2733336"
+                            },
+                            {
+                              "Start": 400,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/trioxane",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-19593658"
+                            },
+                            {
+                              "Start": 418,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-784"
+                            },
+                            {
+                              "Start": 525,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/nitric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-944"
+                            },
+                            {
+                              "Start": 600,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 618,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/chlorine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24637"
+                            },
+                            {
+                              "Start": 640,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-784"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "DOT Label",
+                "Description": "U.S. Department of Transportation (DOT) hazard warning label for the chemical (such as flammable liquid or corrosive). This label must be displayed on shipped packages, railroad tank cars, and tank trucks according to specifications described in 49 CFR 172.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Class 9"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "UN Classification",
+                "Description": "Classification of this chemical, according to the Agreement concerning the International Carriage of Dangerous Goods by Road (ADR).  ADR is a United Nations treaty that governs transnational transport of hazardous materials.",
+                "URL": "https://unece.org/about-adr",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN Hazard Class: 9; UN Pack Group: III"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 8,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Lead"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 18-04-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/16063",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/16063"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Cease Manufacture Update: 26-03-2018 https://echa.europa.eu/registration-dossier/-/registered-dossier/23174",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/23174"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "REACH Restricted Substance",
+                "Reference": [
+                  "https://echa.europa.eu/substances-restricted-under-reach"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "https://echa.europa.eu/substances-restricted-under-reach",
+                    "Matched": {
+                      "PCLID": 900163267,
+                      "Citation": "https://echa.europa.eu/substances-restricted-under-reach"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Restricted substance: Lead"
+                    },
+                    {
+                      "String": "EC: 231-100-4"
+                    },
+                    {
+                      "String": "Restriction condition document: PDF link",
+                      "Markup": [
+                        {
+                          "Start": 32,
+                          "Length": 8,
+                          "URL": "https://echa.europa.eu/documents/10162/64e0e958-99c2-e75e-4fa8-d2b71b18f0b4"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "REACH Substances of Very High Concern (SVHC)",
+                "Reference": [
+                  "https://echa.europa.eu/candidate-list-table"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "https://echa.europa.eu/candidate-list-table",
+                    "Matched": {
+                      "PCLID": 900163269,
+                      "Citation": "https://echa.europa.eu/candidate-list-table"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Substance: Lead"
+                    },
+                    {
+                      "String": "EC: 231-100-4"
+                    },
+                    {
+                      "String": "Date of inclusion: >27-Jun-2018"
+                    },
+                    {
+                      "String": "Reason for inclusion: Toxic for reproduction (Article 57c)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 51,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Lead: HSNO Approval: HSR002809 Approved with controls",
+                      "Markup": [
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/HSNO",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-11389353"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 67,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 7,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Lead: Human health tier II assessment"
+                    },
+                    {
+                      "String": "Evaluation - Lead and lead manufacturing byproducts"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Agency for Toxic Substances and Disease Registry (ATSDR)",
+        "SourceID": "tsp-13",
+        "Name": "Lead",
+        "Description": "ATSDR, the Agency for Toxic Substances and Disease Registry under CDC,is a federal public health agency of the U.S. Department of Health and Human Services. The Toxic Substances Portal at ATSDR provides toxicological information for hazardous chemical substances in the National Priorities List (NPL). Toxicological Profiles (Tox Profiles) are a unique compilation of toxicological information on a given hazardous substance. Each peer-reviewed Tox Profile reflects a comprehensive and extensive evaluation, summary, and interpretation of available toxicological and epidemiological information on a substance.",
+        "URL": "https://wwwn.cdc.gov/TSP/substances/ToxSubstance.aspx?toxid=22",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 756196
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "EPA Air Toxics",
+        "SourceID": "epaair_107",
+        "Name": "Lead Compounds",
+        "Description": "EPA Health Effects Notebook for Hazardous Air Pollutants",
+        "URL": "https://www.epa.gov/sites/default/files/2016-09/documents/lead-compounds.pdf",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 8862896
+      },
+      {
+        "ReferenceNumber": 40,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz10",
+        "Name": "Lead",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/10",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17275787
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_10983",
+        "Name": "Lead",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39369058
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_10983",
+        "Name": "Lead",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39401202
+      },
+      {
+        "ReferenceNumber": 35,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-100-4",
+        "Name": "Lead",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.273",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981237
+      },
+      {
+        "ReferenceNumber": 51,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "8ed8a64ed9ef38e7c41e0d6ceabf2d74",
+        "Name": "Lead",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37161545
+      },
+      {
+        "ReferenceNumber": 67,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "1096",
+        "Name": "lead",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1096.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2269838
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "16140",
+        "Name": "LEAD",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/16140",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 759091
+      },
+      {
+        "ReferenceNumber": 42,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0052",
+        "Name": "LEAD",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0052",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2259968
+      },
+      {
+        "ReferenceNumber": 69,
+        "SourceName": "Occupational Safety and Health Administration (OSHA)",
+        "SourceID": "500",
+        "Name": "LEAD, INORGANIC (as Pb)",
+        "Description": "The OSHA Occupational Chemical Database contains over 800 entries with information such as physical properties, exposure guidelines, etc.",
+        "URL": "https://www.osha.gov/chemicaldata/500",
+        "LicenseNote": "Materials created by the federal government are generally part of the public domain and may be used, reproduced and distributed without permission. Therefore, content on this website which is in the public domain may be used without the prior permission of the U.S. Department of Labor (DOL). Warning: Some content - including both images and text - may be the copyrighted property of others and used by the DOL under a license.",
+        "LicenseURL": "https://www.dol.gov/general/aboutdol/copyright",
+        "ANID": 3410976
+      },
+      {
+        "ReferenceNumber": 80,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0368",
+        "Name": "Lead",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0368.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266666
+      },
+      {
+        "ReferenceNumber": 71,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "082-013-00-1",
+        "Name": "lead powder; [particle diameter < 1 mm]",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 392528,
+        "SortOrder": 100000
+      },
+      {
+        "ReferenceNumber": 72,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "082-014-00-7",
+        "Name": "lead massive: [particle diameter ≥ 1 mm]",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 392529,
+        "SortOrder": 100000
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "14116",
+        "Name": "Lead (EC: 231-100-4)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/14116",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1855079,
+        "SortOrder": 5477
+      },
+      {
+        "ReferenceNumber": 66,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R06_C_136_MOE",
+        "Name": "Lead - FY2024 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/24-moe-2136e.html",
+        "ANID": 53255230,
+        "SortOrder": 2024
+      },
+      {
+        "ReferenceNumber": 65,
+        "SourceName": "NITE-CMC",
+        "SourceID": "168",
+        "Name": "Lead - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0165e.html",
+        "ANID": 2265536,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 41,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "5139",
+        "Name": "Lead",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=5139",
+        "ANID": 9025892,
+        "SortOrder": 10
+      }
+    ]
+  }
+}

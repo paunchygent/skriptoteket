@@ -1,0 +1,34 @@
+{
+  "cid": 6093286,
+  "hazard_key": "Ba(OH)2",
+  "display_name": "Bariumhydroxid",
+  "captured_at": "2026-01-31T14:17:20.216070+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6093286",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6093286/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/6093286/linkout.json",
+      "sha256": "70c71caff35fdad48ade13f096bf73922f51899cd32332fb698fff383bdd229a"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6093286/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 152533,
+      "file": "data/pubchem_payloads/raw/6093286/lcss.json",
+      "sha256": "938bd7eb286a3623d06218b644cb65bd5ae4d0af1ddc178ded36ebacfbf8f2c6"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6093286/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 177706,
+      "file": "data/pubchem_payloads/raw/6093286/safety.json",
+      "sha256": "488f94b4ae44ea8288bb6e2470e83c05516adb6fa2f8409f07cfa34501f60095"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/6093286.png"
+}

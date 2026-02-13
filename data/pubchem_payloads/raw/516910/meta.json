@@ -1,0 +1,34 @@
+{
+  "cid": 516910,
+  "hazard_key": "KNO2",
+  "display_name": "Kaliumnitrit",
+  "captured_at": "2026-01-31T16:45:11.214662+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516910",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/516910/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 80,
+      "file": "data/pubchem_payloads/raw/516910/linkout.json",
+      "sha256": "133b1a011ee6d5f66946771ee1c83b014b98e24b8cf64ab8bffbe35844734d9e"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516910/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 270506,
+      "file": "data/pubchem_payloads/raw/516910/lcss.json",
+      "sha256": "1be4665c5edec6a56bc735d0ea51c96961b30df430ef9d6d900a62e6daf788c1"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516910/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 250783,
+      "file": "data/pubchem_payloads/raw/516910/safety.json",
+      "sha256": "4bf069f1289ddc2b551f9adcd021b5487aea0d026b8665acdb664601e1ee8b64"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/516910.png"
+}

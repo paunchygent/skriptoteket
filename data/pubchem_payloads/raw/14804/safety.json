@@ -1,0 +1,3718 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 14804,
+    "RecordTitle": "Sodium Sulfide",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 21,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                              "Type": "Icon",
+                              "Extra": "Acute Toxic"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 21,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 21,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H302: Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H311: Toxic in contact with skin [Danger Acute toxicity, dermal]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H314: Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H400: Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 21,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P262, P264, P270, P273, P280, P301+P317, P301+P330+P331, P302+P352, P302+P361+P354, P304+P340, P305+P354+P338, P316, P321, P330, P361+P364, P363, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P262"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                            },
+                            {
+                              "Start": 63,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                            },
+                            {
+                              "Start": 90,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 101,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 117,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 123,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 129,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 135,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P361+P364"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                            },
+                            {
+                              "Start": 152,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 158,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 168,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 17,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Corrosives, Reactive agents - 1st degree"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 21,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 3 *"
+                        },
+                        {
+                          "String": "Acute Tox. 4 *"
+                        },
+                        {
+                          "String": "Skin Corr. 1B"
+                        },
+                        {
+                          "String": "Aquatic Acute 1"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "NFPA Hazard Classification",
+                "Description": "The National Fire Protection Association (NFPA) Hazard Classification (also known as NFPA 704) provides a simple, readily recognized, easily understood system for identifying the specific hazards of a material and the severity of the hazard that would occur during an emergency response. The system addresses the health, flammability, instability, and special hazards presented from short-term, acute exposures that could occur as a result of a fire, spill, or similar emergency.",
+                "URL": "https://www.nfpa.org/news-blogs-and-articles/blogs/2021/11/05/hazardous-materials-identification",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "NFPA 704 Diamond",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "  ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/image/nfpa.cgi?code=311",
+                              "Type": "Icon",
+                              "Extra": "3-1-1"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "NFPA Health Rating",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": " 3 - Materials that, under emergency conditions, can cause serious or permanent injury."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "NFPA Fire Rating",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": " 1 - Materials that must be preheated before ignition can occur. Materials require considerable preheating, under all ambient temperature conditions, before ignition and combustion can occur."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "NFPA Instability Rating",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": " 1 - Materials that in themselves are normally stable but that can become unstable at elevated temperatures and pressures."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Caustic action on skin and eyes. If ingested may liberate hydrogen sulfide in stomach. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 58,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· TOXIC and/or CORROSIVE; inhalation, ingestion or skin contact with material may cause severe injury or death."
+                        },
+                        {
+                          "String": "· Methyl bromoacetate (UN2643) is an eye irritant/lachrymator (causes flow of tears).",
+                          "Markup": [
+                            {
+                              "Start": 2,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Methyl%20bromoacetate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-60984"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN2643",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-60984"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Contact with molten substance may cause severe burns to skin and eyes."
+                        },
+                        {
+                          "String": "· Avoid any skin contact."
+                        },
+                        {
+                          "String": "· Fire may produce irritating, corrosive and/or toxic gases."
+                        },
+                        {
+                          "String": "· Runoff from fire control or dilution water may be corrosive and/or toxic and cause environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· Fire will produce irritating, corrosive and/or toxic gases."
+                        },
+                        {
+                          "String": "· Inhalation of decomposition products may cause severe injury or death."
+                        },
+                        {
+                          "String": "· Contact with substance may cause severe burns to skin and eyes."
+                        },
+                        {
+                          "String": "· Runoff from fire control or dilution water may cause environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "CAUTION: Pentaborane (UN1380) is highly toxic and may be fatal if inhaled, ingested or absorbed through skin.",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Pentaborane",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-15764013"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Special Hazards of Combustion Products: Irritating sulfur dioxide is produced in fire. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 51,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfur%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1119"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· Combustible material: may burn but does not ignite readily."
+                        },
+                        {
+                          "String": "· When heated, vapors may form explosive mixtures with air: indoors, outdoors and sewers explosion hazards."
+                        },
+                        {
+                          "String": "· Those substances designated with a (P) may polymerize explosively when heated or involved in a fire."
+                        },
+                        {
+                          "String": "· Corrosives in contact with metals may evolve flammable hydrogen gas.",
+                          "Markup": [
+                            {
+                              "Start": 57,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Containers may explode when heated."
+                        },
+                        {
+                          "String": "· Runoff may pollute waterways."
+                        },
+                        {
+                          "String": "· Substance may be transported in a molten form."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· Flammable/combustible material."
+                        },
+                        {
+                          "String": "· May ignite on contact with moist air or moisture."
+                        },
+                        {
+                          "String": "· May burn rapidly with flare-burning effect."
+                        },
+                        {
+                          "String": "· Some react vigorously or explosively on contact with water.",
+                          "Markup": [
+                            {
+                              "Start": 55,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Some may decompose explosively when heated or involved in a fire."
+                        },
+                        {
+                          "String": "· May re-ignite after fire is extinguished."
+                        },
+                        {
+                          "String": "· Runoff may create fire or explosion hazard."
+                        },
+                        {
+                          "String": "· Containers may explode when heated."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Hydrogen sulfide released slowly when exposed to moist air and rapidly when exposed to acids; Sulfur oxides and hydrogen sulfide may be generated during a fire; Corrosive to the eyes and skin; [CHEMINFO] Corrosive; Inhalation of high concentration can cause chemical pneumonitis; [MSDSonline] See Hydrogen sulfide.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            },
+                            {
+                              "Start": 112,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            },
+                            {
+                              "Start": 297,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-185"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-185",
+                        "Matched": {
+                          "PCLID": 900123267,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-185"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "MOIST SODIUM SULFIDE IS SPONTANEOUSLY FLAMMABLE UPON DRYING IN AIR.",
+                          "Markup": [
+                            {
+                              "Start": 6,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/SODIUM%20SULFIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Combustible solid."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Irritates skin and mucous membranes."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Explosive Limits and Potential",
+                "Description": "This section shows lower and upper explosive limits of this chemical and other information on its explosive potential.  Explosive limits specify the concentration range of a material in air which will burn or explode in the presence of an ignition source. There are two types of explosive limits: lower explosive limit (LEL) and upper explosive limit (UEL). The explosive limits are usually given as the percent by volume of the material in the air (e.g., 5%).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Finely divided material may explode in air."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 1242"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 1242",
+                        "Matched": {
+                          "PCLID": 900080221,
+                          "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 1242"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "MAY EXPLODE UPON PERCUSSION OR RAPID HEATING."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-185"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-185",
+                        "Matched": {
+                          "PCLID": 900123267,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-185"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IN PREPN OF MERCAPTANS, SLOW ADDITION OF DIAZONIUM CHLORIDE SALT OF 4-CHLORO-O-TOLUIDINE OR O-NITROANILINE OR M-CHLOROANILINE TO SODIUM SULFIDE...SOLN WILL RESULT IN EXPLOSIONS EVEN AT 5 °C.",
+                          "Markup": [
+                            {
+                              "Start": 68,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/4-CHLORO-O-TOLUIDINE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7251"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/O-NITROANILINE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6946"
+                            },
+                            {
+                              "Start": 110,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/M-CHLOROANILINE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-7932"
+                            },
+                            {
+                              "Start": 129,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/SODIUM%20SULFIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest. Refer for medical attention."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for at least 15 minutes, then remove contaminated clothes and rinse again. Refer for medical attention .",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Do NOT induce vomiting. Give one or two glasses of water to drink. Refer for medical attention .",
+                      "Markup": [
+                        {
+                          "Start": 51,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "INGESTION: give water; induce vomiting; call a doctor.",
+                          "Markup": [
+                            {
+                              "Start": 16,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN OR EYE CONTACT: wash with water for at least 15 min. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "General First Aid:"
+                        },
+                        {
+                          "String": "· Call 911 or emergency medical service."
+                        },
+                        {
+                          "String": "· Ensure that medical personnel are aware of the material(s) involved, take precautions to protect themselves and avoid contamination."
+                        },
+                        {
+                          "String": "· Move victim to fresh air if it can be done safely."
+                        },
+                        {
+                          "String": "· Administer oxygen if breathing is difficult.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If victim is not breathing:"
+                        },
+                        {
+                          "String": "-- DO NOT perform mouth-to-mouth resuscitation; the victim may have ingestedor inhaled the substance."
+                        },
+                        {
+                          "String": "-- If equipped and pulse detected, wash face and mouth, then give artificial respiration using a proper respiratory medical device (bag-valve mask, pocket mask equipped with a one-way valve or other device)."
+                        },
+                        {
+                          "String": "-- If no pulse detected or no respiratory medical device available, provide continuouscompressions. Conduct a pulse check every two minutes or monitor for any signs of spontaneous respirations."
+                        },
+                        {
+                          "String": "· Remove and isolate contaminated clothing and shoes."
+                        },
+                        {
+                          "String": "· For minor skin contact, avoid spreading material on unaffected skin."
+                        },
+                        {
+                          "String": "· In case of contact with substance, remove immediately by flushing skin or eyes with running water for at least 20 minutes.",
+                          "Markup": [
+                            {
+                              "Start": 94,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· For severe burns, immediate medical attention is required."
+                        },
+                        {
+                          "String": "· Effects of exposure (inhalation, ingestion, or skin contact) to substance may be delayed."
+                        },
+                        {
+                          "String": "· Keep victim calm and warm."
+                        },
+                        {
+                          "String": "· Keep victim under observation."
+                        },
+                        {
+                          "String": "· For further assistance, contact your local Poison Control Center."
+                        },
+                        {
+                          "String": "· Note: Basic Life Support (BLS) and Advanced Life Support (ALS) should be done by trained professionals."
+                        },
+                        {
+                          "String": "Specific First Aid:"
+                        },
+                        {
+                          "String": "· For corrosives, in case of contact, immediately flush skin or eyes with running water for at least 30 minutes. Additional flushing may be required.",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Removal of solidified molten material from skin requires medical assistance."
+                        },
+                        {
+                          "String": "In Canada, an Emergency Response Assistance Plan (ERAP) may be required for this product. Please consult the shipping paper and/or the \"ERAP\" section."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "General First Aid:"
+                        },
+                        {
+                          "String": "· Call 911 or emergency medical service."
+                        },
+                        {
+                          "String": "· Ensure that medical personnel are aware of the material(s) involved, take precautions to protect themselves and avoid contamination."
+                        },
+                        {
+                          "String": "· Move victim to fresh air if it can be done safely."
+                        },
+                        {
+                          "String": "· Administer oxygen if breathing is difficult.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If victim is not breathing:"
+                        },
+                        {
+                          "String": "-- DO NOT perform mouth-to-mouth resuscitation; the victim may have ingestedor inhaled the substance."
+                        },
+                        {
+                          "String": "-- If equipped and pulse detected, wash face and mouth, then give artificial respiration using a proper respiratory medical device (bag-valve mask, pocket mask equipped with a one-way valve or other device)."
+                        },
+                        {
+                          "String": "-- If no pulse detected or no respiratory medical device available, provide continuouscompressions. Conduct a pulse check every two minutes or monitor for any signs of spontaneous respirations."
+                        },
+                        {
+                          "String": "· Remove and isolate contaminated clothing and shoes."
+                        },
+                        {
+                          "String": "· For minor skin contact, avoid spreading material on unaffected skin."
+                        },
+                        {
+                          "String": "· In case of contact with substance, remove immediately by flushing skin or eyes with running water for at least 20 minutes.",
+                          "Markup": [
+                            {
+                              "Start": 94,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· For severe burns, immediate medical attention is required."
+                        },
+                        {
+                          "String": "· Effects of exposure (inhalation, ingestion, or skin contact) to substance may be delayed."
+                        },
+                        {
+                          "String": "· Keep victim calm and warm."
+                        },
+                        {
+                          "String": "· Keep victim under observation."
+                        },
+                        {
+                          "String": "· For further assistance, contact your local Poison Control Center."
+                        },
+                        {
+                          "String": "· Note: Basic Life Support (BLS) and Advanced Life Support (ALS) should be done by trained professionals."
+                        },
+                        {
+                          "String": "In Canada, an Emergency Response Assistance Plan (ERAP) may be required for this product. Please consult the shipping paper and/or the \"ERAP\" section."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Reference": [
+                  "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                    "Matched": {
+                      "PCLID": 900163263,
+                      "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Excerpt from ERG Guide 135 [Substances - Spontaneously Combustible]:"
+                    },
+                    {
+                      "String": "DO NOT USE WATER, CO2 OR FOAM ON MATERIAL ITSELF. Some of these materials may react violently with water. CAUTION: For Xanthates, UN3342 and for Dithionite (Hydrosulfite/Hydrosulphite) UN1384, UN1923 and UN1929, USE FLOODING AMOUNTS OF WATER for SMALL AND LARGE fires to stop the reaction. Smothering will not work for these materials, they do not need air to burn.",
+                      "Markup": [
+                        {
+                          "Start": 11,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 99,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 145,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dithionite",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-1086"
+                        },
+                        {
+                          "Start": 157,
+                          "Length": 12,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Hydrosulfite",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-1086"
+                        },
+                        {
+                          "Start": 185,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24489"
+                        },
+                        {
+                          "Start": 193,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-26268"
+                        },
+                        {
+                          "Start": 204,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-61726"
+                        },
+                        {
+                          "Start": 236,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "SMALL FIRE: Dry chemical, soda ash, lime or DRY sand, EXCEPT for UN1384, UN1923, UN1929 and UN3342.",
+                      "Markup": [
+                        {
+                          "Start": 65,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24489"
+                        },
+                        {
+                          "Start": 73,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-26268"
+                        },
+                        {
+                          "Start": 81,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-61726"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "LARGE FIRE: DRY sand, dry chemical, soda ash or lime EXCEPT for UN1384, UN1923, UN1929 and UN3342, or withdraw from area and let fire burn. CAUTION: UN3342 when flooded with water will continue to evolve flammable Carbon disulfide/Carbon disulphide vapors. If it can be done safely, move undamaged containers away from the area around the fire.",
+                      "Markup": [
+                        {
+                          "Start": 64,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24489"
+                        },
+                        {
+                          "Start": 72,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-26268"
+                        },
+                        {
+                          "Start": 80,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-61726"
+                        },
+                        {
+                          "Start": 174,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 214,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulfide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6348"
+                        },
+                        {
+                          "Start": 231,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulphide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6348"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "FIRE INVOLVING TANKS, RAIL TANK CARS OR HIGHWAY TANKS: Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles. Do not get water inside containers or in contact with substance. Cool containers with flooding quantities of water until well after fire is out. Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank. ALWAYS stay away from tanks in direct contact with flames. (ERG, 2024)",
+                      "Markup": [
+                        {
+                          "Start": 157,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 255,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Use water in large amounts, water spray, foam, dry powder.",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 28,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Approach fire from upwind to avoid hazardous vapors & toxic decomp products. Use flooding quantities of water. Do not use carbon dioxide.",
+                          "Markup": [
+                            {
+                              "Start": 104,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 122,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994",
+                        "Matched": {
+                          "PCLID": 906271835,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Flood with water. /sodium sulfide, anhydrous or sodium sulfide; sodium sulfide, hydrated with not less than 30% water/",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 19,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 64,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 112,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994",
+                        "Matched": {
+                          "PCLID": 906271835,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Extinguish fire using agent suitable for type of surrounding fire. Material itself does not burn or burns with difficulty. Use dry chemical, dry sand, or carbon dioxide. If large quantities of combustibles are involved, use water in flooding quantities as spray and fog. Use water spray to knock-down vapors. Keep run-off water out of sewers and water sources./sodium sulfide solutions containing sodium hydrosulfide; sodium sulfide solutions containing sodium hydroxide/",
+                          "Markup": [
+                            {
+                              "Start": 154,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            },
+                            {
+                              "Start": 224,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 275,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 322,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 346,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 361,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 397,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20hydrosulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-28015"
+                            },
+                            {
+                              "Start": 418,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 454,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14798"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 7,
+                "Name": "Public Safety: ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· CALL 911. Then call emergency response telephone number on shipping paper. If shipping paper not available or no answer, refer to appropriate telephone number listed on the inside back cover."
+                    },
+                    {
+                      "String": "· Keep unauthorized personnel away."
+                    },
+                    {
+                      "String": "· Stay upwind, uphill and/or upstream."
+                    },
+                    {
+                      "String": "· Ventilate closed spaces before entering, but only if properly trained and equipped."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Name": "Spill or Leak: ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· ELIMINATE all ignition sources (no smoking, flares, sparks or flames) from immediate area."
+                    },
+                    {
+                      "String": "· Do not touch damaged containers or spilled material unless wearing appropriate protective clothing."
+                    },
+                    {
+                      "String": "· Stop leak if you can do it without risk."
+                    },
+                    {
+                      "String": "· Prevent entry into waterways, sewers, basements or confined areas."
+                    },
+                    {
+                      "String": "· Absorb or cover with dry earth, sand or other non-combustible material and transfer to containers."
+                    },
+                    {
+                      "String": "· DO NOT GET WATER INSIDE CONTAINERS.",
+                      "Markup": [
+                        {
+                          "Start": 13,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Name": "Public Safety: ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· CALL 911. Then call emergency response telephone number on shipping paper. If shipping paper not available or no answer, refer to appropriate telephone number listed on the inside back cover."
+                    },
+                    {
+                      "String": "· Stay upwind, uphill and/or upstream."
+                    },
+                    {
+                      "String": "· Keep unauthorized personnel away."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Name": "Spill or Leak: ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· ELIMINATE all ignition sources (no smoking, flares, sparks or flames) from immediate area."
+                    },
+                    {
+                      "String": "· Do not touch or walk through spilled material."
+                    },
+                    {
+                      "String": "· Stop leak if you can do it without risk."
+                    },
+                    {
+                      "String": "Small Spill"
+                    },
+                    {
+                      "String": "CAUTION: For spills of Xanthates, UN3342 and for Dithionite (Hydrosulfite/Hydrosulphite), UN1384, UN1923 and UN1929, dissolve in 5 parts water and collect for proper disposal.",
+                      "Markup": [
+                        {
+                          "Start": 49,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dithionite",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-1086"
+                        },
+                        {
+                          "Start": 61,
+                          "Length": 12,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Hydrosulfite",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-1086"
+                        },
+                        {
+                          "Start": 90,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24489"
+                        },
+                        {
+                          "Start": 98,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-26268"
+                        },
+                        {
+                          "Start": 109,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-61726"
+                        },
+                        {
+                          "Start": 137,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "CAUTION: UN3342 when flooded with water will continue to evolve flammable Carbon disulfide/Carbon disulphide vapors.",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 74,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulfide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6348"
+                        },
+                        {
+                          "Start": 91,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulphide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6348"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "· Cover with DRY earth, DRY sand or other non-combustible material followed with plastic sheet to minimize spreading or contact with rain."
+                    },
+                    {
+                      "String": "· Use clean, non-sparking tools to collect material and place it into loosely covered plastic containers for later disposal."
+                    },
+                    {
+                      "String": "· Prevent entry into waterways, sewers, basements or confined areas."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Isolation and Evacuation",
+                "Description": "Isolation and evacuation measures to take when a large amount of this chemical is accidentally released in an emergency.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 135 [Substances - Spontaneously Combustible]:"
+                        },
+                        {
+                          "String": "IMMEDIATE PRECAUTIONARY MEASURE: Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "SPILL: Increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "FIRE: If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "Evacuation: ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Immediate precautionary measure"
+                        },
+                        {
+                          "String": "· Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "Spill"
+                        },
+                        {
+                          "String": "· For highlighted materials: see Table 1 - Initial Isolation and Protective Action Distances."
+                        },
+                        {
+                          "String": "· For non-highlighted materials: increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "Fire"
+                        },
+                        {
+                          "String": "· If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "Evacuation: ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Immediate precautionary measure"
+                        },
+                        {
+                          "String": "· Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "Spill"
+                        },
+                        {
+                          "String": "· For highlighted materials: see Table 1 - Initial Isolation and Protective Action Distances."
+                        },
+                        {
+                          "String": "· For non-highlighted materials: increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "Fire"
+                        },
+                        {
+                          "String": "· If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Remove all ignition sources. Cover the spilled material with dry earth or sand. Sweep spilled substance into covered containers. Carefully collect remainder. Then store and dispose of according to local regulations. Do NOT let this chemical enter the environment. Personal protection: chemical protection suit including self-contained breathing apparatus."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Approach release from upwind. Keep water away from release. Prompt cleanup & removal are necessary. Shovel dry material into suitable dry container. Control runoff & isolate discharged material for proper disposal.",
+                          "Markup": [
+                            {
+                              "Start": 35,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Ueno Y et al; Water Air Soil Pollut 11 (1): 23-42 (1979)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Ueno Y et al; Water Air Soil Pollut 11 (1): 23-42 (1979)",
+                        "Matched": {
+                          "PCLID": 210712494,
+                          "Citation": "Ueno Y, Williams A, Murray FE. A new method for sodium sulfide removal from an aqueous solution and application to industrial wastewater and sludge. Water, Air, & Soil Pollution. 1979 Jan;11(1):23–42. doi: 10.1007/bf00163516.",
+                          "DOI": "10.1007/bf00163516"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The catalyst activities for Na2S oxidation in aqueous soln were examined for various materials such as activated C, C black, ferric salts, hydroquinone, 1,4-naphthoquinone-2-sulfonic acid sodium salt, 1,4-naphthoquinone and their mixed systems. These catalyst systems are all active and, applied to wastewater and sludge treatments, gave good results.",
+                          "Markup": [
+                            {
+                              "Start": 125,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ferric",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-16048613"
+                            },
+                            {
+                              "Start": 139,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydroquinone",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-785"
+                            },
+                            {
+                              "Start": 201,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/1%2C4-naphthoquinone",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-8530"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994",
+                        "Matched": {
+                          "PCLID": 906271835,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 994"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Avoid breathing vapors or dusts. Do not handle broken packages unless wearing appropriate personal protective equipment."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 135 [Substances - Spontaneously Combustible]:"
+                        },
+                        {
+                          "String": "ELIMINATE all ignition sources (no smoking, flares, sparks or flames) from immediate area. Do not touch or walk through spilled material. Stop leak if you can do it without risk."
+                        },
+                        {
+                          "String": "SMALL SPILL: CAUTION: For spills of Xanthates, UN3342 and for Dithionite (Hydrosulfite/Hydrosulphite), UN1384, UN1923 and UN1929, dissolve in 5 parts water and collect for proper disposal. CAUTION: UN3342 when flooded with water will continue to evolve flammable Carbon disulfide/Carbon disulphide vapors. Cover with DRY earth, DRY sand or other non-combustible material followed with plastic sheet to minimize spreading or contact with rain. Use clean, non-sparking tools to collect material and place it into loosely covered plastic containers for later disposal. Prevent entry into waterways, sewers, basements or confined areas. (ERG, 2024)",
+                          "Markup": [
+                            {
+                              "Start": 62,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dithionite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1086"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Hydrosulfite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1086"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24489"
+                            },
+                            {
+                              "Start": 111,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26268"
+                            },
+                            {
+                              "Start": 122,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-61726"
+                            },
+                            {
+                              "Start": 150,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 223,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 263,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6348"
+                            },
+                            {
+                              "Start": 280,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulphide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6348"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Separated from acids and oxidants. Keep in a well-ventilated room. Dry."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store in a cool, dry, well-ventilated location. Separate from water, acids, & carbon dioxide. Outside or detached storage is preferred. Immediately remove & properly dispose of any spilled material.",
+                          "Markup": [
+                            {
+                              "Start": 62,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 78,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 7,
+                "Name": "Protective Clothing: ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· Wear positive pressure self-contained breathing apparatus (SCBA)."
+                    },
+                    {
+                      "String": "· Wear chemical protective clothing that is specifically recommended by the manufacturer when there is NO RISK OF FIRE."
+                    },
+                    {
+                      "String": "· Structural firefighters' protective clothing provides thermal protection but only limited chemical protection."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Name": "Protective Clothing: ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· Wear positive pressure self-contained breathing apparatus (SCBA)."
+                    },
+                    {
+                      "String": "· Wear chemical protective clothing that is specifically recommended by the manufacturer when there is NO RISK OF FIRE."
+                    },
+                    {
+                      "String": "· Structural firefighters' protective clothing provides thermal protection but only limited chemical protection."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Emergency Response Planning Guidelines",
+                "Description": "Emergency Response Planning Guidelines (ERPGs) are air concentration guidelines for single exposures to agents, developed by the American Industrial Hygiene Association (AIHA).  They are intended for use as tools to assess the adequacy of accident prevention and emergency response plans, including transportation emergency planning, community emergency response plans, and incident prevention and mitigation.  ERPGs estimate the concentrations at which most people will begin to experience health effects if they are exposed to a hazardous airborne chemical for 1 hour. (Sensitive members of the public, such as old, sick, or very young people, aren't covered by these guidelines and they may experience adverse effects at concentrations below the ERPG values.) A chemical may have up to three ERPG values, each of which corresponds to a specific tier of health effects. ",
+                "URL": "https://www.aiha.org/get-involved/aiha-guideline-foundation/erpgs",
+                "Information": [
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "Emergency Response: ERG2024, Guide 153 (Sodium sulfide, hydrated, with not less than 30% water)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Small Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, CO2 or water spray.",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Large Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, CO2, alcohol-resistant foam or water spray.",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If it can be done safely, move undamaged containers away from the area around the fire."
+                        },
+                        {
+                          "String": "· Dike runoff from fire control for later disposal."
+                        },
+                        {
+                          "String": "Fire Involving Tanks, Rail Tank Cars or Highway Tanks"
+                        },
+                        {
+                          "String": "· Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles."
+                        },
+                        {
+                          "String": "· Do not get water inside containers.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Cool containers with flooding quantities of water until well after fire is out.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank."
+                        },
+                        {
+                          "String": "· ALWAYS stay away from tanks in direct contact with flames."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 8,
+                    "Name": "Emergency Response: ERG2024, Guide 135 (Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· DO NOT USE WATER, CO2 OR FOAM ON MATERIAL ITSELF.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Some of these materials may react violently with water.",
+                          "Markup": [
+                            {
+                              "Start": 51,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "CAUTION: For Xanthates, UN3342 and for Dithionite (Hydrosulfite/Hydrosulphite) UN1384, UN1923 and UN1929, USE FLOODING AMOUNTS OF WATER for SMALL AND LARGE fires to stop the reaction. Smothering will not work for these materials, they do not need air to burn.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dithionite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1086"
+                            },
+                            {
+                              "Start": 51,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Hydrosulfite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1086"
+                            },
+                            {
+                              "Start": 79,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24489"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26268"
+                            },
+                            {
+                              "Start": 98,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-61726"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Small Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, soda ash, lime or DRY sand, EXCEPT for UN1384, UN1923, UN1929 and UN3342.",
+                          "Markup": [
+                            {
+                              "Start": 55,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24489"
+                            },
+                            {
+                              "Start": 63,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26268"
+                            },
+                            {
+                              "Start": 71,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-61726"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Large Fire"
+                        },
+                        {
+                          "String": "· DRY sand, dry chemical, soda ash or lime EXCEPT for UN1384, UN1923, UN1929 and UN3342, or withdraw from area and let fire burn.",
+                          "Markup": [
+                            {
+                              "Start": 54,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1384",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24489"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1923",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-26268"
+                            },
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/UN1929",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-61726"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "CAUTION: UN3342 when flooded with water will continue to evolve flammable Carbon disulfide/Carbon disulphide vapors.",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6348"
+                            },
+                            {
+                              "Start": 91,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Carbon%20disulphide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6348"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If it can be done safely, move undamaged containers away from the area around the fire."
+                        },
+                        {
+                          "String": "Fire Involving Tanks, Rail Tank Cars or Highway Tanks"
+                        },
+                        {
+                          "String": "· Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles."
+                        },
+                        {
+                          "String": "· Do not get water inside containers or in contact with substance.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Cool containers with flooding quantities of water until well after fire is out.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank."
+                        },
+                        {
+                          "String": "· ALWAYS stay away from tanks in direct contact with flames."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is corrosive to the eyes, skin and respiratory tract. Corrosive on ingestion."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Goggles or face shield. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Goggles or face shield."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear special protective clothing and positive pressure self-contained breathing apparatus."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Prevention",
+                "Description": "Precautionary measures to prevent fires from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NO open flames, NO sparks and NO smoking. NO contact with acids or oxidizing agents."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "AVOID ALL CONTACT! IN ALL CASES CONSULT A DOCTOR!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use closed system or ventilation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves. Protective clothing."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear face shield or eye protection in combination with breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aqueous solutions of sodium sulfide when exposed to air slowly convert to sodium hydroxide and sodium thiosulfate. The crystalline form upon exposure to air forms hydrogen sulfide and sodium carbonate [Merck 11th ed. 1989].",
+                          "Markup": [
+                            {
+                              "Start": 21,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14798"
+                            },
+                            {
+                              "Start": 95,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20thiosulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24477"
+                            },
+                            {
+                              "Start": 163,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            },
+                            {
+                              "Start": 184,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10340"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sulfides, Inorganic"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Alerts",
+                "Description": "Special alerts if the chemical is especially reactive.",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactivity_alerts.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Strong Reducing Agent"
+                        },
+                        {
+                          "String": "Water-Reactive"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SODIUM SULFIDE is a white to yellow crystalline material, flammable. Can explode on rapid heating or when shocked. Violent reaction with carbon, charcoal, diazonium salts, N,N-dichloromethylamine, strong oxidizers, water. On contact with acids it liberates highly toxic and flammable hydrogen sulfide gas. When heated to decomposition it emits toxic fumes of sodium oxide, and oxides of sulfur [Bretherick, 5th ed., 1995, p. 1729].",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/SODIUM%20SULFIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 137,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Carbon",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Carbon"
+                            },
+                            {
+                              "Start": 145,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/charcoal",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5462310"
+                            },
+                            {
+                              "Start": 172,
+                              "Length": 23,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/N%2CN-dichloromethylamine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123255"
+                            },
+                            {
+                              "Start": 215,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 284,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            },
+                            {
+                              "Start": 359,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-73971"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sax, N.I. and R.J. Lewis, Sr. (eds.). Hawley's Condensed Chemical Dictionary. 11th ed. New York: Van Nostrand Reinhold Co., 1987., p. 1074"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sax, N.I. and R.J. Lewis, Sr. (eds.). Hawley's Condensed Chemical Dictionary. 11th ed. New York: Van Nostrand Reinhold Co., 1987., p. 1074",
+                        "Matched": {
+                          "PCLID": 900072004,
+                          "Citation": "Sax, N.I. and R.J. Lewis, Sr. (eds.). Hawley's Condensed Chemical Dictionary. 11th ed. New York: Van Nostrand Reinhold Co., 1987., p. 1074"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Liberates toxic hydrogen sulfide on contact with acids.",
+                          "Markup": [
+                            {
+                              "Start": 16,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2997"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2997",
+                        "Matched": {
+                          "PCLID": 900080597,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2997"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Reacts violently with carbon; diazonium salts; n,n-dichloromethylamine; 0-nitroaniline diazonium salt; water.",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Carbon",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Carbon"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 23,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/n%2Cn-dichloromethylamine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123255"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Reacts with acid more vigorously, producing corrosive solutions & hydrogen sulfide.",
+                          "Markup": [
+                            {
+                              "Start": 66,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-402"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "DOT Emergency Guidelines",
+                "Description": "U.S. Department of Transportation (DOT) Emergency Guidelines for this chemical.  The information in this section is collected from the Hazardous Substances Data Bank (HSDB).  For updated emergency guidelines, see the DOT Emergency Response Guidebook.",
+                "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004",
+                        "Matched": {
+                          "PCLID": 900161122,
+                          "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Fire or Explosion: Flammable/combustible material. May ignite on contact with moist air or moisture. May burn rapidly with flare-burning effect. Some react vigorously or explosively on contact with water. Some may decompose explosively when heated or involved in a fire. May re-ignite after fire is extinguished. Runoff may create fire or explosion hazard. Containers may explode when heated. /Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization/",
+                          "Markup": [
+                            {
+                              "Start": 250,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 446,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 473,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 508,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004",
+                        "Matched": {
+                          "PCLID": 900161122,
+                          "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Health: Fire will produce irritating, corrosive and/or toxic gases. Inhalation of decomposition products may cause severe injury or death. Contact with substance may cause severe burns to skin and eyes. Runoff from fire control may cause pollution. /Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization/",
+                          "Markup": [
+                            {
+                              "Start": 302,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 329,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 364,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004",
+                        "Matched": {
+                          "PCLID": 900161122,
+                          "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Public Safety: CALL Emergency Response Telephone Number ... . As an immediate precautionary measure, isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids. Stay upwind. Keep unauthorized personnel away. Keep out of low areas. /Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization/",
+                          "Markup": [
+                            {
+                              "Start": 360,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 387,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 422,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004",
+                        "Matched": {
+                          "PCLID": 900161122,
+                          "Citation": "U.S. Department of Transportation. 2004 Emergency Response Guidebook. A Guide book for First Responders During the Initial Phase of a Dangerous Goods/Hazardous Materials Incident. Washington, D.C. 2004"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Protective Clothing: Wear positive pressure self-contained breathing apparatus (SCBA). Wear chemical protective clothing that is specifically recommended by the manufacturer. It may provide little or no thermal protection. Structural firefighters' protective clothing will only provide limited protection. /Sodium sulfide, anhydrous; Sodium sulfide, with less than 30% water of crystallization/",
+                          "Markup": [
+                            {
+                              "Start": 359,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 386,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 421,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more DOT Emergency Guidelines (Complete) data for SODIUM SULFIDE (16 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 98,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/772#section=DOT-Emergency-Guidelines-(Complete)"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/SODIUM%20SULFIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipping Name/ Number DOT/UN/NA/IMO",
+                "Description": "When dangerous goods are transported/shipped, one of the proper shipping names (along with corresponding identification numbers) shown in Dangerous Goods List of the applicable transport regulations (e.g., IATA-DGR, IMO-IMDG code, and 49 CFR 171-180) must be used to meet labelling, marking, and documentation requirements.  This section provides this chemical's appropriate shipping names and identification numbers, such as the U.S. Department of Transportation (DOT) identification number (also known as \"United Nations (UN) number\" or \"North America (NA) number\") and the International Maritime Organization (IMO)'s International Maritime Dangerous Goods (IMDG) Code.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN 1385; Sodium sulfide, anhydrous or containing less than 30% water of crystallization",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 63,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN 1849; Sodium sulfide, hydrated withnot lss than 30% water",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 55,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IMO 4.2; Sodium sulfide, anhydrous or Sodium sulfide with less than 30% water of crystallization",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 38,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 72,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IMO 8.0; Sodium sulfide, hydrated with not less than 30% water",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            },
+                            {
+                              "Start": 57,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Standard Transportation Number",
+                "Description": "This section provides the Standard Transportation Commodity Code (STCC) for this chemical.  The STCC is a seven digit numeric code representing 38 commodity groupings and used on waybills and other shipping documents.  If the first two digits of an STCC are 48 or 49, the STCC is also called the Hazardous Materials Response Code (HMRC) or Hazmat STCC, and is used when transporting a hazardous material or dangerous good by rail in North America. ",
+                "URL": "https://public.railinc.com/resources/standard-transportation-commodity-code",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 355 38; Sodium sulfide (corrosive liquid)",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 355 42; Sodium sulfide (corrosive liquid)",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 167 40; Sodium sulfide, anhydrous",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-237873"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipment Methods and Regulations",
+                "Description": "Shipment methods and regulations of this compound.  The information in this section includes the U.S. Hazardous Materials Regulations (49 CFR Subchapter C), the International Air Transport Association (IATA) Dangerous Goods Regulations, the International Maritime Dangerous Goods (IMDG) Code, and other regulations.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "49 CFR 171.2; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 15, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "49 CFR 171.2; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 15, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900077316,
+                          "Citation": "49 CFR 171.2; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 15, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No person may /transport,/ offer or accept a hazardous material for transportation in commerce unless that person is registered in conformance ... and the hazardous material is properly classed, described, packaged, marked, labeled, and in condition for shipment as required or authorized by ... /the hazardous materials regulations (49 CFR 171-177)./"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Air Transport Association. Dangerous Goods Regulations. 47th Edition. Montreal, Quebec Canada. 2006., p. 256"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Air Transport Association. Dangerous Goods Regulations. 47th Edition. Montreal, Quebec Canada. 2006., p. 256",
+                        "Matched": {
+                          "PCLID": 900151922,
+                          "Citation": "International Air Transport Association. Dangerous Goods Regulations. 47th Edition. Montreal, Quebec Canada. 2006., p. 256"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Air Transport Association (IATA) Dangerous Goods Regulations are published by the IATA Dangerous Goods Board pursuant to IATA Resolutions 618 and 619 and constitute a manual of industry carrier regulations to be followed by all IATA Member airlines when transporting hazardous materials."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Maritime Organization. International Maritime Dangerous Goods Code. London, UK. 2004., p. 62, 91"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Maritime Organization. International Maritime Dangerous Goods Code. London, UK. 2004., p. 62, 91",
+                        "Matched": {
+                          "PCLID": 900078381,
+                          "Citation": "International Maritime Organization. International Maritime Dangerous Goods Code. London, UK. 2004., p. 62, 91"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Maritime Dangerous Goods Code lays down basic principles for transporting hazardous chemicals. Detailed recommendations for individual substances and a number of recommendations for good practice are included in the classes dealing with such substances. A general index of technical names has also been compiled. This index should always be consulted when attempting to locate the appropriate procedures to be used when shipping any substance or article."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Label",
+                "Description": "U.S. Department of Transportation (DOT) hazard warning label for the chemical (such as flammable liquid or corrosive). This label must be displayed on shipped packages, railroad tank cars, and tank trucks according to specifications described in 49 CFR 172.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 1,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Spontaneously Combustible"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Packaging and Labelling",
+                "Description": "Warnings and instructions for packaging and labelling of chemical products.  The information in this section is from the International Labour Organization (ILO)'s International Chemical Safety Cards (ICSC).",
+                "URL": "https://www.ilo.org/safework/info/publications/WCMS_113134/lang--en/index.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Airtight."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EC Classification",
+                "Description": "European Commission (EC) classification for hazardous material.",
+                "URL": "https://ec.europa.eu/growth/sectors/chemicals/classification-labelling_en",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Symbol: C, N; R: 31-34-50; S: (1/2)-26-45-61"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "UN Classification",
+                "Description": "Classification of this chemical, according to the Agreement concerning the International Carriage of Dangerous Goods by Road (ADR).  ADR is a United Nations treaty that governs transnational transport of hazardous materials.",
+                "URL": "https://unece.org/about-adr",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN Hazard Class: 4.2; UN Pack Group: II"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Section": [
+              {
+                "TOCHeading": "Toxic Combustion Products",
+                "Description": "Toxic products (e.g., gases and vapors) produced from the combustion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121",
+                        "Matched": {
+                          "PCLID": 906296412,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 49-121"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Decomposes in air at 920-950 °C, forming sulfur dioxide & sodium oxide.",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfur%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1119"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-73971"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "9084",
+        "Name": "SODIUM SULFIDE, ANHYDROUS",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/9084",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 760819
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "Emergency Response Guidebook (ERG)",
+        "SourceID": "0ebe8a249ef878b30ad53431bb67d877",
+        "Name": "Sodium sulfide",
+        "Description": "The Emergency Response Guidebook 2024 provides first responders with a manual intended for use during the initial phase of a transportation incident involving hazardous materials/dangerous goods. PubChem integration of ERG information provides more opportunities for users/first responders to find ERG data and additional safety, toxicity, and more chemical information. For more information, please visit ERG and/or the ERG summary table (https://pubchem.ncbi.nlm.nih.gov/erg/).",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/erg/",
+        "LicenseURL": "https://www.transportation.gov/web-policies",
+        "ANID": 39281256
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "Emergency Response Guidebook (ERG)",
+        "SourceID": "53dfae953918cfa7fa1e3de999627a3e",
+        "Name": "Sodium sulfide",
+        "Description": "The Emergency Response Guidebook 2024 provides first responders with a manual intended for use during the initial phase of a transportation incident involving hazardous materials/dangerous goods. PubChem integration of ERG information provides more opportunities for users/first responders to find ERG data and additional safety, toxicity, and more chemical information. For more information, please visit ERG and/or the ERG summary table (https://pubchem.ncbi.nlm.nih.gov/erg/).",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/erg/",
+        "LicenseURL": "https://www.transportation.gov/web-policies",
+        "ANID": 39281965
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1047",
+        "Name": "SODIUM SULFIDE (ANHYDROUS)",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1047",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260909
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "772",
+        "Name": "SODIUM SULFIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/772",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 695
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz1493",
+        "Name": "Sodium sulfide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/1493",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277046
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "1728",
+        "Name": "sodium sulfide",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1728.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2270299
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "016-009-00-8",
+        "Name": "disodium sulfide; sodium sulfide",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 392136,
+        "SortOrder": 100000
+      }
+    ]
+  }
+}

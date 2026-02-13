@@ -1,0 +1,34 @@
+{
+  "cid": 243,
+  "hazard_key": "C7H6O2",
+  "display_name": "Bensoesyra",
+  "captured_at": "2026-01-31T14:18:02.834673+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/243",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/243/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 734,
+      "file": "data/pubchem_payloads/raw/243/linkout.json",
+      "sha256": "e6afd50126234c1dd2e5bff97f7bb4905419a70b85b652ff018e94f241d5119b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/243/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 335624,
+      "file": "data/pubchem_payloads/raw/243/lcss.json",
+      "sha256": "ae5c376b3bb80a39dfa815a697f17064b9a09dd14633ab296da2b814ab16070a"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/243/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 199957,
+      "file": "data/pubchem_payloads/raw/243/safety.json",
+      "sha256": "021d7addca4953d76c23eccc6ee011fee73eceab27ad31d52b445835ed398d5e"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/243.png"
+}

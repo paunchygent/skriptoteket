@@ -1,0 +1,2883 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 518696,
+    "RecordTitle": "Iron oxide (Fe2O3)",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 66.9% (2296 of 3433) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 88,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319 (18.5%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H411 (12%): Toxic to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264+P265, P273, P280, P305+P351+P338, P337+P317, P391, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 11,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 39,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 50,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 60,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 3433 reports by companies from 44 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 179,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 2296 of 3433 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 82,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 40 notifications provided by 1137 of 3433 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 103,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/18003"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P264, P270, P308+P316, P319, P321, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 51,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H315: Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318: Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P261, P264, P264+P265, P270, P271, P280, P302+P352, P304+P340, P305+P354+P338, P317, P319, P321, P332+P317, P362+P364, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 69,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 85,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 91,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 97,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 114,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 125,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 136,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye Irrit. 2 (18.5%)"
+                        },
+                        {
+                          "String": "Aquatic Chronic 2 (12%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 30,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin corrosion/irritation - Category 2"
+                        },
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 1"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 3 (Respiratory tract irritation)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (respiratory system)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (respiratory organs)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (respiratory organs)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Reference": [
+                      "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.",
+                        "Matched": {
+                          "PCLID": 900176185,
+                          "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Iron dust or fume can cause a benign pneumoconiosis called siderosis after exposure to high levels (e.g., 10-700 mg/m3) over a prolonged period of time. Little or no clinical changes have been reported in workers diagnosed with pulmonary siderosis. There is no evidence that iron oxide alone can cause fibrotic changes. Recent animal studies have shown iron oxide in the lung can cause a mild inflammatory response. [ACGIH] See Iron salts, soluble. See Iron oxide (FeO).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            },
+                            {
+                              "Start": 275,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 353,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 428,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            },
+                            {
+                              "Start": 453,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "ITII. Toxic and Hazardous Industrial Chemicals Safety Manual. Tokyo, Japan: The International Technical Information Institute, 1988., p. 284"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "ITII. Toxic and Hazardous Industrial Chemicals Safety Manual. Tokyo, Japan: The International Technical Information Institute, 1988., p. 284",
+                        "Matched": {
+                          "PCLID": 900102355,
+                          "Citation": "ITII. Toxic and Hazardous Industrial Chemicals Safety Manual. Tokyo, Japan: The International Technical Information Institute, 1988., p. 284"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Flammable Limits",
+                "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 39,
+                    "Name": "Flammability",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible Solid"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Name": "Flammability",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible Solid"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Explosive Limits and Potential",
+                "Description": "This section shows lower and upper explosive limits of this chemical and other information on its explosive potential.  Explosive limits specify the concentration range of a material in air which will burn or explode in the presence of an ignition source. There are two types of explosive limits: lower explosive limit (LEL) and upper explosive limit (UEL). The explosive limits are usually given as the percent by volume of the material in the air (e.g., 5%).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111",
+                        "Matched": {
+                          "PCLID": 906290853,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Explosive reaction when heated with guanidinium perchlorate.",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 23,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/guanidinium%20perchlorate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22005915"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111",
+                        "Matched": {
+                          "PCLID": 906290853,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The wet oxide reacts explosively with molten aluminum-magnesium alloys.",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/aluminum-magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14574635"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "OSHA Standards",
+                "Description": "Occupational Safety and Health Administration (OSHA) standards are rules that describe the methods that employers must use to protect their employees from hazards. These standards limit the amount of hazardous chemicals workers can be exposed to, require the use of certain safe practices and equipment, and require employers to monitor hazards and keep records of workplace injuries and illnesses.",
+                "URL": "https://www.osha.gov/laws-regs",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900057670,
+                          "Citation": "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Permissible Exposure Limit: Table Z-1 8-hr Time Weighted Avg: 10 mg/cu m. /Iron oxide fume/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "NIOSH Recommendations",
+                "Description": "The National Institute for Occupational Safety and Health (NIOSH) recommendations for chemical safety concerning this compound.",
+                "URL": "https://www.cdc.gov/niosh/index.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommended Exposure Limit: 8 Hour Time-Weighted Average: 10 mg/cu m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommended Exposure Limit: 10 Hour Time-Weighted Average: 5 mg/cu m. /Iron oxide dust and fume (as Fe)/",
+                          "Markup": [
+                            {
+                              "Start": 71,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NIOSH concluded that the documentation cited by OSHA was inadequate to support the proposed PEL (as an 8-hr TWA) of 10 mg/cu m for rouge. /Rouge/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 39,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(General first aid procedures)",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 28,
+                              "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Breathing: Respiratory support"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(General first aid procedures)",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 28,
+                              "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: Irrigate immediately  - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 124,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Breathing: Fresh air"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981.",
+                        "Matched": {
+                          "PCLID": 900147698,
+                          "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Persons not wearing protective equipment and clothing should be restricted from areas of releases until cleanup has been completed. If potentially hazardous amounts of iron oxide fume are inadvertantly released, ventilate the area of the release to disperse the fume."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 411,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant  as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants. Ensure that the local ventilation moves the contaminant away from the worker."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 22,
+                "Name": "Exposure Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "TIH (Toxic Inhalation Hazard) - Term used to describe gases and volatile liquids that are toxic when inhaled. Some are TIH materials themselves, e.g., chlorine, and some release TIH gases when spilled in water, e.g., chlorosilanes. [ERG 2016].",
+                      "Markup": [
+                        {
+                          "Start": 151,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chlorine",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Chlorine"
+                        },
+                        {
+                          "Start": 204,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Recommended Exposure Limit (REL)",
+                "Description": "The recommended exposure limit (REL) is the maximum amount or concentration of a chemical that a worker may be exposed to.  The RELs are guidelines established and recommended by the NIOSH (National Institute for Occupational Safety and Health).  The RELs can be given in three ways. [1] Time-weighted average (REL-TWA): average exposure based on up to10h/day, 40h/week work schedule. [2] Short-term exposure limit (REL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (REL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#exposure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 39,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 5 mg/m3",
+                          "Markup": [
+                            {
+                              "Start": 10,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "See Appendix D",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxd.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "10.0 [mg/m3], fume"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "PEL-TWA (8-Hour Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "15 mg/m³ (total dust), 5 mg/m³ (respirable fraction)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 39,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 10 mg/m3",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 15 mg/m3 (total) TWA 5 mg/m3 (resp) See Appendix G",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 31,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 40,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxg.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2500.0 [mg/m3], as Fe"
+                        },
+                        {
+                          "String": "Excerpts from Documentation for IDLHs: The available toxicological data contain no evidence that an acute exposure to a high concentration of iron oxide dust and fume would impede escape or cause any irreversible health effects within 30 minutes. However, the revised IDLH for iron oxide dust and fume is 2,500 mg Fe/m3 based on being 500 times the NIOSH REL of 5 mg Fe/m3 (500 is an assigned protection factor for respirators and was used arbitrarily during the Standards Completion Program for deciding when the most protective respirators should be used for particulates).",
+                          "Markup": [
+                            {
+                              "Start": 142,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 277,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2500 mg/cu m (as Fe). /Iron oxide dust and fume (as Fe)/",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 39,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2500 mg/m3 (as Fe)",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "See: 1309371",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 7,
+                              "URL": "https://www.cdc.gov/niosh/idlh/1309371.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "N.D."
+                        },
+                        {
+                          "String": "See: 1309371",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 7,
+                              "URL": "https://www.cdc.gov/niosh/idlh/1309371.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "5.0 [mg/m3], respirable fraction"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 35"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 35",
+                        "Matched": {
+                          "PCLID": 906287126,
+                          "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 35"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "8 hr Time Weighted Avg (TWA): 5 mg/cu m, respirable fraction."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 5"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 5",
+                        "Matched": {
+                          "PCLID": 900154672,
+                          "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 5"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excursion Limit Recommendation: Excursions in worker exposure levels may exceed 3 times the TLV-TWA for no more than a total of 30 minutes during a work day, and under no circumstances should they exceed 5 times the TLV-TWA, provided that the TLV-TWA is not exceeded."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 35"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 35",
+                        "Matched": {
+                          "PCLID": 906287126,
+                          "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 35"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A4: Not classifiable as a human carcinogen."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(as Fe): (respirable fraction): 5 mg/m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "TLV-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "5 mg/m³ (respirable particulate matter) [2005]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Occupational Exposure Limits (OEL)",
+                "Description": "In general, the occupational exposure limit (OEL) indicates the level of admissible exposure, for a length of time (usually 8 hours), to a chemical or physical hazard that is not likely to affect the health of a worker. The OELs for chemical substances are established based on the chemical properties of the substance, experimental studies on animals and humans, toxicological and epidemiological data. These limits are set out by many professional organizations and government agencies around the world, such as the American Conference of Governmental Industrial Hygienists (ACGIH), and the National Institute for Occupational Safety and Health (NIOSH) in the United States. Different organizations may use different terminology for the OEL. For example, the ACGIH term for OEL is \"Threshold Limit Value\" (TLV)® while the NIOSH term is \"recommended exposure limits\" (REL). This section also includes MAK (maximale arbeitsplatzkonzentration), similar to threshold limit value, specifies the maximum concentration level of a toxic substance in air at a workplace.",
+                "URL": "https://www.ccohs.ca/oshanswers/hsprograms/occ_hygiene/occ_exposure_limits.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "MAK (Maximale Arbeitsplatz Konzentration)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "carcinogen category: 3"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A nuisance-causing concentration of airborne particles can be reached quickly when dispersed, especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause mechanical irritation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Repeated or prolonged inhalation of dust particles may cause effects on the lungs. This may result in siderosis, a benign condition."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900060773,
+                          "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of iron oxide are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals. Use: colorant in pesticide formulations for animal tags. Limit: none.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respirator Recommendations: Up to 50 mg/cu m: /Iron oxide dust and fume (as Fe)/ [Table#1309]",
+                          "Markup": [
+                            {
+                              "Start": 81,
+                              "Length": 12,
+                              "Type": "Inline Table",
+                              "Extra": "[Table#1309]"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "[Table#1309]",
+                    "Value": {
+                      "Binary": [
+                        "IkFzc2lnbmVkIFByb3RlY3Rpb24gRmFjdG9yIChBUEYpIiwiUmVzcGlyYXRvciBSZWNvbW1lbmRhdGlvbnMiCiJBUEYgPSAxMCIsIkFueSBwYXJ0aWN1bGF0ZSByZXNwaXJhdG9yIGVxdWlwcGVkIHdpdGggYW4gTjk1LCBSOTUsIG9yIFA5NSBmaWx0ZXIgKGluY2x1ZGluZyBOOTUsIFI5NSwgYW5kIFA5NSBmaWx0ZXJpbmcgZmFjZXBpZWNlcykgZXhjZXB0IHF1YXJ0ZXItbWFzayByZXNwaXJhdG9ycy4gVGhlIGZvbGxvd2luZyBmaWx0ZXJzIG1heSBhbHNvIGJlIHVzZWQ6IE45OSwgUjk5LCBQOTksIE4xMDAsIFIxMDAsIFAxMDAuIgoiQVBGID0gMTAiLCJBbnkgc3VwcGxpZWQtYWlyIHJlc3BpcmF0b3IuIgo="
+                      ],
+                      "MimeType": "text/csv"
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respirator Recommendations: Up to 125 mg/cu m: /Iron oxide dust and fume (as Fe)/ [Table#1310]",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 12,
+                              "Type": "Inline Table",
+                              "Extra": "[Table#1310]"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "[Table#1310]",
+                    "Value": {
+                      "Binary": [
+                        "IkFzc2lnbmVkIFByb3RlY3Rpb24gRmFjdG9yIChBUEYpIiwiUmVzcGlyYXRvciBSZWNvbW1lbmRhdGlvbnMiCiJBUEYgPSAyNSIsIkFueSBzdXBwbGllZC1haXIgcmVzcGlyYXRvciBvcGVyYXRlZCBpbiBhIGNvbnRpbnVvdXMtZmxvdyBtb2RlLiIKIkFQRiA9IDI1IiwiQW55IHBvd2VyZWQsIGFpci1wdXJpZnlpbmcgcmVzcGlyYXRvciB3aXRoIGEgaGlnaC1lZmZpY2llbmN5IHBhcnRpY3VsYXRlIGZpbHRlci4iCg=="
+                      ],
+                      "MimeType": "text/csv"
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respirator Recommendations: Up to 250 mg/cu m: /Iron oxide dust and fume (as Fe)/ [Table#1311]",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 12,
+                              "Type": "Inline Table",
+                              "Extra": "[Table#1311]"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "[Table#1311]",
+                    "Value": {
+                      "Binary": [
+                        "IkFzc2lnbmVkIFByb3RlY3Rpb24gRmFjdG9yIChBUEYpIiwiUmVzcGlyYXRvciBSZWNvbW1lbmRhdGlvbnMiCiJBUEYgPSA1MCIsIkFueSBhaXItcHVyaWZ5aW5nLCBmdWxsLWZhY2VwaWVjZSByZXNwaXJhdG9yIHdpdGggYW4gTjEwMCwgUjEwMCwgb3IgUDEwMCBmaWx0ZXIuIgoiQVBGID0gNTAiLCJBbnkgc3VwcGxpZWQtYWlyIHJlc3BpcmF0b3IgdGhhdCBoYXMgYSB0aWdodC1maXR0aW5nIGZhY2VwaWVjZSBhbmQgaXMgb3BlcmF0ZWQgaW4gYSBjb250aW51b3VzLWZsb3cgbW9kZS4iCiJBUEYgPSA1MCIsIkFueSBwb3dlcmVkLCBhaXItcHVyaWZ5aW5nIHJlc3BpcmF0b3Igd2l0aCBhIHRpZ2h0LWZpdHRpbmcgZmFjZXBpZWNlIGFuZCBhIGhpZ2gtZWZmaWNpZW5jeSBwYXJ0aWN1bGF0ZSBmaWx0ZXIuIgoiQVBGID0gNTAiLCJBbnkgc2VsZi1jb250YWluZWQgYnJlYXRoaW5nIGFwcGFyYXR1cyB3aXRoIGEgZnVsbCBmYWNlcGllY2UuIgoiQVBGID0gNTAiLCJBbnkgc3VwcGxpZWQtYWlyIHJlc3BpcmF0b3Igd2l0aCBhIGZ1bGwgZmFjZXBpZWNlLiIK"
+                      ],
+                      "MimeType": "text/csv"
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respirator Recommendations: Up to 2500 mg/cu m: /Iron oxide dust and fume (as Fe)/ [Table#1312]",
+                          "Markup": [
+                            {
+                              "Start": 83,
+                              "Length": 12,
+                              "Type": "Inline Table",
+                              "Extra": "[Table#1312]"
+                            },
+                            {
+                              "Start": 49,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "[Table#1312]",
+                    "Value": {
+                      "Binary": [
+                        "IkFzc2lnbmVkIFByb3RlY3Rpb24gRmFjdG9yIChBUEYpIiwiUmVzcGlyYXRvciBSZWNvbW1lbmRhdGlvbnMiCiJBUEYgPSAxMDAwIiwiQW55IHN1cHBsaWVkLWFpciByZXNwaXJhdG9yIG9wZXJhdGVkIGluIGEgcHJlc3N1cmUtZGVtYW5kIG9yIG90aGVyIHBvc2l0aXZlLXByZXNzdXJlIG1vZGUuIgo="
+                      ],
+                      "MimeType": "text/csv"
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Personal Protective Equipment (PPE) (Complete) data for FERRIC OXIDE (6 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 106,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/452#section=Personal-Protective-Equipment-(PPE)-(Complete)"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/FERRIC%20OXIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-518696"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Respirator Recommendations",
+                "Description": "This section provides a list of allowable respirators to be used for this chemical, according to the NIOSH's Respirator Selection Recommendations.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread",
+                "Information": [
+                  {
+                    "ReferenceNumber": 39,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NIOSH"
+                        },
+                        {
+                          "String": "Up to 50 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 10) Any particulate respirator equipped with an N95, R95, or P95 filter (including N95, R95, and P95 filtering facepieces) except quarter-mask respirators. The following filters may also be used: N99, R99, P99, N100, R100, P100."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 10) Any supplied-air respirator"
+                        },
+                        {
+                          "String": "Up to 125 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 25) Any supplied-air respirator operated in a continuous-flow mode"
+                        },
+                        {
+                          "String": "(APF = 25) Any powered, air-purifying respirator with a high-efficiency particulate filter."
+                        },
+                        {
+                          "String": "Up to 250 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 50) Any air-purifying, full-facepiece respirator with an N100, R100, or P100 filter."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 50) Any supplied-air respirator that has a tight-fitting facepiece and is operated in a continuous-flow mode"
+                        },
+                        {
+                          "String": "(APF = 50) Any powered, air-purifying respirator with a tight-fitting facepiece and a high-efficiency particulate filter"
+                        },
+                        {
+                          "String": "(APF = 50) Any self-contained breathing apparatus with a full facepiece"
+                        },
+                        {
+                          "String": "(APF = 50) Any supplied-air respirator with a full facepiece"
+                        },
+                        {
+                          "String": "Up to 2500 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 15,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 1000) Any supplied-air respirator operated in a pressure-demand or other positive-pressure mode"
+                        },
+                        {
+                          "String": "Emergency or planned entry into unknown concentrations or IDLH conditions:"
+                        },
+                        {
+                          "String": "(APF = 10,000) Any self-contained breathing apparatus that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode"
+                        },
+                        {
+                          "String": "(APF = 10,000) Any supplied-air respirator that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode in combination with an auxiliary self-contained positive-pressure breathing apparatus"
+                        },
+                        {
+                          "String": "Escape:"
+                        },
+                        {
+                          "String": "(APF = 50) Any air-purifying, full-facepiece respirator with an N100, R100, or P100 filter."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Any appropriate escape-type, self-contained breathing apparatus"
+                        },
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Avoid inhalation of dust."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety goggles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Bretherick, L. Handbook of Reactive Chemical Hazards. 4th ed. Boston, MA: Butterworth-Heinemann Ltd., 1990, p. 1136"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Bretherick, L. Handbook of Reactive Chemical Hazards. 4th ed. Boston, MA: Butterworth-Heinemann Ltd., 1990, p. 1136",
+                        "Matched": {
+                          "PCLID": 900121047,
+                          "Citation": "Bretherick, L. Handbook of Reactive Chemical Hazards. 4th ed. Boston, MA: Butterworth-Heinemann Ltd., 1990, p. 1136"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... Explosion during reduction of iron oxide with carbon monoxide /due to/ the formation of pentacarbonyl iron at temperatures between 0 and 150 °C.",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 50,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20monoxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-281"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Calcium hypochlorite. /Iron oxide dust and fume, as Fe/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20hypochlorite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24504"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Calcium hypochlorite, carbon monoxide, hydrogen peroxide. /Rouge/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20hypochlorite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24504"
+                            },
+                            {
+                              "Start": 22,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20monoxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-281"
+                            },
+                            {
+                              "Start": 39,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-784"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111",
+                        "Matched": {
+                          "PCLID": 906290853,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 2111"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Violent reaction when heated with powdered aluminum, calcium disilicide, magnesium, metal acetylides (e.g., calcium acetylide + iron (III) chloride (on ignition), cesium acetylide (incandescent reaction when warmed), rubidium acetylide).",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/calcium%20disilicide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-170839545"
+                            },
+                            {
+                              "Start": 73,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 128,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20%28III%29%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24380"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "DOT Emergency Guidelines",
+                "Description": "U.S. Department of Transportation (DOT) Emergency Guidelines for this chemical.  The information in this section is collected from the Hazardous Substances Data Bank (HSDB).  For updated emergency guidelines, see the DOT Emergency Response Guidebook.",
+                "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Fire or Explosion: Flammable/combustible material. May ignite on contact with moist air or moisture. May burn rapidly with flare-burning effect. Some react vigorously or explosively on contact with water. Some may decompose explosively when heated or involved in a fire. May re-ignite after fire is extinguished. Runoff may create fire or explosion hazard. Containers may explode when heated. /Iron oxide, spent; Iron sponge, spent/",
+                          "Markup": [
+                            {
+                              "Start": 250,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 446,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 465,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Health: Fire will produce irritating, corrosive and/or toxic gases. Inhalation of decomposition products may cause severe injury or death. Contact with substance may cause severe burns to skin and eyes. Runoff from fire control may cause pollution. /Iron oxide, spent; Iron sponge, spent/",
+                          "Markup": [
+                            {
+                              "Start": 302,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 321,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Public Safety: CALL Emergency Response Telephone Number ... . As an immediate precautionary measure, isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids. Stay upwind. Keep unauthorized personnel away. Keep out of low areas. /Iron oxide, spent; Iron sponge, spent/",
+                          "Markup": [
+                            {
+                              "Start": 360,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 379,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008",
+                        "Matched": {
+                          "PCLID": 900040065,
+                          "Citation": "U.S. Department of Transportation. 2008 Emergency Response Guidebook. Washington, D.C. 2008"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 135: SUBSTANCES - SPONTANEOUSLY COMBUSTIBLE/ Protective Clothing: Wear positive pressure self-contained breathing apparatus (SCBA). Wear chemical protective clothing that is specifically recommended by the manufacturer. It may provide little or no thermal protection. Structural firefighters' protective clothing will only provide limited protection. /Iron oxide, spent; Iron sponge, spent/",
+                          "Markup": [
+                            {
+                              "Start": 359,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            },
+                            {
+                              "Start": 378,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more DOT Emergency Guidelines (Complete) data for FERRIC OXIDE (8 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 95,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/452#section=DOT-Emergency-Guidelines-(Complete)"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/FERRIC%20OXIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-518696"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT ID and Guide",
+                "Description": "U.S. Department of Transportation (DOT) identification (ID) number and the corresponding guide number. The DOT ID, also called the North American (NA) number, is identical to the United Nations (UN) number, except that some substances without a UN number may have a DOT ID/NA number.",
+                "URL": "https://www.fmcsa.dot.gov/registration/do-i-need-usdot-number",
+                "Information": [
+                  {
+                    "ReferenceNumber": 39,
+                    "URL": "https://pubchem.ncbi.nlm.nih.gov/erg/",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1376 135 (spent)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Iron oxide (Fe2O3)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-123289"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "EFSA Legal Basis",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Regulation (EC) No 1831/2003 (amended)",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 38,
+                          "URL": "https://doi.org/doi:10.2903/j.efsa.2016.4508"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 09-05-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/15552",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/15552"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Cease Manufacture Update: 01-05-2018 https://echa.europa.eu/registration-dossier/-/registered-dossier/24302",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/24302"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "iron oxide pigment: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-123289"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Federal Drinking Water Guidelines",
+                "Description": "Federal drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 300 ug/L /Iron/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900060773,
+                          "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of iron oxide are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals. Use: colorant in pesticide formulations for animal tags. Limit: none.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-123289"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 186.1300 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 186.1300 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900017135,
+                          "Citation": "21 CFR 186.1300 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 14, 2011: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ferric oxide (iron (III) oxide, Fe2O3, CAS Reg. No. 1309-37-1) ... is used as an indirect human food ingredient with no limitation other than current good manufacturing practice. The affirmation of this ingredient as generally recognized as safe (GRAS) as an indirect human food ingredient is based upon the following current good manufacturing practice conditions of use:  (1) The ingredient is used as a constituent of paper and paperboard used for food packaging.  (2) The ingredient is used at levels not to exceed current good manufacturing practice.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ferric%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-518696"
+                            },
+                            {
+                              "Start": 14,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/iron%20%28III%29%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-518696"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/1309-37-1",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-518696"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Iron oxide (Fe2O3): Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-123289"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Iron oxide (Fe2O3): Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 10,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Iron%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-123289"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_6312",
+        "Name": "Iron oxide (Fe2O3)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39353273
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_6312",
+        "Name": "Iron oxide (Fe2O3)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400609
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "71e8fa024867d5b6ff3f99f446836521",
+        "Name": "Ferric oxide",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49737563
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "215-168-2",
+        "Name": "Diiron trioxide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.013.790",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1979814
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "16bd9915f9de4b3c4e59f845e6ea6f13",
+        "Name": "iron oxide pigment",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142526
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "18003",
+        "Name": "Diiron trioxide (EC: 215-168-2)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/18003",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1856269,
+        "SortOrder": 6433
+      },
+      {
+        "ReferenceNumber": 31,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R01_B_042",
+        "Name": "Diiron trioxide - FY2019 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/19-mhlw-2042e.html",
+        "ANID": 39312542,
+        "SortOrder": 2019
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "NITE-CMC",
+        "SourceID": "741",
+        "Name": "Diiron trioxide - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0733e.html",
+        "ANID": 2265795,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz38",
+        "Name": "Iron oxide (Fe2O3)",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/38",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17275809
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "452",
+        "Name": "FERRIC OXIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/452",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 392
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1577",
+        "Name": "FERRIC OXIDE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1577",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 9039441
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "Occupational Safety and Health Administration (OSHA)",
+        "SourceID": "207",
+        "Name": "ROUGE",
+        "Description": "The OSHA Occupational Chemical Database contains over 800 entries with information such as physical properties, exposure guidelines, etc.",
+        "URL": "https://www.osha.gov/chemicaldata/207",
+        "LicenseNote": "Materials created by the federal government are generally part of the public domain and may be used, reproduced and distributed without permission. Therefore, content on this website which is in the public domain may be used without the prior permission of the U.S. Department of Labor (DOL). Warning: Some content - including both images and text - may be the copyrighted property of others and used by the DOL under a license.",
+        "LicenseURL": "https://www.dol.gov/general/aboutdol/copyright",
+        "ANID": 3410683
+      },
+      {
+        "ReferenceNumber": 39,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0344",
+        "Name": "Iron oxide dust and fume (as Fe)",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0344.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266642
+      },
+      {
+        "ReferenceNumber": 40,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0549",
+        "Name": "Rouge",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0549.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266844
+      }
+    ]
+  }
+}

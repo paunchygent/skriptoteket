@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "cid": 253881,
+  "captured_at": "2026-01-31T16:57:44.227188+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/253881",
+    "lcss_sha256": "c25c045127522d63d67ae01ee1878129a78f0c90a7ea2edef618353c2f4e326d",
+    "linkout_sha256": "bbc264304904613ef4c845df1bd799dff8cb1d3178b6da215f480891bb18a2e2",
+    "meta_sha256": "0f46514e884223f91fa2f5e2b4cc7522d5f972937fd52cc647c87ac35d13cdc8"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H319",
+      "H336",
+      "H360",
+      "H361"
+    ],
+    "hazard_statements_sv": {
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H336": "Kan göra att man blir dåsig eller omtöcknad.",
+      "H360": "Kan skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H361": "Misstänks kunna skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>"
+    },
+    "precautionary_codes": [
+      "P203",
+      "P261",
+      "P264+P265",
+      "P271",
+      "P280",
+      "P304+P340",
+      "P305+P351+P338",
+      "P318",
+      "P319",
+      "P337+P317",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS07",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.110300+00:00"
+}

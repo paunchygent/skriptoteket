@@ -1,0 +1,3398 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 444305,
+    "RecordTitle": "L-Tartaric acid",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 123,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "3D Conformer",
+        "Description": "A three-dimensional (3D) structure representation of the compound.  This 3D structure is not experimentally determined, but computed by PubChem.  This structure may or may not be the same as the inherent structure of the compound you would expect to see in vacuum or in the gas phase, because the underlying computational algorithm aims to generate a protein-bound structure, which would be observed in a protein-ligand complex.  More detailed information on this conformer model can be found in Kim et al., J. Cheminform. 2013, 5, 1.",
+        "URL": "https://doi.org/10.1186/1758-2946-5-1",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 123,
+            "Description": "L-Tartaric acid",
+            "Value": {
+              "Number": [
+                444305
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Crystal Structures",
+        "Description": "This section provides links to crystallographic information from various sources.",
+        "DisplayControls": {
+          "CreateTable": {
+            "FromInformationIn": "Subsections",
+            "NumberOfColumns": 2,
+            "ColumnContents": [
+              "Name",
+              "Value"
+            ]
+          },
+          "HideThisSection": true,
+          "MoveToTop": true,
+          "ShowAtMost": 1
+        },
+        "Section": [
+          {
+            "TOCHeading": "Crystal Structure Data",
+            "Description": "Information about this crystal structure record.",
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Name": "Crystal Structure Depiction",
+                "URL": "https://www.crystallography.net/cod/7241734.html",
+                "Value": {
+                  "ExternalDataURL": [
+                    "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/key/30804409_1"
+                  ],
+                  "MimeType": "image/png"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Hermann-Mauguin space group symbol",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P 1 21 1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Hall space group symbol",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P 2yb"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Space group number",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "a",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "6.1757"
+                    }
+                  ],
+                  "Unit": "Å"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "b",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "5.9211"
+                    }
+                  ],
+                  "Unit": "Å"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "c",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7.7084"
+                    }
+                  ],
+                  "Unit": "Å"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "α",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "90"
+                    }
+                  ],
+                  "Unit": "°"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "β",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "100.434"
+                    }
+                  ],
+                  "Unit": "°"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "γ",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "90"
+                    }
+                  ],
+                  "Unit": "°"
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Z",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Z'",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Residual factor",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.029"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Crystal Structure Depiction",
+                "URL": "https://www.crystallography.net/cod/7241735.html",
+                "Value": {
+                  "ExternalDataURL": [
+                    "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/key/30804410_1"
+                  ],
+                  "MimeType": "image/png"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Hermann-Mauguin space group symbol",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P 1 21 1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Hall space group symbol",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P 2yb"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Space group number",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "a",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "6.1757"
+                    }
+                  ],
+                  "Unit": "Å"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "b",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "5.9211"
+                    }
+                  ],
+                  "Unit": "Å"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "c",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7.7084"
+                    }
+                  ],
+                  "Unit": "Å"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "α",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "90"
+                    }
+                  ],
+                  "Unit": "°"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "β",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "100.434"
+                    }
+                  ],
+                  "Unit": "°"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "γ",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "90"
+                    }
+                  ],
+                  "Unit": "°"
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Z",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Z'",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Residual factor",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.0377"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 35,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                      "Type": "Icon",
+                      "Extra": "Corrosive"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 35,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 0.9% (44  of 4731) of reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 82,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H302 (42.5%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 36,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H315 (54.3%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H317 (42.5%): May cause an allergic skin reaction [Warning Sensitization, Skin]",
+                      "Markup": [
+                        {
+                          "Start": 51,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318 (41.2%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (57.8%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335 (55.4%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P264, P264+P265, P270, P271, P272, P280, P301+P317, P302+P352, P304+P340, P305+P351+P338, P305+P354+P338, P317, P319, P321, P330, P332+P317, P333+P317, P337+P317, P362+P364, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P272"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 58,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 80,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 96,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 112,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 118,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 124,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 130,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 136,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 147,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P333+P317"
+                        },
+                        {
+                          "Start": 158,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 169,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 180,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 191,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 201,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 4731 reports by companies from 33 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 179,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 44 of 4731 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 80,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 32 notifications provided by 4687 of 4731 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 103,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/80998"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 5.1% (26  of 506) of reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 81,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H315 (22.1%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318 (53.6%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (41.3%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335 (15.4%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P264, P264+P265, P271, P280, P302+P352, P304+P340, P305+P351+P338, P305+P354+P338, P317, P319, P321, P332+P317, P337+P317, P362+P364, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 46,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 57,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 73,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 89,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 95,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 101,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 107,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 118,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 129,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 140,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 151,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 161,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 506 reports by companies from 13 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 178,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 26 of 506 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 79,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 12 notifications provided by 480 of 506 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 101,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73973"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=87-69-4",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Name": "CAS",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87694"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 28,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 36,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 37,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 40,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 41,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 52,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 68,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 69,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 96,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "133-37-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 97,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "87-69-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 98,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "868-14-4; 87-69-4"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 123,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "(2R,3R)-2,3-dihydroxybutanedioic acid",
+                      "Markup": [
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "Type": "Italics"
+                        },
+                        {
+                          "Start": 5,
+                          "Length": 1,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 123,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "L-tartaric acid"
+                    },
+                    {
+                      "String": "87-69-4"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid"
+                    },
+                    {
+                      "String": "tartaric acid"
+                    },
+                    {
+                      "String": "(2R,3R)-2,3-dihydroxysuccinic acid"
+                    },
+                    {
+                      "String": "(2R,3R)-2,3-dihydroxybutanedioic acid"
+                    },
+                    {
+                      "String": "(+)-Tartaric acid"
+                    },
+                    {
+                      "String": "(+)-L-Tartaric acid"
+                    },
+                    {
+                      "String": "(R,R)-Tartaric acid"
+                    },
+                    {
+                      "String": "Threaric acid"
+                    },
+                    {
+                      "String": "Dextrotartaric acid"
+                    },
+                    {
+                      "String": "L-threaric acid"
+                    },
+                    {
+                      "String": "Natural tartaric acid"
+                    },
+                    {
+                      "String": "Acidum tartaricum"
+                    },
+                    {
+                      "String": "(+)-(R,R)-Tartaric acid"
+                    },
+                    {
+                      "String": "(2R,3R)-Tartaric acid"
+                    },
+                    {
+                      "String": "Rechtsweinsaeure"
+                    },
+                    {
+                      "String": "Kyselina vinna"
+                    },
+                    {
+                      "String": "(R,R)-(+)-Tartaric acid"
+                    },
+                    {
+                      "String": "Weinsaeure"
+                    },
+                    {
+                      "String": "1,2-Dihydroxyethane-1,2-dicarboxylic acid"
+                    },
+                    {
+                      "String": "NSC-62778"
+                    },
+                    {
+                      "String": "INS NO.334"
+                    },
+                    {
+                      "String": "DTXSID8023632"
+                    },
+                    {
+                      "String": "INS-334"
+                    },
+                    {
+                      "String": "TARTARICUM ACIDUM"
+                    },
+                    {
+                      "String": "E-334"
+                    },
+                    {
+                      "String": "W4888I119H"
+                    },
+                    {
+                      "String": "DTXCID203632"
+                    },
+                    {
+                      "String": "E 334"
+                    },
+                    {
+                      "String": "CHEBI:15671"
+                    },
+                    {
+                      "String": "REL-(2R,3R)-2,3-DIHYDROXYBUTANEDIOIC ACID"
+                    },
+                    {
+                      "String": "(R*,R*)-(+-)-2,3-dihydroxybutanedioic acid, monoammonium monosodium salt"
+                    },
+                    {
+                      "String": "RefChem:6283"
+                    },
+                    {
+                      "String": "GlyTouCan:G31652HG"
+                    },
+                    {
+                      "String": "CHEBI:26849"
+                    },
+                    {
+                      "String": "G31652HG"
+                    },
+                    {
+                      "String": "201-766-0"
+                    },
+                    {
+                      "String": "2,3-dihydroxybutanedioate;hydron"
+                    },
+                    {
+                      "String": "2,3-Dihydroxysuccinic Acid"
+                    },
+                    {
+                      "String": "NSC62778"
+                    },
+                    {
+                      "String": "Paratartaric acid"
+                    },
+                    {
+                      "String": "L(+)-Tartaric acid"
+                    },
+                    {
+                      "String": "(2R,3R)-(+)-Tartaric acid"
+                    },
+                    {
+                      "String": "Tartaric acid, L-"
+                    },
+                    {
+                      "String": "MFCD00064207"
+                    },
+                    {
+                      "String": "133-37-9"
+                    },
+                    {
+                      "String": "FEMA No. 3044"
+                    },
+                    {
+                      "String": "(2R,3R)-rel-2,3-Dihydroxysuccinic acid"
+                    },
+                    {
+                      "String": "Lamb protein (fungal)"
+                    },
+                    {
+                      "String": "(+/-)-Tartaric Acid"
+                    },
+                    {
+                      "String": "Butanedioic acid, 2,3-dihydroxy- (2R,3R)-"
+                    },
+                    {
+                      "String": "(R,R)-tartrate"
+                    },
+                    {
+                      "String": "Tartaric acid (VAN)"
+                    },
+                    {
+                      "String": "C4H6O6"
+                    },
+                    {
+                      "String": "Kyselina vinna [Czech]"
+                    },
+                    {
+                      "String": "RR-tartaric acid"
+                    },
+                    {
+                      "String": "(+)-(2R,3R)-Tartaric acid"
+                    },
+                    {
+                      "String": "Tartaric acid [USAN:JAN]"
+                    },
+                    {
+                      "String": "L-tartarate"
+                    },
+                    {
+                      "String": "4J4Z8788N8"
+                    },
+                    {
+                      "String": "138508-61-9"
+                    },
+                    {
+                      "String": "Resolvable tartaric acid"
+                    },
+                    {
+                      "String": "d-alpha,beta-Dihydroxysuccinic acid"
+                    },
+                    {
+                      "String": "144814-09-5"
+                    },
+                    {
+                      "String": "Kyselina 2,3-dihydroxybutandiova [Czech]"
+                    },
+                    {
+                      "String": "AI3-06298"
+                    },
+                    {
+                      "String": "(1R,2R)-1,2-Dihydroxyethane-1,2-dicarboxylic acid"
+                    },
+                    {
+                      "String": "Tartaric acid D,L"
+                    },
+                    {
+                      "String": "Butanedioic acid, 2,3-dihydroxy- (R-(R*,R*))-"
+                    },
+                    {
+                      "String": "Succinic acid, 2,3-dihydroxy"
+                    },
+                    {
+                      "String": "L(+) tartaric acid"
+                    },
+                    {
+                      "String": "L-2,3-Dihydroxybutanedioic acid"
+                    },
+                    {
+                      "String": "(2RS,3RS)-Tartaric acid"
+                    },
+                    {
+                      "String": "2,3-dihydroxy-succinic acid"
+                    },
+                    {
+                      "String": "EINECS 201-766-0"
+                    },
+                    {
+                      "String": "NSC 62778"
+                    },
+                    {
+                      "String": "Weinsteinsaeure"
+                    },
+                    {
+                      "String": "Weinsaure"
+                    },
+                    {
+                      "String": "tartaric-acid"
+                    },
+                    {
+                      "String": "L-Threaric aci"
+                    },
+                    {
+                      "String": "UNII-W4888I119H"
+                    },
+                    {
+                      "String": "Kyselina 2,3-dihydroxybutandiova"
+                    },
+                    {
+                      "String": "4ebt"
+                    },
+                    {
+                      "String": "NSC 148314"
+                    },
+                    {
+                      "String": "NSC-148314"
+                    },
+                    {
+                      "String": "(r,r)-tartarate"
+                    },
+                    {
+                      "String": "(+)-tartarate"
+                    },
+                    {
+                      "String": "(+)-Weinsaeure"
+                    },
+                    {
+                      "String": "l(+)tartaric acid"
+                    },
+                    {
+                      "String": "L-2,3-DIHYDROXYSUCCINIC ACID"
+                    },
+                    {
+                      "String": "Tartaric acid; L-(+)-Tartaric acid"
+                    },
+                    {
+                      "String": "(+-)-Tartaric acid"
+                    },
+                    {
+                      "String": "Butanedioic acid, 2,3-dihydroxy-, (R*,R*)-"
+                    },
+                    {
+                      "String": "L-(+) tartaric acid"
+                    },
+                    {
+                      "String": "(2R,3R)-Tartarate"
+                    },
+                    {
+                      "String": "1d5r"
+                    },
+                    {
+                      "String": "DL TARTARIC ACID"
+                    },
+                    {
+                      "String": "2,3-dihydroxy-succinate"
+                    },
+                    {
+                      "String": "TARTARIC ACID,DL-"
+                    },
+                    {
+                      "String": "EC 201-766-0"
+                    },
+                    {
+                      "String": "SCHEMBL5762"
+                    },
+                    {
+                      "String": "TARTARIC ACID [II]"
+                    },
+                    {
+                      "String": "TARTARIC ACID, DL-"
+                    },
+                    {
+                      "String": "L-Tartaric acid (Standard)"
+                    },
+                    {
+                      "String": "Tartaric acid (JP18/NF)"
+                    },
+                    {
+                      "String": "TARTARIC ACID [FCC]"
+                    },
+                    {
+                      "String": "TARTARIC ACID [JAN]"
+                    },
+                    {
+                      "String": "d-a,b-Dihydroxysuccinic acid"
+                    },
+                    {
+                      "String": "DL-Tartaric acid (Standard)"
+                    },
+                    {
+                      "String": "MLS001336057"
+                    },
+                    {
+                      "String": "L-TARTARIC ACID [MI]"
+                    },
+                    {
+                      "String": "TARTARIC ACID [VANDF]"
+                    },
+                    {
+                      "String": "DL-TARTARIC ACID [MI]"
+                    },
+                    {
+                      "String": "TARTARIC ACID [MART.]"
+                    },
+                    {
+                      "String": "CCRIS 8978"
+                    },
+                    {
+                      "String": "orb1302130"
+                    },
+                    {
+                      "String": "orb3025390"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid,  ACS"
+                    },
+                    {
+                      "String": "TARTARIC ACID [USP-RS]"
+                    },
+                    {
+                      "String": "TARTARIC ACID [WHO-DD]"
+                    },
+                    {
+                      "String": "CHEMBL1236315"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, BioXtra"
+                    },
+                    {
+                      "String": "TARTARICUM ACIDUM [HPUS]"
+                    },
+                    {
+                      "String": "UNII-4J4Z8788N8"
+                    },
+                    {
+                      "String": "(2R,3R)-2,3-tartaric acid"
+                    },
+                    {
+                      "String": "HY-Y0293R"
+                    },
+                    {
+                      "String": "HY-Y1315R"
+                    },
+                    {
+                      "String": "MSK4411"
+                    },
+                    {
+                      "String": "TARTARIC ACID (L(+)-)"
+                    },
+                    {
+                      "String": "HMS2270G22"
+                    },
+                    {
+                      "String": "Pharmakon1600-01300044"
+                    },
+                    {
+                      "String": "TARTARIC ACID, DL- [II]"
+                    },
+                    {
+                      "String": "TARTARIC ACID, (+/-)-"
+                    },
+                    {
+                      "String": "TARTARIC ACID,DL- [VANDF]"
+                    },
+                    {
+                      "String": "HY-Y0293"
+                    },
+                    {
+                      "String": "STR02377"
+                    },
+                    {
+                      "String": "TARTARIC ACID [ORANGE BOOK]"
+                    },
+                    {
+                      "String": "BAROS COMPONENT TARTARIC ACID"
+                    },
+                    {
+                      "String": "EINECS 205-105-7"
+                    },
+                    {
+                      "String": "Tox21_300155"
+                    },
+                    {
+                      "String": "(2R,3R)-2,3-dihydroxysuccinicacid"
+                    },
+                    {
+                      "String": "EBC-48063"
+                    },
+                    {
+                      "String": "NSC759609"
+                    },
+                    {
+                      "String": "s6233"
+                    },
+                    {
+                      "String": "TARTARIC ACID [EP MONOGRAPH]"
+                    },
+                    {
+                      "String": "AKOS016843282"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, >=99.5%"
+                    },
+                    {
+                      "String": "CS-W020107"
+                    },
+                    {
+                      "String": "DB09459"
+                    },
+                    {
+                      "String": "FT04194"
+                    },
+                    {
+                      "String": "NSC-759609"
+                    },
+                    {
+                      "String": "(2R,3R)-2,3-dihydroxy-succinic acid"
+                    },
+                    {
+                      "String": "(2R,3R)-2,3-Dihydroxybernsteinsaeure"
+                    },
+                    {
+                      "String": "Butanedioic acid, 2,3-dihydroxy-; Butanedioic acid, 2,3-dihydroxy-, (R-(R*,R*))-"
+                    },
+                    {
+                      "String": "CAS-87-69-4"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, AR, >=99%"
+                    },
+                    {
+                      "String": "NCGC00247911-01"
+                    },
+                    {
+                      "String": "NCGC00254043-01"
+                    },
+                    {
+                      "String": "BP-31012"
+                    },
+                    {
+                      "String": "SMR000112492"
+                    },
+                    {
+                      "String": "SBI-0207063.P001"
+                    },
+                    {
+                      "String": "NS00074184"
+                    },
+                    {
+                      "String": "T0025"
+                    },
+                    {
+                      "String": "EN300-72271"
+                    },
+                    {
+                      "String": "C00898"
+                    },
+                    {
+                      "String": "D00103"
+                    },
+                    {
+                      "String": "D70248"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, >=99.7%, FCC, FG"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, ACS reagent, >=99.5%"
+                    },
+                    {
+                      "String": "F094582"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, BioUltra, >=99.5% (T)"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, ReagentPlus(R), >=99.5%"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, SAJ first grade, >=99.5%"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, tested according to Ph.Eur."
+                    },
+                    {
+                      "String": "BRD-K36474365-001-06-6"
+                    },
+                    {
+                      "String": "Butanedioic acid, 2,3-dihydroxy-, (R*,R*)-(+-)-"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric Acid(Discontinued,See C4X-25493)"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, JIS special grade, >=99.5%"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, natural, >=99.7%, FCC, FG"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, p.a., ACS reagent, 99.0%"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, Vetec(TM) reagent grade, 99%"
+                    },
+                    {
+                      "String": "Q18226455"
+                    },
+                    {
+                      "String": "F8880-9012"
+                    },
+                    {
+                      "String": "Z1147451717"
+                    },
+                    {
+                      "String": "BUTANEDIOIC ACID, 2,3-DIHYDROXY-, (R-(R*,R*))-"
+                    },
+                    {
+                      "String": "Butanedioic acid, 2,3-dihydroxy-, (theta,theta)-(+-)-"
+                    },
+                    {
+                      "String": "Dextrotartaric acid; (2R,3R)-2,3-dihydroxysuccinic acid"
+                    },
+                    {
+                      "String": "000189E3-11D0-4B0A-8C7B-31E02A48A51F"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, puriss. p.a., ACS reagent, >=99.5%"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, certified reference material, TraceCERT(R)"
+                    },
+                    {
+                      "String": "Tartaric acid, United States Pharmacopeia (USP) Reference Standard"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, anhydrous, free-flowing, Redi-Dri(TM), ACS reagent, >=99.5%"
+                    },
+                    {
+                      "String": "L-(+)-Tartaric acid, p.a., ACS reagent, reag. ISO, reag. Ph. Eur., 99.5%"
+                    },
+                    {
+                      "String": "Tartaric Acid, Pharmaceutical Secondary Standard; Certified Reference Material"
+                    },
+                    {
+                      "String": "132517-61-4"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "C4H6O6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "C4H6O6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "C4H6O6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "C4H6O6",
+                      "Markup": [
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        },
+                        {
+                          "Start": 3,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        },
+                        {
+                          "Start": 5,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "COOH(CHOH)2COOH",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 123,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "C4H6O6"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 123,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "150.09"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 123,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/C4H6O6/c5-1(3(7)8)2(6)4(9)10/h1-2,5-6H,(H,7,8)(H,9,10)/t1-,2-/m1/s1"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 123,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "FEWJPZIEWOKRBE-JCYAYHJZSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 26,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Dry Powder; Other Solid"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Dry Powder"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colourless or translucent crystalline solid or white crystalline powder"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 50,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White solid; [ICSC] Colorless or white odorless solid; [JECFA] White odorless crystalline powder; [Acros Organics MSDS]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 51,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solid; [Merck Index] Colorless or translucent odorless solid; [JECFA] White odorless crystals; [Alfa Aesar MSDS]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 52,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solid"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE CRYSTALLINE POWDER."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 72,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "colourless or translucent crystals, or a white, fine to granular crystaline powder which is odourless with an acid taste"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 50,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Classes -> Organic Acids"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 51,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Classes -> Organic Acids"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 98,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Dicarboxylic Acids"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Between 168 °C and 170 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 52,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "169 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "206Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Flash Point",
+            "Description": "The lowest temperature at which a liquid can gives off vapor to form an ignitable mixture in air near the surface of the liquid.",
+            "URL": "https://www.britannica.com/science/flash-point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "210Â °C c.c."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 52,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "582 mg/mL at 20 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/l at 20Â °C: 1400 (very soluble)",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 72,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "soluble in water and alcohol; 1 gm in 0.8 ml water",
+                      "Markup": [
+                        {
+                          "Start": 11,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 45,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 72,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1 g in 3 ml 95% alcohol (in ethanol)",
+                      "Markup": [
+                        {
+                          "Start": 28,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-702"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Relative density (water = 1): 1.79",
+                      "Markup": [
+                        {
+                          "Start": 18,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Vapor Pressure",
+            "Description": "Vapor pressure (or equilibrium vapor pressure) is the pressure of a vapor in thermodynamic equilibrium with its condensed phases in a closed system.",
+            "URL": "https://chem.libretexts.org/Bookshelves/General_Chemistry/Map%3A_Chemistry_-_The_Central_Science_(Brown_et_al.)/11%3A_Liquids_and_Intermolecular_Forces/11.05%3A_Vapor_Pressure",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 51,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.00000015 [mmHg]"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Combustible."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Autoignition Temperature",
+            "Description": "The lowest temperature at which the substance will spontaneously ignite in a normal atmosphere without an external source of ignition (e.g., spark or flame).",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "425Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Physical Dangers",
+            "Description": "The possibility of physical injury or sickness that could result in grave physical harm or death.  An example of physical dangers is fire/explosion due to raw materials.",
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The vapour is heavier than air."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The solution in water is a medium strong acid. Reacts with fluorine, strong oxidants, hydrogen peroxide, alkaline compounds and silver. This produces toxic fumes.",
+                      "Markup": [
+                        {
+                          "Start": 16,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 59,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Fluorine",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Fluorine"
+                        },
+                        {
+                          "Start": 86,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20peroxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-784"
+                        },
+                        {
+                          "Start": 128,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Silver",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Silver"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Absorption",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oral or parenteral doses of monosodium 14C-L(+)-tartrate (400 mg/kg) are rapidly excreted by rats and a proportion completely metabolized to CO2. The oral dose was well-absorbed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Route of Elimination",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Only about 15-20% of consumed tartaric acid is secreted in the urine unchanged.",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/tartaric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-444305"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Metabolism/Metabolites",
+                "Description": "Metabolites are substances made or used when the body breaks down food, drugs or chemicals, or its own tissue (for example, fat or muscle tissue). This process is called metabolism and makes energy and the materials needed for growth, reproduction, and maintaining health. Metabolism also helps get rid of toxic substances.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Most tartarate that is consumed by humans is metabolized by bacteria in the gastrointestinal tract , primarily in the large instestine.",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/tartarate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-3806114"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 50,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Causes burns; Inhalation of aerosol may cause pulmonary edema; [ICSC] An irritant; [Acros Organics MSDS]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 51,
+                    "Reference": [
+                      "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013.",
+                        "Matched": {
+                          "PCLID": 900175655,
+                          "Citation": "Merck Index - O'Neil MJ, Heckelman PE, Dobbelaar PH, Roman KJ (eds). The Merck Index, An Encyclopedia of Chemicals, Drugs, and Biologicals, 15th Ed. Cambridge, UK: The Royal Society of Chemistry, 2013."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A local irritant; [Merck Index] May cause serious eye injury; [ECHA REACH Registrations] Maximum total daily intake of tartrate of 0-6 mg/kg (unconditional acceptance) and 6-20 mg/kg (conditional acceptance); [JECFA] A skin and strong eye irritant; [Alfa Aesar MSDS]",
+                          "Markup": [
+                            {
+                              "Start": 119,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/tartrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-119400"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough. Sore throat. Burning sensation."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "Skin Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness. Pain. Severe burns."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "Ingestion Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough. Sore throat. Burning sensation. Nausea. Vomiting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Carcinogen Classification",
+                "Description": "This section provides the International Agency for Research on Cancer (IARC) Carcinogenic Classification and related monograph links.  In the IARC Carcinogenic classification, chemicals are categorized into four groups: Group 1 (carcinogenic to humans), Group 2A (probably carcinogenic to humans), Group 2B (possibly carcinogenic to humans), and Group 3 (not classifiable as to its carcinogenicity to humans).",
+                "URL": "https://monographs.iarc.who.int/agents-classified-by-the-iarc/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  }
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 117,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No indication of carcinogenicity to humans (not listed by IARC)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance can be absorbed into the body by inhalation and by ingestion."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly when dispersed, especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is corrosive to the eyes. The substance is irritating to the skin and upper respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Exposure Prevention",
+                    "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 67,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "PREVENT DISPERSION OF DUST! STRICT HYGIENE!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 67,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves. Protective clothing."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 67,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety goggles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 67,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use local exhaust, ventilation or breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 67,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Store only in original packaging."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Storage and Handling Preventions",
+            "Section": [
+              {
+                "TOCHeading": "Fire Prevention",
+                "Description": "Precautionary measures to prevent fires from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 67,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NO open flames."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 67,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting. Store and dispose of according to local regulations."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_3738",
+        "Name": "Butanedioic acid, 2,3-dihydroxy-, (R*,R*)-(.+-.)-",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39349179
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_1551",
+        "Name": "Butanedioic acid, 2,3-dihydroxy- [R-(R*,R*)]-",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39356630
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "87-69-4",
+        "Name": "(+)-Tartaric acid",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=87-69-4",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12663856
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0000087694",
+        "Name": "Tartaric acid [USAN:JAN]",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0000087694",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 763742
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0000133379",
+        "Name": "DL-Tartaric acid",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0000133379",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 767089
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "DrugBank",
+        "SourceID": "DB09459",
+        "Name": "L-tartaric acid",
+        "Description": "The DrugBank database is a unique bioinformatics and cheminformatics resource that combines detailed drug (i.e. chemical, pharmacological and pharmaceutical) data with comprehensive drug target (i.e. sequence, structure, and pathway) information.",
+        "URL": "https://www.drugbank.ca/drugs/DB09459",
+        "LicenseNote": "Creative Common's Attribution-NonCommercial 4.0 International License (http://creativecommons.org/licenses/by-nc/4.0/legalcode)",
+        "LicenseURL": "https://www.drugbank.ca/legal/terms_of_use",
+        "ANID": 3626396
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "DTP/NCI",
+        "SourceID": "NSC 759609",
+        "Name": "tartaric acid",
+        "Description": "The NCI Development Therapeutics Program (DTP) provides services and resources to the academic and private-sector research communities worldwide to facilitate the discovery and development of new cancer therapeutic agents.",
+        "URL": "https://dtp.cancer.gov/dtpstandard/servlet/dwindex?searchtype=NSC&outputformat=html&searchlist=759609",
+        "LicenseNote": "Unless otherwise indicated, all text within NCI products is free of copyright and may be reused without our permission. Credit the National Cancer Institute as the source.",
+        "LicenseURL": "https://www.cancer.gov/policies/copyright-reuse",
+        "ANID": 6607695
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "b916d1c35f9a8d5a7d54d954e6913b13",
+        "Name": "L-Tartaric acid",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49737947
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "bbc3a56a30bc85f52d3437a54f3225aa",
+        "Name": "Butanedioic acid, 2,3-dihydroxy- (2R,3R)-",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38384337
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "01f22022e5aea0d2078ce3e3e2cd2456",
+        "Name": "Butanedioic acid, 2,3-dihydroxy-, (2R,3R)-rel-",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38385260
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "63ca277d49114c142f0656ea760ee009",
+        "Name": "Butanedioic acid, 2,3-dihydroxy- (2R,3R)-",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38388028
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "2df4d016652e2878729f063f93a8a4a4",
+        "Name": "Butanedioic acid, 2,3-dihydroxy-, (2R,3R)-rel-",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38390229
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID8023632",
+        "Name": "L-Tartaric acid",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID8023632",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1151681
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "201-766-0",
+        "Name": "(+)-tartaric acid",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.001.606",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1977472
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "205-105-7",
+        "Name": "(±)-tartaric acid",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.004.642",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2076317
+      },
+      {
+        "ReferenceNumber": 40,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "4J4Z8788N8",
+        "Name": "TARTARIC ACID, DL-",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/4J4Z8788N8",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5811562
+      },
+      {
+        "ReferenceNumber": 41,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "W4888I119H",
+        "Name": "Tartaric Acid",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/W4888I119H",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5832333
+      },
+      {
+        "ReferenceNumber": 52,
+        "SourceName": "Human Metabolome Database (HMDB)",
+        "SourceID": "HMDB0000956",
+        "Name": "Tartaric acid",
+        "Description": "The Human Metabolome Database (HMDB) is a freely available electronic database containing detailed information about small molecule metabolites found in the human body.",
+        "URL": "http://www.hmdb.ca/metabolites/HMDB0000956",
+        "LicenseNote": "HMDB is offered to the public as a freely available resource. Use and re-distribution of the data, in whole or in part, for commercial purposes requires explicit permission of the authors and explicit acknowledgment of the source material (HMDB) and the original publication (see the HMDB citing page). We ask that users who download significant portions of the database cite the HMDB paper in any resulting publications.",
+        "LicenseURL": "https://www.hmdb.ca/citing",
+        "ANID": 6491722
+      },
+      {
+        "ReferenceNumber": 67,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0772",
+        "Name": "TARTARIC ACID",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0772",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260652
+      },
+      {
+        "ReferenceNumber": 68,
+        "SourceName": "International Fragrance Association (IFRA)",
+        "SourceID": "aa4fae998d4e1d0256da6c63cf0f2d31",
+        "Name": "(+)-Tartaric acid",
+        "Description": "The IFRA Fragrance Ingredient Glossary (FIG), provides a harmonized list of positive olfactory descriptors of fragrance ingredients.",
+        "URL": "https://ifrafragrance.org/priorities/ingredients/ifra-transparency-list",
+        "LicenseNote": "(c) The International Fragrance Association, 2007-2021. All rights reserved.",
+        "LicenseURL": "https://ifrafragrance.org/links/copyright",
+        "ANID": 49744080
+      },
+      {
+        "ReferenceNumber": 69,
+        "SourceName": "International Fragrance Association (IFRA)",
+        "SourceID": "cc8b236ec6147fe05e0c0f5168bc902e",
+        "Name": "Tartaric acid (d-, l-, dl-, meso-)",
+        "Description": "The IFRA Fragrance Ingredient Glossary (FIG), provides a harmonized list of positive olfactory descriptors of fragrance ingredients.",
+        "URL": "https://ifrafragrance.org/priorities/ingredients/ifra-transparency-list",
+        "LicenseNote": "(c) The International Fragrance Association, 2007-2021. All rights reserved.",
+        "LicenseURL": "https://ifrafragrance.org/links/copyright",
+        "ANID": 49746618
+      },
+      {
+        "ReferenceNumber": 96,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "baac7daf6891f3110ee495d1a8dfcd81",
+        "Name": "DL-Tartaric acid",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142916
+      },
+      {
+        "ReferenceNumber": 97,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "aecd9fe9142ca3e7394fb8066d1cc9a7",
+        "Name": "Tartaric acid",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37164573
+      },
+      {
+        "ReferenceNumber": 98,
+        "SourceName": "NIAID ChemDB",
+        "SourceID": "aids_072996",
+        "Name": "(2R,3R)-2,3-dihydroxybutanedioic acid",
+        "Description": "The NIAID ChemDB, or the National Institute of Allergy and Infectious Diseases ChemDB HIV, Opportunistic Infection and Tuberculosis Therapeutics Database, is a compendium of small molecules that have been tested for preclinical activity against HIV and opportunistic pathogens.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=niaid&sourceid=072996",
+        "LicenseNote": "The NIAID ChemDB information received cannot be sold and is only to be used for research purposes.",
+        "ANID": 49788314
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_1551",
+        "Name": "Butanedioic acid, 2,3-dihydroxy- [R-(R*,R*)]-",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39393789
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_3738",
+        "Name": "Butanedioic acid, 2,3-dihydroxy-, (R*,R*)-(.+-.)-",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39393790
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "EU Food Improvement Agents",
+        "SourceID": "E 334 L(+)-TARTARIC ACID, TARTARIC ACID",
+        "Name": "L(+)-TARTARIC ACID, TARTARIC ACID",
+        "Description": "Commission Regulation (EU) No 231/2012 of 9 March 2012 laying down specifications for food additives listed in Annexes II and III to Regulation (EC) No 1333/2008 of the European Parliament and of the Council Text with EEA relevance",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2012/231/oj",
+        "ANID": 5177042
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "Crystallography Open Database (COD)",
+        "SourceID": "7241734",
+        "Description": "The Crystallography Open Database is an open-access collection of crystal structures of organic, inorganic, metal-organic compounds, and minerals, excluding biopolymers.",
+        "ExtendedReference": [
+          {
+            "DOI": "10.1039/D0CE01425G",
+            "PublicationTitle": "Displacement parameters from density-functional theory and their validation in the experimental charge density of tartaric acid",
+            "PublicationAuthor": [
+              "Mroz, Damian",
+              "Wang, Ruimin",
+              "Englert, Ulli",
+              "Dronskowski, Richard"
+            ],
+            "PublicationName": "CrystEngComm",
+            "PublicationVolume": "23",
+            "PublicationIssue": "4",
+            "PublicationPage": "1052",
+            "PublicationDate": {
+              "Year": 2021
+            },
+            "Matched": {
+              "PCLID": 712941859,
+              "Citation": "Mroz D, Wang R, Englert U, Dronskowski R. Displacement parameters from density-functional theory and their validation in the experimental charge density of tartaric acid. CrystEngComm. 2021;23(4):1052–8. doi: 10.1039/d0ce01425g.",
+              "DOI": "10.1039/d0ce01425g"
+            }
+          }
+        ],
+        "URL": "https://www.crystallography.net/cod/7241734.html",
+        "LicenseNote": "All data in the COD and the database itself are dedicated to the public domain and licensed under the CC0 License. Users of the data should acknowledge the original authors of the structural data.",
+        "LicenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "ANID": 30804409
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "Crystallography Open Database (COD)",
+        "SourceID": "7241735",
+        "Description": "The Crystallography Open Database is an open-access collection of crystal structures of organic, inorganic, metal-organic compounds, and minerals, excluding biopolymers.",
+        "ExtendedReference": [
+          {
+            "DOI": "10.1039/D0CE01425G",
+            "PublicationTitle": "Displacement parameters from density-functional theory and their validation in the experimental charge density of tartaric acid",
+            "PublicationAuthor": [
+              "Mroz, Damian",
+              "Wang, Ruimin",
+              "Englert, Ulli",
+              "Dronskowski, Richard"
+            ],
+            "PublicationName": "CrystEngComm",
+            "PublicationVolume": "23",
+            "PublicationIssue": "4",
+            "PublicationPage": "1052",
+            "PublicationDate": {
+              "Year": 2021
+            },
+            "Matched": {
+              "PCLID": 712941859,
+              "Citation": "Mroz D, Wang R, Englert U, Dronskowski R. Displacement parameters from density-functional theory and their validation in the experimental charge density of tartaric acid. CrystEngComm. 2021;23(4):1052–8. doi: 10.1039/d0ce01425g.",
+              "DOI": "10.1039/d0ce01425g"
+            }
+          }
+        ],
+        "URL": "https://www.crystallography.net/cod/7241735.html",
+        "LicenseNote": "All data in the COD and the database itself are dedicated to the public domain and licensed under the CC0 License. Users of the data should acknowledge the original authors of the structural data.",
+        "LicenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "ANID": 30804410
+      },
+      {
+        "ReferenceNumber": 50,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz13966",
+        "Name": "DL-Tartaric acid",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/13966",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17283655
+      },
+      {
+        "ReferenceNumber": 51,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz19086",
+        "Name": "L-Tartaric acid",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/19086",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17285481
+      },
+      {
+        "ReferenceNumber": 72,
+        "SourceName": "Joint FAO/WHO Expert Committee on Food Additives (JECFA)",
+        "SourceID": "f_463",
+        "Name": "Tartaric acid (+)-, (-)-, (+\\/-)-, meso-",
+        "Description": "The flavoring agent databse provides the most recent specifications for flavorings evaluated by JECFA.",
+        "URL": "https://www.fao.org/food/food-safety-quality/scientific-advice/jecfa/jecfa-flav/details/en/c/463/",
+        "LicenseNote": "Permission from WHO is not required for the use of WHO materials issued under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Intergovernmental Organization (CC BY-NC-SA 3.0 IGO) licence.",
+        "LicenseURL": "https://www.who.int/about/policies/publishing/copyright",
+        "ANID": 9156730
+      },
+      {
+        "ReferenceNumber": 35,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "80998",
+        "Name": "(+)-tartaric acid (EC: 201-766-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/80998",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1874982,
+        "SortOrder": 7731
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "73973",
+        "Name": "(±)-tartaric acid (EC: 205-105-7)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73973",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1872976,
+        "SortOrder": 3506
+      },
+      {
+        "ReferenceNumber": 117,
+        "SourceName": "Toxin and Toxin Target Database (T3DB)",
+        "SourceID": "Compound::T3D4872",
+        "Name": "Tartaric acid",
+        "Description": "The Toxin and Toxin Target Database (T3DB), or, soon to be referred as, the Toxic Exposome Database, is a unique bioinformatics resource that combines detailed toxin data with comprehensive toxin target information.",
+        "URL": "http://www.t3db.ca/toxins/T3D4872",
+        "LicenseNote": "T3DB is offered to the public as a freely available resource. Use and re-distribution of the data, in whole or in part, for commercial purposes requires explicit permission of the authors and explicit acknowledgment of the source material (T3DB) and the original publication.",
+        "LicenseURL": "http://www.t3db.ca/downloads",
+        "ANID": 20443961
+      },
+      {
+        "ReferenceNumber": 123,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1066 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 61473,
+    "RecordTitle": "Trisodium phosphate dodecahydrate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 23,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 10,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                      "Type": "Icon",
+                      "Extra": "Corrosive"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 1.3% (6  of 472) of reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 80,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H314 (20.8%): Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 55,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H315 (74.6%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (77.8%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335 (44.9%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P261, P264, P264+P265, P271, P280, P301+P330+P331, P302+P352, P302+P361+P354, P304+P340, P305+P351+P338, P305+P354+P338, P316, P319, P321, P332+P317, P337+P317, P362+P364, P363, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                        },
+                        {
+                          "Start": 57,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 68,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                        },
+                        {
+                          "Start": 84,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 95,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 111,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 127,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                        },
+                        {
+                          "Start": 133,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 139,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 145,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 156,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 167,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 178,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                        },
+                        {
+                          "Start": 184,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 195,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 205,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 472 reports by companies from 17 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 178,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 6 of 472 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 78,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 16 notifications provided by 466 of 472 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 101,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/82323"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H314: Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 47,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P264, P280, P301+P330+P331, P302+P361+P354, P304+P340, P305+P354+P338, P316, P321, P363, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                        },
+                        {
+                          "Start": 34,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                        },
+                        {
+                          "Start": 50,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 61,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 77,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                        },
+                        {
+                          "Start": 83,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 89,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                        },
+                        {
+                          "Start": 95,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 105,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 3,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-89-0"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "trisodium;phosphate;dodecahydrate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Trisodium phosphate dodecahydrate"
+                    },
+                    {
+                      "String": "10101-89-0"
+                    },
+                    {
+                      "String": "Sodium phosphate tribasic dodecahydrate"
+                    },
+                    {
+                      "String": "Sodium phosphate dodecahydrate"
+                    },
+                    {
+                      "String": "Phosphoric acid, trisodium salt, dodecahydrate"
+                    },
+                    {
+                      "String": "sodium phosphate, tribasic, dodecahydrate"
+                    },
+                    {
+                      "String": "Phosphoric acid, trisodium salt, dodeahydrate"
+                    },
+                    {
+                      "String": "B70850QPHR"
+                    },
+                    {
+                      "String": "DTXSID0049810"
+                    },
+                    {
+                      "String": "FRESH AQUA"
+                    },
+                    {
+                      "String": "VEGE AQUA"
+                    },
+                    {
+                      "String": "RefChem:56038"
+                    },
+                    {
+                      "String": "DTXCID0029769"
+                    },
+                    {
+                      "String": "600-151-8"
+                    },
+                    {
+                      "String": "trisodium;phosphate;dodecahydrate"
+                    },
+                    {
+                      "String": "MFCD00149198"
+                    },
+                    {
+                      "String": "Phosphoric acid, sodium salt, hydrate (1:3:12)"
+                    },
+                    {
+                      "String": "CCRIS 7322"
+                    },
+                    {
+                      "String": "UNII-B70850QPHR"
+                    },
+                    {
+                      "String": "H24Na3O16P"
+                    },
+                    {
+                      "String": "Trisodium phosphate (tert) dodecahydrate"
+                    },
+                    {
+                      "String": "Sodiumphosphatedodecahydrate"
+                    },
+                    {
+                      "String": "SCHEMBL156385"
+                    },
+                    {
+                      "String": "trisodiumphosphate dodecahydrate"
+                    },
+                    {
+                      "String": "dodecahydratetribasicsodium phosphate"
+                    },
+                    {
+                      "String": "Sodium phosphate--water (3/1/12)"
+                    },
+                    {
+                      "String": "AKOS015914014"
+                    },
+                    {
+                      "String": "AKOS015951230"
+                    },
+                    {
+                      "String": "DB14622"
+                    },
+                    {
+                      "String": "Sodium phosphate tribasic dodecahydrate ACS"
+                    },
+                    {
+                      "String": "NS00113621"
+                    },
+                    {
+                      "String": "Q27274449"
+                    },
+                    {
+                      "String": "SODIUM PHOSPHATE, TRIBASIC, DODECAHYDRATE [MI]"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H24Na3O16P"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "380.12"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/3Na.H3O4P.12H2O/c;;;1-5(2,3)4;;;;;;;;;;;;/h;;;(H3,1,2,3,4);12*1H2/q3*+1;;;;;;;;;;;;;/p-3"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ASTWEMOBIXQPPV-UHFFFAOYSA-K"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Dry Powder"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colorless to white crystals; [CAMEO]"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Classes -> Salts, Basic"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Melting point equals 164 to 170 ° F"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Can cause burns to the eyes and skin; Harmful if ingested; [CAMEO] Aqueous solutions are highly alkaline; [HSDB] Dusts and solutions > 0.1% are corrosive to the eyes and possibly to the skin; [CHEMINFO]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_12461",
+        "Name": "Phosphoric acid, trisodium salt, dodecahydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39350617
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0010101890",
+        "Name": "Sodium phosphate tribasic dodecahydrate",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0010101890",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 827602
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "DrugBank",
+        "SourceID": "DB14622",
+        "Name": "Sodium phosphate tribasic dodecahydrate",
+        "Description": "The DrugBank database is a unique bioinformatics and cheminformatics resource that combines detailed drug (i.e. chemical, pharmacological and pharmaceutical) data with comprehensive drug target (i.e. sequence, structure, and pathway) information.",
+        "URL": "https://www.drugbank.ca/drugs/DB14622",
+        "LicenseNote": "Creative Common's Attribution-NonCommercial 4.0 International License (http://creativecommons.org/licenses/by-nc/4.0/legalcode)",
+        "LicenseURL": "https://www.drugbank.ca/legal/terms_of_use",
+        "ANID": 6890288
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "835ae1584409afcfa495ddcbb969536e",
+        "Name": "Phosphoric acid, trisodium salt, dodecahydrate",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38382667
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID0049810",
+        "Name": "Trisodium phosphate dodecahydrate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID0049810",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1163979
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "600-151-8",
+        "Name": "Phosphoric acid, trisodium salt, dodecahydrate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.122.790",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2087699
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "B70850QPHR",
+        "Name": "SODIUM PHOSPHATE, TRIBASIC, DODECAHYDRATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/B70850QPHR",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5803926
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "28d44247a59db7b6901f8fbf73fcaec2",
+        "Name": "Trisodium phosphate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37138605
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz1918",
+        "Name": "Trisodium phosphate dodecahydrate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/1918",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277378
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "82323",
+        "Name": "Phosphoric acid, trisodium salt, dodecahydrate (EC: 600-151-8)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/82323",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1875361,
+        "SortOrder": 3472
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "5503",
+        "Name": "10101-89-0",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=5503",
+        "ANID": 9026145,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

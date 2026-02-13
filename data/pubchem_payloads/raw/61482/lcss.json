@@ -1,0 +1,539 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 61482,
+    "RecordTitle": "Cupric chloride dihydrate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 20,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=13933-17-0",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13933-17-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10125-13-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10125-13-0"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2021.10.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "dichlorocopper;dihydrate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Copper(II)chloride dihydrate"
+                    },
+                    {
+                      "String": "Copper(2+) chloride dihydrate"
+                    },
+                    {
+                      "String": "Cupric chloride (USP)"
+                    },
+                    {
+                      "String": "Cupric chloride [USP]"
+                    },
+                    {
+                      "String": "DTXSID1049564"
+                    },
+                    {
+                      "String": "CHEBI:86318"
+                    },
+                    {
+                      "String": "RefChem:919273"
+                    },
+                    {
+                      "String": "DTXCID8029523"
+                    },
+                    {
+                      "String": "copper(II) chloride dihydrate"
+                    },
+                    {
+                      "String": "Cupric chloride dihydrate"
+                    },
+                    {
+                      "String": "Coppertrace"
+                    },
+                    {
+                      "String": "dichlorocopper;dihydrate"
+                    },
+                    {
+                      "String": "Copper (II) Chloride Dihydrate"
+                    },
+                    {
+                      "String": "Copric chloride dihydrate"
+                    },
+                    {
+                      "String": "Caswell No. 235A"
+                    },
+                    {
+                      "String": "Copper dichloride dihydrate; Copper(II) chloride dihydrate; Cupric chloride dihydrate"
+                    },
+                    {
+                      "String": "CuCl2.2H2O"
+                    },
+                    {
+                      "String": "EPA Pesticide Chemical Code 023701"
+                    },
+                    {
+                      "String": "eriochalcite"
+                    },
+                    {
+                      "String": "UNII-S2QG84156O"
+                    },
+                    {
+                      "String": "Copper chloride (CuCl2), dihydrate"
+                    },
+                    {
+                      "String": "cupric chloride.2H2O"
+                    },
+                    {
+                      "String": "Copper(II)chloridedihydrate"
+                    },
+                    {
+                      "String": "copper(II) chloride.2H2O"
+                    },
+                    {
+                      "String": "Copric(II)chloride dihydrate"
+                    },
+                    {
+                      "String": "SCHEMBL15794"
+                    },
+                    {
+                      "String": "copper-(II) chloride dihydrate"
+                    },
+                    {
+                      "String": "copper (11) chloride dihydrate"
+                    },
+                    {
+                      "String": "copper (II) chloride di-hydrate"
+                    },
+                    {
+                      "String": "copper dichloride--water (1/2)"
+                    },
+                    {
+                      "String": "copper(II) chloride--water (1/2)"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, 99%"
+                    },
+                    {
+                      "String": "AKOS015904076"
+                    },
+                    {
+                      "String": "FC47106"
+                    },
+                    {
+                      "String": "copper(2+) dichloride --water (1/2)"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, 99.999%"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, reagent grade"
+                    },
+                    {
+                      "String": "D03612"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, ACS reagent, >=99.0%"
+                    },
+                    {
+                      "String": "Copper(II) chloride hydrate, 99.999% (metals basis)"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, SAJ first grade, >=97.0%"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, >=99.99% trace metals basis"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, JIS special grade, >=99.0%"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, puriss. p.a., ACS reagent, >=99.0% (RT)"
+                    },
+                    {
+                      "String": "Copper(II) chloride dihydrate, powder, BioReagent, suitable for cell culture"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2021.10.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cl2CuH4O2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2021.10.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "170.48"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Reference": [
+                  "Computed by InChI 1.0.6 (PubChem release 2021.10.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2ClH.Cu.2H2O/h2*1H;;2*1H2/q;;+2;;/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Reference": [
+                  "Computed by InChI 1.0.6 (PubChem release 2021.10.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "MPTQRFCYZCXJFQ-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "CSL Reaction Information",
+            "Description": "Reaction information for potentially hazardous chemicals, integrated from the Pistoia Alliance Chemical Safety Library (CSL).",
+            "URL": "https://safescience.cas.org/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Name": "CSL No",
+                "URL": "https://safescience.cas.org/detail/CSL00134",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CSL00134"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Reactants/Reagents",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "OXYGEN + COPPER(II) CHLORIDE DIHYDRATE + 2,6-DIBROMOPYRIDINE + N-BUTYLLITHIUM + DIETHYL ETHER",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Oxygen"
+                        },
+                        {
+                          "Start": 9,
+                          "Length": 29,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/COPPER%28II%29%20CHLORIDE%20DIHYDRATE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-61482"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 19,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/2%2C6-DIBROMOPYRIDINE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-12274"
+                        },
+                        {
+                          "Start": 63,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/N-BUTYLLITHIUM",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-53627823"
+                        },
+                        {
+                          "Start": 80,
+                          "Length": 13,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/DIETHYL%20ETHER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-3283"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Warning Message",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "O2 reacted with the organocopper (or remaining organolithium) reagent to form some peroxides which exploded"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "GHS Category",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Explosive"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Reaction Class",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Ullmann coupling"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Reference Source",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ACS Safety Letters"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Modified Date",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7/8/18"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Name": "Create Date",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2/27/18"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "13933-17-0",
+        "Name": "Copper, diaquadichloro-",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=13933-17-0",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12738851
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0010125130",
+        "Name": "Cupric chloride [USP]",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0010125130",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 827736
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID1049564",
+        "Name": "Cupric chloride dihydrate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID1049564",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1163775
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "Pistoia Alliance Chemical Safety Library",
+        "SourceID": "CSL00134",
+        "Name": "OXYGEN + COPPER(II) CHLORIDE DIHYDRATE + 2,6-DIBROMOPYRIDINE + N-BUTYLLITHIUM + DIETHYL ETHER",
+        "Description": "The Pistoia Alliance Chemical Safety Library (CSL) provides unique crowd sourced data content containing hazardous reactions that can be used to alert scientists to potential dangerous experiments. CAS, a division of the American Chemical Society, is committed to increasing safety in the lab and has provided this open access platform to serve scientists worldwide.",
+        "URL": "https://safescience.cas.org/",
+        "LicenseURL": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+        "ANID": 5123097
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 22985,
+  "hazard_key": "NH4NO3",
+  "display_name": "Ammoniumnitrat",
+  "captured_at": "2026-01-31T14:14:46.151242+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/22985",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/22985/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/22985/linkout.json",
+      "sha256": "b114c422dbefc1a3a193fd30ed64ee9f1b6e6d955de5328aa0c4df271b8ab723"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/22985/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 393147,
+      "file": "data/pubchem_payloads/raw/22985/lcss.json",
+      "sha256": "f9ce81ed15156ca486bbdc45a5814776dbe4fdf112698daceb0c8bb679df8454"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/22985/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 484759,
+      "file": "data/pubchem_payloads/raw/22985/safety.json",
+      "sha256": "7b5c12e2039cf0c41a60f4967cdbb9331a322db68393fab6d3a800dc5ce18514"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/22985.png"
+}

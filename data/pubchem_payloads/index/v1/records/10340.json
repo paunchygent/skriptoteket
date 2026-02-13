@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "cid": 10340,
+  "captured_at": "2026-01-31T16:57:25.390889+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/10340",
+    "lcss_sha256": "282c96b1228b8bcaa5595cf1e164a19ea58fdcf3936993c5977d8c5f1a94760c",
+    "linkout_sha256": "5b05ec31d2103efe59cd375785272b585926b04a47e58f19b03bd1520f85ea96",
+    "meta_sha256": "bbef158681fbf7ab13a05dac5a600856852c7b87065a950809a645dce84fe55b"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H318",
+      "H319",
+      "H332",
+      "H335",
+      "H336"
+    ],
+    "hazard_statements_sv": {
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H332": "Skadligt vid inandning.",
+      "H335": "Kan orsaka irritation i luftvägarna.",
+      "H336": "Kan göra att man blir dåsig eller omtöcknad."
+    },
+    "precautionary_codes": [
+      "P261",
+      "P264+P265",
+      "P271",
+      "P280",
+      "P304+P340",
+      "P305+P351+P338",
+      "P305+P354+P338",
+      "P317",
+      "P319",
+      "P337+P317",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P317": "Sök läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.121961+00:00"
+}

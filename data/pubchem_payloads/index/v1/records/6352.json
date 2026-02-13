@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "cid": 6352,
+  "captured_at": "2026-01-31T21:17:26.976831+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6352",
+    "lcss_sha256": "70e96f94a4dc2b6776a75f0a8128fbf3e9737655d831036762e452eeed1cac2d",
+    "linkout_sha256": "0e3c17b118fb8d15e27ddf98fb7728d567843e749bde2826cc1956917239b842",
+    "meta_sha256": "c04942394ba542b65c3ca8f38d25fc3471ad6ee616df3511e5e414414252c779"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [
+    {
+      "url": "https://www.carlroth.com/downloads/sdb/en/6/SDB_6667_AU_EN.pdf",
+      "source": "manual-playwright",
+      "verified": true,
+      "notes": "Calcium carbide SDS"
+    }
+  ],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": false
+  },
+  "sds_candidates": [],
+  "generated_at": "2026-01-31T23:44:13.293635+00:00"
+}

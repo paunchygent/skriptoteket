@@ -1,0 +1,34 @@
+{
+  "cid": 24203,
+  "hazard_key": "Na2HPO4",
+  "display_name": "Dinatriumhydrogenfosfat",
+  "captured_at": "2026-01-31T14:33:41.171469+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24203",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24203/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24203/linkout.json",
+      "sha256": "f0c165369395d79f71b104827612c6cdf90bfe6ed4908824bdc34149ab350765"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24203/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 169731,
+      "file": "data/pubchem_payloads/raw/24203/lcss.json",
+      "sha256": "7ebad600b4930972f582e90609a45a7a588df57a0af75b3dd644c5e2dbece6c1"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24203/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 112814,
+      "file": "data/pubchem_payloads/raw/24203/safety.json",
+      "sha256": "8d936b8646deee8774e2b4c36c57c4857de06bfae2dc3e4844333d5c5d6b8c09"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24203.png"
+}

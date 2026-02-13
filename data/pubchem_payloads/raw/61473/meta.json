@@ -1,0 +1,34 @@
+{
+  "cid": 61473,
+  "hazard_key": "Na3PO4·12H2O",
+  "display_name": "Natriumfosfat (dodekahydrat)",
+  "captured_at": "2026-01-31T16:57:36.515869+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/61473",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/61473/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/61473/linkout.json",
+      "sha256": "e85f1253e911b908337e432816a1a4528cbafc28beea37ae4644577d761e5e10"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/61473/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 47341,
+      "file": "data/pubchem_payloads/raw/61473/lcss.json",
+      "sha256": "e170e7c109d31886a0a29190934acc8d7013428f26975c4ced2d45ac0dc6dc83"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/61473/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 32918,
+      "file": "data/pubchem_payloads/raw/61473/safety.json",
+      "sha256": "c3263af400523b9d826e3fb2f6cb5ad6a8352e6ec0799989f15a0cbb351a2511"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/61473.png"
+}

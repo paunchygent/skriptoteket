@@ -1,0 +1,34 @@
+{
+  "cid": 24477,
+  "hazard_key": "Na2S2O3",
+  "display_name": "Natriumtiosulfat",
+  "captured_at": "2026-01-31T18:41:04.189348+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24477",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24477/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 738,
+      "file": "data/pubchem_payloads/raw/24477/linkout.json",
+      "sha256": "fb5d28e9c32355df7bf08ec0284fcd39e652caa57d49fc712086b766178ca2fc"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24477/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82122,
+      "file": "data/pubchem_payloads/raw/24477/lcss.json",
+      "sha256": "32962d4f804e5c7db4c5066a7c99c882fda6ea8f9edd7d62d91b1160e0f64958"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24477/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 45530,
+      "file": "data/pubchem_payloads/raw/24477/safety.json",
+      "sha256": "510cd0621fd913832daef3ad6413e43bf43a69586f4648d1cde3d9f2c24139a3"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24477.png"
+}

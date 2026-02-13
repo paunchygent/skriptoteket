@@ -1,0 +1,305 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 10313194,
+    "RecordTitle": "Cuprous Oxide",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 14,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-39-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-39-1"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "bis(copper(1+));oxygen(2-)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "T8BEA5064F"
+                    },
+                    {
+                      "String": "DTXSID0034489"
+                    },
+                    {
+                      "String": "CHEBI:81908"
+                    },
+                    {
+                      "String": "NSC-83538"
+                    },
+                    {
+                      "String": "Rose Copper"
+                    },
+                    {
+                      "String": "RefChem:54907"
+                    },
+                    {
+                      "String": "DTXCID401324398"
+                    },
+                    {
+                      "String": "215-270-7"
+                    },
+                    {
+                      "String": "C.I. 77402"
+                    },
+                    {
+                      "String": "Cuprous Oxide"
+                    },
+                    {
+                      "String": "Copper(I)oxide"
+                    },
+                    {
+                      "String": "copper(1+);oxygen(2-)"
+                    },
+                    {
+                      "String": "Cu2O"
+                    },
+                    {
+                      "String": "Dicopper(1+) oxide"
+                    },
+                    {
+                      "String": "dicuprous;oxygen(2-)"
+                    },
+                    {
+                      "String": "copper(1+) oxidocopper"
+                    },
+                    {
+                      "String": "copper(I) oxide (cuprite)"
+                    },
+                    {
+                      "String": "CUPROUS OXIDE [MI]"
+                    },
+                    {
+                      "String": "SCHEMBL2710"
+                    },
+                    {
+                      "String": "KRFJLUBVMFXRPN-UHFFFAOYSA-N"
+                    },
+                    {
+                      "String": "COPPER (I) OXIDE [HSDB]"
+                    },
+                    {
+                      "String": "COPPER OXIDE (CU(SUB 2)O)"
+                    },
+                    {
+                      "String": "AKOS015915954"
+                    },
+                    {
+                      "String": "AKOS025243522"
+                    },
+                    {
+                      "String": "C18714"
+                    },
+                    {
+                      "String": "F095805"
+                    },
+                    {
+                      "String": "Q407709"
+                    },
+                    {
+                      "String": "1308-76-5"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cu2O"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "143.09"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2Cu.O/q2*+1;-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "KRFJLUBVMFXRPN-UHFFFAOYSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID0034489",
+        "Name": "Cuprous oxide",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID0034489",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1156397
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "T8BEA5064F",
+        "Name": "CUPROUS OXIDE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/T8BEA5064F",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5857907
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

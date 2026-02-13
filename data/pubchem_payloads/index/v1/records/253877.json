@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "cid": 253877,
+  "captured_at": "2026-01-31T15:13:41.634776+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/253877",
+    "lcss_sha256": "07ec66834f9a2f9b83f55890c92b8fc45cbed3819daa7db460567cc487e27c12",
+    "linkout_sha256": "fa6b5ca3de7303029c7f79fa6fe506646894ce13980874e27dbef6c85f1aaa6b",
+    "meta_sha256": "dc7f7a48e448e4fcc586438b0f73dd072d4b428a94e022d534bf3d3383f770f4"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H315",
+      "H319",
+      "H335"
+    ],
+    "hazard_statements_sv": {
+      "H315": "Irriterar huden.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H335": "Kan orsaka irritation i luftvägarna."
+    },
+    "precautionary_codes": [
+      "P261",
+      "P264",
+      "P264+P265",
+      "P271",
+      "P280",
+      "P302+P352",
+      "P304+P340",
+      "P305+P351+P338",
+      "P319",
+      "P321",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "warning",
+    "signal_word_sv": "Varning",
+    "pictograms": [
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.041457+00:00"
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 14827,
+  "hazard_key": "PbO",
+  "display_name": "Blyoxider",
+  "captured_at": "2026-01-31T14:21:09.308380+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14827",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14827/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14827/linkout.json",
+      "sha256": "d91937027add8775bb8fbbd260a86b3e4f62fe1e5cbcdcef804ac56555bdf010"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14827/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 211386,
+      "file": "data/pubchem_payloads/raw/14827/lcss.json",
+      "sha256": "f823760d7e0d66e99772b9c8271e4d4df2ff60ec342f7f07fdfa8725e195e290"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14827/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 229215,
+      "file": "data/pubchem_payloads/raw/14827/safety.json",
+      "sha256": "e01e72c48099df9b8c16d6f6a2c8db2b0712ab3cc13f8a5ebe06e69c235063b7"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14827.png"
+}

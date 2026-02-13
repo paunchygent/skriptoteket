@@ -1,0 +1,34 @@
+{
+  "cid": 313,
+  "hazard_key": "HCl",
+  "display_name": "Saltsyra (HCl)",
+  "captured_at": "2026-01-31T14:10:34.905059+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/313",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/313/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1326,
+      "file": "data/pubchem_payloads/raw/313/linkout.json",
+      "sha256": "e3bc4250d0bced234858c2516fdb06c753994c483ee661173316f0ad2f9a15a6"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/313/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 563560,
+      "file": "data/pubchem_payloads/raw/313/lcss.json",
+      "sha256": "d73a88bbb94a4828053c08598f5d669dcfdfd934c8d1058917c1317e64e6965f"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/313/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 674455,
+      "file": "data/pubchem_payloads/raw/313/safety.json",
+      "sha256": "c49805aa6d0b0105e04d75c4ce50c8512a25c1e76add49e36b313b63a7eda417"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/313.png"
+}

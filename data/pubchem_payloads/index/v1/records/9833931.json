@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "cid": 9833931,
+  "captured_at": "2026-01-31T21:19:06.230976+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/9833931",
+    "lcss_sha256": "58e3741b1426d36b198d5525d309b715ef725c8d25afc4c07af8024d638af481",
+    "linkout_sha256": "89f1dd856f7c73ef2993cc1ca200c9bc3ff68e593127864874afc22f661f2399",
+    "meta_sha256": "98b31e17de6bec6a4a0457a1e14aa10e1d8eb3507788621c41ba2048a2ba42b5"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.212177+00:00"
+}

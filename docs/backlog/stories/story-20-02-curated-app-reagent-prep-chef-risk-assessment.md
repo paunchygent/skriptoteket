@@ -2,9 +2,10 @@
 type: story
 id: ST-20-02
 title: "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-01-28
+updated: 2026-02-01
 epic: "EPIC-20"
 dependencies: ["ADR-0022", "ADR-0023", "ADR-0024", "REF-curated-app-reagent-prep-chef"]
 acceptance_criteria:
@@ -12,7 +13,7 @@ acceptance_criteria:
   - "Given the teacher confirms or modifies the prefilled data and fills required local context, when the teacher exports, then the backend generates a deterministic PDF risk assessment document (no external API calls during export) and the SPA downloads it."
   - "Given the teacher exports and chooses Save to Vault, when saving completes, then a Vault file is created with source_kind=APP_EXPORT and the user receives a Vault file reference."
   - "Given the teacher returns later, when the app is opened, then the last risk assessment draft can be restored from app-owned session state (tool_sessions) without data loss (or the teacher can start a fresh draft)."
-  - "Given the chemical is not present in curated hazards data, when a risk draft is generated, then the risk assessment still works but includes an explicit SDS warning and does not guess hazard-driven fields; CLP classification and heuristics are omitted with a clear 'cannot compute' indicator."
+  - "Given the chemical is not present in curated hazards data, when a risk draft is generated, then the risk assessment fails with an explicit error and requires a curated SDS before proceeding (no fallback)."
   - "Given the chemical is present in curated hazards data and has a curated SDS attachment, when the teacher opens Riskbedömning, then the UI can open the full SDS served by the backend (cached offline after any fetch) without any direct external fetch from the SPA."
 ui_impact: "Yes (new tab + forms + export/save actions)"
 data_impact: "Yes (repo-owned risk templates + extended curated hazards fields; stored drafts via tool_sessions)"
@@ -125,3 +126,18 @@ The PDF must include AFS-aligned documentation fields:
 
 - Build on ST-20-01 output model and export patterns.
 - Follow the curated-app rule: bespoke UX + app-specific APIs; tool/runner infrastructure is internal-only.
+
+## Implementation status (as of 2026-02-01)
+
+Progress:
+
+- Riskbedömning draft/export/save endpoints exist; tool_sessions state persistence is wired.
+- SDS pipeline caches **PDF** SDS and serves PDF from backend (no direct external SDS links in SPA).
+- Multi-source SDS provider registry wired (curated linkouts + PubChem LinkOut + safety URLs + LCSS URL scan).
+- Curated SDS meta store added; curated density/CLP bands are used when present.
+- Seed SDS cache supports parallel fetches + strict validation; sample batch with curated meta completes cleanly.
+
+Outstanding gaps vs acceptance criteria:
+
+- Full prefetch validation ran 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`); remaining misses must be resolved.
+- Curated SDS linkouts/meta coverage still incomplete for the full list (manual curation required).

@@ -1,0 +1,1967 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24203,
+    "RecordTitle": "Sodium Phosphate, Dibasic",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 70.3% (744 of 1059) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 87,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319 (29.7%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264+P265, P280, P305+P351+P338, and P337+P317",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 11,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 37,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 1059 reports by companies from 12 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 118,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 744 of 1059 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 10 notifications provided by 315 of 1059 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 102,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/21"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 100% (11 of 11) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 83,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 11 of 11 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 112,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/225658"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 11 reports by companies from 1 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 115,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 11 of 11 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 78,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 0 notifications provided by 0 of 11 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 97,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/225658"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye Irrit. 2 (29.7%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation of heavy dust may irritate nose and throat. Ingestion may injure mouth, throat, and gastrointestinal tract, resulting in nausea, vomiting, cramps and diarrhea; pain and burning in mouth may occur. Contact with eyes produces local irritation; can lead to chronic damage. Contact with skin produces local irritation; repeated or prolonged contact can lead to dermatitis. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Behavior in Fire: May melt with loss of steam (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 35,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A mild skin, eye, and respiratory tract irritant; [ICSC] Emergency treatment: Inorganic phosphates; Inorganic phosphates can cause diarrhea, hyperphosphatemia, and hypocalcemia after ingestion; An adult died after receiving four sodium phosphate enemas within 24 hours; he had electrolyte abnormalities and died from cardiac arrest; [HSDB] A mild eye irritant in rabbits; [RTECS]",
+                          "Markup": [
+                            {
+                              "Start": 229,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 15th  Edition. John Wiley & Sons, Inc. New York, NY 2007., p. 1153"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 15th  Edition. John Wiley & Sons, Inc. New York, NY 2007., p. 1153",
+                        "Matched": {
+                          "PCLID": 906277045,
+                          "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 15th  Edition. John Wiley & Sons, Inc. New York, NY 2007., p. 1153"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Nonflammable"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust: Irritating to eyes, nose and throat. If inhaled will cause coughing or difficult breathing. Solid: Irritating to skin and eyes."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3274"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3274",
+                        "Matched": {
+                          "PCLID": 906282595,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3274"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A skin and eye irritant."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 38,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse skin with plenty of water or shower.",
+                      "Markup": [
+                        {
+                          "Start": 26,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth. Give one or two glasses of water to drink.",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EYES: First check the victim for contact lenses and remove if present. Flush victim's eyes with water or normal saline solution for 20 to 30 minutes while simultaneously calling a hospital or poison control center. Do not put any ointments, oils, or medication in the victim's eyes without specific instructions from a physician. IMMEDIATELY transport the victim after flushing eyes to a hospital even if no symptoms (such as redness or irritation) develop.",
+                          "Markup": [
+                            {
+                              "Start": 96,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 105,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/normal%20saline",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN: IMMEDIATELY flood affected skin with water while removing and isolating all contaminated clothing. Gently wash all affected skin areas thoroughly with soap and water. If symptoms such as redness or irritation develop, IMMEDIATELY call a physician and be prepared to transport the victim to a hospital for treatment.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 166,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "INHALATION: IMMEDIATELY leave the contaminated area; take deep breaths of fresh air. If symptoms (such as wheezing, coughing, shortness of breath, or burning in the mouth, throat, or chest) develop, call a physician and be prepared to transport the victim to a hospital. Provide proper respiratory protection to rescuers entering an unknown atmosphere. Whenever possible, Self-Contained Breathing Apparatus (SCBA) should be used; if not available, use a level of protection greater than or equal to that advised under Protective Clothing."
+                        },
+                        {
+                          "String": "INGESTION: DO NOT INDUCE VOMITING. If the victim is conscious and not convulsing, give 1 or 2 glasses of water to dilute the chemical and IMMEDIATELY call a hospital or poison control center. Be prepared to transport the victim to a hospital if advised by a physician. If the victim is convulsing or unconscious, do not give anything by mouth, ensure that the victim's airway is open and lay the victim on his/her side with the head lower than the body. DO NOT INDUCE VOMITING. IMMEDIATELY transport the victim to a hospital. (NTP, 1992)",
+                          "Markup": [
+                            {
+                              "Start": 105,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 38,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848",
+                        "Matched": {
+                          "PCLID": 900101234,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material is on fire or involved in fire: Extinguish fire using agent suitable for type of surrounding fire. (Material itself does not burn or burns with difficulty.)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Firefighting Hazards",
+                "Description": "Hazards associated with firefighting operations (such as smoke, oxygen deficiency, elevated temperatures, and poisonous atmospheres).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Behavior in fire: May melt with loss of steam. /Sodium Phosphates/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848",
+                        "Matched": {
+                          "PCLID": 900101234,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/SRP: If time permits, pits, ponds, lagoons, soak holes, or holding areas should be sealed with an impermeable flexible membrane liner./Environmental Consideration: Land spill Dig a pit, pond, lagoon, holding area to contain liquid or solid material. Cover solids with a plastic sheet to prevent dissolving in rain or fire fighting water.",
+                          "Markup": [
+                            {
+                              "Start": 332,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848",
+                        "Matched": {
+                          "PCLID": 900101234,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Environmental Consideration: Neutralize with agricultural lime (CaO), crushed limestone (CaCO3), or sodium bicarbonate (NaHCO3). Adjust pH to neutral (pH=7). Use mechanical dredges or lifts to remove immobilized masses of pollutants and precipitates.",
+                          "Markup": [
+                            {
+                              "Start": 100,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20bicarbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-516892"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational exposure or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal, aquatic, and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 399,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The scientific literature for the use of contact lenses in industry is conflicting. The benefit or detrimental effects of wearing contact lenses depend not only upon the substance, but also on factors including the form of the substance, characteristics and duration of the exposure, the uses of other eye protection equipment, and the hygiene of the lenses. However, there may be individual substances whose irritating or corrosive properties are such that the wearing of contact lenses would be harmful to the eye. In those specific cases, contact lenses should not be worn. In any event, the usual eye protection equipment should be worn even when contact lenses are in place."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848",
+                        "Matched": {
+                          "PCLID": 900101234,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material is not on fire and not involved in fire: Keep material out of water sources and sewers. Build dikes to contain flow as necessary.",
+                          "Markup": [
+                            {
+                              "Start": 74,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848",
+                        "Matched": {
+                          "PCLID": 900101234,
+                          "Citation": "Association of American Railroads; Bureau of Explosives. Emergency Handling of Hazardous Materials in Surface Transportation. Association of American Railroads, Pueblo, CO. 2005, p. 848"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personnel Protection: Keep upwind. Wear appropriate chemical protective gloves, boots and goggles. Avoid breathing vapors or dusts. Wash away any material which may have contacted the body with copious amounts of water or soap and water.",
+                          "Markup": [
+                            {
+                              "Start": 213,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 231,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Separated from strong acids."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ:  Merck and Co., Inc., 2006., p. 1488"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ:  Merck and Co., Inc., 2006., p. 1488",
+                        "Matched": {
+                          "PCLID": 900041563,
+                          "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ:  Merck and Co., Inc., 2006., p. 1488"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep well closed and in a cool place."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is mildly irritating to the eyes, skin and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Acceptable Daily Intakes",
+                "Description": "An estimate of the amount of a chemical in food or drinking water that can be consumed daily over a lifetime without presenting an appreciable risk to health. It is usually expressed as milligrams of the substance per kilogram of body weight per day and applies to chemicals such as food additives, pesticide residues and veterinary drugs.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641",
+                        "Matched": {
+                          "PCLID": 900011586,
+                          "Citation": "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "FAO/WHO EXPERT COMMITTEE ON FOOD ADDITIVES...RECOMMENDED.../LEVELS/ FOR TOTAL DIETARY PHOSPHORUS...UNCONDITIONAL ACCEPTANCE LEVEL /OF LESS THAN 30 MG/KG BODY WT/ IS CONSIDERED SAFE IN ANY TYPE OF DIET...CONDITIONAL ACCEPTANCE LEVEL /OF 30-70 MG/KG BODY WT/ IS ACCEPTABLE ONLY WHEN DIETARY CALCIUM LEVEL IS HIGH /PHOSPHATES/",
+                          "Markup": [
+                            {
+                              "Start": 86,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 289,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Calcium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Calcium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900158839,
+                          "Citation": "40 CFR 180.910; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of disodium phosphate are exempted from the requirement of a tolerance when used as a anticaking agent, conditioning agent in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/disodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24203"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "U.S. Bu. Mines toxic dust mask; protective gloves; chemical- type goggles; full-cover clothing (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 1684"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 1684",
+                        "Matched": {
+                          "PCLID": 900119388,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 1684"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection (supplied-air respirator with full facepiece or self-contained breathing apparatus) should be available where these compounds are manufactured or used and should be worn in case of emergency and overexposure. /Phosphorus compounds/",
+                          "Markup": [
+                            {
+                              "Start": 233,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use ventilation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety goggles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Soluble in water."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Salts, Basic"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Strong base; corrosive towards metals e.g. aluminum and zinc. [Handling Chemicals Safely 1980 p. 947].",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 56,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Zinc",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Zinc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "Standard Transportation Number",
+                "Description": "This section provides the Standard Transportation Commodity Code (STCC) for this chemical.  The STCC is a seven digit numeric code representing 38 commodity groupings and used on waybills and other shipping documents.  If the first two digits of an STCC are 48 or 49, the STCC is also called the Hazardous Materials Response Code (HMRC) or Hazmat STCC, and is used when transporting a hazardous material or dangerous good by rail in North America. ",
+                "URL": "https://public.railinc.com/resources/standard-transportation-commodity-code",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 663 80; Sodium phosphate, dibasic",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Phosphoric acid, disodium salt",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 30,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phosphoric%20acid%2C%20disodium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24203"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 26-08-2022 https://echa.europa.eu/registration-dossier/-/registered-dossier/14974",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/14974"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sodium phosphate, dibasic: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-21225609"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 46,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Clean Water Act Requirements",
+                "Description": "The Clean Water Act (CWA) of 1972 establishes the basic structure for regulating discharges of pollutants into the waters of the United States and regulating quality standards for surface waters.  Under CWA, the U.S. Environmental Protection Agency (EPA) developed the Toxic Pollutant List (40 CFR Part 401.15) and the Priority Pollutant List (40 CFR Part 423, Appendix A). These lists are to be used by EPA and States to develop the Effluent Guidelines regulations and ensure water quality criteria and standards.",
+                "URL": "https://www.epa.gov/laws-regulations/summary-clean-water-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 116.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 116.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900147102,
+                          "Citation": "40 CFR 116.4 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium phosphate, dibasic is designated as a hazardous substance under section 311(b)(2)(A) of the Federal Water Pollution Control Act and further regulated by the Clean Water Act Amendments of 1977 and 1978. These regulations apply to discharges of this substance. This designation includes any isomers and hydrates, as well as any solutions and mixtures containing this substance.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 107,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 170,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "CERCLA Reportable Quantities",
+                "Description": "The CERCLA reportable quantity for a hazardous substance is the minimum quantity of the substance which, if released, must be reported, under the Comprehensive Environmental Response, Compensation, and Liability Act of 1980 (CERCLA, also commonly known as Superfund).",
+                "URL": "https://www.epa.gov/epcra/cercla-and-epcra-continuous-release-reporting",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 302.4; (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 302.4; (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900006519,
+                          "Citation": "40 CFR 302.4; (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Persons in charge of vessels or facilities are required to notify the National Response  Center (NRC) immediately, when there is a release of this designated hazardous substance, in  an amount equal to or greater than its reportable quantity of 5000 lb or 2270 kg. The toll  free number of the NRC is (800) 424-8802. The rule for determining when notification is  required is stated in 40 CFR 302.4 (section IV. D.3.b)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900090111,
+                          "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 17, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of disodium phosphate are exempted from the requirement of a tolerance when used as a anticaking agent, conditioning agent in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/disodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24203"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 318"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 318",
+                        "Matched": {
+                          "PCLID": 906272835,
+                          "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 318"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "As the federal pesticide law FIFRA directs, EPA is conducting a comprehensive review of older pesticides to consider their health and environmental effects and make decisions about their continued use. Under this pesticide reregistration program, EPA examines newer health and safety data for pesticide active ingredients initially registered before November 1, 1984, and determines whether the use of the pesticide does not pose unreasonable risk in accordance to newer saftey standards, such as those described in the Food Quality Protection Act of 1996. Pesticides for which EPA had not issued Registration Standards prior to the effective date of FIFRA '88 were divided into three lists based upon their potential for human exposure and other factors, with List B containing pesticides of greater concern than those on List C, and with List C containing pesticides of greater concern than those on List D. Sodium phosphate /disodium monohydrogen phosphate/ is found on List D. Case No: 4053; Pesticide type: fungicide, herbicide, antimicrobial; Case Status: None of the active ingredients in the case are being supported for reregistration by their registrants. All are unsupported, or some are unsupported and some are cancelled. Cases described as \"unsupported\" generally are being processed for cancellation.; Active ingredient (AI): sodium phosphate; AI Status:  The active ingredient is no longer contained in any registered products. Thus, we characterize it as \"cancelled.\".",
+                          "Markup": [
+                            {
+                              "Start": 910,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 928,
+                              "Length": 31,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/disodium%20monohydrogen%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24203"
+                            },
+                            {
+                              "Start": 1341,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.6290 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.6290 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906292211,
+                          "Citation": "21 CFR 182.6290 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Disodium phosphate used as a sequestrant in food for human consumption is generally recognized as safe when used in accordance with good manufacturing practice.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Disodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24203"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 582.6290 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 582.6290 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900149484,
+                          "Citation": "21 CFR 582.6290 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Disodium phosphate used as a sequestrant in animal drugs, feeds, and related products is generally recognized as safe when used in accordance with good manufacturing or feeding practice.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Disodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24203"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.1778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.1778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900152151,
+                          "Citation": "21 CFR 182.1778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium phosphate (mono-, di-, & tribasic) used as a multiple purpose food substance in food for human consumption is generally recognized as safe when used in accordance with good manufacturing practice. /Sodium phosphate (mono-, di-, & tribasic)/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 205,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.6778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.6778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900037268,
+                          "Citation": "21 CFR 182.6778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of March 16, 2009: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium phosphate (mono-, di-, & tribasic) used as a sequesterant in food for human consumption is generally recognized as safe when used in accordance with good manufacturing practice. /Sodium phosphate (mono-, di-, & tribasic)/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 186,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more FDA Requirements (Complete) data for DISODIUM HYDROGEN PHOSPHATE (9 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 102,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/376#section=FDA-Requirements-(Complete)"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 27,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/DISODIUM%20HYDROGEN%20PHOSPHATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24203"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Phosphoric acid, disodium salt: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 30,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phosphoric%20acid%2C%20disodium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24203"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "WHO; Diseases Caused by Phosphorus and Its Toxic Compounds; Early Detection of Occupational Diseases pg 53-62 (1986). Review of diseases and health related effects resulting from exposure to phosphorus or phosphorus cmpd.",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 191,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 205,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11137",
+        "Name": "Phosphoric acid, disodium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39367643
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11137",
+        "Name": "Phosphoric acid, disodium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400865
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-448-7",
+        "Name": "Disodium hydrogenorthophosphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.590",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981305
+      },
+      {
+        "ReferenceNumber": 45,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "e1a6f4e1612666ab9f476e7c58f52f1a",
+        "Name": "Sodium phosphate, dibasic",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37161859
+      },
+      {
+        "ReferenceNumber": 46,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "1723",
+        "Name": "sodium phosphate, dibasic",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1723.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2270294
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "4520",
+        "Name": "SODIUM PHOSPHATE, DIBASIC",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/4520",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 760809
+      },
+      {
+        "ReferenceNumber": 38,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1129",
+        "Name": "DISODIUM HYDROGEN PHOSPHATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1129",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260982
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "376",
+        "Name": "DISODIUM HYDROGEN PHOSPHATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/376",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 319
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "21",
+        "Name": "Disodium hydrogenorthophosphate (EC: 231-448-7)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/21",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1850977,
+        "SortOrder": 4059
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "225658",
+        "Name": "Disodium hydrogenorthophosphate (EC: 692-045-3)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/225658",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 24838011,
+        "SortOrder": 3011
+      },
+      {
+        "ReferenceNumber": 35,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz5022",
+        "Name": "Disodium phosphate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/5022",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17279351
+      }
+    ]
+  }
+}

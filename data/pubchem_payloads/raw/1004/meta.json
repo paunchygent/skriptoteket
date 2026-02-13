@@ -1,0 +1,34 @@
+{
+  "cid": 1004,
+  "hazard_key": "H3PO4",
+  "display_name": "Fosforsyra (H3PO4)",
+  "captured_at": "2026-01-31T14:34:25.803403+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/1004",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/1004/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1328,
+      "file": "data/pubchem_payloads/raw/1004/linkout.json",
+      "sha256": "ca076fdd5f89c160217deb826b16c47b8d5579bee7d2c8ee4004b8a9acf1e591"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/1004/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 366620,
+      "file": "data/pubchem_payloads/raw/1004/lcss.json",
+      "sha256": "c1b0defa070c269a32fd9fe586633b7bb6356bd6382fd95db6016dcf1ea6423d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/1004/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 353192,
+      "file": "data/pubchem_payloads/raw/1004/safety.json",
+      "sha256": "1d4f66a006e7d9ebeab9551846fb3648a5059116c2ad15c0af7eb792b396d6bb"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/1004.png"
+}

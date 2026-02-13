@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "cid": 24450,
+  "captured_at": "2026-01-31T14:33:28.791951+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24450",
+    "lcss_sha256": "801b0145614551d740592e5e7bad8e1a22f552ec6559dd9177322ed470fe734d",
+    "linkout_sha256": "f9acea1b0b8c393e388808618566e2a16f0bd9676e5a3933b8599508df748d11",
+    "meta_sha256": "41b3fc2f7f800470ca57860e6411dec224c8a9a1aa70305ff758b76c2e44646b"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H315",
+      "H318"
+    ],
+    "hazard_statements_sv": {
+      "H315": "Irriterar huden.",
+      "H318": "Orsakar allvarliga ögonskador."
+    },
+    "precautionary_codes": [
+      "P264",
+      "P264+P265",
+      "P280",
+      "P302+P352",
+      "P305+P354+P338",
+      "P317",
+      "P321",
+      "P332+P317",
+      "P362+P364"
+    ],
+    "precautionary_statements_sv": {
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P317": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen."
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:02.984784+00:00"
+}

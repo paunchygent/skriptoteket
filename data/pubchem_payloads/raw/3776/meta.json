@@ -1,0 +1,34 @@
+{
+  "cid": 3776,
+  "hazard_key": "C3H8O",
+  "display_name": "Isopropanol",
+  "captured_at": "2026-01-31T14:34:48.996021+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/3776",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/3776/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 693,
+      "file": "data/pubchem_payloads/raw/3776/linkout.json",
+      "sha256": "d09d27078db13d35dcfb2becf79e20375a726878469aedb36d2feda6aeb4556e"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/3776/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 594416,
+      "file": "data/pubchem_payloads/raw/3776/lcss.json",
+      "sha256": "b02efa400343df8bc64fa4130aa0bfed40a808308e5889973fe7e29a725554bb"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/3776/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 401672,
+      "file": "data/pubchem_payloads/raw/3776/safety.json",
+      "sha256": "db6488333afe2dd721182b1fe06bc2f35bfa3b45066403f49433a98f718410b6"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/3776.png"
+}

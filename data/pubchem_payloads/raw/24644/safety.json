@@ -1,0 +1,366 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24644,
+    "RecordTitle": "Magnesium chloride hexahydrate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 97.1% (204 of 210) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 86,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 204 of 210 companies (only 2.9% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 161,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/57661"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 210 reports by companies from 5 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 116,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 204 of 210 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 3 notifications provided by 6 of 210 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 98,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/57661"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EPA Safer Chemical",
+                "Description": "EPA labels products so that consumers can easily choose ones that are safer for people and the environment. When consumers see the Safer Choice label on a product, they can be confident that the ingredients have been through a rigorous EPA review. The label means that EPA scientists have evaluated every ingredient in the product to ensure it meets Safer Choice's stringent criteria. When people use Safer Choice products, they are protecting their families and the environment by making safer chemical choices.",
+                "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+                "Information": [
+                  {
+                    "ReferenceNumber": 11,
+                    "Name": "EPA Safer Chemical",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical: Magnesium chloride, hexahydrate",
+                          "Markup": [
+                            {
+                              "Start": 10,
+                              "Length": 31,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride%2C%20hexahydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24644"
+                            }
+                          ]
+                        },
+                        {
+                          "String": " Green circle - The chemical has been verified to be of low concern based on experimental and modeled data.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/epasafe/green.svg",
+                              "Type": "Icon",
+                              "Extra": "Green circle"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause irritation; [Great Salt Lake Minerals MSDS] See Magnesium chloride.",
+                          "Markup": [
+                            {
+                              "Start": 58,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Magnesium chloride, hexahydrate",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 31,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride%2C%20hexahydrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24644"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Magnesium chloride hexahydrate: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 30,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride%20hexahydrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24644"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Magnesium chloride, hexahydrate: Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 31,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride%2C%20hexahydrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24644"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Magnesium chloride, hexahydrate: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 31,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride%2C%20hexahydrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24644"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11449",
+        "Name": "Magnesium chloride, hexahydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39356935
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11449",
+        "Name": "Magnesium chloride, hexahydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400261
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "5fb17e9a85378966eb03437d33f1cf91",
+        "Name": "Magnesium chloride hexahydrate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162519
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "EPA Safer Choice",
+        "SourceID": "7791-18-6",
+        "Name": "Magnesium chloride, hexahydrate",
+        "Description": "The Safer Choice of the U.S. Environmental Protection Agency (EPA) helps consumers, businesses, and purchasers find products that perform and are safer for human health and the environment.",
+        "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 2128523
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "57661",
+        "Name": "Magnesium chloride hexahydrate (EC: 616-575-1)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/57661",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1868046,
+        "SortOrder": 3210
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz15309",
+        "Name": "Magnesium chloride hexahydrate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/15309",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17284046
+      }
+    ]
+  }
+}

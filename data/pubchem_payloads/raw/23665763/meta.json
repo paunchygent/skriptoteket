@@ -1,0 +1,34 @@
+{
+  "cid": 23665763,
+  "hazard_key": "NaHSO3",
+  "display_name": "Natriumvätesulfit",
+  "captured_at": "2026-01-31T18:41:33.539383+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23665763",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/23665763/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82,
+      "file": "data/pubchem_payloads/raw/23665763/linkout.json",
+      "sha256": "4eadb793d991154f342884d0f8a3eaaaedd9c6a4f5e7b82cab4523ca699a62e8"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23665763/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 210941,
+      "file": "data/pubchem_payloads/raw/23665763/lcss.json",
+      "sha256": "94649b87372c9f3ce9392b698170a7cbc4435a5f295d07dde4c190508c266b9e"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23665763/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 185045,
+      "file": "data/pubchem_payloads/raw/23665763/safety.json",
+      "sha256": "f02a511b136aabf6581674151fc95b7cf30662280cd142b6bb6f78435ba35aa8"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/23665763.png"
+}

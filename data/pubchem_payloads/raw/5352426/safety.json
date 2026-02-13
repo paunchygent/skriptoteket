@@ -1,0 +1,2388 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 5352426,
+    "RecordTitle": "Tin atom",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 72.9% (695 of 953) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 86,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319 (24.2%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335 (23.1%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P261, P264+P265, P271, P280, P304+P340, P305+P351+P338, P319, P337+P317, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 40,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 56,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 73,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 84,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 94,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 953 reports by companies from 20 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 178,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 695 of 953 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 16 notifications provided by 258 of 953 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 101,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/72051"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/173002"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319: Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 37,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P261, P264, P264+P265, P270, P271, P280, P304+P340, P305+P351+P338, P319, P337+P317, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 91,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 102,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 112,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 35,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 35,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 35,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 35,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P264, P270, P319, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 28,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 20,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye Irrit. 2 (24.2%)"
+                        },
+                        {
+                          "String": "STOT SE 3 (23.1%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 35,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (lung)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 3 (Respiratory tract irritation)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (lung)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Flammable agents - 3rd degree"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Tin:",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Exposure Routes: Inhalation, skin and/or eye contact"
+                        },
+                        {
+                          "String": "Symptoms: Irritation eyes, skin, respiratory system; In Animals: vomiting, diarrhea, paralysis with muscle twitching"
+                        },
+                        {
+                          "String": "Target Organs: Eyes, skin, respiratory system (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 3175"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 3175",
+                        "Matched": {
+                          "PCLID": 906292532,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 3175"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Combustible in the form of dust when exposed to heat or by spontaneous chemical reaction with Br2; BrF3; Cl2; ClF3; Cu(NO3); K2O2; S."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 2177"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 2177",
+                        "Matched": {
+                          "PCLID": 900050533,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 2177"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Tin dust is ... irritant to eyes & airways ... .",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Flammable Limits",
+                "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "Flammability",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible Solid, but powdered form may ignite."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "NIOSH Recommendations",
+                "Description": "The National Institute for Occupational Safety and Health (NIOSH) recommendations for chemical safety concerning this compound.",
+                "URL": "https://www.cdc.gov/niosh/index.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308",
+                        "Matched": {
+                          "PCLID": 900146802,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommended Exposure Limit: 10 Hr Time-Weighted avg: 2 mg/cu m."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 26,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse and then wash skin with water and soap.",
+                      "Markup": [
+                        {
+                          "Start": 30,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Tin:",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: IRRIGATE IMMEDIATELY - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 123,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: SOAP WASH IMMEDIATELY - If this chemical contacts the skin, immediately wash the contaminated skin with soap and water. If this chemical penetrates the clothing, immediately remove the clothing, wash the skin with soap and water, and get medical attention promptly.",
+                          "Markup": [
+                            {
+                              "Start": 119,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 229,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Breathing: RESPIRATORY SUPPORT - If a person breathes large amounts of this chemical, move the exposed person to fresh air at once. If breathing has stopped, perform artificial respiration. Keep the affected person warm and at rest. Get medical attention as soon as possible."
+                        },
+                        {
+                          "String": "Swallow: MEDICAL ATTENTION IMMEDIATELY - If this chemical has been swallowed, get medical attention immediately. (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(General first aid procedures)",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 28,
+                              "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: Irrigate immediately  - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 124,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: Soap wash immediately  - If this chemical contacts the skin, immediately wash the contaminated skin with soap and water. If this chemical penetrates the clothing, immediately remove the clothing, wash the skin with soap and water, and get medical attention promptly.",
+                          "Markup": [
+                            {
+                              "Start": 120,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 230,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Breathing: Respiratory support"
+                        },
+                        {
+                          "String": "Swallow: Medical attention immediately  - If this chemical has been swallowed, get medical attention immediately."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 26,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Use special powder, dry sand. NO other agents."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 5"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 5",
+                        "Matched": {
+                          "PCLID": 900029820,
+                          "Citation": "Mackison, F. W., R. S. Stricoff, and L. J. Partridge, Jr. (eds.). NIOSH/OSHA - Occupational Health Guidelines for Chemical Hazards. DHHS(NIOSH) Publication No. 81-123 (3 VOLS). Washington, DC: U.S. Government Printing Office, Jan. 1981., p. 5"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If tin ... /is/ spilled or leaked, the following steps should be taken: 1. Ventilate area of spill or leak. 2. Collect spilled or leaked material in the most convenient and safe manner for reclamation or for disposal ... Liquid containing inorganic tin compounds should be absorbed in vermiculite, dry sand, earth, or a similar material.",
+                          "Markup": [
+                            {
+                              "Start": 3,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            },
+                            {
+                              "Start": 249,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The scientific literature for the use of contact lenses in industry is conflicting. The benefit or detrimental effects of wearing contact lenses depend not only upon the substance, but also on factors including the form of the substance, characteristics and duration of the exposure, the uses of other eye protection equipment, and the hygiene of the lenses. However, there may be individual substances whose irritating or corrosive properties are such that the wearing of contact lenses would be harmful to the eye. In those specific cases, contact lenses should not be worn. In any event, the usual eye protection equipment should be worn even when contact lenses are in place."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Separated from strong oxidants."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Recommended Exposure Limit (REL)",
+                "Description": "The recommended exposure limit (REL) is the maximum amount or concentration of a chemical that a worker may be exposed to.  The RELs are guidelines established and recommended by the NIOSH (National Institute for Occupational Safety and Health).  The RELs can be given in three ways. [1] Time-weighted average (REL-TWA): average exposure based on up to10h/day, 40h/week work schedule. [2] Short-term exposure limit (REL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (REL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#exposure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 2 mg/m3 [*Note: The REL also applies to other inorganic tin compounds (as Sn) except tin oxides.]",
+                          "Markup": [
+                            {
+                              "Start": 10,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 60,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 2 mg/m3 [*Note: The PEL also applies to other inorganic tin compounds (as Sn) except tin oxides.]",
+                          "Markup": [
+                            {
+                              "Start": 10,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 60,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100 mg Sn/m3 (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308",
+                        "Matched": {
+                          "PCLID": 900146802,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100 mg/cu m (as Sn)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100 mg/m3 (as Sn)",
+                          "Markup": [
+                            {
+                              "Start": 8,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "See: 7440315",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 7,
+                              "URL": "https://www.cdc.gov/niosh/idlh/7440315.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 57"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 57",
+                        "Matched": {
+                          "PCLID": 900026020,
+                          "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 57"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "8 hr Time Weighted Avg (TWA): 2 mg/cu m. /Tin metal, as Sn/",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 5"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 5",
+                        "Matched": {
+                          "PCLID": 900002098,
+                          "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 5"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excursion Limit Recommendation: Excursions in worker exposure levels may exceed 3 times the TLV-TWA for no more than a total of 30 minutes during a work day, and under no circumstances should they exceed 5 times the TLV-TWA, provided that the TLV-TWA is not exceeded. /Tin metal, as Sn/",
+                          "Markup": [
+                            {
+                              "Start": 269,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(inhalable fraction): 2 mg/m"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Occupational Exposure Limits (OEL)",
+                "Description": "In general, the occupational exposure limit (OEL) indicates the level of admissible exposure, for a length of time (usually 8 hours), to a chemical or physical hazard that is not likely to affect the health of a worker. The OELs for chemical substances are established based on the chemical properties of the substance, experimental studies on animals and humans, toxicological and epidemiological data. These limits are set out by many professional organizations and government agencies around the world, such as the American Conference of Governmental Industrial Hygienists (ACGIH), and the National Institute for Occupational Safety and Health (NIOSH) in the United States. Different organizations may use different terminology for the OEL. For example, the ACGIH term for OEL is \"Threshold Limit Value\" (TLV)® while the NIOSH term is \"recommended exposure limits\" (REL). This section also includes MAK (maximale arbeitsplatzkonzentration), similar to threshold limit value, specifies the maximum concentration level of a toxic substance in air at a workplace.",
+                "URL": "https://www.ccohs.ca/oshanswers/hsprograms/occ_hygiene/occ_exposure_limits.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "EU-OEL",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2 mg/m"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly , especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause mechanical irritation to the respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance may have effects on the lungs. This may result in a benign pneumoconiosis (stannosis)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Tin:",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: No recommendation is made specifying the need for personal protective equipment for the body."
+                        },
+                        {
+                          "String": "Eyes: No recommendation is made specifying the need for eye protection."
+                        },
+                        {
+                          "String": "Wash skin: No recommendation is made specifying the need for washing the substance from the skin (either immediately or at the end of the work shift)."
+                        },
+                        {
+                          "String": "Remove: No recommendation is made specifying the need for removing clothing that becomes wet or contaminated."
+                        },
+                        {
+                          "String": "Change: No recommendation is made specifying the need for the worker to change clothing after the workshift. (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308",
+                        "Matched": {
+                          "PCLID": 900146802,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommendations for respirator selection. Max concn for use: 10 mg/cu m. Respirator Class(es): Any dust and mist respirator. May require eye protection."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308",
+                        "Matched": {
+                          "PCLID": 900146802,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommendations for respirator selection. Max concn for use: 20 mg/cu m. Respirator Class(es): Any dust and mist respirator except single-use and quarter-mask respirators. If notpresent as a fume. May require eye protection. Any supplied-air respirator. May require eye protection."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308",
+                        "Matched": {
+                          "PCLID": 900146802,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommendations for respirator selection. Max concn for use: 50 mg/cu m. Respirator Class(es): Any supplied-air respirator operated in a continuous flow mode. May require eye protection. Any powered, air-purifying respirator with a dust and mist filter. If not present as a fume. May require eye protection."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308",
+                        "Matched": {
+                          "PCLID": 900146802,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 308"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Recommendations for respirator selection. Max concn for use: 100 mg/cu m. Respirator Class(es): Any air-purifying, full-facepiece respirator with a high-efficiency particulate filter. Any self-contained breathing apparatus with a full facepiece. Any supplied-air respirator with a full facepiece."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Personal Protective Equipment (PPE) (Complete) data for TIN (6 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 97,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5035#section=Personal-Protective-Equipment-(PPE)-(Complete)"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Respirator Recommendations",
+                "Description": "This section provides a list of allowable respirators to be used for this chemical, according to the NIOSH's Respirator Selection Recommendations.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NIOSH/OSHA"
+                        },
+                        {
+                          "String": "Up to 10 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 5) Any quarter-mask respirator."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.*",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Up to 20 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 10) Any particulate respirator equipped with an N95, R95, or P95 filter (including N95, R95, and P95 filtering facepieces) except quarter-mask respirators. The following filters may also be used: N99, R99, P99, N100, R100, P100."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.*",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 10) Any supplied-air respirator*"
+                        },
+                        {
+                          "String": "Up to 50 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 25) Any supplied-air respirator operated in a continuous-flow mode*"
+                        },
+                        {
+                          "String": "(APF = 25) Any powered, air-purifying respirator with a high-efficiency particulate filter.*"
+                        },
+                        {
+                          "String": "Up to 100 mg/m3 :",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 50) Any air-purifying, full-facepiece respirator with an N100, R100, or P100 filter."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "(APF = 50) Any self-contained breathing apparatus with a full facepiece"
+                        },
+                        {
+                          "String": "(APF = 50) Any supplied-air respirator with a full facepiece"
+                        },
+                        {
+                          "String": "Emergency or planned entry into unknown concentrations or IDLH conditions:"
+                        },
+                        {
+                          "String": "(APF = 10,000) Any self-contained breathing apparatus that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode"
+                        },
+                        {
+                          "String": "(APF = 10,000) Any supplied-air respirator that has a full facepiece and is operated in a pressure-demand or other positive-pressure mode in combination with an auxiliary self-contained positive-pressure breathing apparatus"
+                        },
+                        {
+                          "String": "Escape:"
+                        },
+                        {
+                          "String": "(APF = 50) Any air-purifying, full-facepiece respirator with an N100, R100, or P100 filter."
+                        },
+                        {
+                          "String": "Click here for information on selection of N, R, or P filters.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 10,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#nrp"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Any appropriate escape-type, self-contained breathing apparatus"
+                        },
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Prevention",
+                "Description": "Precautionary measures to prevent fires from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NO open flames."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PREVENT DISPERSION OF DUST!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use local exhaust or breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety goggles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No rapid reaction with air. No rapid reaction with water.",
+                          "Markup": [
+                            {
+                              "Start": 51,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Metals, Less Reactive"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 6,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TIN is a reducing agent. Stable in massive form in air, but oxidizes (corrodes) in air as a powder, especially in the presence of water. Dissolve slowly in dilute strong acids in the cold. Dissolves in hot aqueous KOH and other strongly basic solutions. Incompatible with acids and base. Incompatible with chlorine and turpentine.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 306,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chlorine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Chlorine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197",
+                        "Matched": {
+                          "PCLID": 900133628,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "WHEN HEATED IN CHLORINE, TIN REACTS, PRODUCING LIGHT & MUCH HEAT.",
+                          "Markup": [
+                            {
+                              "Start": 15,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chlorine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Chlorine"
+                            },
+                            {
+                              "Start": 25,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 2177"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 2177",
+                        "Matched": {
+                          "PCLID": 900050533,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 2177"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... Reacts violently with oxidants, strong acids ... and some extinguishing agents such as bicarbonate powder and carbon dioxide.",
+                          "Markup": [
+                            {
+                              "Start": 91,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bicarbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-769"
+                            },
+                            {
+                              "Start": 114,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197",
+                        "Matched": {
+                          "PCLID": 900133628,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The violent reaction between /tin and bromine/ is controlled in halocarbon solutions.",
+                          "Markup": [
+                            {
+                              "Start": 30,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            },
+                            {
+                              "Start": 38,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Bromine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Bromine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197",
+                        "Matched": {
+                          "PCLID": 900133628,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 12 ed. Quincy,  MA: National Fire Protection Association, 1997., p. 491-197"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Tin and bromine trifluoride react violently.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            },
+                            {
+                              "Start": 8,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bromine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24594"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more Hazardous Reactivities and Incompatibilities (Complete) data for TIN (22 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 107,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5035#section=Hazardous-Reactivities-and-Incompatibilities-(Complete)"
+                            },
+                            {
+                              "Start": 74,
+                              "Length": 3,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Tin"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 4,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Tin"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Name": "California Safe Cosmetics Program (CSCP) Reportable Ingredient",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Hazard Traits - Bioaccumulation; Environmental Persistence"
+                    },
+                    {
+                      "String": "Authoritative List - OSPAR Priority Action Part A"
+                    },
+                    {
+                      "String": "Report - if used as a fragrance or flavor ingredient"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 10-02-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/15457",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/15457"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Tin: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 3,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Tin"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 37,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(MN) MINNESOTA 4000 ug/l"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Tin: Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 3,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Tin"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Tin: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 3,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Tin",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Tin"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11011",
+        "Name": "Tin",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39349559
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11011",
+        "Name": "Tin",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39401224
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "California Safe Cosmetics Program (CSCP) Product Database",
+        "SourceID": "d1eb289a32c9451397104cba7750eff5",
+        "Name": "Organic tin compounds",
+        "Description": "The California Safe Cosmetics Program (CSCP) is charged with implementing the California Safe Cosmetics Act (CSCA) and the Cosmetic Fragrance and Flavor Ingredient Right to Know Act (CFFIRKA). The goal of CSCP is to collect and share information on hazardous and potentially hazardous ingredients in cosmetics sold in California and to make this information available to the public.",
+        "URL": "https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/OHB/CSCP/Pages/About-CSCP.aspx",
+        "LicenseURL": "https://www.cdph.ca.gov/Pages/Conditions-of-Use.aspx",
+        "ANID": 39996091
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-141-8",
+        "Name": "Tin",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.310",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2067453
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "ac298af9b0b43d0e7d4a5d4f1adba123",
+        "Name": "Tin",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37161567
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "1858",
+        "Name": "tin",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1858.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2270384
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "25075",
+        "Name": "TIN",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/25075",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 761132
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5035",
+        "Name": "TIN",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5035",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3125
+      },
+      {
+        "ReferenceNumber": 42,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0613",
+        "Name": "Tin",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0613.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266907
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "72051",
+        "Name": "Tin (EC: 231-141-8)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/72051",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1872406,
+        "SortOrder": 3953
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "173002",
+        "Name": "Tin (EC: 640-396-8)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/173002",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37172227,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R01_B_045",
+        "Name": "Tin - FY2019 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/19-mhlw-2045e.html",
+        "ANID": 39312792,
+        "SortOrder": 2019
+      },
+      {
+        "ReferenceNumber": 35,
+        "SourceName": "NITE-CMC",
+        "SourceID": "815",
+        "Name": "Tin - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0806e.html",
+        "ANID": 2265823,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1535",
+        "Name": "TIN",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1535",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2261350
+      }
+    ]
+  }
+}

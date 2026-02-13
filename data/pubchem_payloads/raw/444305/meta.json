@@ -1,0 +1,34 @@
+{
+  "cid": 444305,
+  "hazard_key": "C4H6O6",
+  "display_name": "Vinsyra",
+  "captured_at": "2026-01-31T18:47:17.118760+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/444305",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/444305/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 737,
+      "file": "data/pubchem_payloads/raw/444305/linkout.json",
+      "sha256": "2f4268878c0a5f8f076054277411a8b65ea4c8d672e187d8646e9adf2403dfd6"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/444305/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 142423,
+      "file": "data/pubchem_payloads/raw/444305/lcss.json",
+      "sha256": "7fa837684372e189d6eeb0b3ad18c8260823b73e6442d7137bc9ee2f2c73903c"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/444305/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 77074,
+      "file": "data/pubchem_payloads/raw/444305/safety.json",
+      "sha256": "d1b0e08ac67a0b79c90c2bdcf15af72e0827614e3dfa359d806eac3207d4c0ad"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/444305.png"
+}

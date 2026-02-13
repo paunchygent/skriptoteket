@@ -1,0 +1,2406 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 5360315,
+    "RecordTitle": "Magnesium Chloride",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 57,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 22,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                      "Type": "Icon",
+                      "Extra": "Corrosive"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 22,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 60.6% (969 of 1600) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 87,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H290 (27.6%): May be corrosive to metals [Warning Corrosive to Metals]",
+                      "Markup": [
+                        {
+                          "Start": 42,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H302 (27.6%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                      "Markup": [
+                        {
+                          "Start": 36,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H315 (37.6%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318 (27.6%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (11.8%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335 (10.9%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P234, P261, P264, P264+P265, P270, P271, P280, P301+P317, P302+P352, P304+P340, P305+P351+P338, P305+P354+P338, P317, P319, P321, P330, P332+P317, P337+P317, P362+P364, P390, P403+P233, P405, P406, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P234"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                        },
+                        {
+                          "Start": 58,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 80,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 96,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 112,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 118,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 124,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 130,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                        },
+                        {
+                          "Start": 136,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 147,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 158,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 169,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P390"
+                        },
+                        {
+                          "Start": 175,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 186,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 192,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P406"
+                        },
+                        {
+                          "Start": 202,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 1600 reports by companies from 16 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 179,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 969 of 1600 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 81,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 13 notifications provided by 631 of 1600 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 102,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/93509"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=7786-30-3",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7786-30-3"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 57,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "magnesium dichloride"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 57,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "MAGNESIUM CHLORIDE"
+                    },
+                    {
+                      "String": "7786-30-3"
+                    },
+                    {
+                      "String": "Magnesium chloride anhydrous"
+                    },
+                    {
+                      "String": "Magnesium dichloride"
+                    },
+                    {
+                      "String": "MgCl2"
+                    },
+                    {
+                      "String": "Anhydrous magnesium chloride"
+                    },
+                    {
+                      "String": "DTXSID5034690"
+                    },
+                    {
+                      "String": "NSC-529832"
+                    },
+                    {
+                      "String": "59XN63C8VM"
+                    },
+                    {
+                      "String": "CHEBI:6636"
+                    },
+                    {
+                      "String": "Chloride, Magnesium"
+                    },
+                    {
+                      "String": "Fibro Flex"
+                    },
+                    {
+                      "String": "Cramp-Z"
+                    },
+                    {
+                      "String": "GZE Magnesium Oil"
+                    },
+                    {
+                      "String": "RefChem:6461"
+                    },
+                    {
+                      "String": "DTXCID3014690"
+                    },
+                    {
+                      "String": "Bestmade Natural Products Mag Mur"
+                    },
+                    {
+                      "String": "232-094-6"
+                    },
+                    {
+                      "String": "02F3473H9O"
+                    },
+                    {
+                      "String": "Aerotex Accelerator MX"
+                    },
+                    {
+                      "String": "Bischofite"
+                    },
+                    {
+                      "String": "Bischofite (mgcl2.6h2o)"
+                    },
+                    {
+                      "String": "E-511"
+                    },
+                    {
+                      "String": "INS NO.511"
+                    },
+                    {
+                      "String": "INS-511"
+                    },
+                    {
+                      "String": "Magnesia Muriatica"
+                    },
+                    {
+                      "String": "Magnesium chloride (Mg2Cl4)"
+                    },
+                    {
+                      "String": "Magnesium chloride (MgCl2)"
+                    },
+                    {
+                      "String": "MultiBic component magnesium chloride hexahydrate"
+                    },
+                    {
+                      "String": "NSC529832"
+                    },
+                    {
+                      "String": "TMT 2"
+                    },
+                    {
+                      "String": "Cl2Mg"
+                    },
+                    {
+                      "String": "MAGNESIUM CHLORIDE, ANHYDROUS"
+                    },
+                    {
+                      "String": "magnesiumchloride"
+                    },
+                    {
+                      "String": "Magnesiumchlorid"
+                    },
+                    {
+                      "String": "magnesium(II)chloride"
+                    },
+                    {
+                      "String": "magnesium(II) chloride"
+                    },
+                    {
+                      "String": "magnesium (II) chloride"
+                    },
+                    {
+                      "String": "[MgCl2]"
+                    },
+                    {
+                      "String": "SCHEMBL683"
+                    },
+                    {
+                      "String": "17638-61-8"
+                    },
+                    {
+                      "String": "56491-84-0"
+                    },
+                    {
+                      "String": "MAGNESIUM CHLORIDE [MI]"
+                    },
+                    {
+                      "String": "CHEMBL2219642"
+                    },
+                    {
+                      "String": "HMS5087N11"
+                    },
+                    {
+                      "String": "MAGNESIUM CHLORIDE [WHO-DD]"
+                    },
+                    {
+                      "String": "AKOS015833135"
+                    },
+                    {
+                      "String": "DB09407"
+                    },
+                    {
+                      "String": "FM05982"
+                    },
+                    {
+                      "String": "Magnesium Chloride, Powder, < 200um"
+                    },
+                    {
+                      "String": "MAGNESIUM CHLORIDE ANHYDROUS [HSDB]"
+                    },
+                    {
+                      "String": "NS00080860"
+                    },
+                    {
+                      "String": "C07755"
+                    },
+                    {
+                      "String": "Q265414"
+                    },
+                    {
+                      "String": "SR-01000944482"
+                    },
+                    {
+                      "String": "SR-01000944482-1"
+                    },
+                    {
+                      "String": "Magnesium chloride solution 2M in water (19.2 - 20%wt)"
+                    },
+                    {
+                      "String": "Magnesium chloride, dry, 99.99% trace metals grade   -10 Mesh beads"
+                    },
+                    {
+                      "String": "Reagecon Magnesium Chloride 0.01M according to United States Pharmacopoeia (USP)"
+                    },
+                    {
+                      "String": "Reagecon Magnesium Chloride 0.1M according to European Pharmacopoeia (EP) Chapter 4 (4.2.2)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cl2Mg"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "MgCl2",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 57,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cl2Mg"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 57,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "95.21"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 57,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2ClH.Mg/h2*1H;/q;;+2/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 57,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "TWRXJAOTZQYOKJ-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Liquid; Water or Solvent Wet Solid; Dry Powder; Other Solid; Dry Powder, Other Solid; Pellets or Large Crystals; Pellets or Large Crystals, Other Solid; Dry Powder, Pellets or Large Crystals",
+                      "Markup": [
+                        {
+                          "Start": 8,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colourless, odourless, very deliquescent flakes or crystals"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White to gray deliquescent solid; heat evolved when dissolves in water; [Sax]",
+                      "Markup": [
+                        {
+                          "Start": 65,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "DELIQUESCENT WHITE SOLID IN VARIOUS FORMS."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 30,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Metals, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Boiling Point",
+            "Description": "The temperature at which this compound changes state from liquid to gas at a given atmospheric pressure.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.02%3A_Boiling_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, DR (ed.). CRC Handbook of Chemistry and Physics. 81st Edition. CRC Press LLC, Boca Raton: FL 2000, p. 4-70"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, DR (ed.). CRC Handbook of Chemistry and Physics. 81st Edition. CRC Press LLC, Boca Raton: FL 2000, p. 4-70",
+                    "Matched": {
+                      "PCLID": 900068696,
+                      "Citation": "Lide, DR (ed.). CRC Handbook of Chemistry and Physics. 81st Edition. CRC Press LLC, Boca Raton: FL 2000, p. 4-70"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1,412 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1412Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1016"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1016",
+                    "Matched": {
+                      "PCLID": 900107339,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1016"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "712 °C (rapid heating)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "712Â °C (rapid heating)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 21,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Very soluble in water, freely soluble in ethanol",
+                      "Markup": [
+                        {
+                          "Start": 16,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-702"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-93"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-93",
+                    "Matched": {
+                      "PCLID": 900002843,
+                      "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-93"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7.40 g/100 ml of alcohol @ 20 °C; 72.7 g/100 ml water @ 100 °C",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA15 (1991) 597"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA15 (1991) 597",
+                    "Matched": {
+                      "PCLID": 900125193,
+                      "Citation": "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA15 (1991) 597"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In methanol, 15.5 g/100 g @ 0 °C, 20.4 g/100 g @ 60 °C; in ethanol, 3.61 g/100 g @ 0 °C, 15.89 g/100 g @ 60 °C",
+                      "Markup": [
+                        {
+                          "Start": 3,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/methanol",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-887"
+                        },
+                        {
+                          "Start": 59,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-702"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA15 (1991) 597"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA15 (1991) 597",
+                    "Matched": {
+                      "PCLID": 900125193,
+                      "Citation": "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA15 (1991) 597"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In water, 54.6 g/100 g @ 20 °C",
+                      "Markup": [
+                        {
+                          "Start": 3,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/100ml at 20Â °C: 54.3",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 690"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 690",
+                    "Matched": {
+                      "PCLID": 900042210,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 690"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.32"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.3 g/cmÂ³"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sax's Dangerous Properties of Industrial  Materials. 10th ed. Volumes 1-3 New York, NY: John Wiley &  Sons Inc., 1999., p. V3 2264"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial  Materials. 10th ed. Volumes 1-3 New York, NY: John Wiley &  Sons Inc., 1999., p. V3 2264",
+                    "Matched": {
+                      "PCLID": 900012334,
+                      "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial  Materials. 10th ed. Volumes 1-3 New York, NY: John Wiley &  Sons Inc., 1999., p. V3 2264"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Thin white to gray granules and/or flakes"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-93"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-93",
+                    "Matched": {
+                      "PCLID": 900002843,
+                      "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-93"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "LUSTROUS HEXAGONAL CRYSTALS"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1016"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1016",
+                    "Matched": {
+                      "PCLID": 900107339,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of  Chemicals, Drugs, and Biologicals. 13th Edition, Whitehouse  Station, NJ:  Merck and Co., Inc., 2001., p. 1016"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Soft leaflets"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 690"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 690",
+                    "Matched": {
+                      "PCLID": 900042210,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 690"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colorless or white crystals"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Decomposition",
+            "Description": "Information on the decomposition of this compound, including the decomposition conditions and products.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078",
+                    "Matched": {
+                      "PCLID": 900160570,
+                      "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "When heated to decomp ... emits toxic fumes of /hydrogen chloride/.",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 17,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20chloride",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-313"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Decomposes when slowly heated to 300Â °C. This produces toxic and corrosive fumes including chlorine. Dissolves in water liberating a considerable amount of heat.",
+                      "Markup": [
+                        {
+                          "Start": 92,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chlorine",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Chlorine"
+                        },
+                        {
+                          "Start": 115,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Non-Human Toxicity Values",
+                "Description": "Quantitative non-human toxicity values (e.g., lethal dose) for this compound.  The data shown here are mostly for lab animals (e.g., rat, mouse, guinea pig, and rabbit).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078",
+                        "Matched": {
+                          "PCLID": 900160570,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Rat oral 2800 mg/kg"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078",
+                        "Matched": {
+                          "PCLID": 900160570,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Mouse intraperitoneal 1338 mg/kg"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078",
+                        "Matched": {
+                          "PCLID": 900160570,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 2078"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Mouse intravenous 14 mg/kg"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Absorption",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oral: Inversely proportional to amount ingested; 40% to 60% under controlled dietary conditions; 15% to 36% at higher doses"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Route of Elimination",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Magnesium is excreted in urine. Unabsorbed magnesium is excreted in feces",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 43,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Volume of Distribution",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Bone (50% to 60%); extracellular fluid (1% to 2%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Clearance",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Maximum magnesium clearance is directly proportional to  creatinine clearance.",
+                          "Markup": [
+                            {
+                              "Start": 8,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 57,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/creatinine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-588"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:6498146",
+                      "McLean AF, et al; Br J Nutr 52 (3): 523-527 (1984)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:6498146",
+                        "Matched": {
+                          "PCLID": 137867,
+                          "Citation": "McLean AF, Buchan W, Scott D. Magnesium absorption in mature ewes infused intrarumenally with magnesium chloride. Br J Nutr. 1984 Nov;52(3):523–7. doi: 10.1079/bjn19840120. PMID: 6498146.",
+                          "PMID": 6498146,
+                          "DOI": "10.1079/bjn19840120"
+                        }
+                      },
+                      {
+                        "Citation": "McLean AF, et al; Br J Nutr 52 (3): 523-527 (1984)",
+                        "Matched": {
+                          "PCLID": 137867,
+                          "Citation": "McLean AF, Buchan W, Scott D. Magnesium absorption in mature ewes infused intrarumenally with magnesium chloride. Br J Nutr. 1984 Nov;52(3):523–7. doi: 10.1079/bjn19840120. PMID: 6498146.",
+                          "PMID": 6498146,
+                          "DOI": "10.1079/bjn19840120"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "...Three mature ewes each received by intrarumenal infusion a supplement of 0, 1, 2 and 3 g Mg/d in sequence over four 10-day periods. Net Mg absorption distal to the pylorus took place down its electrochemical gradient, although the quantity absorbed remained small during the control and first infusion periods. The bulk of Mg absorption occurred before the pylorus and, during the control and first infusion periods, took place against its electrochemical gradient. The net Mg absorption proximal to the pylorus rose with declining efficiency as Mg intake was increased. It is suggested that saturation of the absorption process at this site was occurring."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Metabolism/Metabolites",
+                "Description": "Metabolites are substances made or used when the body breaks down food, drugs or chemicals, or its own tissue (for example, fat or muscle tissue). This process is called metabolism and makes energy and the materials needed for growth, reproduction, and maintaining health. Metabolism also helps get rid of toxic substances.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Magnesium levels are efficiently regulated by the kidneys. Magnesium also undergoes efficient enterohepatic circulation",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Biological Half-Life",
+                "Description": "The time required for a biological system (e.g., human body) to eliminate, by natural processes, half of the amount of a chemical (e.g., alcohol, medication, or radioactive material) that has entered it.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Elimination half-life has been reported to be 27.7 hours following an overdose of 400 mEq magnesium in an adult.",
+                          "Markup": [
+                            {
+                              "Start": 90,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Mechanism of Action",
+                "Description": "In medicine, the term \"mechanism of action\" (also called MOA) is used to describe how a drug or other substance produces an effect in the body. For example, a drug's mechanism of action could be how it affects a specific target in a cell, such as an enzyme, or a cell function, such as cell growth. Knowing the mechanism of action of a drug may help provide information about the safety of the drug and how it affects the body. It may also help identify the right dose of a drug and which patients are most likely to respond to treatment.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Mechanism of action of magnesium chloride studied in 10 adult volunteers. Results suggested magnesium ion in  duodenum is relatively weak stimulus to pancreas and gall bladder. It is weak stimulant to cholecystokinin release and inhibits net jejunal water absorption. The oral administration of a single 800 mg dose of magnesium chloride in healthy volunteers resulted in a diminished rate of intraluminal lipid and protein digestion. The most pronounced effect of magnesium chloride, however, was a decreased gastric emptying rate of both test meals. After correction for gastric emptying, no differences were noted in intraluminal lipid or protein digestion. Therefore, the lower lipid levels noted after magnesium supplementation are unlikely to be the result of altered lipid assimilation. Magnesium chloride slows gastric emptying but does not influence lipid digestion.",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-888"
+                            },
+                            {
+                              "Start": 250,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 319,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            },
+                            {
+                              "Start": 465,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            },
+                            {
+                              "Start": 707,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 794,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "MALAGELADA J ET AL; AM J DIG DIS (23) 481 (1978)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "MALAGELADA J ET AL; AM J DIG DIS (23) 481 (1978)",
+                        "Matched": {
+                          "PCLID": 900045504,
+                          "Citation": "MALAGELADA J ET AL; AM J DIG DIS (23) 481 (1978)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "MECHANISMS OF ACTION OF MAGNESIUM CHLORIDE STUDIED IN 10 ADULT VOLUNTEERS. RESULTS SUGGESTED MAGNESIUM ION IN DUODENUM IS RELATIVELY WEAK STIMULUS TO PANCREAS & GALLBLADDER. IT IS WEAK STIMULANT TO CHOLECYSTOKININ RELEASE & INHIBITS NET JEJUNAL WATER ABSORPTION.",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/MAGNESIUM%20CHLORIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            },
+                            {
+                              "Start": 93,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/MAGNESIUM%20ION",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-888"
+                            },
+                            {
+                              "Start": 245,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:12182758",
+                      "Geboes KP et al ;Aliment Pharmacol Ther 16 (8): 1571-1577 (2002)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:12182758",
+                        "Matched": {
+                          "PCLID": 11829036,
+                          "Citation": "Geboes KP, Maes B, Luypaerts A, Evenepoel P, Rutgeerts P, Ghoos Y, Geypens B. Magnesium chloride slows gastric emptying, but does not affect digestive functions. Aliment Pharmacol Ther. 2002 Aug;16(8):1571–7. doi: 10.1046/j.1365-2036.2002.01302.x. PMID: 12182758.",
+                          "PMID": 12182758,
+                          "DOI": "10.1046/j.1365-2036.2002.01302.x"
+                        }
+                      },
+                      {
+                        "Citation": "Geboes KP et al ;Aliment Pharmacol Ther 16 (8): 1571-1577 (2002)",
+                        "Matched": {
+                          "PCLID": 11829036,
+                          "Citation": "Geboes KP, Maes B, Luypaerts A, Evenepoel P, Rutgeerts P, Ghoos Y, Geypens B. Magnesium chloride slows gastric emptying, but does not affect digestive functions. Aliment Pharmacol Ther. 2002 Aug;16(8):1571–7. doi: 10.1046/j.1365-2036.2002.01302.x. PMID: 12182758.",
+                          "PMID": 12182758,
+                          "DOI": "10.1046/j.1365-2036.2002.01302.x"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "...The oral administration of a single /800 mg/ dose of magnesium chloride /in healthy volunteers/ resulted in a diminished rate of intraluminal lipid and protein digestion. The most pronounced effect of magnesium chloride, however, was a decreased gastric emptying rate of both test meals. After correction for gastric emptying, no differences were noted in intraluminal lipid or protein digestion. Therefore, the lower lipid levels noted after magnesium supplementation are unlikely to be the result of altered lipid assimilation. Magnesium chloride slows gastric emptying but does not influence lipid digestion.",
+                          "Markup": [
+                            {
+                              "Start": 56,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            },
+                            {
+                              "Start": 204,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            },
+                            {
+                              "Start": 446,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            },
+                            {
+                              "Start": 533,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 30,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Irritating to the eyes and respiratory tract; [ICSC] See Magnesium.",
+                          "Markup": [
+                            {
+                              "Start": 57,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A nuisance-causing concentration of airborne particles can be reached quickly when dispersed, especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is mildly irritating to the eyes and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 31,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.1001(c); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 22, 2002: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.1001(c); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 22, 2002: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900088576,
+                          "Citation": "40 CFR 180.1001(c); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 22, 2002: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of magnesium chloride are exempted from the requirement of a tolerance when used as a safener in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/magnesium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5360315"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 33,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety spectacles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 33,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use local exhaust."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 33,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Dry."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 33,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 31,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_9472",
+        "Name": "Magnesium chloride (MgCl2)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39366077
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "7786-30-3",
+        "Name": "Magnesium chloride",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=7786-30-3",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12773388
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "DrugBank",
+        "SourceID": "DB09407",
+        "Name": "Magnesium chloride",
+        "Description": "The DrugBank database is a unique bioinformatics and cheminformatics resource that combines detailed drug (i.e. chemical, pharmacological and pharmaceutical) data with comprehensive drug target (i.e. sequence, structure, and pathway) information.",
+        "URL": "https://www.drugbank.ca/drugs/DB09407",
+        "LicenseNote": "Creative Common's Attribution-NonCommercial 4.0 International License (http://creativecommons.org/licenses/by-nc/4.0/legalcode)",
+        "LicenseURL": "https://www.drugbank.ca/legal/terms_of_use",
+        "ANID": 3626368
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "146038f63d0a2fecafd2c19a36bdedd7",
+        "Name": "Magnesium chloride",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49737135
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "1c5d14b57df5c4cfd1e28d62b0e9690d",
+        "Name": "Magnesium chloride (MgCl2)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38384314
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "79a443add51959cfb4e65a883d48c297",
+        "Name": "Magnesium chloride (MgCl2)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38402111
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID5034690",
+        "Name": "Magnesium dichloride",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID5034690",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1156467
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "232-094-6",
+        "Name": "Magnesium chloride",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.029.176",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981444
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "59XN63C8VM",
+        "Name": "MAGNESIUM CHLORIDE ANHYDROUS",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/59XN63C8VM",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5838641
+      },
+      {
+        "ReferenceNumber": 31,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "657",
+        "Name": "MAGNESIUM CHLORIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/657",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 591
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0764",
+        "Name": "MAGNESIUM CHLORIDE ANHYDROUS",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0764",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260644
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "International Fragrance Association (IFRA)",
+        "SourceID": "8aea2d2a98aaabc31c6d6f3fb4512a01",
+        "Name": "Magnesium chloride (MgCl2)",
+        "Description": "The IFRA Fragrance Ingredient Glossary (FIG), provides a harmonized list of positive olfactory descriptors of fragrance ingredients.",
+        "URL": "https://ifrafragrance.org/priorities/ingredients/ifra-transparency-list",
+        "LicenseNote": "(c) The International Fragrance Association, 2007-2021. All rights reserved.",
+        "LicenseURL": "https://ifrafragrance.org/links/copyright",
+        "ANID": 49746114
+      },
+      {
+        "ReferenceNumber": 43,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "4ec9d7ab9ab478d8e11e2ce55cb0c359",
+        "Name": "Magnesium chloride",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162440
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_9472",
+        "Name": "Magnesium chloride (MgCl2)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400260
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "EU Food Improvement Agents",
+        "SourceID": "E 511 MAGNESIUM CHLORIDE",
+        "Name": "MAGNESIUM CHLORIDE",
+        "Description": "Commission Regulation (EU) No 231/2012 of 9 March 2012 laying down specifications for food additives listed in Annexes II and III to Regulation (EC) No 1333/2008 of the European Parliament and of the Council Text with EEA relevance",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2012/231/oj",
+        "ANID": 5177166
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2004",
+        "Name": "Magnesium chloride",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2004",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277453
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "93509",
+        "Name": "Magnesium chloride (EC: 232-094-6)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/93509",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1878652,
+        "SortOrder": 4600
+      },
+      {
+        "ReferenceNumber": 57,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 24437,
+  "hazard_key": "Na2SO3",
+  "display_name": "Natriumsulfit",
+  "captured_at": "2026-01-31T18:40:50.382464+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24437",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24437/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24437/linkout.json",
+      "sha256": "b6a1fa34c4bb22c67d902b8969da0a6ba2a1c99c83460b98bbc5da537168b21b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24437/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 170650,
+      "file": "data/pubchem_payloads/raw/24437/lcss.json",
+      "sha256": "2972035e25413b148499ef4878dd9f6cf13f44df6291c4717be47d92e6c3eb1a"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24437/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 117669,
+      "file": "data/pubchem_payloads/raw/24437/safety.json",
+      "sha256": "5db0e1dd9cea839bc3aa90689dbff2d92c5f8f8c5f82d06f2c16890139e39075"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24437.png"
+}

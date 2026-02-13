@@ -1,0 +1,34 @@
+{
+  "cid": 5352426,
+  "hazard_key": "Sn",
+  "display_name": "Tenn",
+  "captured_at": "2026-01-31T18:46:53.939024+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5352426",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5352426/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 738,
+      "file": "data/pubchem_payloads/raw/5352426/linkout.json",
+      "sha256": "2b4b81147bb361a70a34281115ad19f8f6a51127dfca5482da5ed201ec57cccc"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5352426/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 259673,
+      "file": "data/pubchem_payloads/raw/5352426/lcss.json",
+      "sha256": "0418aaa4b417eb4d494f7f3a991566f1fd846c0c05b34b2263055312a3d68207"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5352426/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 124088,
+      "file": "data/pubchem_payloads/raw/5352426/safety.json",
+      "sha256": "09060938422df301ac72a68a4cec40a38c8a07628f70b60d480539d2430600d2"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5352426.png"
+}

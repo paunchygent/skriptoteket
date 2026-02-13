@@ -1,0 +1,34 @@
+{
+  "cid": 25517,
+  "hazard_key": "NH4Cl",
+  "display_name": "Ammoniumklorid",
+  "captured_at": "2026-01-31T14:14:35.569840+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/25517",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/25517/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 736,
+      "file": "data/pubchem_payloads/raw/25517/linkout.json",
+      "sha256": "43a738a87c548817f11696a7ef36df98459db68b34e2087038990bbf1ac8389c"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/25517/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 345266,
+      "file": "data/pubchem_payloads/raw/25517/lcss.json",
+      "sha256": "298239f345be52f0e87efa2d1dbd1f31bedc51473b5873abdd7f937af36dd630"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/25517/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 264705,
+      "file": "data/pubchem_payloads/raw/25517/safety.json",
+      "sha256": "bf703fb957358921fb06da248732eb9bc77d48bf31a8c4307709c110ec4a747a"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/25517.png"
+}

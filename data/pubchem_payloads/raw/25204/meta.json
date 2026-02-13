@@ -1,0 +1,34 @@
+{
+  "cid": 25204,
+  "hazard_key": "BaCl2",
+  "display_name": "Bariumklorid",
+  "captured_at": "2026-01-31T14:17:27.942128+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/25204",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/25204/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/25204/linkout.json",
+      "sha256": "9d9bf25a6f674f7a5a3a6af3d96376c23ca55d429afecb36f7989d826b79374b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/25204/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 247105,
+      "file": "data/pubchem_payloads/raw/25204/lcss.json",
+      "sha256": "f816c4054059a19839cac44449367e6e70404c8b1a2a0c817e89cf0f543c87f3"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/25204/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 245792,
+      "file": "data/pubchem_payloads/raw/25204/safety.json",
+      "sha256": "2cce8dfc9eba6f6ff8ddc5e25b791afcb2c607366131cf171d5992569e872c19"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/25204.png"
+}

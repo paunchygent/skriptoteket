@@ -1,0 +1,34 @@
+{
+  "cid": 24848,
+  "hazard_key": "Sr(NO3)2",
+  "display_name": "Strontiumnitrat",
+  "captured_at": "2026-01-31T18:43:23.514542+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24848",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24848/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24848/linkout.json",
+      "sha256": "5708a09e76b9b5bd03ccd53586672a218504ac22db3766ebeffb3376358ea3cb"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24848/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 168634,
+      "file": "data/pubchem_payloads/raw/24848/lcss.json",
+      "sha256": "afa931dd787745ea4d961c043f06da3f5c44b16bac9f9953aebe8842b98a174c"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24848/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 142998,
+      "file": "data/pubchem_payloads/raw/24848/safety.json",
+      "sha256": "a7b29f50a5269069cedda0c9034c159c7dc04a3cf5947827f3558d0a70a22536"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24848.png"
+}

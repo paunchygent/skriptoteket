@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "cid": 516892,
+  "captured_at": "2026-01-31T18:41:19.460040+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516892",
+    "lcss_sha256": "5aaa69b7013a27dd72e9ab1428828d05640c0a5322448a51f744895cf0e8687d",
+    "linkout_sha256": "c5c2b122561171f691514e36e5a39679d316168238c7e368025bbecf167a5208",
+    "meta_sha256": "44441cb3de148cd153fa82b981d05dfa9cbafbeb071f79fd00c79a9ca89b2862"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null
+  },
+  "generated_at": "2026-01-31T22:22:24.080904+00:00"
+}

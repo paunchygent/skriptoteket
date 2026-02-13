@@ -153,7 +153,12 @@ class ReagentPrepChefExportRiskPdfHandler(ReagentPrepChefExportRiskPdfHandlerPro
         if app is None:
             raise not_found("CuratedApp", APP_ID)
 
-        result = await self._risk.handle(actor=actor, command=command)
+        result = await self._risk.handle(
+            actor=actor,
+            command=command,
+            allow_fetch=False,
+            require_complete=True,
+        )
         draft = result.draft
 
         if draft.requires_confirmation:

@@ -1,0 +1,3145 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24963,
+    "RecordTitle": "Calcium nitrate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 0.3% (4  of 1286) of reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS03.svg",
+                              "Type": "Icon",
+                              "Extra": "Oxidizer"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H272 (26.9%): May intensify fire; oxidizer [Danger Oxidizing liquids; Oxidizing solids]",
+                          "Markup": [
+                            {
+                              "Start": 44,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H290 (13.3%): May be corrosive to metals [Warning Corrosive to Metals]",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H302 (53.9%): Harmful if swallowed [Warning Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H314 (13.3%): Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 55,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H315 (43.7%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 38,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318 (45.1%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H319 (47.2%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H332 (13.4%): Harmful if inhaled [Warning Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P210, P220, P234, P260, P261, P264, P264+P265, P270, P271, P280, P301+P317, P301+P330+P331, P302+P352, P302+P361+P354, P304+P340, P305+P351+P338, P305+P354+P338, P316, P317, P321, P330, P332+P317, P337+P317, P362+P364, P363, P370+P378, P390, P405, P406, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P210"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P220"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P234"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P317"
+                            },
+                            {
+                              "Start": 76,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                            },
+                            {
+                              "Start": 119,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 162,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 168,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 174,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 180,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 186,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                            },
+                            {
+                              "Start": 197,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 208,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                            },
+                            {
+                              "Start": 219,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                            },
+                            {
+                              "Start": 225,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P370+P378"
+                            },
+                            {
+                              "Start": 236,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P390"
+                            },
+                            {
+                              "Start": 242,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 248,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P406"
+                            },
+                            {
+                              "Start": 258,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 1286 reports by companies from 27 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 179,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 4 of 1286 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 79,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 26 notifications provided by 1282 of 1286 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 103,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/80283"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS03.svg",
+                              "Type": "Icon",
+                              "Extra": "Oxidizer"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H272: May intensify fire; oxidizer [Danger Oxidizing liquids; Oxidizing solids]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P210, P220, P260, P264, P270, P280, P308+P316, P319, P321, P370+P378, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P210"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P220"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P370+P378"
+                            },
+                            {
+                              "Start": 70,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS03.svg",
+                              "Type": "Icon",
+                              "Extra": "Oxidizer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H272: May intensify fire; oxidizer [Danger Oxidizing liquids; Oxidizing solids]",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P210, P220, P280, P370+P378, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P210"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P220"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P370+P378"
+                            },
+                            {
+                              "Start": 33,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 17,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ox. Sol. 2 (26.9%)"
+                        },
+                        {
+                          "String": "Met. Corr. 1 (13.3%)"
+                        },
+                        {
+                          "String": "Acute Tox. 4 (53.9%)"
+                        },
+                        {
+                          "String": "Skin Corr. 1B (13.3%)"
+                        },
+                        {
+                          "String": "Skin Irrit. 2 (43.7%)"
+                        },
+                        {
+                          "String": "Eye Dam. 1 (45.1%)"
+                        },
+                        {
+                          "String": "Eye Irrit. 2 (47.2%)"
+                        },
+                        {
+                          "String": "Acute Tox. 4 (13.4%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oxidizing solids - Category 3"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (blood)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (blood)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oxidizing solids - Category 3"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Reactive agents - 1st degree"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Hazard Classification",
+                "Description": "The U.S. Department of Transportation (DOT) categorizes hazardous materials into nine hazard classes for transportation purposes. This section provides the summary from the Hazardous Materials Table of the 49 eCFR § 172.101. For details, please visit https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-172 ",
+                "URL": "https://www.fmcsa.dot.gov/regulations/enforcement/nine-classes-hazardous-materials-yellow-visor-card",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Substance (Descriptions/Shipping Name)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Calcium nitrate"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "DOT ID (UN/NA Number)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN1454"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Hazard Class/Label Code(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Div 5.1 Oxidizer (49 eCFR § 173.127)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Packing Group",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PG III: the degree of danger presented by the material is minor"
+                        },
+                        {
+                          "String": "For more information about the packing group assignment, please visit 49 eCFR § 173",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 14,
+                              "URL": "https://www.ecfr.gov/on/current/title-49/subtitle-B/chapter-I/subchapter-C/part-173"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Placard/Label(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/dot/dot5.1.svg",
+                              "Type": "Icon",
+                              "Extra": "Oxidizer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust causes mild irritation of eyes. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "ERG2024, Guide 140 (Calcium nitrate)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· Inhalation, ingestion or contact (skin, eyes) with vapors or substance may cause severe injury, burns or death."
+                        },
+                        {
+                          "String": "· Fire may produce irritating, corrosive and/or toxic gases."
+                        },
+                        {
+                          "String": "· Runoff from fire control or dilution water may cause environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Special Hazards of Combustion Products: May give off toxic oxides of nitrogen when involved in fire."
+                        },
+                        {
+                          "String": "Behavior in Fire: Greatly intensifies the burning of all combustible materials. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "ERG2024, Guide 140 (Calcium nitrate)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "CAUTION: Ammonium nitrate products may explode if involved in fire or contaminated with hydrocarbons (fuels), organic matter, other contaminants or when hot molten and contained. Treat as an explosive (GUIDE 112).",
+                          "Markup": [
+                            {
+                              "Start": 9,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· These substances will accelerate burning when involved in a fire."
+                        },
+                        {
+                          "String": "· Some may decompose explosively when heated or involved in a fire."
+                        },
+                        {
+                          "String": "· May explode from heat or contamination."
+                        },
+                        {
+                          "String": "· Some will react explosively with hydrocarbons (fuels)."
+                        },
+                        {
+                          "String": "· May ignite combustibles (wood, paper, oil, clothing, etc.)."
+                        },
+                        {
+                          "String": "· Containers may explode when heated."
+                        },
+                        {
+                          "String": "· Runoff may create fire or explosion hazard."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Gives off irritating or toxic fumes (or gases) in a fire. Not combustible but enhances combustion of other substances. Risk of fire and explosion on contact with combustible substances."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ingestion, e.g., infants drinking contaminated well water, could induce methemoglobinemia; [HSDB] May cause mild irritation of eyes; [CAMEO]",
+                          "Markup": [
+                            {
+                              "Start": 52,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59",
+                        "Matched": {
+                          "PCLID": 900146673,
+                          "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IT IS A POWERFUL OXIDIZING AGENT & PRESENTS A DANGEROUS FIRE ... HAZARD."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59",
+                        "Matched": {
+                          "PCLID": 900146673,
+                          "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "CALCIUM NITRATE HAS AN IRRITATING ... ACTION ON SKIN & MUCOUS MEMBRANES.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CALCIUM%20NITRATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24963"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Explosive Limits and Potential",
+                "Description": "This section shows lower and upper explosive limits of this chemical and other information on its explosive potential.  Explosive limits specify the concentration range of a material in air which will burn or explode in the presence of an ignition source. There are two types of explosive limits: lower explosive limit (LEL) and upper explosive limit (UEL). The explosive limits are usually given as the percent by volume of the material in the air (e.g., 5%).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59",
+                        "Matched": {
+                          "PCLID": 900146673,
+                          "Citation": "International Labour Office. Encyclopaedia of Occupational Health and Safety. 4th edition, Volumes 1-4 1998. Geneva, Switzerland: International Labour Office, 1998., p. 104.59"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PRESENTS A DANGEROUS ... EXPLOSION HAZARD."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 205"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 205",
+                        "Matched": {
+                          "PCLID": 900014493,
+                          "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 205"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... MAY EXPLODE IF SHOCKED OR HEATED."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 25,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for at least 15 minutes, then remove contaminated clothes and rinse again.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth. Give one or two glasses of water to drink. Refer for medical attention .",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EYES or SKIN: flush with water and seek medical assistance. (USCG, 1999)",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "ERG2024, Guide 140 (Calcium nitrate)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "General First Aid:"
+                        },
+                        {
+                          "String": "· Call 911 or emergency medical service."
+                        },
+                        {
+                          "String": "· Ensure that medical personnel are aware of the material(s) involved, take precautions to protect themselves and avoid contamination."
+                        },
+                        {
+                          "String": "· Move victim to fresh air if it can be done safely."
+                        },
+                        {
+                          "String": "· Administer oxygen if breathing is difficult.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If victim is not breathing:"
+                        },
+                        {
+                          "String": "-- DO NOT perform mouth-to-mouth resuscitation; the victim may have ingestedor inhaled the substance."
+                        },
+                        {
+                          "String": "-- If equipped and pulse detected, wash face and mouth, then give artificial respiration using a proper respiratory medical device (bag-valve mask, pocket mask equipped with a one-way valve or other device)."
+                        },
+                        {
+                          "String": "-- If no pulse detected or no respiratory medical device available, provide continuouscompressions. Conduct a pulse check every two minutes or monitor for any signs of spontaneous respirations."
+                        },
+                        {
+                          "String": "· Remove and isolate contaminated clothing and shoes."
+                        },
+                        {
+                          "String": "· For minor skin contact, avoid spreading material on unaffected skin."
+                        },
+                        {
+                          "String": "· In case of contact with substance, remove immediately by flushing skin or eyes with running water for at least 20 minutes.",
+                          "Markup": [
+                            {
+                              "Start": 94,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· For severe burns, immediate medical attention is required."
+                        },
+                        {
+                          "String": "· Effects of exposure (inhalation, ingestion, or skin contact) to substance may be delayed."
+                        },
+                        {
+                          "String": "· Keep victim calm and warm."
+                        },
+                        {
+                          "String": "· Keep victim under observation."
+                        },
+                        {
+                          "String": "· For further assistance, contact your local Poison Control Center."
+                        },
+                        {
+                          "String": "· Note: Basic Life Support (BLS) and Advanced Life Support (ALS) should be done by trained professionals."
+                        },
+                        {
+                          "String": "Specific First Aid:"
+                        },
+                        {
+                          "String": "· Contaminated clothing may be a fire risk when dry."
+                        },
+                        {
+                          "String": "In Canada, an Emergency Response Assistance Plan (ERAP) may be required for this product. Please consult the shipping paper and/or the \"ERAP\" section."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 4,
+                "Reference": [
+                  "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                    "Matched": {
+                      "PCLID": 900163263,
+                      "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Excerpt from ERG Guide 140 [Oxidizers]:"
+                    },
+                    {
+                      "String": "SMALL FIRE: Use water. Do not use dry chemicals or foams. CO2 or HalonÂ® may provide limited control.",
+                      "Markup": [
+                        {
+                          "Start": 16,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "LARGE FIRE: Flood fire area with water from a distance. Do not move cargo or vehicle if cargo has been exposed to heat. If it can be done safely, move undamaged containers away from the area around the fire.",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "FIRE INVOLVING TANKS, RAIL TANK CARS OR HIGHWAY TANKS: For ammonium nitrate products: Do not fight cargo fire. Withdraw, evacuate and isolate area for at least 1600 meters (1 mile). Treat as an explosive (ERG Guide 112). Do not enter area for 24 hours or until expert advice has been provided. Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles. Cool containers with flooding quantities of water until well after fire is out. ALWAYS stay away from tanks in direct contact with flames. For massive fire, use unmanned master stream devices or monitor nozzles; if this is impossible, withdraw from area and let fire burn. (ERG, 2024)",
+                      "Markup": [
+                        {
+                          "Start": 59,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-22985"
+                        },
+                        {
+                          "Start": 429,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192",
+                        "Matched": {
+                          "PCLID": 900117617,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material on fire or involved in fire: Flood with water. Cool all affected containers with flooding quantities of water. Apply water from as far a distance as possible.",
+                          "Markup": [
+                            {
+                              "Start": 52,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 116,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 129,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192",
+                        "Matched": {
+                          "PCLID": 900117617,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evacuation: If fire becomes uncontrollable - consider evacuation of one-half (1/2) mile radius."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Name": "Public Safety: ERG2024, Guide 140 (Calcium nitrate)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· CALL 911. Then call emergency response telephone number on shipping paper. If shipping paper not available or no answer, refer to appropriate telephone number listed on the inside back cover."
+                    },
+                    {
+                      "String": "· Keep unauthorized personnel away."
+                    },
+                    {
+                      "String": "· Stay upwind, uphill and/or upstream."
+                    },
+                    {
+                      "String": "· Ventilate closed spaces before entering, but only if properly trained and equipped."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "Spill or Leak: ERG2024, Guide 140 (Calcium nitrate)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· Keep combustibles (wood, paper, oil, etc.) away from spilled material."
+                    },
+                    {
+                      "String": "· Do not touch damaged containers or spilled material unless wearing appropriate protective clothing."
+                    },
+                    {
+                      "String": "· Stop leak if you can do it without risk."
+                    },
+                    {
+                      "String": "· Do not get water inside containers.",
+                      "Markup": [
+                        {
+                          "Start": 13,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Small Dry Spill"
+                    },
+                    {
+                      "String": "· With clean shovel, place material into clean, dry container and cover loosely; move containers from spill area."
+                    },
+                    {
+                      "String": "Small Liquid Spill"
+                    },
+                    {
+                      "String": "· Use a non-combustible material like vermiculite or sand to soak up the product and place into a container for later disposal."
+                    },
+                    {
+                      "String": "Large Spill"
+                    },
+                    {
+                      "String": "· Dike far ahead of liquid spill for later disposal."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Isolation and Evacuation",
+                "Description": "Isolation and evacuation measures to take when a large amount of this chemical is accidentally released in an emergency.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 140 [Oxidizers]:"
+                        },
+                        {
+                          "String": "IMMEDIATE PRECAUTIONARY MEASURE: Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "LARGE SPILL: Consider initial downwind evacuation for at least 100 meters (330 feet)."
+                        },
+                        {
+                          "String": "FIRE: If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions. If ammonium nitrate products are in a tank, rail car or truck and involved in a fire, ISOLATE for 1600 meters (1 mile) in all directions; also, initiate evacuation including emergency responders for 1600 meters (1 mile) in all directions. (ERG, 2024)",
+                          "Markup": [
+                            {
+                              "Start": 203,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Evacuation: ERG2024, Guide 140 (Calcium nitrate)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Immediate precautionary measure"
+                        },
+                        {
+                          "String": "· Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "Large Spill"
+                        },
+                        {
+                          "String": "· Consider initial downwind evacuation for at least 100 meters (330 feet)."
+                        },
+                        {
+                          "String": "Fire"
+                        },
+                        {
+                          "String": "· If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions."
+                        },
+                        {
+                          "String": "· If ammonium nitrate products are in a tank, rail car or truck and involved in a fire, ISOLATE for 1600 meters (1 mile) in all directions; also, initiate evacuation including emergency responders for 1600 meters (1 mile) in all directions.",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sweep spilled substance into covered plastic containers. Wash away remainder with plenty of water.",
+                          "Markup": [
+                            {
+                              "Start": 92,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359",
+                        "Matched": {
+                          "PCLID": 900148648,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PROCESSES EMPLOYING CALCIUM NITRATE SHOULD BE MECHANIZED TO GREATEST POSSIBLE EXTENT. EXHAUST VENTILATION SHOULD BE INSTALLED TO COLLECT AIRBORNE DUST ...",
+                          "Markup": [
+                            {
+                              "Start": 20,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CALCIUM%20NITRATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24963"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192",
+                        "Matched": {
+                          "PCLID": 900117617,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If material not on fire and not involved in fire: Keep sparks, flames, and other sources of ignition away. Keep material out of water sources and sewers.",
+                          "Markup": [
+                            {
+                              "Start": 128,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192",
+                        "Matched": {
+                          "PCLID": 900117617,
+                          "Citation": "Association of American Railroads. Emergency Handling of Hazardous Materials in Surface Transportation. Washington, DC: Association of American Railroads, Bureau of Explosives, 1994., p. 192"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personnel protection: ... Do not handle broken packages unless wearing appropriate personal protective equipment. Wash away any material which may have contacted the body with copious amounts of water or soap and water.",
+                          "Markup": [
+                            {
+                              "Start": 195,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 213,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 140 [Oxidizers]:"
+                        },
+                        {
+                          "String": "Keep combustibles (wood, paper, oil, etc.) away from spilled material. Do not touch damaged containers or spilled material unless wearing appropriate protective clothing. Stop leak if you can do it without risk. Do not get water inside containers.",
+                          "Markup": [
+                            {
+                              "Start": 223,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SMALL DRY SPILL: With clean shovel, place material into clean, dry container and cover loosely; move containers from spill area."
+                        },
+                        {
+                          "String": "SMALL LIQUID SPILL: Use a non-combustible material like vermiculite or sand to soak up the product and place into a container for later disposal."
+                        },
+                        {
+                          "String": "LARGE SPILL: Dike far ahead of liquid spill for later disposal. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Separated from combustible substances and reducing agents. Dry."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359",
+                        "Matched": {
+                          "PCLID": 900148648,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IT SHOULD NOT BE STORED NEAR ORG OR EASILY OXIDIZABLE MATERIALS."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Name": "Protective Clothing: ERG2024, Guide 140 (Calcium nitrate)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· Wear positive pressure self-contained breathing apparatus (SCBA)."
+                    },
+                    {
+                      "String": "· Wear chemical protective clothing that is specifically recommended by the manufacturer when there is NO RISK OF FIRE."
+                    },
+                    {
+                      "String": "· Structural firefighters' protective clothing provides thermal protection but only limited chemical protection."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Emergency Response Planning Guidelines",
+                "Description": "Emergency Response Planning Guidelines (ERPGs) are air concentration guidelines for single exposures to agents, developed by the American Industrial Hygiene Association (AIHA).  They are intended for use as tools to assess the adequacy of accident prevention and emergency response plans, including transportation emergency planning, community emergency response plans, and incident prevention and mitigation.  ERPGs estimate the concentrations at which most people will begin to experience health effects if they are exposed to a hazardous airborne chemical for 1 hour. (Sensitive members of the public, such as old, sick, or very young people, aren't covered by these guidelines and they may experience adverse effects at concentrations below the ERPG values.) A chemical may have up to three ERPG values, each of which corresponds to a specific tier of health effects. ",
+                "URL": "https://www.aiha.org/get-involved/aiha-guideline-foundation/erpgs",
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Emergency Response: ERG2024, Guide 140 (Calcium nitrate)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Small Fire"
+                        },
+                        {
+                          "String": "· Use water. Do not use dry chemicals or foams. CO2 or Halon® may provide limited control.",
+                          "Markup": [
+                            {
+                              "Start": 6,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 55,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Halon",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6391"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Large Fire"
+                        },
+                        {
+                          "String": "· Flood fire area with water from a distance.",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Do not move cargo or vehicle if cargo has been exposed to heat."
+                        },
+                        {
+                          "String": "· If it can be done safely, move undamaged containers away from the area around the fire."
+                        },
+                        {
+                          "String": "Fire Involving Tanks, Rail Tank Cars or Highway Tanks"
+                        },
+                        {
+                          "String": "· For ammonium nitrate products: Do not fight cargo fire. Withdraw, evacuate and isolate area for at least 1600 meters (1 mile). Treat as an explosive (GUIDE 112). Do not enter area for 24 hours or until expert advice has been provided.",
+                          "Markup": [
+                            {
+                              "Start": 6,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles."
+                        },
+                        {
+                          "String": "· Cool containers with flooding quantities of water until well after fire is out.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· ALWAYS stay away from tanks in direct contact with flames."
+                        },
+                        {
+                          "String": "· For massive fire, use unmanned master stream devices or monitor nozzles; if this is impossible, withdraw from area and let fire burn."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A nuisance-causing concentration of airborne particles can be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause mechanical irritation to the eyes and respiratory tract. Ingestion could cause effects on the blood. This may result in the formation of methaemoglobin. The effects may be delayed. Medical observation is indicated."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust respirator and rubber gloves. (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359",
+                        "Matched": {
+                          "PCLID": 900148648,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective clothing including overalls, gloves and footwear should be worn."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359",
+                        "Matched": {
+                          "PCLID": 900148648,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 359"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... SOME OPERATIONS MAY NECESSITATE USE OF RESP PROTECTIVE EQUIPMENT & GOGGLES."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Prevention",
+                "Description": "Precautionary measures to prevent fires from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NO contact with flammables."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PREVENT DISPERSION OF DUST!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use local exhaust or breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety spectacles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work. Wash hands before eating."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Deliquescent. Water soluble.",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Nitrate and Nitrite Compounds, Inorganic",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-943"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Nitrite",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-946"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Alerts",
+                "Description": "Special alerts if the chemical is especially reactive.",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactivity_alerts.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Strong Oxidizing Agent"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "An oxidizing agent. Noncombustible but accelerates the burning of combustible materials. If large quantities are involved in the fire or the combustible material is finely divided an explosion may result. Prolonged exposure to fire or heat may result in an explosion. May explode if shocked or heated [Hawley]. Heating causes release of toxic oxides of nitrogen. Mixtures with alkyl esters may explode owing to the formation of alkyl nitrates; mixtures with phosphorus, tin(II) chloride, or other reducing agents may react explosively [Bretherick 1979 p. 108-109].",
+                          "Markup": [
+                            {
+                              "Start": 458,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 470,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/tin%28II%29%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24479"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 635"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 635",
+                        "Matched": {
+                          "PCLID": 900120115,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 635"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Forms powerfully explosive mixtures with aluminum + ammonium nitrate + formamide + water, ammonium nitrate + hydrocarbon oils, ammonium nitrate + water-soluble fuels, and organic materials.",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 71,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/formamide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-713"
+                            },
+                            {
+                              "Start": 83,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 90,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 127,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 635"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 635",
+                        "Matched": {
+                          "PCLID": 900120115,
+                          "Citation": "Lewis, R.J. Sax's Dangerous Properties of Industrial Materials. 9th ed. Volumes 1-3. New York, NY: Van Nostrand Reinhold, 1996., p. 635"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Forms powerfully explosive mixtures with aluminum + ammonium nitrate + formamide + water, ammonium nitrate + hydrocarbon oils, ammonium nitrate + water-soluble fuels, and organic materials.",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 52,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 71,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/formamide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-713"
+                            },
+                            {
+                              "Start": 83,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 90,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 127,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22985"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "DOT Emergency Guidelines",
+                "Description": "U.S. Department of Transportation (DOT) Emergency Guidelines for this chemical.  The information in this section is collected from the Hazardous Substances Data Bank (HSDB).  For updated emergency guidelines, see the DOT Emergency Response Guidebook.",
+                "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 140: OXIDIZERS/ Fire or Explosion: These substances will accelerate burning when involved in a fire. Some may decompose explosively when heated or involved in a fire. May explode from heat or contamination. Some will react explosively with hydrocarbons (fuels). May ignite combustibles (wood, paper, oil, clothing, etc.). Containers may explode when heated. Runoff may create fire or explosion hazard."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 140: OXIDIZERS/ Health: Inhalation, ingestion or contact (skin, eyes) with vapors or substance may cause severe injury, burns or death. Fire may produce irritating, corrosive and/or toxic gases. Runoff from fire control or dilution water may cause pollution.",
+                          "Markup": [
+                            {
+                              "Start": 239,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 140: OXIDIZERS/ Public Safety: CALL Emergency Response Telephone Number on Shipping Paper first. If Shipping Paper not available or no answer, refer to appropriate telephone number listed on the inside back cover. As an immediate precautionary measure, isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids. Keep unauthorized personnel away. Stay upwind. Keep out of low areas. Ventilate closed spaces before entering."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 140: OXIDIZERS/ Protective Clothing: Wear positive pressure self-contained breathing apparatus (SCBA). Wear chemical protective clothing that is specifically recommended by the manufacturer. It may provide little or no thermal protection. Structural firefighters' protective clothing will only provide limited protection."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more DOT Emergency Guidelines (Complete) data for CALCIUM NITRATE (8 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 98,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/967#section=DOT-Emergency-Guidelines-(Complete)"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CALCIUM%20NITRATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24963"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipping Name/ Number DOT/UN/NA/IMO",
+                "Description": "When dangerous goods are transported/shipped, one of the proper shipping names (along with corresponding identification numbers) shown in Dangerous Goods List of the applicable transport regulations (e.g., IATA-DGR, IMO-IMDG code, and 49 CFR 171-180) must be used to meet labelling, marking, and documentation requirements.  This section provides this chemical's appropriate shipping names and identification numbers, such as the U.S. Department of Transportation (DOT) identification number (also known as \"United Nations (UN) number\" or \"North America (NA) number\") and the International Maritime Organization (IMO)'s International Maritime Dangerous Goods (IMDG) Code.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN 1454; Calcium nitrate"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IMO 5.1; Calcium nitrate"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Standard Transportation Number",
+                "Description": "This section provides the Standard Transportation Commodity Code (STCC) for this chemical.  The STCC is a seven digit numeric code representing 38 commodity groupings and used on waybills and other shipping documents.  If the first two digits of an STCC are 48 or 49, the STCC is also called the Hazardous Materials Response Code (HMRC) or Hazmat STCC, and is used when transporting a hazardous material or dangerous good by rail in North America. ",
+                "URL": "https://public.railinc.com/resources/standard-transportation-commodity-code",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "49 187 16; Calcium nitrate",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24963"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipment Methods and Regulations",
+                "Description": "Shipment methods and regulations of this compound.  The information in this section includes the U.S. Hazardous Materials Regulations (49 CFR Subchapter C), the International Air Transport Association (IATA) Dangerous Goods Regulations, the International Maritime Dangerous Goods (IMDG) Code, and other regulations.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "49 CFR 171.2; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 15, 2006: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "49 CFR 171.2; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 15, 2006: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900077316,
+                          "Citation": "49 CFR 171.2; U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 15, 2006: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No person may /transport,/ offer or accept a hazardous material for transportation in commerce unless that person is registered in conformance ... and the hazardous material is properly classed, described, packaged, marked, labeled, and in condition for shipment as required or authorized by ... /the hazardous materials regulations (49 CFR 171-177)./"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Air Transport Association. Dangerous Goods Regulations. 47th Edition. Montreal, Quebec Canada. 2006., p. 156"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Air Transport Association. Dangerous Goods Regulations. 47th Edition. Montreal, Quebec Canada. 2006., p. 156",
+                        "Matched": {
+                          "PCLID": 900075462,
+                          "Citation": "International Air Transport Association. Dangerous Goods Regulations. 47th Edition. Montreal, Quebec Canada. 2006., p. 156"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Air Transport Association (IATA) Dangerous Goods Regulations are published by the IATA Dangerous Goods Board pursuant to IATA Resolutions 618 and 619 and constitute a manual of industry carrier regulations to be followed by all IATA Member airlines when transporting hazardous materials."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Maritime Organization. International Maritime Dangerous Goods Code. London, UK. 2004., p. 67"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Maritime Organization. International Maritime Dangerous Goods Code. London, UK. 2004., p. 67",
+                        "Matched": {
+                          "PCLID": 906293867,
+                          "Citation": "International Maritime Organization. International Maritime Dangerous Goods Code. London, UK. 2004., p. 67"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Maritime Dangerous Goods Code lays down basic principles for transporting hazardous chemicals. Detailed recommendations for individual substances and a number of recommendations for good practice are included in the classes dealing with such substances. A general index of technical names has also been compiled. This index should always be consulted when attempting to locate the appropriate procedures to be used when shipping any substance or article."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Label",
+                "Description": "U.S. Department of Transportation (DOT) hazard warning label for the chemical (such as flammable liquid or corrosive). This label must be displayed on shipped packages, railroad tank cars, and tank trucks according to specifications described in 49 CFR 172.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 4,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oxidizer"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "UN Classification",
+                "Description": "Classification of this chemical, according to the Agreement concerning the International Carriage of Dangerous Goods by Road (ADR).  ADR is a United Nations treaty that governs transnational transport of hazardous materials.",
+                "URL": "https://unece.org/about-adr",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN Hazard Class: 5.1; UN Pack Group: III"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Nitric acid, calcium salt",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 25,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Nitric%20acid%2C%20calcium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24963"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 14-04-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/15487",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/15487"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Nitric acid, calcium salt: HSNO Approval: HSR001318 Approved with controls",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 25,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Nitric%20acid%2C%20calcium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24963"
+                        },
+                        {
+                          "Start": 27,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/HSNO",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-11389353"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "21 CFR 175.105 (4/1/99)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 175.105 (4/1/99)",
+                        "Matched": {
+                          "PCLID": 900099614,
+                          "Citation": "21 CFR 175.105 (4/1/99)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Calcium nitrate is an indirect food additive for use only as a component of adhesives.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24963"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Nitric acid, calcium salt: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 25,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Nitric%20acid%2C%20calcium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24963"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Nitric acid, calcium salt: Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 25,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Nitric%20acid%2C%20calcium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24963"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_12495",
+        "Name": "Nitric acid, calcium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39364636
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_12495",
+        "Name": "Nitric acid, calcium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39399938
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "233-332-1",
+        "Name": "Calcium nitrate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.030.289",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981592
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "24771193cdb2ddd404cecfa2eee4a0a1",
+        "Name": "Nitric acid, calcium salt",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37138656
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "0324",
+        "Name": "calcium nitrate",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/0324.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2269286
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "2785",
+        "Name": "CALCIUM NITRATE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/2785",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 757221
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "Emergency Response Guidebook (ERG)",
+        "SourceID": "ecb4a71a25f7b986a350f26e907ae40d",
+        "Name": "Calcium nitrate",
+        "Description": "The Emergency Response Guidebook 2024 provides first responders with a manual intended for use during the initial phase of a transportation incident involving hazardous materials/dangerous goods. PubChem integration of ERG information provides more opportunities for users/first responders to find ERG data and additional safety, toxicity, and more chemical information. For more information, please visit ERG and/or the ERG summary table (https://pubchem.ncbi.nlm.nih.gov/erg/).",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/erg/",
+        "LicenseURL": "https://www.transportation.gov/web-policies",
+        "ANID": 39281015
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1037",
+        "Name": "CALCIUM NITRATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1037",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260902
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "967",
+        "Name": "CALCIUM NITRATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/967",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 878
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "80283",
+        "Name": "Calcium nitrate (EC: 233-332-1)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/80283",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1874789,
+        "SortOrder": 4286
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "NITE-CMC",
+        "SourceID": "22B4524",
+        "Name": "Calcium nitrate - FY2010 (Revised classification)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/10-mhlw-2024e.html",
+        "ANID": 2264753,
+        "SortOrder": 2010
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "NITE-CMC",
+        "SourceID": "21A3552",
+        "Name": "Calcium nitrate - FY2009 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/09-mhlw-0052e.html",
+        "ANID": 8787980,
+        "SortOrder": 2009
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz1467",
+        "Name": "Calcium nitrate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/1467",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277026
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "US Code of Federal Regulations, Hazardous Materials, 49 CFR Part 172",
+        "SourceID": "a2bccbe6165246adc16764541a03afe8",
+        "Name": "Calcium nitrate",
+        "Description": "The DOT hazard classification information are extracted from the 49 eCFR § 172.101 Hazardous Materials Table. More details can be found at the original website from the URL above.",
+        "URL": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-172/subpart-B/section-172.101",
+        "LicenseURL": "https://www.ecfr.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site#legal-status",
+        "ANID": 49730303
+      }
+    ]
+  }
+}

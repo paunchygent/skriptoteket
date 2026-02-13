@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "cid": 5284346,
+  "captured_at": "2026-01-31T14:17:33.681124+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5284346",
+    "lcss_sha256": "0467340388850e122fabb19b69622baf6a9f7f5a4120478b6740bb09be959d3f",
+    "linkout_sha256": "3e4fae667599da865f7c615ed7536d3d938373914020aea5aca0f51f1a6e44b0",
+    "meta_sha256": "b25b0e228640ce186b0c35f4722bcc34902d5c756b445b555d50f6cc8767cbf7"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H301",
+      "H302",
+      "H315",
+      "H319",
+      "H332",
+      "H335",
+      "H370",
+      "H371",
+      "H372",
+      "H402",
+      "H412"
+    ],
+    "hazard_statements_sv": {
+      "H301": "Giftigt vid förtäring. 2 : 5",
+      "H302": "Skadligt vid förtäring.",
+      "H315": "Irriterar huden.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H332": "Skadligt vid inandning.",
+      "H335": "Kan orsaka irritation i luftvägarna.",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H371": "Kan orsaka organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H402": "Skadligt för vattenlevande organismer.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P260",
+      "P261",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P271",
+      "P273",
+      "P280",
+      "P301+P316",
+      "P301+P317",
+      "P302+P352",
+      "P304+P340",
+      "P305+P351+P338",
+      "P308+P316",
+      "P317",
+      "P319",
+      "P321",
+      "P330",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P301+P316": "VID FÖRTÄRING: Sök omedelbar läkarhjälp.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS06",
+      "GHS07",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:02.964079+00:00"
+}

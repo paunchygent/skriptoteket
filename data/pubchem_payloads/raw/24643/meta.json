@@ -1,0 +1,34 @@
+{
+  "cid": 24643,
+  "hazard_key": "CoCl2·6H2O",
+  "display_name": "Kobolt(II)klorid (hexahydrat)",
+  "captured_at": "2026-01-31T16:43:06.387007+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24643",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24643/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24643/linkout.json",
+      "sha256": "f8d5c65a5821f045d9f5aaac71133585bf86319b92cf3ab1e1a4adbef6e3172f"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24643/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 52659,
+      "file": "data/pubchem_payloads/raw/24643/lcss.json",
+      "sha256": "9a758ebb7ea398820a45b8f77109936ca90cd037157dd33079ededd0ea571f9f"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24643/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 44553,
+      "file": "data/pubchem_payloads/raw/24643/safety.json",
+      "sha256": "2c03120e433ece00179d07476d01c70d3df09853fcc60a02c4e52d9400d639ad"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24643.png"
+}

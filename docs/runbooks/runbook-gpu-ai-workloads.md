@@ -431,6 +431,31 @@ Log format includes progress every 30s and a final summary (p50/p95/p99).
 The fixture source is
 `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-20260105T012947Z/`.
 
+### Kodassistenten Eval (llama.cpp behavior + compliance)
+
+Purpose: model-level behavior check against Kodassistenten constraints (runner limits, UI payload contract,
+toolkit usage, action/state flow). This runs **directly** against llama.cpp for stable prompts.
+
+Harness docs:
+- `scripts/ai_prompt_eval/README.md`
+
+Fixture source:
+- `docs/reference/reports/artifacts/llama-kodassistent-eval-v2/llama-kodassistent-eval-v2-20260131T150000Z/`
+
+Run (example):
+
+```bash
+python3 scripts/ai_prompt_eval/llama_kodassistent_eval.py --label glm
+python3 scripts/ai_prompt_eval/llama_kodassistent_eval.py --label devstral --output-dir <same-run-dir>
+```
+
+Outputs include `comparison.json` (usage/timing) and `validation.json` (pass/fail + reasons).
+The harness runs two patch steps: `diff_tool` (tool.py only) and `diff_schema` (input_schema.json + usage).
+
+Notes:
+- By default the harness injects the Kodassistenten system prompt (editor_chat_v1). Use `--no-system` to disable.
+- If system prompt composition fails due to missing dependencies, run via `pdm run python ...`.
+
 ## Maintenance
 
 ### Update ROCm

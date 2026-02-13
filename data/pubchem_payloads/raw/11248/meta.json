@@ -1,0 +1,34 @@
+{
+  "cid": 11248,
+  "hazard_key": "FeCO3",
+  "display_name": "Järnspat",
+  "captured_at": "2026-01-31T14:42:19.498544+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/11248",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/11248/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/11248/linkout.json",
+      "sha256": "1c96db6f4389d5b3df0f2fd445069259e3859a0e2075c4c1fe868e723930ef07"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/11248/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 65717,
+      "file": "data/pubchem_payloads/raw/11248/lcss.json",
+      "sha256": "ed9a41a87802ae8d4028017bb6ec1ac2db995093c6824d193cf2f273dd478417"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/11248/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 43470,
+      "file": "data/pubchem_payloads/raw/11248/safety.json",
+      "sha256": "ecb6e880bcaed5b167630c472054e034f140e19c0737f5a1025d85199d4748fc"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/11248.png"
+}

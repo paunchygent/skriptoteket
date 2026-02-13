@@ -148,6 +148,8 @@ def _build_entry(*, formula: str, display_name: str) -> dict[str, object]:
         "disposal": "Följ lokala rutiner och SDS.",
         "notes": [],
         "aliases": _aliases_for_formula(formula),
+        "search_aliases": [],
+        "pubchem_cid": None,
     }
 
 

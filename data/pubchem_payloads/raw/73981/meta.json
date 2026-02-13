@@ -1,0 +1,34 @@
+{
+  "cid": 73981,
+  "hazard_key": "Mg(OH)2",
+  "display_name": "Magnesiumhydroxid",
+  "captured_at": "2026-01-31T16:56:17.978741+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/73981",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/73981/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/73981/linkout.json",
+      "sha256": "67f839292a7e286957c7927c785081580a92ea0367b27a37353b03b4d592d343"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/73981/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 100084,
+      "file": "data/pubchem_payloads/raw/73981/lcss.json",
+      "sha256": "df3a9f8dddc3835514813b064c3028a86de5ef1519e0c21ecc12457d2fcd9c26"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/73981/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 40212,
+      "file": "data/pubchem_payloads/raw/73981/safety.json",
+      "sha256": "619ed65d75bcc98e01f019c849d9b34ff169eeaec685306e5522af3f4f6494e4"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/73981.png"
+}

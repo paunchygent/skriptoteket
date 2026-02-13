@@ -1,0 +1,482 @@
+{
+  "version": 1,
+  "as_of": "2026-02-01",
+  "entries": {
+    "10313194": [
+      {
+        "url": "https://n.b5z.net/i/u/10091461/f/SDS/Cuprous_Oxide__Cu2O__SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Cuprous Oxide SDS"
+      }
+    ],
+    "14829": [
+      {
+        "url": "https://www.elementalmicroanalysis.com/documents/product/sds/COPPER-_II_-OXIDE_20240304_EN.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Copper(II) oxide SDS"
+      }
+    ],
+    "29011": [
+      {
+        "url": "https://www.nyacol.com/wp-content/uploads/2019/04/nyacol-sn902-mb-safet-data-sheet-english.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Tin(IV) oxide SDS"
+      }
+    ],
+    "61520": [
+      {
+        "url": "https://www.chemicalbook.com/msds/strontium-chloride.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Strontium chloride SDS"
+      }
+    ],
+    "6352": [
+      {
+        "url": "https://www.carlroth.com/downloads/sdb/en/6/SDB_6667_AU_EN.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Calcium carbide SDS"
+      }
+    ],
+    "180": [
+      {
+        "url": "https://www.chemicalbook.com/msds/acetone.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://corecheminc.com/wp-content/uploads/2024/03/Acetone-CCI-Safety-Data-Sheet-2.26.2024-Rev-2.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://voechemicals.com/wp-content/uploads/2023/10/ACETONE.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.carlroth.com/downloads/sdb/en/T/SDB_T906_GB_EN.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.labchem.com/ASSETS/DOCUMENTS/ITEMS/EN/LC10420_SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/acetone.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.fishersci.com/content/dam/fishersci/en_US/documents/programs/education/regulatory-documents/sds/chemicals/chemicals-a/S25120.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.labchem.com/ASSETS/DOCUMENTS/ITEMS/EN/LC10420_SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://voechemicals.com/wp-content/uploads/2023/10/ACETONE.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.labchem.com/ASSETS/DOCUMENTS/ITEMS/EN/LC10420_SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.airgas.com/msds/001088.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://corecheminc.com/wp-content/uploads/2024/03/Acetone-CCI-Safety-Data-Sheet-2.26.2024-Rev-2.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/acetone.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/acetone.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.labchem.com/ASSETS/DOCUMENTS/ITEMS/EN/LC10420_SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.airgas.com/msds/001088.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      },
+      {
+        "url": "https://www.pure-chemical.com/site/others/msds/Acetone.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aceton"
+      }
+    ],
+    "5359268": [
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.unifiedalloys.com/content/files/aluminum-alloy-sds-2018.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.twmetals.com/media/category_pdfs/SDS-AluminumAlloys.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://angstromsciences.com/wp-content/uploads/files/SDS/Aluminum.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.twmetals.com/media/category_pdfs/SDS-AluminumAlloys.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "http://media.laballey.com/sds/Aluminum-Metallic-Powder-Safety-Data-Sheet-SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://irp-cdn.multiscreensite.com/46cb8fc8/files/uploaded/rs-metals-sds-msds-aluminum-final.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.twmetals.com/media/category_pdfs/SDS-AluminumAlloys.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.unifiedalloys.com/content/files/aluminum-alloy-sds-2018.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      },
+      {
+        "url": "https://angstromsciences.com/wp-content/uploads/files/SDS/Aluminum.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminium (Al)"
+      }
+    ],
+    "24012": [
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum-chloride.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://www.samaterials.com/tds/1697117778-aluminum-chloride-sds.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://download.basf.com/p1/000000000030046443_SDS_GEN_US/en/Aluminium_chloride_anhydrous_screened_Safety_Data_Sheet_English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum-chloride.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://www.edmthree.com/sds/stains-reagents/Aluminum Chloride 20prc (400649, 400463, 400464, 400695).pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://download.basf.com/p1/000000000030046443_SDS_GEN_US/en/Aluminium_chloride_anhydrous_screened_Safety_Data_Sheet_English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://download.basf.com/p1/000000000030046443_SDS_GEN_US/en/Aluminium_chloride_anhydrous_screened_Safety_Data_Sheet_English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://www.cdhfinechemical.com/images/product/msds/54_1112998353_AluminiumChlorideAnhydrous-CASNO-7446-70-0-MSDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum-chloride.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://download.basf.com/p1/000000000030046443_SDS_GEN_US/en/Aluminium_chloride_anhydrous_screened_Safety_Data_Sheet_English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      },
+      {
+        "url": "https://www.cdhfinechemical.com/images/product/msds/54_1112998353_AluminiumChlorideAnhydrous-CASNO-7446-70-0-MSDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid"
+      }
+    ],
+    "24564": [
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminium-chloride-hexahydrate.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.fishersci.com/content/dam/fishersci/en_US/documents/programs/education/regulatory-documents/sds/chemicals/chemicals-a/S25143.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.integraclear.com/msds/A442_25074_101.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminium-chloride-hexahydrate.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminium-chloride-hexahydrate.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.integraclear.com/msds/A442_25074_101.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.cdhfinechemical.com/images/product/msds/54_1161394769_AluminiumChlorideHexahydrate-CASNO-7784-13-6-MSDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminium-chloride-hexahydrate.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      },
+      {
+        "url": "https://www.cdhfinechemical.com/images/product/msds/54_1161394769_AluminiumChlorideHexahydrate-CASNO-7784-13-6-MSDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumklorid (hexahydrat)"
+      }
+    ],
+    "9989226": [
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum-oxide.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.materion.com/en/resources/environmental-health-safety/safety-data-sheets/DownloadSds?sdsId=1AC_ALUMINUM+OXIDE+(AL2O3)+_SDS-EU_EU+English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.buehler.com/assets/SDS/US/Aluminum-Oxide-Powder-US-English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://riskandsafety.com/sites/default/files/aluminum oxide - SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum-oxide.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.buehler.com/assets/SDS/US/Aluminum-Oxide-Powder-US-English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://riskandsafety.com/sites/default/files/aluminum oxide - SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://alpharesources.com/documents/MSDS/Aluminum Oxide.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://riskandsafety.com/sites/default/files/aluminum oxide - SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.servicesforplastics.com/msds/SDS_AA_2025.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://marlite.com/wp-content/uploads/2025/05/AES-SDS-Aluminum-Oxide.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.chemicalbook.com/msds/aluminum-oxide.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.buehler.com/assets/SDS/US/Aluminum-Oxide-Powder-US-English.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://riskandsafety.com/sites/default/files/aluminum oxide - SDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.cdhfinechemical.com/images/product/msds/41_1525369731_AluminiumOxide-CASNO-1344-28-1-MSDS.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://alpharesources.com/documents/product/sds/alumina1.3US.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.csun.edu/~bavarian/Courses/MSDS sheets - chemicals 2014/alumina.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.sorbtech.com/msds/SDS Alumina(10-19-22).pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://alpharesources.com/documents/product/sds/alumina1.3US.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.csun.edu/~bavarian/Courses/MSDS sheets - chemicals 2014/alumina.pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      },
+      {
+        "url": "https://www.sorbtech.com/msds/SDS Alumina(073025).pdf",
+        "source": "manual-playwright",
+        "verified": true,
+        "notes": "Aluminiumoxid"
+      }
+    ]
+  }
+}

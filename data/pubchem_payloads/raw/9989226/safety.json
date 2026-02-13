@@ -1,0 +1,2760 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 9989226,
+    "RecordTitle": "Alumina",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 92.8% (2917 of 3142) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 88,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 2917 of 3142 companies (only 7.2% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 163,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/6064"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 15,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 3142 reports by companies from 48 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 118,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 2917 of 3142 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 82,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 44 notifications provided by 225 of 3142 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 102,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/6064"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H335 (100%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P261, P271, P304+P340, P319, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 40,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 50,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The GHS information provided by 1 company from 1 notification to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 92,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/212694"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                          "Markup": [
+                            {
+                              "Start": 40,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372: Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P261, P264, P270, P271, P304+P340, P319, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 68,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 15,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 16,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "STOT SE 3 (100%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 34,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 3 (Respiratory tract irritation)"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Repeated exposure - Category 1 (Inhalation: lung)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "NFPA Hazard Classification",
+                "Description": "The National Fire Protection Association (NFPA) Hazard Classification (also known as NFPA 704) provides a simple, readily recognized, easily understood system for identifying the specific hazards of a material and the severity of the hazard that would occur during an emergency response. The system addresses the health, flammability, instability, and special hazards presented from short-term, acute exposures that could occur as a result of a fire, spill, or similar emergency.",
+                "URL": "https://www.nfpa.org/news-blogs-and-articles/blogs/2021/11/05/hazardous-materials-identification",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "NFPA 704 Diamond",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "  ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/image/nfpa.cgi?code=001",
+                              "Type": "Icon",
+                              "Extra": "0-0-1"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "NFPA Health Rating",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": " 0 - Materials that, under emergency conditions, would offer no hazard beyond that of ordinary combustible materials."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "NFPA Fire Rating",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": " 0 - Materials that will not burn under typical fire conditions, including intrinsically noncombustible materials such as concrete, stone, and sand."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Name": "NFPA Instability Rating",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": " 1 - Materials that in themselves are normally stable but that can become unstable at elevated temperatures and pressures."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for alpha-Alumina:",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/alpha-Alumina",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Exposure Routes: Inhalation, ingestion, skin and/or eye contact"
+                        },
+                        {
+                          "String": "Symptoms: Irritation eyes, skin, respiratory system"
+                        },
+                        {
+                          "String": "Target Organs: Eyes, skin, respiratory system (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Reference": [
+                      "Burgess - Burgess WA. _Recognition of Health Hazards in Industry, _2nd Ed. New York: John Wiley & Sons, 1995., p. 14",
+                      "PMID:32944994"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Burgess - Burgess WA. _Recognition of Health Hazards in Industry, _2nd Ed. New York: John Wiley & Sons, 1995., p. 14",
+                        "Matched": {
+                          "PCLID": 900176079,
+                          "Citation": "Burgess - Burgess WA. _Recognition of Health Hazards in Industry, _2nd Ed. New York: John Wiley & Sons, 1995., p. 14"
+                        }
+                      },
+                      {
+                        "Citation": "PMID:32944994",
+                        "Matched": {
+                          "PCLID": 10190855,
+                          "Citation": "Del Monaco A, Gwini SM, Kelly S, de Klerk N, Benke G, Dennekamp M, Fritschi L, Dimitriadis C, William (Bill) Musk A, Abramson MJ, Sim MR. Respiratory outcomes among refinery workers exposed to inspirable alumina dust: A longitudinal study in Western Australia. American J Industrial Med. 2020 Sep 17;63(12):1116–23. doi: 10.1002/ajim.23182.",
+                          "PMID": 32944994,
+                          "DOI": "10.1002/ajim.23182"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Alumina is converted into aluminum by electrolytic reduction. Primary aluminum production facilities contain rows of reduction cells or pots located in potrooms. [Burgess, p. 14] Aluminum oxide is found in nature as bauxite (Al2O3.2H2O). Corundum is manufactured by fusing bauxite in a furnace. Some crystalline silica may be found in bauxite and corundum. The severe pulmonary fibrosis observed historically in bauxite workers and potroom workers has been primarily attributed to the concurrent exposure to crystalline silica. [CHEMINFO] An irritant of the skin, eyes, and respiratory tract; [CAMEO] There is no evidence of an association between exposure to alumina and the reporting of respiratory symptoms but some evidence for an effect on lung function. [PMID 32944994] See Aluminum.",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 179,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminum%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            },
+                            {
+                              "Start": 780,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html",
+                        "Matched": {
+                          "PCLID": 906286789,
+                          "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 49-18"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 49-18",
+                        "Matched": {
+                          "PCLID": 900102407,
+                          "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 49-18"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause minor irritation to lungs and eyes. /Aluminum powder/",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Flammable Limits",
+                "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 40,
+                    "Name": "Flammability",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible solid, but dusts may form explosive mixtures in air."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "OSHA Standards",
+                "Description": "Occupational Safety and Health Administration (OSHA) standards are rules that describe the methods that employers must use to protect their employees from hazards. These standards limit the amount of hazardous chemicals workers can be exposed to, require the use of certain safe practices and equipment, and require employers to monitor hazards and keep records of workplace injuries and illnesses.",
+                "URL": "https://www.osha.gov/laws-regs",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906273885,
+                          "Citation": "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Permissible Exposure Limit: Table Z-1 8-hr Time Weighted Avg: 15 mg/cu m. /Total dust/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906273885,
+                          "Citation": "29 CFR 1910.1000 (USDOL); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Permissible Exposure Limit: Table Z-1 8-hr Time Weighted Avg: 5 mg/cu m. /Respirable fraction/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 359"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 359",
+                        "Matched": {
+                          "PCLID": 900160422,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 359"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Vacated 1989 OSHA PEL TWA 10 mg/cu m is still enforced in some states. /Total/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 359"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 359",
+                        "Matched": {
+                          "PCLID": 900160422,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards. DHHS (NIOSH) Publication No. 97-140. Washington, D.C. U.S. Government Printing Office, 1997., p. 359"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Vacated 1989 OSHA PEL TWA 5 mg/cu m is still enforced in some states. /Resp/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "NIOSH Recommendations",
+                "Description": "The National Institute for Occupational Safety and Health (NIOSH) recommendations for chemical safety concerning this compound.",
+                "URL": "https://www.cdc.gov/niosh/index.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NIOSH has concluded that the documentation cited by OSHA was inadequate to support the proposed PEL (as an 8-hour Time-Weighted Average) of 10 mg/cu m for alpha-alumina.",
+                          "Markup": [
+                            {
+                              "Start": 155,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/alpha-alumina",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 29,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse and then wash skin with water and soap.",
+                      "Markup": [
+                        {
+                          "Start": 30,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for alpha-Alumina:",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/alpha-Alumina",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: IRRIGATE IMMEDIATELY - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 123,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: BLOT/BRUSH AWAY - If irritation occurs, gently blot or brush away excess."
+                        },
+                        {
+                          "String": "Breathing: FRESH AIR - If a person breathes large amounts of this chemical, move the exposed person to fresh air at once. Other measures are usually unnecessary."
+                        },
+                        {
+                          "String": "Swallow: MEDICAL ATTENTION IMMEDIATELY - If this chemical has been swallowed, get medical attention immediately. (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(General first aid procedures)",
+                          "Markup": [
+                            {
+                              "Start": 1,
+                              "Length": 28,
+                              "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Eye: Irrigate immediately  - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                          "Markup": [
+                            {
+                              "Start": 124,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: Blot/brush away  - If irritation occurs, gently blot or brush away excess."
+                        },
+                        {
+                          "String": "Breathing: Fresh air"
+                        },
+                        {
+                          "String": "Swallow: Medical attention immediately  - If this chemical has been swallowed, get medical attention immediately."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 29,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com",
+                        "Matched": {
+                          "PCLID": 900019445,
+                          "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not use halocarbon extinguishers. The product itself does not burn. Wear self contained breathing apparatus for fire fighting if necessary."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html",
+                        "Matched": {
+                          "PCLID": 906286789,
+                          "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "In case of fire in the surroundings: all extinguishing agents allowed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting. Wash away remainder with plenty of water.",
+                          "Markup": [
+                            {
+                              "Start": 241,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html",
+                        "Matched": {
+                          "PCLID": 906286789,
+                          "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sweep spilled substance into containers; if appropriate, moisten first to prevent dusting. Wash away remainder with plenty of water.",
+                          "Markup": [
+                            {
+                              "Start": 126,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 411,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The scientific literature for the use of contact lenses in industry is conflicting. The benefit or detrimental effects of wearing contact lenses depend not only upon the substance, but also on factors including the form of the substance, characteristics and duration of the exposure, the uses of other eye protection equipment, and the hygiene of the lenses. However, there may be individual substances whose irritating or corrosive properties are such that the wearing of contact lenses would be harmful to the eye. In those specific cases, contact lenses should not be worn. In any event, the usual eye protection equipment should be worn even when contact lenses are in place."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant  as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants. Ensure that the local ventilation moves the contaminant away from the worker."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com",
+                        "Matched": {
+                          "PCLID": 900019445,
+                          "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Provide appropriate exhaust ventilation at places where dust is formed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com",
+                        "Matched": {
+                          "PCLID": 900019445,
+                          "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep container tightly closed in a dry and well-ventilated place. strongly hygroscopic."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 27,
+                "Name": "Exposure Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "TIH (Toxic Inhalation Hazard) - Term used to describe gases and volatile liquids that are toxic when inhaled. Some are TIH materials themselves, e.g., chlorine, and some release TIH gases when spilled in water, e.g., chlorosilanes. [ERG 2016].",
+                      "Markup": [
+                        {
+                          "Start": 151,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Chlorine",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Chlorine"
+                        },
+                        {
+                          "Start": 204,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Name": "Maximum Allowable Concentration (MAK)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "4.0 [mg/m3], (inhalable fraction), 1.5 mg/m3 (respirable fraction)[German Research Foundation (DFG)]"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Recommended Exposure Limit (REL)",
+                "Description": "The recommended exposure limit (REL) is the maximum amount or concentration of a chemical that a worker may be exposed to.  The RELs are guidelines established and recommended by the NIOSH (National Institute for Occupational Safety and Health).  The RELs can be given in three ways. [1] Time-weighted average (REL-TWA): average exposure based on up to10h/day, 40h/week work schedule. [2] Short-term exposure limit (REL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (REL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#exposure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "See Appendix D",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxd.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "15.0 [mg/m3](total dust), 5 mg/m3(respirable fraction)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Name": "PEL-TWA (8-Hour Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "15 mg/m³ (total dust), 5 mg/m³ (respirable fraction)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 15 mg/m3 (total) TWA 5 mg/m3 (resp) See Appendix G",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 31,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 40,
+                              "Length": 14,
+                              "URL": "https://www.cdc.gov/niosh/npg/nengapdxg.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "N.D."
+                        },
+                        {
+                          "String": "See: IDLH INDEX ",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 11,
+                              "URL": "https://www.cdc.gov/niosh/idlh/intridl4.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1.0 [mg/m3], respirable fraction"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 11"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 11",
+                        "Matched": {
+                          "PCLID": 906291304,
+                          "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 11"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "8 hr Time Weighted Avg (TWA): 1 mg/cu m, respirable fraction. /Aluminum metal and insoluable compounds/",
+                          "Markup": [
+                            {
+                              "Start": 63,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 5"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 5",
+                        "Matched": {
+                          "PCLID": 900154672,
+                          "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 5"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excursion Limit Recommendation: Excursions in worker exposure levels may exceed 3 times the TLV-TWA for no more than a total of 30 minutes during a work day, and under no circumstances should they exceed 5 times the TLV-TWA, provided that the TLV-TWA is not exceeded. /Aluminum metal and insoluable compounds/",
+                          "Markup": [
+                            {
+                              "Start": 269,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 11"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 11",
+                        "Matched": {
+                          "PCLID": 906291304,
+                          "Citation": "American Conference of Governmental Industrial Hygienists  TLVs and BEIs. Threshold Limit Values for Chemical  Substances and Physical Agents and Biological Exposure  Indices. Cincinnati, OH 2010, p. 11"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A4: Not classifiable as a human carcinogen. /Aluminum metal and insoluable compounds/",
+                          "Markup": [
+                            {
+                              "Start": 45,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1 mg/m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Name": "TLV-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1 mg/m³ (respirable particulate matter) [2007]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Occupational Exposure Limits (OEL)",
+                "Description": "In general, the occupational exposure limit (OEL) indicates the level of admissible exposure, for a length of time (usually 8 hours), to a chemical or physical hazard that is not likely to affect the health of a worker. The OELs for chemical substances are established based on the chemical properties of the substance, experimental studies on animals and humans, toxicological and epidemiological data. These limits are set out by many professional organizations and government agencies around the world, such as the American Conference of Governmental Industrial Hygienists (ACGIH), and the National Institute for Occupational Safety and Health (NIOSH) in the United States. Different organizations may use different terminology for the OEL. For example, the ACGIH term for OEL is \"Threshold Limit Value\" (TLV)® while the NIOSH term is \"recommended exposure limits\" (REL). This section also includes MAK (maximale arbeitsplatzkonzentration), similar to threshold limit value, specifies the maximum concentration level of a toxic substance in air at a workplace.",
+                "URL": "https://www.ccohs.ca/oshanswers/hsprograms/occ_hygiene/occ_exposure_limits.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "MAK (Maximale Arbeitsplatz Konzentration)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "carcinogen category: 2"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Other Standards Regulations and Guidelines",
+                "Description": "Safety and hazard standards, regulations, and guidelines for this this compound that is not shown in other sections.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 134"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 134",
+                        "Matched": {
+                          "PCLID": 900027128,
+                          "Citation": "International Labour Office. Encyclopedia of Occupational Health and Safety. Vols. I&II. Geneva, Switzerland: International Labour Office, 1983., p. 134"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "USSR: 2 mg/cu m."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 60"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 60",
+                        "Matched": {
+                          "PCLID": 900001395,
+                          "Citation": "Seiler, H.G., H. Sigel and A. Sigel (eds.). Handbook on the Toxicity of Inorganic Compounds. New York, NY: Marcel Dekker, Inc. 1988., p. 60"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Federal Republic of Germany: 6 mg/cu m."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evaporation at 20Â °C is negligible; a harmful concentration of airborne particles can, however, be reached quickly."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Inhalation of high concentrations of dust may cause irritation of the eyes and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance may have effects on the central nervous system."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906286703,
+                          "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of aluminum oxide are exempted from the requirement of a tolerance when used as a diluent in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/aluminum%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for alpha-Alumina:",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/alpha-Alumina",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Skin: No recommendation is made specifying the need for personal protective equipment for the body."
+                        },
+                        {
+                          "String": "Eyes: No recommendation is made specifying the need for eye protection."
+                        },
+                        {
+                          "String": "Wash skin: No recommendation is made specifying the need for washing the substance from the skin (either immediately or at the end of the work shift)."
+                        },
+                        {
+                          "String": "Remove: No recommendation is made specifying the need for removing clothing that becomes wet or contaminated."
+                        },
+                        {
+                          "String": "Change: No recommendation is made specifying the need for the worker to change clothing after the workshift. (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html",
+                        "Matched": {
+                          "PCLID": 906286789,
+                          "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Local exhaust or breathing protection. Protective gloves. Safety goggles, or eye protection in combination with breathing protection."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html",
+                        "Matched": {
+                          "PCLID": 906286789,
+                          "Citation": "International Program on Chemical Safety/Commission of the European Communities; International Chemical Safety Card on Aluminum oxide (October 2000). Available from, as of May 20, 2010: https://www.inchem.org/pages/icsc.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Extra personal protection: P1 filter respirator for inert particles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Respirator Recommendations",
+                "Description": "This section provides a list of allowable respirators to be used for this chemical, according to the NIOSH's Respirator Selection Recommendations.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread",
+                "Information": [
+                  {
+                    "ReferenceNumber": 40,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Prevention",
+                "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PREVENT DISPERSION OF DUST!"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use local exhaust or breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety goggles or eye protection in combination with breathing protection."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Insoluble in water."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Non-Redox-Active Inorganic Compounds"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Alerts",
+                "Description": "Special alerts if the chemical is especially reactive.",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactivity_alerts.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Known Catalytic Activity"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ALUMINUM OXIDE is chemically amphoteric (behaves as a weak acid in the presence of base and as a weak base in the presence of acid). May act catalytically. May cause the exothermic polymerization of ethylene oxide. May cause the vigorous polymerization of vinyl chloride [MCA SD-75, 1970]. The degree of subdivision of the aluminum oxide may affect the vigor of such reactions.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ALUMINUM%20OXIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            },
+                            {
+                              "Start": 199,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethylene%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6354"
+                            },
+                            {
+                              "Start": 256,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/vinyl%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6338"
+                            },
+                            {
+                              "Start": 323,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/aluminum%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com",
+                        "Matched": {
+                          "PCLID": 900019445,
+                          "Citation": "Sigma-Aldrich Corp; Safety Data Sheet for Aluminum Oxide (Product Number: 11028) Version 4.0 (February 26, 2010). Available from, as of June 15, 2010: https://www.sigmaaldrich.com"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Materials to avoid: strong acids, strong bases, chlorine trifluoride, ethylene oxide, halogenated hydrocarbon, oxygen difluoride, sodium nitrate, vinyl compounds",
+                          "Markup": [
+                            {
+                              "Start": 48,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/chlorine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24637"
+                            },
+                            {
+                              "Start": 70,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethylene%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6354"
+                            },
+                            {
+                              "Start": 111,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/oxygen%20difluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24547"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24268"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)",
+                        "Matched": {
+                          "PCLID": 900026787,
+                          "Citation": "NIOSH. NIOSH Pocket Guide to Chemical Hazards & Other Databases CD-ROM. Department of Health & Human Services, Centers for Disease Prevention & Control. National Institute for Occupational Safety & Health. DHHS (NIOSH) Publication No. 2005-151 (2005)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chlorine trifluoride, hot chlorinated rubber, acids, oxidizers [Note: Hydrogen gas may be formed when finely divided iron contacts moisture during crushing & milling operations].",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Chlorine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24637"
+                            },
+                            {
+                              "Start": 70,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            },
+                            {
+                              "Start": 117,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iron"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Aluminium oxide (Al2O3)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminium%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9989226"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 20-04-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/16039",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/16039"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aluminium oxide (Al2O3): Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminium%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9989226"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Federal Drinking Water Guidelines",
+                "Description": "Federal drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 50-200 ug/L /Aluminum/",
+                          "Markup": [
+                            {
+                              "Start": 17,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Standards",
+                "Description": "State drinking water standards (e.g. maximum containment level (MCL)) for this chemical.  These standards are legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(CA) CALIFORNIA 1000 ug/L /Aluminum/",
+                          "Markup": [
+                            {
+                              "Start": 27,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(AZ) ARIZONA 73 ug/L /Aluminum/",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(CA) CALIFORNIA 200 ug/L /Aluminum/",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(ME) MAINE 1430 ug/L /Aluminum/",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906286703,
+                          "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations.  Available from, as of June 2, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of aluminum oxide are exempted from the requirement of a tolerance when used as a diluent in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/aluminum%20oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 73.1010 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 2, 2010: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 73.1010 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 2, 2010: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906271383,
+                          "Citation": "21 CFR 73.1010 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of June 2, 2010: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Certification of this color additive when used to color drugs is not necessary for the protection of the public health, and therefore batches thereof are exempt from the certification pursuant to section 721(c) of the act."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Aluminium oxide (Al2O3): Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminium%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9989226"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Aluminium oxide (Al2O3): Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminium%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9989226"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Toxic Combustion Products",
+                "Description": "Toxic products (e.g., gases and vapors) produced from the combustion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 136"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 136",
+                        "Matched": {
+                          "PCLID": 906277022,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 136"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Exothermic reaction above 200 °C with halocarbon vapors produces toxic /hydrochloric acid/ and phosgene.",
+                          "Markup": [
+                            {
+                              "Start": 72,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrochloric%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-313"
+                            },
+                            {
+                              "Start": 95,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosgene",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-6371"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 28,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Krewski D et al; Human Health Risk Assessment for Aluminum, Aluminum Oxide, and Aluminum Hydroxide, J Toxicol Environ Health B Crit Rev. 2007 ; 10(Suppl 1): 1-269. doi:10.1080/10937400701597766, is an NIH Public Access Author Manuscript that is a compendium of information on aluminium compounds used in industrial settings, and as pharmaceuticals, food additives, cosmetics and as other household products.",
+                          "Markup": [
+                            {
+                              "Start": 50,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 60,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminum%20Oxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-9989226"
+                            },
+                            {
+                              "Start": 80,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aluminum%20Hydroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10176082"
+                            },
+                            {
+                              "Start": 276,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/aluminium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5359268"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 28,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ATSDR; Toxicological Profile for Aluminum, 357 pp., September 2008. The ATSDR toxicological profile identifies and reviews the key literature that describes a hazardous substance's toxicologic properties. Other pertinent literature is presented in less detail.[Available from, as of June 15, 2010: http://www.atsdr.cdc.gov/ToxProfiles/tp22.pdf]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_3189",
+        "Name": "Aluminium oxide (Al2O3)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39348746
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_3189",
+        "Name": "Aluminium oxide (Al2O3)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39377345
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "215-691-6",
+        "Name": "Aluminium oxide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.014.265",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1979890
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "6dd2b599e5a86000f4f148e6cb887a07",
+        "Name": "Aluminium oxide (Al2O3)",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37143058
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "16127",
+        "Name": "ALUMINUM OXIDE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/16127",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 756572
+      },
+      {
+        "ReferenceNumber": 40,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0021",
+        "Name": "alpha-Alumina",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0021.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266321
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "506",
+        "Name": "Aluminum oxide",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/506",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 442
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "6064",
+        "Name": "Aluminium oxide (EC: 215-691-6)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/6064",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1852794,
+        "SortOrder": 6142
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "69043",
+        "Name": "Aluminum oxide (EC: 618-619-5)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/69043",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1871473,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "212694",
+        "Name": "Aluminum Oxide (EC: 682-456-6)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/212694",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37172957,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "NITE-CMC",
+        "SourceID": "738",
+        "Name": "Aluminium oxide - FY2006 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/06-imcg-0730e.html",
+        "ANID": 2265794,
+        "SortOrder": 2006
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz286",
+        "Name": "Aluminum oxide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/286",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17276105
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0351",
+        "Name": "ALUMINIUM OXIDE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0351",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260260
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "Occupational Safety and Health Administration (OSHA)",
+        "SourceID": "242",
+        "Name": "α-ALUMINA (ALUNDUM)",
+        "Description": "The OSHA Occupational Chemical Database contains over 800 entries with information such as physical properties, exposure guidelines, etc.",
+        "URL": "https://www.osha.gov/chemicaldata/242",
+        "LicenseNote": "Materials created by the federal government are generally part of the public domain and may be used, reproduced and distributed without permission. Therefore, content on this website which is in the public domain may be used without the prior permission of the U.S. Department of Labor (DOL). Warning: Some content - including both images and text - may be the copyrighted property of others and used by the DOL under a license.",
+        "LicenseURL": "https://www.dol.gov/general/aboutdol/copyright",
+        "ANID": 3410718
+      }
+    ]
+  }
+}

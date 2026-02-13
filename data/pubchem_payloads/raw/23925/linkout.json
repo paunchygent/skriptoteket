@@ -1,0 +1,46 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 23925,
+    "ObjUrl": [
+      {
+        "Url": "http://sideeffects.embl.de/drugs/23925/",
+        "LinkName": "Side effects of Fe(III",
+        "SubjectType": [
+          "biological properties"
+        ],
+        "Category": [
+          "Chemical Information"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "SIDER Side Effect Resource",
+          "NameAbbr": "SIDER",
+          "Id": "9337",
+          "Url": "http://sideeffects.embl.de"
+        }
+      },
+      {
+        "Url": "https://linkout.scitegrity.com/23925",
+        "LinkName": "This is a controlled substance. Complete access to the full Controlled Substances Squared application for 24 hours",
+        "SubjectType": [
+          "supplemental materials"
+        ],
+        "Category": [
+          "Other Literature Sources"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "Scitegrity database",
+          "NameAbbr": "scitegrity",
+          "Id": "10090",
+          "Url": "https://www.scitegrity.co.uk/"
+        }
+      }
+    ]
+  }
+}

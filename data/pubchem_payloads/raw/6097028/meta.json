@@ -1,0 +1,34 @@
+{
+  "cid": 6097028,
+  "hazard_key": "(NH4)2SO4",
+  "display_name": "Ammoniumsulfat",
+  "captured_at": "2026-01-31T14:14:55.135337+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6097028",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6097028/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/6097028/linkout.json",
+      "sha256": "327fc01c53395a16788151fd98d6dadd61bac0b084ddf308ec94f3818755724a"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6097028/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 184171,
+      "file": "data/pubchem_payloads/raw/6097028/lcss.json",
+      "sha256": "504dce02bce5ec3e4238f73faf2de5951f1bdc8d80c675786426715fb2ce1a93"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6097028/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 132926,
+      "file": "data/pubchem_payloads/raw/6097028/safety.json",
+      "sha256": "cdcd0dc27cc1662830768e2dfe70fbbc287fd173de20513a6855f35d512f907c"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/6097028.png"
+}

@@ -12,13 +12,43 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-01-28
+- Date: 2026-02-01
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
 
-## Current Session (2026-01-28)
+## Current Session (2026-02-01)
+
+- SDS pipeline reliability + curated meta:
+  - Curated meta store now loads (added `as_of`) and is used **before** PubChem density fetch.
+  - Curated meta sources now included in SDS `sources` when used.
+  - Sample seed run for `C3H6O`, `Al`, `AlCl3`, `AlCl3·6H2O`, `Al2O3` completes cleanly.
+- Full prefetch run (164 hazards): ok=10, fail=154 → missing list in `.artifacts/sds-cache/missing-hazards.txt` (full report `.artifacts/sds-cache/full-report.json`).
+- Tests + quality gates:
+  - `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run fe-test`.
+
+## Current Session (2026-01-31)
+
+- SDS pipeline refactor + LOC compliance for Riskbedömning:
+  - Split SDS parsing into `sds_parsers/` package and introduced `sds_result_builder.py`.
+  - Concentration-dependent CLP bands (min/max) parsed from SDS text using density + molar mass.
+  - PDF SDS caching/serving via index store; export requires cached SDS only.
+  - Multi-source SDS provider registry wired: `sds_pdf_providers.py` + catalog file.
+- SPA refactor for LOC limits:
+  - Split `frontend/apps/skriptoteket/src/views/apps/ReagentPrepChefView.vue` into step components and composables under
+    `frontend/apps/skriptoteket/src/views/apps/reagent-prep-chef/` and
+    `frontend/apps/skriptoteket/src/composables/reagentPrepChef/`.
+- UI check: Vite served SPA via `pdm run fe-dev-logs` and `curl -sSf http://127.0.0.1:5173/`.
+- Docs progress updates:
+  - `docs/backlog/prs/pr-0060-curated-app-reagent-prep-chef-risk-assessment.md`
+  - `docs/backlog/stories/story-20-02-curated-app-reagent-prep-chef-risk-assessment.md`
+  - `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`
+
+## Current Session (2026-01-30)
+
+- SDS pipeline reliability updates:
+  - Hydrate multiplier parsing + CID expansion to resolve missing GHS data; PubChem client protocol typing.
 
 - Riskbedömning workflow added for Reagent Prep Chef:
   - Backend models + handlers + routes: `src/skriptoteket/application/curated_apps/reagent_prep_chef.py`,
@@ -65,6 +95,15 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- 2026-01-31: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
+  `pdm run fe-test`, `pdm run docs-validate`, `pdm run fe-dev-logs`,
+  `curl -sSf http://127.0.0.1:5173/`
+- 2026-02-01: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
+  `pdm run fe-test`,
+  `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts LOG_LEVEL=INFO SDS_FETCH_TIMEOUT_SECONDS=10 SDS_FETCH_LISTKEY_MAX_SECONDS=10 SDS_FETCH_LISTKEY_POLL_SECONDS=0.5 SDS_FETCH_AUTOCOMPLETE_LIMIT=10 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --no-fail-fast --report .artifacts/sds-cache/sample-report.json --concurrency 5 --only C3H6O --only Al --only AlCl3 --only "AlCl3·6H2O" --only Al2O3`
+  `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts LOG_LEVEL=INFO SDS_FETCH_TIMEOUT_SECONDS=10 SDS_FETCH_LISTKEY_MAX_SECONDS=10 SDS_FETCH_LISTKEY_POLL_SECONDS=0.5 SDS_FETCH_AUTOCOMPLETE_LIMIT=10 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --no-fail-fast --report .artifacts/sds-cache/full-report.json --concurrency 5`
+- 2026-01-30: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
+  `pdm run fe-gen-api-types`, `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-test`
 - Backend (host): `pdm run dev-logs` (background) + `curl -sSf http://127.0.0.1:8000/healthz`
 - Frontend (Vite): `pdm run fe-dev-logs` (background) + `curl -sSf http://127.0.0.1:5173/`
 - Dev-local (backend + SPA): `pdm run dev-local` (backend `:8000`, Vite `:5173`).

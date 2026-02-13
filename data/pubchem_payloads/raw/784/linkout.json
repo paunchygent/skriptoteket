@@ -1,0 +1,27 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 784,
+    "ObjUrl": [
+      {
+        "Url": "https://linkout.scitegrity.com/784",
+        "LinkName": "This is a controlled substance. Complete access to the full Controlled Substances Squared application for 24 hours",
+        "SubjectType": [
+          "supplemental materials"
+        ],
+        "Category": [
+          "Other Literature Sources"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "Scitegrity database",
+          "NameAbbr": "scitegrity",
+          "Id": "10090",
+          "Url": "https://www.scitegrity.co.uk/"
+        }
+      }
+    ]
+  }
+}

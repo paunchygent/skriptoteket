@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "cid": 23930,
+  "captured_at": "2026-01-31T16:57:03.109968+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23930",
+    "lcss_sha256": "8c2e5191a44290f2ca8cebec5f90faabee4d1943209dfe26d01dc6bd7066d8bd",
+    "linkout_sha256": "f29b6f87f926218472f07089b99e26557f6505e345b6f4c4af5a13e27825fc49",
+    "meta_sha256": "d0d075ea19a3a7fc0f6ed2d17148915b30142056c206524a1dd25095c6c69ddf"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H228",
+      "H316",
+      "H319",
+      "H320",
+      "H360",
+      "H370",
+      "H372",
+      "H401",
+      "H411",
+      "H412",
+      "H413"
+    ],
+    "hazard_statements_sv": {
+      "H228": "Brandfarligt fast ämne.",
+      "H316": "Orsakar mild hudirritation.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H320": "Orsakar ögonirritation.",
+      "H360": "Kan skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H401": "Giftigt för vattenlevande organismer.",
+      "H411": "Giftigt för vattenlevande organismer med långtidseffekter.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer.",
+      "H413": "Kan ge skadliga långtidseffekter på vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P203",
+      "P210",
+      "P240",
+      "P241",
+      "P260",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P273",
+      "P280",
+      "P305+P351+P338",
+      "P308+P316",
+      "P318",
+      "P319",
+      "P321",
+      "P332+P317",
+      "P337+P317",
+      "P370+P378",
+      "P391",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P240": "Jorda och potentialförbind behållare och mottagarutrustning.",
+      "P241": "* Använd explosionssäker [elektrisk/ventilations-/belysnings-/...]utrustning.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P391": "Samla upp spill.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS01",
+      "GHS02",
+      "GHS07",
+      "GHS08",
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.epa.gov/sites/default/files/2016-10/documents/manganese.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1155.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.102150+00:00"
+}

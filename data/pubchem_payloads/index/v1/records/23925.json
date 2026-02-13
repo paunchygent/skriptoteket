@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "cid": 23925,
+  "captured_at": "2026-01-31T14:35:09.755525+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23925",
+    "lcss_sha256": "1edfe655c0b736b1bab164b0c67a6839342c6a5939eaf7590968962a1e57e7af",
+    "linkout_sha256": "6daa16acc139e78f0fb0b593b5a4a4619d502918aed2528cc242faa9a014a09e",
+    "meta_sha256": "136f9c774e4bf769d7c5b4c79d9fd37e82948fc71c27e89f94671aad6e19de6f"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H228",
+      "H251",
+      "H319",
+      "H335"
+    ],
+    "hazard_statements_sv": {
+      "H228": "Brandfarligt fast ämne.",
+      "H251": "Självupphettande. Kan börja brinna.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H335": "Kan orsaka irritation i luftvägarna."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P235",
+      "P240",
+      "P241",
+      "P261",
+      "P264+P265",
+      "P271",
+      "P280",
+      "P304+P340",
+      "P305+P351+P338",
+      "P319",
+      "P337+P317",
+      "P370+P378",
+      "P403+P233",
+      "P405",
+      "P407",
+      "P410",
+      "P413",
+      "P420",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P235": "Förvaras svalt.",
+      "P240": "Jorda och potentialförbind behållare och mottagarutrustning.",
+      "P241": "* Använd explosionssäker [elektrisk/ventilations-/belysnings-/...]utrustning.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P319": "Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P407": "Se till att det finns luft mellan staplar eller pallar.",
+      "P410": "Skyddas från solljus.",
+      "P413": "* Bulkprodukter som väger mer än … kg/… lbs förvaras vid högst …°C/…°F.",
+      "P420": "Förvaras separat.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS02",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.010573+00:00"
+}

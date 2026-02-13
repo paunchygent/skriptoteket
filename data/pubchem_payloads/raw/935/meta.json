@@ -1,0 +1,34 @@
+{
+  "cid": 935,
+  "hazard_key": "Ni",
+  "display_name": "Nickel",
+  "captured_at": "2026-01-31T18:41:45.007186+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/935",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/935/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1326,
+      "file": "data/pubchem_payloads/raw/935/linkout.json",
+      "sha256": "d04bff0ebbab9d75ef0a926957901ad916dd3076d458bd517657dc62c9f3fd61"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/935/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 597188,
+      "file": "data/pubchem_payloads/raw/935/lcss.json",
+      "sha256": "e87115f53cdef474a76c3a9cccd88bec5d33a4fdffdc85ed8f1dcb80106a66cd"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/935/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 407738,
+      "file": "data/pubchem_payloads/raw/935/safety.json",
+      "sha256": "f6b410096a1c7fe351b117261074bbe67b34045fffe2530711891f1d82a96db9"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/935.png"
+}

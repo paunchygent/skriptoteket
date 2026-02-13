@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "cid": 24456,
+  "captured_at": "2026-01-31T14:44:27.603206+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24456",
+    "lcss_sha256": "96b4f4ddb46a0dbe1bf7f281e0807c3a58e13b7e8e4768a545ef5a5319a1f4b8",
+    "linkout_sha256": "81a5b5a8e1928352c5f3353765c5cb1b1a5b157fb0cea8dc06a072ef04a89b26",
+    "meta_sha256": "96ee325448a1a89ec94d281df6ba9140710c703b6f0090a89d58b64fc662d2de"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H318"
+    ],
+    "hazard_statements_sv": {
+      "H318": "Orsakar allvarliga ögonskador."
+    },
+    "precautionary_codes": [
+      "P264+P265",
+      "P280",
+      "P305+P354+P338",
+      "P317"
+    ],
+    "precautionary_statements_sv": {
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P317": "Sök läkarhjälp."
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.023886+00:00"
+}

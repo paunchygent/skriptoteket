@@ -1,0 +1,27 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 3939,
+    "ObjUrl": [
+      {
+        "Url": "http://sideeffects.embl.de/drugs/3939/",
+        "LinkName": "Side effects of LiOH",
+        "SubjectType": [
+          "biological properties"
+        ],
+        "Category": [
+          "Chemical Information"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "SIDER Side Effect Resource",
+          "NameAbbr": "SIDER",
+          "Id": "9337",
+          "Url": "http://sideeffects.embl.de"
+        }
+      }
+    ]
+  }
+}

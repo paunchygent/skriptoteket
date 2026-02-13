@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "cid": 5238,
+  "captured_at": "2026-01-31T21:18:58.853676+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5238",
+    "lcss_sha256": "48202261efc9c2206104e65d9c62b18eeb6ea0545b9d751d1d029dd7d33aa0c2",
+    "linkout_sha256": "96c5c586516987467ad8be9dd9909ba0d3318506d169c7fbc8b5a809065a5c6f",
+    "meta_sha256": "1032d646acd570b74c5e6d69d7851791969575d891cc3853d67676681faedb46"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H315",
+      "H319",
+      "H335",
+      "H372",
+      "H400",
+      "H411"
+    ],
+    "hazard_statements_sv": {
+      "H315": "Irriterar huden.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H335": "Kan orsaka irritation i luftvägarna.",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H400": "Mycket giftigt för vattenlevande organismer.",
+      "H411": "Giftigt för vattenlevande organismer med långtidseffekter."
+    },
+    "precautionary_codes": [
+      "P260",
+      "P261",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P271",
+      "P273",
+      "P280",
+      "P302+P352",
+      "P304+P340",
+      "P305+P351+P338",
+      "P319",
+      "P321",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P391",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P391": "Samla upp spill.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS07",
+      "GHS08",
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.120521+00:00"
+}

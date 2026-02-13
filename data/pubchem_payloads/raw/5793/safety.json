@@ -1,0 +1,1706 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 5793,
+    "RecordTitle": "D-Glucose",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 97.6% (946 of 969) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 86,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 946 of 969 companies (only 2.4% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 161,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/105062"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 46,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 969 reports by companies from 4 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 116,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 946 of 969 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 2 notifications provided by 23 of 969 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 99,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/105062"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 48,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 100% (3 of 3) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 48,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 3 of 3 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/244473"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 48,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 3 reports by companies from 1 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 114,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 3 of 3 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 76,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 0 notifications provided by 0 of 3 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 96,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/244473"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 49,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/47044"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 46,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 48,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 49,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EPA Safer Chemical",
+                "Description": "EPA labels products so that consumers can easily choose ones that are safer for people and the environment. When consumers see the Safer Choice label on a product, they can be confident that the ingredients have been through a rigorous EPA review. The label means that EPA scientists have evaluated every ingredient in the product to ensure it meets Safer Choice's stringent criteria. When people use Safer Choice products, they are protecting their families and the environment by making safer chemical choices.",
+                "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Name": "EPA Safer Chemical",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical: D-Glucose"
+                        },
+                        {
+                          "String": " Green circle - The chemical has been verified to be of low concern based on experimental and modeled data.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/epasafe/green.svg",
+                              "Type": "Icon",
+                              "Extra": "Green circle"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No toxicity (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Combustible. Finely dispersed particles form explosive mixtures in air."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Safety and Hazard Properties",
+            "Description": "This section lists the chemical's safety and hazard characteristics, such as the explosive/flammable limits, critical temperature and pressure, exposure limits, etc.",
+            "Section": [
+              {
+                "TOCHeading": "Physical Dangers",
+                "Description": "The possibility of physical injury or sickness that could result in grave physical harm or death.  An example of physical dangers is fire/explosion due to raw materials.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust explosion possible if in powder or granular form, mixed with air."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 81,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 81,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 81,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse mouth."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "None needed (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 81,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Use water spray, powder, foam, carbon dioxide.",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 31,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Suitable extinguishing media: Use water spray, alcohol-resistant foam, dry chemical or carbon dioxide.",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Advice for firefighters: Wear self-contained breathing apparatus for firefighting if necessary."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382",
+                        "Matched": {
+                          "PCLID": 900137088,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For any fire, wear a self-contained breathing apparatus (SCBA) in pressure-demand, MHSA/NIOSH (approved or equivalent), and full protective gear. ... On fire use water spray, dry chemical, carbon dioxide, or appropriate foam.",
+                          "Markup": [
+                            {
+                              "Start": 162,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 189,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sweep spilled substance into covered containers. Wash away remainder with plenty of water.",
+                          "Markup": [
+                            {
+                              "Start": 84,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ACCIDENTAL RELEASE MEASURES: Personal precautions, protective equipment and emergency procedures: Avoid dust formation. Avoid breathing vapors, mist or gas; Environmental precautions: No special environmental precautions required; Methods and materials for containment and cleaning up: Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382",
+                        "Matched": {
+                          "PCLID": 900137088,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Provide adequate ventilation. Avoid generating dust. Vacuum or sweep up material and place into a suitable disposal container. Clean up spills immediately, using the appropriate protective equipment."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Expired or waste pharmaceuticals shall carefully take into consideration applicable DEA, EPA, and FDA regulations. It is not appropriate to dispose by flushing the pharmaceutical down the toilet or discarding to trash. If possible return the pharmaceutical to the manufacturer for proper disposal being careful to properly label and securely package the material. Alternatively, the waste pharmaceutical shall be labeled, securely packaged and transported by a state licensed medical waste contractor to dispose by burial in a licensed hazardous or toxic waste landfill or incinerator."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Product: Offer surplus and non-recyclable solutions to a licensed disposal company; Contaminated packaging: Dispose of as unused product."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Precautions for safe handling: Further processing of solid materials may result in the formation of combustible dusts. The potential for combustible dust formation should be taken into consideration before additional processing occurs. Provide appropriate exhaust ventilation at places where dust is formed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Appropriate engineering controls: General industrial hygiene practice."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Gloves must be inspected prior to use. Use proper glove removal technique (without touching glove's outer surface) to avoid skin contact with this product. Dispose of contaminated gloves after use in accordance with applicable laws and good laboratory practices. Wash and dry hands."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants. Ensure that the local ventilation moves the contaminant away from the worker."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Safe Storage",
+                "Description": "Measures to take for safe storage of this chemical.",
+                "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Separated from strong oxidants. Well closed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep container tightly closed in a dry and well-ventilated place. Hygroscopic. Keep in a dry place."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382",
+                        "Matched": {
+                          "PCLID": 900137088,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "General storage may be used. Store in a cool, dry, well-ventilated area away from strong oxidizers, strong acids."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.950 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 8, 2016: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.950 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 8, 2016: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900000349,
+                          "Citation": "40 CFR 180.950 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 8, 2016: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Unless specifically excluded, residues resulting from the use of the following substance as either an inert or an active ingredient in a pesticide chemical formulation, including antimicrobial pesticide chemicals, is exempted from the requirement of a tolerance under FFDCA section 408, if such use is in accordance with good agricultural or manufacturing practices. Dextrose is included on this list.",
+                          "Markup": [
+                            {
+                              "Start": 367,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dextrose",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5793"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office.",
+                        "Matched": {
+                          "PCLID": 900163264,
+                          "Citation": "U.S. Coast Guard. 1999. Chemical Hazard Response Information System (CHRIS) - Hazardous Chemical Data. Commandant Instruction 16465.12C. Washington, D.C.: U.S. Government Printing Office."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "None needed (USCG, 1999)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye/face protection: Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin protection: Handle with gloves."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Body Protection: Choose body protection in relation to its type, to the concentration and amount of dangerous substances, and to the specific work-place. The type of protective equipment must be selected according to the concentration and amount of the dangerous substance at the specific workplace."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection: Respiratory protection is not required. Where protection from nuisance levels of dusts are desired, use type N95 (US) or type P1 (EN 143) dust masks. Use respirators and components tested and approved under appropriate government standards such as NIOSH (US) or CEN (EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382",
+                        "Matched": {
+                          "PCLID": 900137088,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eyes: Wear appropriate protective eyelgasses or chemical safety goggles as described by OSHA's eye and face protection regulations in 29 CFR 1910.133 or European Standard EN166. Skin: Protective garments not normally required. Clothing: Protective garments not normally required."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Prevention",
+                "Description": "Precautionary measures to prevent fires from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "NO open flames. Closed system, dust explosion-proof electrical equipment and lighting. Prevent deposition of dust."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use ventilation (not if powder)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 81,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety goggles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Water soluble."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Alcohols and Polyols"
+                        },
+                        {
+                          "String": "Water and Aqueous Solutions",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A weak reducing agent."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatible materials: Strong oxidizing agents"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 1861"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 1861",
+                        "Matched": {
+                          "PCLID": 900086643,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 1861"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Mixtures with alkali release carbon monoxide when heated.",
+                          "Markup": [
+                            {
+                              "Start": 29,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20monoxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-281"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 1861"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 1861",
+                        "Matched": {
+                          "PCLID": 900086643,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 1861"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potentially explosive reaction with potassium nitrate + sodium peroxide when heated in a sealed container.",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24434"
+                            },
+                            {
+                              "Start": 56,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14803"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-183"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-183",
+                        "Matched": {
+                          "PCLID": 900060494,
+                          "Citation": "National Fire Protection Association;  Fire Protection Guide to Hazardous Materials. 14TH Edition, Quincy, MA 2010, p. 491-183"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A micro Parr calorimeter exploded when the wrong proportions of /sodium peroxide, dextrose, and potassium nitrate/ were used. The intended mixture was 4.0 g sodium peroxide, 0.2 g dextrose, and 0.2 g potassium nitrate; actual proportions were 0.35 g, 2.59 g, and 0.2 g respectively. There was insufficient sodium peroxide to dissolve decomposition gases, hence a rapid temperature and pressure build-up caused the Parr bomb to burst.",
+                          "Markup": [
+                            {
+                              "Start": 65,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14803"
+                            },
+                            {
+                              "Start": 82,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/dextrose",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5793"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24434"
+                            },
+                            {
+                              "Start": 157,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14803"
+                            },
+                            {
+                              "Start": 180,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/dextrose",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5793"
+                            },
+                            {
+                              "Start": 200,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20nitrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24434"
+                            },
+                            {
+                              "Start": 306,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20peroxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14803"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382",
+                        "Matched": {
+                          "PCLID": 900137088,
+                          "Citation": "Pohanish, R.P. (ed). Sittig's Handbook of Toxic and  Hazardous Chemical Carcinogens 6th Edition Volume 1:  A-K,Volume 2: L-Z. William Andrew, Waltham, MA 2012, p. 1382"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dust may form explosive mixture with air. Dextrose is a weak reducing material; keep away from strong oxidizers, strong acids, halogenated agents, nitrates, and permanganates.",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dextrose",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5793"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: D-Glucose"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 126,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "D-Glucose: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/D-Glucose",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-5793"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.950 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 8, 2016: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.950 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 8, 2016: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900000349,
+                          "Citation": "40 CFR 180.950 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 8, 2016: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Unless specifically excluded, residues resulting from the use of the following substance as either an inert or an active ingredient in a pesticide chemical formulation, including antimicrobial pesticide chemicals, is exempted from the requirement of a tolerance under FFDCA section 408, if such use is in accordance with good agricultural or manufacturing practices. Dextrose is included on this list.",
+                          "Markup": [
+                            {
+                              "Start": 367,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dextrose",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5793"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 184.1857 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 16, 2016: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 184.1857 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 16, 2016: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900069114,
+                          "Citation": "21 CFR 184.1857 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of February 16, 2016: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Substance added directly to human food affirmed as generally recognized as safe (GRAS)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - D-Glucose: Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/D-Glucose",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-5793"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - D-Glucose: Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/D-Glucose",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-5793"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Toxic Combustion Products",
+                "Description": "Toxic products (e.g., gases and vapors) produced from the combustion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 64,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 906292028,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for D-(+)-Glucose. Product Number: G8270, Version 4.4 (Revision Date 01/14/2015). Available from, as of January 29, 2016: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Special hazards arising from the substance or mixture: Carbon oxides"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_421",
+        "Name": "D-Glucose",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39359849
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_421",
+        "Name": "D-Glucose",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39395369
+      },
+      {
+        "ReferenceNumber": 126,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "01591b7792cfd5c0b7088993b98c7102",
+        "Name": "D-Glucose",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37153111
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "18002",
+        "Name": "DEXTROSE SOLUTION",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/18002",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 757743
+      },
+      {
+        "ReferenceNumber": 64,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "489",
+        "Name": "D(+)-Glucose",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/489",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 427
+      },
+      {
+        "ReferenceNumber": 42,
+        "SourceName": "EPA Safer Choice",
+        "SourceID": "50-99-7",
+        "Name": "D-Glucose",
+        "Description": "The Safer Choice of the U.S. Environmental Protection Agency (EPA) helps consumers, businesses, and purchasers find products that perform and are safer for human health and the environment.",
+        "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 2128276
+      },
+      {
+        "ReferenceNumber": 46,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "105062",
+        "Name": "Glucose (EC: 200-075-1)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/105062",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 9276481,
+        "SortOrder": 3969
+      },
+      {
+        "ReferenceNumber": 48,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "244473",
+        "Name": "D-Glucose (EC: 807-615-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/244473",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 24838288,
+        "SortOrder": 3003
+      },
+      {
+        "ReferenceNumber": 49,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "47044",
+        "Name": "D-glucose (EC: 218-914-5)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/47044",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37168877,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 81,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0865",
+        "Name": "GLUCOSE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0865",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260741
+      }
+    ]
+  }
+}

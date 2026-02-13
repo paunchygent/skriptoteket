@@ -1,0 +1,34 @@
+{
+  "cid": 14013,
+  "hazard_key": "NH4HCO3",
+  "display_name": "Ammoniumvätekarbonat",
+  "captured_at": "2026-01-31T14:15:03.088123+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14013",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14013/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14013/linkout.json",
+      "sha256": "1f07849702983971c436299e716313fd3095617d3a6081cdf34b6789d566d395"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14013/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 152576,
+      "file": "data/pubchem_payloads/raw/14013/lcss.json",
+      "sha256": "0f68307b7d9bde679ad384ab0898be054748c6ee77a819717486d0a7dc9e3c08"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14013/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 127694,
+      "file": "data/pubchem_payloads/raw/14013/safety.json",
+      "sha256": "e0004c31d137aaacd60f1f793d5e29d2fcb23e7a565ac856fd785021f84be66c"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14013.png"
+}

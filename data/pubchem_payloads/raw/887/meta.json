@@ -1,0 +1,34 @@
+{
+  "cid": 887,
+  "hazard_key": "CH4O",
+  "display_name": "Metanol",
+  "captured_at": "2026-01-31T16:55:38.840115+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/887",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/887/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 691,
+      "file": "data/pubchem_payloads/raw/887/linkout.json",
+      "sha256": "f2b456a41142945f2eef97866990517efc929b595edc4792217e55c6fce6d8d3"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/887/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 623149,
+      "file": "data/pubchem_payloads/raw/887/lcss.json",
+      "sha256": "aa0ab016963cf98581721d06f3e655b6a93420e5a8e456441c9c6c9dc7aaf183"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/887/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 571479,
+      "file": "data/pubchem_payloads/raw/887/safety.json",
+      "sha256": "7c5464f8060db35cf9f6f14fa46035f4d2458c547d2d5801902d84441d159259"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/887.png"
+}

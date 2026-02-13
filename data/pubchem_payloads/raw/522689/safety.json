@@ -1,0 +1,3097 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 522689,
+    "RecordTitle": "Potassium Fluoride",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                              "Type": "Icon",
+                              "Extra": "Acute Toxic"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H301: Toxic if swallowed [Danger Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H311: Toxic in contact with skin [Danger Acute toxicity, dermal]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H331: Toxic if inhaled [Danger Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P261, P262, P264, P270, P271, P280, P301+P316, P302+P352, P304+P340, P316, P321, P330, P361+P364, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P262"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 69,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 75,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 81,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P361+P364"
+                            },
+                            {
+                              "Start": 98,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 109,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 119,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                              "Type": "Icon",
+                              "Extra": "Corrosive"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                              "Type": "Icon",
+                              "Extra": "Acute Toxic"
+                            },
+                            {
+                              "Start": 2,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H301+H311+H331 (33.9%): Toxic if swallowed, in contact with skin or if inhaled [Danger Acute toxicity, oral; acute toxicity, dermal; acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 80,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H301 (100%): Toxic if swallowed [Danger Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 33,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H311 (100%): Toxic in contact with skin [Danger Acute toxicity, dermal]",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H314 (11.1%): Causes severe skin burns and eye damage [Danger Skin corrosion/irritation]",
+                          "Markup": [
+                            {
+                              "Start": 55,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H318 (32.3%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 41,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H330 (11.1%): Fatal if inhaled [Danger Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 32,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H331 (88.9%): Toxic if inhaled [Danger Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 32,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H341 (11.1%): Suspected of causing genetic defects [Warning Germ cell mutagenicity]",
+                          "Markup": [
+                            {
+                              "Start": 52,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H361 (11.1%): Suspected of damaging fertility or the unborn child [Warning Reproductive toxicity]",
+                          "Markup": [
+                            {
+                              "Start": 67,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H372 (11.1%): Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                          "Markup": [
+                            {
+                              "Start": 78,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P203, P260, P261, P262, P264, P264+P265, P270, P271, P280, P284, P301+P316, P301+P330+P331, P302+P352, P302+P361+P354, P304+P340, P305+P354+P338, P316, P317, P318, P319, P320, P321, P330, P361+P364, P363, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P203"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P262"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 59,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P284"
+                            },
+                            {
+                              "Start": 65,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                            },
+                            {
+                              "Start": 76,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P330+P331"
+                            },
+                            {
+                              "Start": 92,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 103,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P361+P354"
+                            },
+                            {
+                              "Start": 119,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 130,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                            },
+                            {
+                              "Start": 146,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 152,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                            },
+                            {
+                              "Start": 158,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P318"
+                            },
+                            {
+                              "Start": 164,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                            },
+                            {
+                              "Start": 170,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P320"
+                            },
+                            {
+                              "Start": 176,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 182,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 188,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P361+P364"
+                            },
+                            {
+                              "Start": 199,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P363"
+                            },
+                            {
+                              "Start": 205,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 216,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 226,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 19,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 567 reports by companies from 8 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 177,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73516"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                              "Type": "Icon",
+                              "Extra": "Acute Toxic"
+                            },
+                            {
+                              "Start": 1,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                              "Type": "Icon",
+                              "Extra": "Environmental Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H301: Toxic if swallowed [Danger Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H401: Toxic to aquatic life [Hazardous to the aquatic environment, acute hazard]"
+                        },
+                        {
+                          "String": "H411: Toxic to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264, P270, P273, P301+P316, P321, P330, P391, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 35,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 41,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 57,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+                              "Type": "Icon",
+                              "Extra": "Acute Toxic"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H301: Toxic if swallowed [Danger Acute toxicity, oral]",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H311: Toxic in contact with skin [Danger Acute toxicity, dermal]",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H331: Toxic if inhaled [Danger Acute toxicity, inhalation]",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P261, P262, P264, P270, P271, P280, P301+P316, P302+P352, P304+P340, P316, P321, P330, P361+P364, P403+P233, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P262"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 18,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                            },
+                            {
+                              "Start": 30,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 36,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P301+P316"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                            },
+                            {
+                              "Start": 58,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                            },
+                            {
+                              "Start": 69,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P316"
+                            },
+                            {
+                              "Start": 75,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 81,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P330"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P361+P364"
+                            },
+                            {
+                              "Start": 98,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                            },
+                            {
+                              "Start": 109,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 119,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 19,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 3 (100%)"
+                        },
+                        {
+                          "String": "Acute Tox. 3 (100%)"
+                        },
+                        {
+                          "String": "Skin Corr. 1C (11.1%)"
+                        },
+                        {
+                          "String": "Eye Dam. 1 (32.3%)"
+                        },
+                        {
+                          "String": "Acute Tox. 2 (11.1%)"
+                        },
+                        {
+                          "String": "Acute Tox. 3 (88.9%)"
+                        },
+                        {
+                          "String": "Muta. 2 (11.1%)"
+                        },
+                        {
+                          "String": "Repr. 2 (11.1%)"
+                        },
+                        {
+                          "String": "STOT RE 1 (11.1%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity - category 3"
+                        },
+                        {
+                          "String": "Acute toxicity - category 3"
+                        },
+                        {
+                          "String": "Acute toxicity - category 3"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 29,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute toxicity (Oral) - Category 3"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Acute) - Category 2"
+                        },
+                        {
+                          "String": "Hazardous to the aquatic environment (Long-term) - Category 2"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Acute Tox. 3 *"
+                        },
+                        {
+                          "String": "Acute Tox. 3 *"
+                        },
+                        {
+                          "String": "Acute Tox. 3 *"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Hazard Classification",
+                "Description": "The U.S. Department of Transportation (DOT) categorizes hazardous materials into nine hazard classes for transportation purposes. This section provides the summary from the Hazardous Materials Table of the 49 eCFR § 172.101. For details, please visit https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-172 ",
+                "URL": "https://www.fmcsa.dot.gov/regulations/enforcement/nine-classes-hazardous-materials-yellow-visor-card",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Substance (Descriptions/Shipping Name)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potassium fluoride, solid"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "DOT ID (UN/NA Number)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "UN1812"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Hazard Class/Label Code(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Div 6.1 Poisonous materials (49 eCFR § 173.132)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Packing Group",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "PG III: the degree of danger presented by the material is minor"
+                        },
+                        {
+                          "String": "For more information about the packing group assignment, please visit 49 eCFR § 173",
+                          "Markup": [
+                            {
+                              "Start": 70,
+                              "Length": 14,
+                              "URL": "https://www.ecfr.gov/on/current/title-49/subtitle-B/chapter-I/subchapter-C/part-173"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "Placard/Label(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/dot/dot6.1iii.svg",
+                              "Type": "Icon",
+                              "Extra": "Poison"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 154 [Substances - Toxic and/or Corrosive (Non-Combustible)]:"
+                        },
+                        {
+                          "String": "TOXIC and/or CORROSIVE; inhalation, ingestion or skin contact with material may cause severe injury or death. Contact with molten substance may cause severe burns to skin and eyes. Avoid any skin contact. Fire may produce irritating, corrosive and/or toxic gases. Runoff from fire control or dilution water may be corrosive and/or toxic and cause environmental contamination. (ERG, 2024)",
+                          "Markup": [
+                            {
+                              "Start": 301,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· TOXIC and/or CORROSIVE; inhalation, ingestion or skin contact with material may cause severe injury or death."
+                        },
+                        {
+                          "String": "· Contact with molten substance may cause severe burns to skin and eyes."
+                        },
+                        {
+                          "String": "· Avoid any skin contact."
+                        },
+                        {
+                          "String": "· Fire may produce irritating, corrosive and/or toxic gases."
+                        },
+                        {
+                          "String": "· Runoff from fire control or dilution water may be corrosive and/or toxic and cause environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 14,
+                    "Name": "ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· TOXIC and/or CORROSIVE; inhalation, ingestion or skin contact with material may cause severe injury or death."
+                        },
+                        {
+                          "String": "· Contact with molten substance may cause severe burns to skin and eyes."
+                        },
+                        {
+                          "String": "· Avoid any skin contact."
+                        },
+                        {
+                          "String": "· Fire may produce irritating, corrosive and/or toxic gases."
+                        },
+                        {
+                          "String": "· Runoff from fire control or dilution water may be corrosive and/or toxic and cause environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 154 [Substances - Toxic and/or Corrosive (Non-Combustible)]:"
+                        },
+                        {
+                          "String": "Non-combustible, substance itself does not burn but may decompose upon heating to produce corrosive and/or toxic fumes. Some are oxidizers and may ignite combustibles (wood, paper, oil, clothing, etc.). Corrosives in contact with metals may evolve flammable hydrogen gas. Containers may explode when heated. For electric vehicles or equipment, ERG Guide 147 (lithium ion or sodium ion batteries) or ERG Guide 138 (sodium batteries) should also be consulted. (ERG, 2024)",
+                          "Markup": [
+                            {
+                              "Start": 258,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            },
+                            {
+                              "Start": 359,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/lithium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-28486"
+                            },
+                            {
+                              "Start": 374,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-923"
+                            },
+                            {
+                              "Start": 414,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sodium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Sodium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· Non-combustible, substance itself does not burn but may decompose upon heating to produce corrosive and/or toxic fumes."
+                        },
+                        {
+                          "String": "· Some are oxidizers and may ignite combustibles (wood, paper, oil, clothing, etc.)."
+                        },
+                        {
+                          "String": "· Corrosives in contact with metals may evolve flammable hydrogen gas.",
+                          "Markup": [
+                            {
+                              "Start": 57,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Containers may explode when heated."
+                        },
+                        {
+                          "String": "· For electric vehicles or equipment, GUIDE 147 (lithium ion or sodium ion batteries) or GUIDE 138 (sodium batteries) should also be consulted.",
+                          "Markup": [
+                            {
+                              "Start": 49,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/lithium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-28486"
+                            },
+                            {
+                              "Start": 64,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-923"
+                            },
+                            {
+                              "Start": 100,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sodium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Sodium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 14,
+                    "Name": "ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "· Non-combustible, substance itself does not burn but may decompose upon heating to produce corrosive and/or toxic fumes."
+                        },
+                        {
+                          "String": "· Some are oxidizers and may ignite combustibles (wood, paper, oil, clothing, etc.)."
+                        },
+                        {
+                          "String": "· Corrosives in contact with metals may evolve flammable hydrogen gas.",
+                          "Markup": [
+                            {
+                              "Start": 57,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Containers may explode when heated."
+                        },
+                        {
+                          "String": "· For electric vehicles or equipment, GUIDE 147 (lithium ion or sodium ion batteries) or GUIDE 138 (sodium batteries) should also be consulted.",
+                          "Markup": [
+                            {
+                              "Start": 49,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/lithium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-28486"
+                            },
+                            {
+                              "Start": 64,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-923"
+                            },
+                            {
+                              "Start": 100,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sodium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Sodium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Toxic by ingestion; A skin, eye, and mucous membrane irritant; Contact with molten substance can cause burns; Reacts with acids to produce toxic hydrogen fluoride gas; [CAMEO]",
+                          "Markup": [
+                            {
+                              "Start": 145,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14917"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "First Aid",
+                "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina.",
+                        "Matched": {
+                          "PCLID": 900163266,
+                          "Citation": "National Toxicology Program, Institute of Environmental Health Sciences, National Institutes of Health (NTP). 1992. National Toxicology Program Chemical Repository Database. Research Triangle Park, North Carolina."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EYES: First check the victim for contact lenses and remove if present. Flush victim's eyes with water or normal saline solution for 20 to 30 minutes while simultaneously calling a hospital or poison control center. Do not put any ointments, oils, or medication in the victim's eyes without specific instructions from a physician. IMMEDIATELY transport the victim after flushing eyes to a hospital even if no symptoms (such as redness or irritation) develop.",
+                          "Markup": [
+                            {
+                              "Start": 96,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 105,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/normal%20saline",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "SKIN: IMMEDIATELY flood affected skin with water while removing and isolating all contaminated clothing. Gently wash all affected skin areas thoroughly with soap and water. If symptoms such as redness or irritation develop, IMMEDIATELY call a physician and be prepared to transport the victim to a hospital for treatment.",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 166,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "INHALATION: IMMEDIATELY leave the contaminated area; take deep breaths of fresh air. If symptoms (such as wheezing, coughing, shortness of breath, or burning in the mouth, throat, or chest) develop, call a physician and be prepared to transport the victim to a hospital. Provide proper respiratory protection to rescuers entering an unknown atmosphere. Whenever possible, Self-Contained Breathing Apparatus (SCBA) should be used; if not available, use a level of protection greater than or equal to that advised under Protective Clothing."
+                        },
+                        {
+                          "String": "INGESTION: DO NOT INDUCE VOMITING. If the victim is conscious and not convulsing, give 1 or 2 glasses of water to dilute the chemical and IMMEDIATELY call a hospital or poison control center. Be prepared to transport the victim to a hospital if advised by a physician. If the victim is convulsing or unconscious, do not give anything by mouth, ensure that the victim's airway is open and lay the victim on his/her side with the head lower than the body. DO NOT INDUCE VOMITING. IMMEDIATELY transport the victim to a hospital. (NTP, 1992)",
+                          "Markup": [
+                            {
+                              "Start": 105,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "General First Aid:"
+                        },
+                        {
+                          "String": "· Call 911 or emergency medical service."
+                        },
+                        {
+                          "String": "· Ensure that medical personnel are aware of the material(s) involved, take precautions to protect themselves and avoid contamination."
+                        },
+                        {
+                          "String": "· Move victim to fresh air if it can be done safely."
+                        },
+                        {
+                          "String": "· Administer oxygen if breathing is difficult.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If victim is not breathing:"
+                        },
+                        {
+                          "String": "-- DO NOT perform mouth-to-mouth resuscitation; the victim may have ingestedor inhaled the substance."
+                        },
+                        {
+                          "String": "-- If equipped and pulse detected, wash face and mouth, then give artificial respiration using a proper respiratory medical device (bag-valve mask, pocket mask equipped with a one-way valve or other device)."
+                        },
+                        {
+                          "String": "-- If no pulse detected or no respiratory medical device available, provide continuouscompressions. Conduct a pulse check every two minutes or monitor for any signs of spontaneous respirations."
+                        },
+                        {
+                          "String": "· Remove and isolate contaminated clothing and shoes."
+                        },
+                        {
+                          "String": "· For minor skin contact, avoid spreading material on unaffected skin."
+                        },
+                        {
+                          "String": "· In case of contact with substance, remove immediately by flushing skin or eyes with running water for at least 20 minutes.",
+                          "Markup": [
+                            {
+                              "Start": 94,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· For severe burns, immediate medical attention is required."
+                        },
+                        {
+                          "String": "· Effects of exposure (inhalation, ingestion, or skin contact) to substance may be delayed."
+                        },
+                        {
+                          "String": "· Keep victim calm and warm."
+                        },
+                        {
+                          "String": "· Keep victim under observation."
+                        },
+                        {
+                          "String": "· For further assistance, contact your local Poison Control Center."
+                        },
+                        {
+                          "String": "· Note: Basic Life Support (BLS) and Advanced Life Support (ALS) should be done by trained professionals."
+                        },
+                        {
+                          "String": "Specific First Aid:"
+                        },
+                        {
+                          "String": "· For corrosives, in case of contact, immediately flush skin or eyes with running water for at least 30 minutes. Additional flushing may be required.",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "In Canada, an Emergency Response Assistance Plan (ERAP) may be required for this product. Please consult the shipping paper and/or the \"ERAP\" section."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 14,
+                    "Name": "ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "General First Aid:"
+                        },
+                        {
+                          "String": "· Call 911 or emergency medical service."
+                        },
+                        {
+                          "String": "· Ensure that medical personnel are aware of the material(s) involved, take precautions to protect themselves and avoid contamination."
+                        },
+                        {
+                          "String": "· Move victim to fresh air if it can be done safely."
+                        },
+                        {
+                          "String": "· Administer oxygen if breathing is difficult.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If victim is not breathing:"
+                        },
+                        {
+                          "String": "-- DO NOT perform mouth-to-mouth resuscitation; the victim may have ingestedor inhaled the substance."
+                        },
+                        {
+                          "String": "-- If equipped and pulse detected, wash face and mouth, then give artificial respiration using a proper respiratory medical device (bag-valve mask, pocket mask equipped with a one-way valve or other device)."
+                        },
+                        {
+                          "String": "-- If no pulse detected or no respiratory medical device available, provide continuouscompressions. Conduct a pulse check every two minutes or monitor for any signs of spontaneous respirations."
+                        },
+                        {
+                          "String": "· Remove and isolate contaminated clothing and shoes."
+                        },
+                        {
+                          "String": "· For minor skin contact, avoid spreading material on unaffected skin."
+                        },
+                        {
+                          "String": "· In case of contact with substance, remove immediately by flushing skin or eyes with running water for at least 20 minutes.",
+                          "Markup": [
+                            {
+                              "Start": 94,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· For severe burns, immediate medical attention is required."
+                        },
+                        {
+                          "String": "· Effects of exposure (inhalation, ingestion, or skin contact) to substance may be delayed."
+                        },
+                        {
+                          "String": "· Keep victim calm and warm."
+                        },
+                        {
+                          "String": "· Keep victim under observation."
+                        },
+                        {
+                          "String": "· For further assistance, contact your local Poison Control Center."
+                        },
+                        {
+                          "String": "· Note: Basic Life Support (BLS) and Advanced Life Support (ALS) should be done by trained professionals."
+                        },
+                        {
+                          "String": "Specific First Aid:"
+                        },
+                        {
+                          "String": "· For corrosives, in case of contact, immediately flush skin or eyes with running water for at least 30 minutes. Additional flushing may be required.",
+                          "Markup": [
+                            {
+                              "Start": 82,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "In Canada, an Emergency Response Assistance Plan (ERAP) may be required for this product. Please consult the shipping paper and/or the \"ERAP\" section."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Reference": [
+                  "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                    "Matched": {
+                      "PCLID": 900163263,
+                      "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Excerpt from ERG Guide 154 [Substances - Toxic and/or Corrosive (Non-Combustible)]:"
+                    },
+                    {
+                      "String": "SMALL FIRE: Dry chemical, CO2 or water spray.",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "LARGE FIRE: Dry chemical, CO2, alcohol-resistant foam or water spray. If it can be done safely, move undamaged containers away from the area around the fire. Dike runoff from fire control for later disposal.",
+                      "Markup": [
+                        {
+                          "Start": 57,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "FIRE INVOLVING TANKS, RAIL TANK CARS OR HIGHWAY TANKS: Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles. Do not get water inside containers. Cool containers with flooding quantities of water until well after fire is out. Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank. ALWAYS stay away from tanks in direct contact with flames. (ERG, 2024)",
+                      "Markup": [
+                        {
+                          "Start": 157,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 226,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 13,
+                "Name": "Public Safety: ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· CALL 911. Then call emergency response telephone number on shipping paper. If shipping paper not available or no answer, refer to appropriate telephone number listed on the inside back cover."
+                    },
+                    {
+                      "String": "· Keep unauthorized personnel away."
+                    },
+                    {
+                      "String": "· Stay upwind, uphill and/or upstream."
+                    },
+                    {
+                      "String": "· Ventilate closed spaces before entering, but only if properly trained and equipped."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "Spill or Leak: ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· ELIMINATE all ignition sources (no smoking, flares, sparks or flames) from immediate area."
+                    },
+                    {
+                      "String": "· Do not touch damaged containers or spilled material unless wearing appropriate protective clothing."
+                    },
+                    {
+                      "String": "· Stop leak if you can do it without risk."
+                    },
+                    {
+                      "String": "· Prevent entry into waterways, sewers, basements or confined areas."
+                    },
+                    {
+                      "String": "· Absorb or cover with dry earth, sand or other non-combustible material and transfer to containers."
+                    },
+                    {
+                      "String": "· DO NOT GET WATER INSIDE CONTAINERS.",
+                      "Markup": [
+                        {
+                          "Start": 13,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Public Safety: ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· CALL 911. Then call emergency response telephone number on shipping paper. If shipping paper not available or no answer, refer to appropriate telephone number listed on the inside back cover."
+                    },
+                    {
+                      "String": "· Keep unauthorized personnel away."
+                    },
+                    {
+                      "String": "· Stay upwind, uphill and/or upstream."
+                    },
+                    {
+                      "String": "· Ventilate closed spaces before entering, but only if properly trained and equipped."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Spill or Leak: ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· ELIMINATE all ignition sources (no smoking, flares, sparks or flames) from immediate area."
+                    },
+                    {
+                      "String": "· Do not touch damaged containers or spilled material unless wearing appropriate protective clothing."
+                    },
+                    {
+                      "String": "· Stop leak if you can do it without risk."
+                    },
+                    {
+                      "String": "· Prevent entry into waterways, sewers, basements or confined areas."
+                    },
+                    {
+                      "String": "· Absorb or cover with dry earth, sand or other non-combustible material and transfer to containers."
+                    },
+                    {
+                      "String": "· DO NOT GET WATER INSIDE CONTAINERS.",
+                      "Markup": [
+                        {
+                          "Start": 13,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Isolation and Evacuation",
+                "Description": "Isolation and evacuation measures to take when a large amount of this chemical is accidentally released in an emergency.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 154 [Substances - Toxic and/or Corrosive (Non-Combustible)]:"
+                        },
+                        {
+                          "String": "IMMEDIATE PRECAUTIONARY MEASURE: Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "SPILL: Increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "FIRE: If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "Evacuation: ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Immediate precautionary measure"
+                        },
+                        {
+                          "String": "· Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "Spill"
+                        },
+                        {
+                          "String": "· For highlighted materials: see Table 1 - Initial Isolation and Protective Action Distances."
+                        },
+                        {
+                          "String": "· For non-highlighted materials: increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "Fire"
+                        },
+                        {
+                          "String": "· If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 14,
+                    "Name": "Evacuation: ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Immediate precautionary measure"
+                        },
+                        {
+                          "String": "· Isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids."
+                        },
+                        {
+                          "String": "Spill"
+                        },
+                        {
+                          "String": "· For highlighted materials: see Table 1 - Initial Isolation and Protective Action Distances."
+                        },
+                        {
+                          "String": "· For non-highlighted materials: increase the immediate precautionary measure distance, in the downwind direction, as necessary."
+                        },
+                        {
+                          "String": "Fire"
+                        },
+                        {
+                          "String": "· If tank, rail tank car or highway tank is involved in a fire, ISOLATE for 800 meters (1/2 mile) in all directions; also, consider initial evacuation for 800 meters (1/2 mile) in all directions."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational exposure or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal, aquatic, and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 399,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Nonfire Spill Response",
+                "Description": "Emergency response measures to take in the event of a chemical spill (without a fire).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 154 [Substances - Toxic and/or Corrosive (Non-Combustible)]:"
+                        },
+                        {
+                          "String": "ELIMINATE all ignition sources (no smoking, flares, sparks or flames) from immediate area. Do not touch damaged containers or spilled material unless wearing appropriate protective clothing. Stop leak if you can do it without risk. Prevent entry into waterways, sewers, basements or confined areas. Absorb or cover with dry earth, sand or other non-combustible material and transfer to containers. DO NOT GET WATER INSIDE CONTAINERS. (ERG, 2024)",
+                          "Markup": [
+                            {
+                              "Start": 409,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 13,
+                "Name": "Protective Clothing: ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· Wear positive pressure self-contained breathing apparatus (SCBA)."
+                    },
+                    {
+                      "String": "· Wear chemical protective clothing that is specifically recommended by the manufacturer when there is NO RISK OF FIRE."
+                    },
+                    {
+                      "String": "· Structural firefighters' protective clothing provides thermal protection but only limited chemical protection."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Protective Clothing: ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "· Wear positive pressure self-contained breathing apparatus (SCBA)."
+                    },
+                    {
+                      "String": "· Wear chemical protective clothing that is specifically recommended by the manufacturer when there is NO RISK OF FIRE."
+                    },
+                    {
+                      "String": "· Structural firefighters' protective clothing provides thermal protection but only limited chemical protection."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Exposure Summary",
+                "Reference": [
+                  "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.",
+                    "Matched": {
+                      "PCLID": 900176185,
+                      "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Biological Exposure Indices (BEI) [ACGIH] - Fluorides in urine = 2 mg/L prior to shift or 3 mg/L at end of shift; (Repeated measurements recommended.)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Name": "Maximum Allowable Concentration (MAK)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1.0 [mg/m3], as F, inhalable fraction[German Research Foundation (DFG)]"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2.5 [mg/m3], as F"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "2.5 [mg/m3], as F"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Emergency Response Planning Guidelines",
+                "Description": "Emergency Response Planning Guidelines (ERPGs) are air concentration guidelines for single exposures to agents, developed by the American Industrial Hygiene Association (AIHA).  They are intended for use as tools to assess the adequacy of accident prevention and emergency response plans, including transportation emergency planning, community emergency response plans, and incident prevention and mitigation.  ERPGs estimate the concentrations at which most people will begin to experience health effects if they are exposed to a hazardous airborne chemical for 1 hour. (Sensitive members of the public, such as old, sick, or very young people, aren't covered by these guidelines and they may experience adverse effects at concentrations below the ERPG values.) A chemical may have up to three ERPG values, each of which corresponds to a specific tier of health effects. ",
+                "URL": "https://www.aiha.org/get-involved/aiha-guideline-foundation/erpgs",
+                "Information": [
+                  {
+                    "ReferenceNumber": 13,
+                    "Name": "Emergency Response: ERG2024, Guide 154 (Potassium fluoride, solution; Potassium fluoride, solid)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Small Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, CO2 or water spray.",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Large Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, CO2, alcohol-resistant foam or water spray.",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If it can be done safely, move undamaged containers away from the area around the fire."
+                        },
+                        {
+                          "String": "· Dike runoff from fire control for later disposal."
+                        },
+                        {
+                          "String": "Fire Involving Tanks, Rail Tank Cars or Highway Tanks"
+                        },
+                        {
+                          "String": "· Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles."
+                        },
+                        {
+                          "String": "· Do not get water inside containers.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Cool containers with flooding quantities of water until well after fire is out.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank."
+                        },
+                        {
+                          "String": "· ALWAYS stay away from tanks in direct contact with flames."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 14,
+                    "Name": "Emergency Response: ERG2024, Guide 154 (Potassium fluoride, solid; Potassium fluoride, solution)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Small Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, CO2 or water spray.",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Large Fire"
+                        },
+                        {
+                          "String": "· Dry chemical, CO2, alcohol-resistant foam or water spray.",
+                          "Markup": [
+                            {
+                              "Start": 47,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· If it can be done safely, move undamaged containers away from the area around the fire."
+                        },
+                        {
+                          "String": "· Dike runoff from fire control for later disposal."
+                        },
+                        {
+                          "String": "Fire Involving Tanks, Rail Tank Cars or Highway Tanks"
+                        },
+                        {
+                          "String": "· Fight fire from maximum distance or use unmanned master stream devices or monitor nozzles."
+                        },
+                        {
+                          "String": "· Do not get water inside containers.",
+                          "Markup": [
+                            {
+                              "Start": 13,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Cool containers with flooding quantities of water until well after fire is out.",
+                          "Markup": [
+                            {
+                              "Start": 46,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "· Withdraw immediately in case of rising sound from venting safety devices or discoloration of tank."
+                        },
+                        {
+                          "String": "· ALWAYS stay away from tanks in direct contact with flames."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Reference": [
+                      "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg",
+                        "Matched": {
+                          "PCLID": 900163263,
+                          "Citation": "2024 Emergency Response Guidebook,  https://www.phmsa.dot.gov/training/hazmat/erg/emergency-response-guidebook-erg"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from ERG Guide 154 [Substances - Toxic and/or Corrosive (Non-Combustible)]:"
+                        },
+                        {
+                          "String": "Wear positive pressure self-contained breathing apparatus (SCBA). Wear chemical protective clothing that is specifically recommended by the manufacturer when there is NO RISK OF FIRE. Structural firefighters' protective clothing provides thermal protection but only limited chemical protection. (ERG, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Air and Water Reactions",
+                "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Deliquescent. Water soluble.",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactive Group",
+                "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Salts, Basic"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Reactivity Profile",
+                "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "POTASSIUM FLUORIDE reacts with acids to evolve corrosive and toxic hydrogen fluoride. Aqueous solutions corrode glass and consequently are prepared and stored in polyethylene containers. The pure solid may be stored in glass containers. Reacts violently with (Pt + BrF3). [NTP 1992].",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/POTASSIUM%20FLUORIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 67,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/hydrogen%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-14917"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Fire Protection Guide to Hazardous Materials. 13 ed. Quincy, MA: National Fire Protection Association, 2002., p. 491-152"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Fire Protection Guide to Hazardous Materials. 13 ed. Quincy, MA: National Fire Protection Association, 2002., p. 491-152",
+                        "Matched": {
+                          "PCLID": 900080333,
+                          "Citation": "Fire Protection Guide to Hazardous Materials. 13 ed. Quincy, MA: National Fire Protection Association, 2002., p. 491-152"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Platinum is attacked by bromine trifluoride at 280 °C in presence of potassium fluoride.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Platinum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Platinum"
+                            },
+                            {
+                              "Start": 24,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/bromine%20trifluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24594"
+                            },
+                            {
+                              "Start": 69,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Transport Information",
+            "Description": "Transport information lists the U.S. Department of Transportation (DOT) requirements and related information for shipping and transporting of hazardous chemical(s) by road, air, rail, or sea.",
+            "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+            "Section": [
+              {
+                "TOCHeading": "DOT Emergency Guidelines",
+                "Description": "U.S. Department of Transportation (DOT) Emergency Guidelines for this chemical.  The information in this section is collected from the Hazardous Substances Data Bank (HSDB).  For updated emergency guidelines, see the DOT Emergency Response Guidebook.",
+                "URL": "https://www.phmsa.dot.gov/hazmat/erg/emergency-response-guidebook-erg",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154 SUBSTANCES - TOXIC and/or CORROSIVE (Non-Combustible)/ Fire or Explosion: Non-combustible, substance itself does not burn but may decompose upon heating to produce corrosive and/or toxic fumes. Some are oxidizers and may ignite combustibles (wood, paper, oil, clothing, etc.). Contact with metals may evolve flammable hydrogen gas. Containers may explode when heated. For UN3171, if Lithium ion batteries are involved, also consult GUIDE 147. /Potassium fluoride; Potassium fluoride, solid; Potassium fluoride, solution/",
+                          "Markup": [
+                            {
+                              "Start": 329,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Hydrogen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Hydrogen"
+                            },
+                            {
+                              "Start": 394,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Lithium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-28486"
+                            },
+                            {
+                              "Start": 455,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 475,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 502,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154 SUBSTANCES - TOXIC and/or CORROSIVE (Non-Combustible)/ Health: TOXIC; inhalation, ingestion or skin contact with material may cause severe injury or death. Contact with molten substance may cause severe burns to skin and eyes. Avoid any skin contact. Effects of contact or inhalation may be delayed. Fire may produce irritating, corrosive and/or toxic gases. Runoff from fire control or dilution water may be corrosive and/or toxic and cause pollution. /Potassium fluoride; Potassium fluoride, solid; Potassium fluoride, solution/",
+                          "Markup": [
+                            {
+                              "Start": 407,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 465,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 485,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 512,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154 SUBSTANCES - TOXIC and/or CORROSIVE (Non-Combustible)/ Public Safety: CALL Emergency Response Telephone Number on Shipping Paper first. If Shipping Paper not available or no answer, refer to appropriate telephone number listed on the inside back cover. As an immediate precautionary measure, isolate spill or leak area in all directions for at least 50 meters (150 feet) for liquids and at least 25 meters (75 feet) for solids. Keep unauthorized personnel away. Stay upwind. Keep out of low areas. Ventilate enclosed areas. /Potassium fluoride; Potassium fluoride, solid; Potassium fluoride, solution/",
+                          "Markup": [
+                            {
+                              "Start": 536,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 556,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 583,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012",
+                        "Matched": {
+                          "PCLID": 906286112,
+                          "Citation": "U.S. Department of Transportation. 2012 Emergency Response Guidebook. Washington, D.C. 2012"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/GUIDE 154 SUBSTANCES - TOXIC and/or CORROSIVE (Non-Combustible)/ Protective Clothing: Wear positive pressure self-contained breathing apparatus (SCBA). Wear chemical protective clothing that is specifically recommended by the manufacturer. It may provide little or no thermal protection. Structural firefighters' protective clothing provides limited protection in fire situations ONLY; it is not effective in spill situations where direct contact with the substance is possible. /Potassium fluoride; Potassium fluoride, solid; Potassium fluoride, solution/",
+                          "Markup": [
+                            {
+                              "Start": 481,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 501,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 528,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more DOT Emergency Guidelines (Complete) data for POTASSIUM FLUORIDE (8 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 101,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/7481#section=DOT-Emergency-Guidelines-(Complete)"
+                            },
+                            {
+                              "Start": 54,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/POTASSIUM%20FLUORIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Shipment Methods and Regulations",
+                "Description": "Shipment methods and regulations of this compound.  The information in this section includes the U.S. Hazardous Materials Regulations (49 CFR Subchapter C), the International Air Transport Association (IATA) Dangerous Goods Regulations, the International Maritime Dangerous Goods (IMDG) Code, and other regulations.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "49 CFR 171.2 (USDOT); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of December 8, 2015: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "49 CFR 171.2 (USDOT); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of December 8, 2015: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900045172,
+                          "Citation": "49 CFR 171.2 (USDOT); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of December 8, 2015: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No person may /transport,/ offer or accept a hazardous material for transportation in commerce unless that person is registered in conformance ... and the hazardous material is properly classed, described, packaged, marked, labeled, and in condition for shipment as required or authorized by ... /the hazardous materials regulations (49 CFR 171-177)./"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Air Transport Association. Dangerous Goods Regulations. 55th Edition. Montreal, Quebec Canada. 2014., p. 292"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Air Transport Association. Dangerous Goods Regulations. 55th Edition. Montreal, Quebec Canada. 2014., p. 292",
+                        "Matched": {
+                          "PCLID": 900099110,
+                          "Citation": "International Air Transport Association. Dangerous Goods Regulations. 55th Edition. Montreal, Quebec Canada. 2014., p. 292"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Air Transport Association (IATA) Dangerous Goods Regulations are published by the IATA Dangerous Goods Board pursuant to IATA Resolutions 618 and 619 and constitute a manual of industry carrier regulations to be followed by all IATA Member airlines when transporting hazardous materials. Potassium fluoride, solid and potassium fluoride solution are included on the dangerous goods list.",
+                          "Markup": [
+                            {
+                              "Start": 306,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 336,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "International Maritime Organization. IMDG Code.  International Maritime Dangerous Goods Code Volume 2 2012, p. 91, 189"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Maritime Organization. IMDG Code.  International Maritime Dangerous Goods Code Volume 2 2012, p. 91, 189",
+                        "Matched": {
+                          "PCLID": 906276849,
+                          "Citation": "International Maritime Organization. IMDG Code.  International Maritime Dangerous Goods Code Volume 2 2012, p. 91, 189"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The International Maritime Dangerous Goods Code lays down basic principles for transporting hazardous chemicals. Detailed recommendations for individual substances and a number of recommendations for good practice are included in the classes dealing with such substances. A general index of technical names has also been compiled. This index should always be consulted when attempting to locate the appropriate procedures to be used when shipping any substance or article. Potassium fluoride, solid and potassium fluoride solution are included on the dangerous goods list.",
+                          "Markup": [
+                            {
+                              "Start": 473,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            },
+                            {
+                              "Start": 503,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20fluoride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-522689"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "DOT Label",
+                "Description": "U.S. Department of Transportation (DOT) hazard warning label for the chemical (such as flammable liquid or corrosive). This label must be displayed on shipped packages, railroad tank cars, and tank trucks according to specifications described in 49 CFR 172.",
+                "URL": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+                "Information": [
+                  {
+                    "ReferenceNumber": 3,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Poison"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Potassium fluoride (KF)",
+                      "Markup": [
+                        {
+                          "Start": 10,
+                          "Length": 18,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-522689"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 01-08-2022 https://echa.europa.eu/registration-dossier/-/registered-dossier/13156",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/13156"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Cease Manufacture Update: 23-05-2018 https://echa.europa.eu/registration-dossier/-/registered-dossier/25032",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/25032"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 28,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Potassium fluoride: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 18,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-522689"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Name": "New Jersey Worker and Community Right to Know Act",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The New Jersey Worker and Community Right to Know Act requires public and private employers to provide information about hazardous substances at their workplaces. (N.J.S.A. 34:5A-1 et. seq.)",
+                      "Markup": [
+                        {
+                          "Start": 164,
+                          "Length": 25,
+                          "URL": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Potassium fluoride (KF): Human health tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 18,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-522689"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "IMAP assessments - Potassium fluoride (KF): Environment tier I assessment",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 18,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20fluoride",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-522689"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11400",
+        "Name": "Potassium fluoride (KF)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39368016
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11400",
+        "Name": "Potassium fluoride (KF)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400625
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "232-151-5",
+        "Name": "Potassium fluoride",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.029.228",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981456
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "dc978db3d459dc9aaab0b5e0dcaff081",
+        "Name": "Potassium fluoride",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162468
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "NJDOH RTK Hazardous Substance List",
+        "SourceID": "1565",
+        "Name": "potassium fluoride",
+        "Description": "New Jersey Department of Health, Right to Know Hazardous Substance List, read more: https://www.nj.gov/health/workplacehealthandsafety/right-to-know/hazardous-substances/",
+        "URL": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1565.pdf",
+        "LicenseURL": "https://www.nj.gov/nj/legal.html",
+        "ANID": 2270178
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "1361",
+        "Name": "POTASSIUM FLUORIDE",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/1361",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 760475
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "Emergency Response Guidebook (ERG)",
+        "SourceID": "96b9992c51d696b249b2e43609aca09f",
+        "Name": "Potassium fluoride",
+        "Description": "The Emergency Response Guidebook 2024 provides first responders with a manual intended for use during the initial phase of a transportation incident involving hazardous materials/dangerous goods. PubChem integration of ERG information provides more opportunities for users/first responders to find ERG data and additional safety, toxicity, and more chemical information. For more information, please visit ERG and/or the ERG summary table (https://pubchem.ncbi.nlm.nih.gov/erg/).",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/erg/",
+        "LicenseURL": "https://www.transportation.gov/web-policies",
+        "ANID": 39280259
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "Emergency Response Guidebook (ERG)",
+        "SourceID": "d18b66338585c47287421c5d1be9bf97",
+        "Name": "Potassium fluoride",
+        "Description": "The Emergency Response Guidebook 2024 provides first responders with a manual intended for use during the initial phase of a transportation incident involving hazardous materials/dangerous goods. PubChem integration of ERG information provides more opportunities for users/first responders to find ERG data and additional safety, toxicity, and more chemical information. For more information, please visit ERG and/or the ERG summary table (https://pubchem.ncbi.nlm.nih.gov/erg/).",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/erg/",
+        "LicenseURL": "https://www.transportation.gov/web-policies",
+        "ANID": 39281477
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2225",
+        "Name": "Potassium fluoride",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2225",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277719
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council",
+        "SourceID": "009-005-00-2",
+        "Name": "potassium fluoride",
+        "Description": "Regulation (EC) No 1272/2008 of the European Parliament and of the Council of 16 December 2008 on classification, labelling and packaging of substances and mixtures.",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2008/1272/oj",
+        "LicenseNote": "The copyright for the editorial content of this source, the summaries of EU legislation and the consolidated texts, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence.",
+        "LicenseURL": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+        "ANID": 391848,
+        "SortOrder": 100000
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "73516",
+        "Name": "Potassium fluoride (EC: 232-151-5)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/73516",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1872851,
+        "SortOrder": 3567
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "NITE-CMC",
+        "SourceID": "20A2245",
+        "Name": "potassium fluoride - FY2008 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/08-mhlw-0241e.html",
+        "ANID": 2265241,
+        "SortOrder": 2008
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "Hazardous Chemical Information System (HCIS), Safe Work Australia",
+        "SourceID": "3619",
+        "Name": "potassium fluoride",
+        "Description": "The Hazardous Chemical Information System (HCIS) at the Safe Work Australia is a database of chemical classifications and workplace exposure standards. It allows users to find information on chemicals that have been classified in accordance with the GHS or which have an Australian Workplace Exposure Standard.",
+        "URL": "http://hcis.safeworkaustralia.gov.au/HazardousChemical/Details?chemicalID=3619",
+        "ANID": 2282356,
+        "SortOrder": 10
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "7481",
+        "Name": "POTASSIUM FLUORIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/7481",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 5045
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "US Code of Federal Regulations, Hazardous Materials, 49 CFR Part 172",
+        "SourceID": "7b01985d5c9c89277ba67407751eb53b",
+        "Name": "Potassium fluoride, solid",
+        "Description": "The DOT hazard classification information are extracted from the 49 eCFR § 172.101 Hazardous Materials Table. More details can be found at the original website from the URL above.",
+        "URL": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C/part-172/subpart-B/section-172.101",
+        "LicenseURL": "https://www.ecfr.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site#legal-status",
+        "ANID": 49731921
+      }
+    ]
+  }
+}

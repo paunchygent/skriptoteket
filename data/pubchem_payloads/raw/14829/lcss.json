@@ -1,0 +1,423 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 14829,
+    "RecordTitle": "Copper oxide",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 23,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=163686-95-1",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "163686-95-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 3,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=1317-38-0",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-38-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-38-0"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Name": "CAS",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317380"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "oxocopper"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Copper oxide"
+                    },
+                    {
+                      "String": "Cu-O Linkage"
+                    },
+                    {
+                      "String": "Copper (II) oxide"
+                    },
+                    {
+                      "String": "Cupric oxide wire"
+                    },
+                    {
+                      "String": "CuO"
+                    },
+                    {
+                      "String": "Paramelaconite"
+                    },
+                    {
+                      "String": "Caswell No. 265"
+                    },
+                    {
+                      "String": "MFCD00010979"
+                    },
+                    {
+                      "String": "163686-95-1"
+                    },
+                    {
+                      "String": "HSDB 266"
+                    },
+                    {
+                      "String": "EINECS 215-269-1"
+                    },
+                    {
+                      "String": "NSC 83537"
+                    },
+                    {
+                      "String": "EPA Pesticide Chemical Code 042401"
+                    },
+                    {
+                      "String": "UNII-V1XJQ704R4"
+                    },
+                    {
+                      "String": "copper-oxygen"
+                    },
+                    {
+                      "String": "copper(II)oxide"
+                    },
+                    {
+                      "String": "Copper II Oxide"
+                    },
+                    {
+                      "String": "Copper Oxide Ink"
+                    },
+                    {
+                      "String": "Copper oxide, CuO"
+                    },
+                    {
+                      "String": "Copper Oxide Powder"
+                    },
+                    {
+                      "String": "copper-(II) oxide"
+                    },
+                    {
+                      "String": "Copper Oxide Dispersion"
+                    },
+                    {
+                      "String": "Copper Oxide Nanopowder"
+                    },
+                    {
+                      "String": "Cupric Oxide Nanopowder"
+                    },
+                    {
+                      "String": "Copper oxide nano-chains"
+                    },
+                    {
+                      "String": "Copper(II) oxide, CP"
+                    },
+                    {
+                      "String": "EC 215-269-1"
+                    },
+                    {
+                      "String": "SCHEMBL22084"
+                    },
+                    {
+                      "String": "Copper(II) oxide, Puratronic?"
+                    },
+                    {
+                      "String": "Copper Oxide Powder, 99+% Nano"
+                    },
+                    {
+                      "String": "Copper oxide nanopowder (~40 nm)"
+                    },
+                    {
+                      "String": "Copper(II) oxide, LR, >=97%"
+                    },
+                    {
+                      "String": "AKOS015950660"
+                    },
+                    {
+                      "String": "Copper(II) oxide (99.995%-Cu)"
+                    },
+                    {
+                      "String": "FC160925"
+                    },
+                    {
+                      "String": "Copper(II) oxide, ACS reagent, >=99.0%"
+                    },
+                    {
+                      "String": "Copper(II) oxide, powder, <10 mum, 98%"
+                    },
+                    {
+                      "String": "CS-0016015"
+                    },
+                    {
+                      "String": "NS00075647"
+                    },
+                    {
+                      "String": "Chromium Silicide (CrSi2) Sputtering Targets"
+                    },
+                    {
+                      "String": "Copper(II) oxide, >=99.0% (RT), granular"
+                    },
+                    {
+                      "String": "Copper(II) oxide, 99.999% trace metals basis"
+                    },
+                    {
+                      "String": "Copper(II) oxide, p.a., ACS reagent, 99.0%"
+                    },
+                    {
+                      "String": "EN300-1692612"
+                    },
+                    {
+                      "String": "Q27458610"
+                    },
+                    {
+                      "String": "Copper(II) oxide, powder, 99.99% trace metals basis"
+                    },
+                    {
+                      "String": "Copper(II) oxide, powder, 99.995% trace metals basis"
+                    },
+                    {
+                      "String": "Copper(II) oxide, nanopowder, <50 nm particle size (TEM)"
+                    },
+                    {
+                      "String": "Copper(II) oxide, puriss. p.a., >=99.0% (RT), powder"
+                    },
+                    {
+                      "String": "Copper(II) oxide, nanotubes, diam. x L 10-12 nm x 75-100 nm"
+                    },
+                    {
+                      "String": "Copper(II) oxide on alumina, 14-20 mesh, extent of labeling: 13 wt. % loading"
+                    },
+                    {
+                      "String": "Cupric oxide purified, Ultra pure, Powder, Low heavy metals (As: <= 1 ppm, Cd: <= 0.5 ppm, Pb: <= 1 ppm & Hg: <= 0.1 ppm)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CuO"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "79.55"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/Cu.O"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "QPLDLSVMHZLSFG-UHFFFAOYSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "163686-95-1",
+        "Name": "Copper oxide (Cu2O3)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=163686-95-1",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12666948
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "1317-38-0",
+        "Name": "Copper oxide (CuO)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=1317-38-0",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12809262
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0001317380",
+        "Name": "Copper(II) oxide",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0001317380",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 784838
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "DTP/NCI",
+        "SourceID": "NSC 83537",
+        "Name": "Copper(II) oxide",
+        "Description": "The NCI Development Therapeutics Program (DTP) provides services and resources to the academic and private-sector research communities worldwide to facilitate the discovery and development of new cancer therapeutic agents.",
+        "URL": "https://dtp.cancer.gov/dtpstandard/servlet/dwindex?searchtype=NSC&outputformat=html&searchlist=83537",
+        "LicenseNote": "Unless otherwise indicated, all text within NCI products is free of copyright and may be reused without our permission. Credit the National Cancer Institute as the source.",
+        "LicenseURL": "https://www.cancer.gov/policies/copyright-reuse",
+        "ANID": 6824126
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

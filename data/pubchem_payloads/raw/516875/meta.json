@@ -1,0 +1,34 @@
+{
+  "cid": 516875,
+  "hazard_key": "KMnO4",
+  "display_name": "Kaliumpermanganat",
+  "captured_at": "2026-01-31T15:14:06.643817+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516875",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/516875/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 697,
+      "file": "data/pubchem_payloads/raw/516875/linkout.json",
+      "sha256": "a7b006b977f8c0f43d477aa91165240b07a81edd139339a416806ffe411c0286"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516875/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 245863,
+      "file": "data/pubchem_payloads/raw/516875/lcss.json",
+      "sha256": "343f5d39f5a93478a07da8f77c82d6f23f4a6a3f4f6c12fcf542e02306689edf"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516875/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 272053,
+      "file": "data/pubchem_payloads/raw/516875/safety.json",
+      "sha256": "aa4eb84dd4b10a580ca1ef1e2e135ba814ef382e59813643036501973a57a263"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/516875.png"
+}

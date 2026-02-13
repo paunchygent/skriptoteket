@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "cid": 23994,
+  "captured_at": "2026-01-31T18:47:40.439938+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23994",
+    "lcss_sha256": "10ba1be780d2f844033aeccbe810443d6281ca8396d1bab0449198d175449fe2",
+    "linkout_sha256": "86f4ccdc48a9b2414c242d64a139cc63fe752710c1e7fccc955db393797acdc0",
+    "meta_sha256": "542967a5ae0939a6ccc7b47c00151298b902ffe440178c25d33e2fc60d5aaad7"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H250",
+      "H260",
+      "H320",
+      "H400",
+      "H410"
+    ],
+    "hazard_statements_sv": {
+      "H250": "Spontanantänder vid kontakt med luft.",
+      "H260": "Vid kontakt med vatten utvecklas brandfarliga gaser som kan självantända.",
+      "H320": "Orsakar ögonirritation.",
+      "H400": "Mycket giftigt för vattenlevande organismer.",
+      "H410": "Mycket giftigt för vattenlevande organismer med långtidseffekter."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P222",
+      "P223",
+      "P231",
+      "P231+P232",
+      "P233",
+      "P264+P265",
+      "P273",
+      "P280",
+      "P302+P335+P334",
+      "P305+P351+P338",
+      "P337+P317",
+      "P370+P378",
+      "P391",
+      "P402+P404",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P222": "Undvik kontakt med luft.",
+      "P223": "Undvik all kontakt med vatten.",
+      "P231": "* Hantera och förvara innehållet under inert gas/…",
+      "P231+P232": "* Hantera och förvara innehållet under inert gas/…. Skyddas från fukt. 1.3 Skyddsangivelser – Åtgärder",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P302+P335+P334": "VID HUDKONTAKT: Borsta bort lösa partiklar från huden. Skölj under kallt vatten [eller använd våta omslag].",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P391": "Samla upp spill.",
+      "P402+P404": "Förvaras torrt. Förvaras i sluten behållare.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS02",
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/2021.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.203208+00:00"
+}

@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "cid": 24436,
+  "captured_at": "2026-01-31T18:40:29.424450+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24436",
+    "lcss_sha256": "419e561431cd6dc932c4e1290c50fa0c8f39cdf62f68f4ddb5e2e14f671831f4",
+    "linkout_sha256": "776d52f28f46861f339523e60854e1998a605c25c4eaebd8ae7467cb22ff9f82",
+    "meta_sha256": "e5d734b2f4fd02e43ba850b4e3f7f5724a8b99c9191e38fe1e8c3b100a3f1ccc"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H320",
+      "H370"
+    ],
+    "hazard_statements_sv": {
+      "H320": "Orsakar ögonirritation.",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>"
+    },
+    "precautionary_codes": [
+      "P260",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P305+P351+P338",
+      "P308+P316",
+      "P321",
+      "P337+P317",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.141903+00:00"
+}

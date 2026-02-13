@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "cid": 5359268,
+  "captured_at": "2026-01-31T14:13:55.994784+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5359268",
+    "lcss_sha256": "6d96c332d77d4200bab538665304817f396f3204a4960e7133557c23488b4d5e",
+    "linkout_sha256": "446c9ee6340dd4ea67c2f54e0955817c570128a017de69c59080f23edd431962",
+    "meta_sha256": "73fdd54a1fdb2bfce6a39e088723d85f5f51379f812b058f40d5342404e43b61"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H228",
+      "H250",
+      "H261",
+      "H370",
+      "H372",
+      "H413"
+    ],
+    "hazard_statements_sv": {
+      "H228": "Brandfarligt fast ämne.",
+      "H250": "Spontanantänder vid kontakt med luft.",
+      "H261": "Vid kontakt med vatten utvecklas brandfarliga gaser.",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H413": "Kan ge skadliga långtidseffekter på vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P222",
+      "P231",
+      "P231+P232",
+      "P233",
+      "P240",
+      "P241",
+      "P260",
+      "P264",
+      "P270",
+      "P273",
+      "P280",
+      "P302+P335+P334",
+      "P308+P316",
+      "P319",
+      "P321",
+      "P370+P378",
+      "P402+P404",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P222": "Undvik kontakt med luft.",
+      "P231": "* Hantera och förvara innehållet under inert gas/…",
+      "P231+P232": "* Hantera och förvara innehållet under inert gas/…. Skyddas från fukt. 1.3 Skyddsangivelser – Åtgärder",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P240": "Jorda och potentialförbind behållare och mottagarutrustning.",
+      "P241": "* Använd explosionssäker [elektrisk/ventilations-/belysnings-/...]utrustning.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P302+P335+P334": "VID HUDKONTAKT: Borsta bort lösa partiklar från huden. Skölj under kallt vatten [eller använd våta omslag].",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P402+P404": "Förvaras torrt. Förvaras i sluten behållare.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS02",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/0054.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.fishersci.ca/content/dam/fishersci/en_US/documents/programs/education/regulatory-documents/sds/chemicals/chemicals-a/S25146.pdf",
+      "source": "lcss",
+      "likely_sds": true
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:02.938583+00:00"
+}

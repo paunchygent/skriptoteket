@@ -1,0 +1,2093 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24436,
+    "RecordTitle": "Sodium Sulfate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 96.5% (4127 of 4277) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 88,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 4127 of 4277 companies (only 3.5% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 163,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116245"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 32,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 4277 reports by companies from 10 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 118,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 4127 of 4277 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 82,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 7 notifications provided by 150 of 4277 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 101,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116245"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/221200"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/224769"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 61,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                              "Type": "Icon",
+                              "Extra": "Health Hazard"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 61,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Danger",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 61,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H320: Causes eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 29,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                          "Markup": [
+                            {
+                              "Start": 31,
+                              "Length": 6,
+                              "Type": "Color",
+                              "Extra": "GHSDanger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 61,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P260, P264, P264+P265, P270, P305+P351+P338, P308+P316, P321, P337+P317, P405, and P501",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                            },
+                            {
+                              "Start": 6,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                            },
+                            {
+                              "Start": 12,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 23,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                            },
+                            {
+                              "Start": 29,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 45,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                            },
+                            {
+                              "Start": 56,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            },
+                            {
+                              "Start": 73,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                            },
+                            {
+                              "Start": 83,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 36,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 37,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 61,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Serious eye damage/eye irritation - Category 2B"
+                        },
+                        {
+                          "String": "Specific target organ toxicity - Single exposure - Category 1 (gastrointestinal tract)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "EPA Safer Chemical",
+                "Description": "EPA labels products so that consumers can easily choose ones that are safer for people and the environment. When consumers see the Safer Choice label on a product, they can be confident that the ingredients have been through a rigorous EPA review. The label means that EPA scientists have evaluated every ingredient in the product to ensure it meets Safer Choice's stringent criteria. When people use Safer Choice products, they are protecting their families and the environment by making safer chemical choices.",
+                "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+                "Information": [
+                  {
+                    "ReferenceNumber": 29,
+                    "Name": "EPA Safer Chemical",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Chemical: Sodium sulfate"
+                        },
+                        {
+                          "String": " Green circle - The chemical has been verified to be of low concern based on experimental and modeled data.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/epasafe/green.svg",
+                              "Type": "Icon",
+                              "Extra": "Green circle"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Hazards",
+                "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause gastrointestinal disturbance if ingested; [ICSC] Nonirritating to skin and mucous membranes; [HSDB]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)",
+                        "Matched": {
+                          "PCLID": 900037147,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Noncombustible solid"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "NIH/EPA; OHM/TADS (1986)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "NIH/EPA; OHM/TADS (1986)",
+                        "Matched": {
+                          "PCLID": 900126292,
+                          "Citation": "NIH/EPA; OHM/TADS (1986)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Nonflammable"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.45 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.45 (1985)",
+                        "Matched": {
+                          "PCLID": 900087150,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.45 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Considered nontoxic and nonirritating to skin and mucous membranes."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "First Aid Measures",
+            "Description": "This section describes the initial care that should be given to an individual who has been exposed to the chemical.  The information in this section includes the description of the symptoms or effects of exposure to the chemical, necessary first-aid instructions by relevant routes of exposure (inhalation, skin and eye contact, and ingestion), and recommendations for immediate medical care and special treatment needed, when necessary.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Information": [
+              {
+                "ReferenceNumber": 45,
+                "Name": "Inhalation First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Fresh air, rest."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "Skin First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Rinse and then wash skin with water and soap.",
+                      "Markup": [
+                        {
+                          "Start": 30,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "Eye First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "First rinse with plenty of water for several minutes (remove contact lenses if easily possible), then refer for medical attention.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "Ingestion First Aid",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Give one or two glasses of water to drink.",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Information": [
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In case of fire in the surroundings, use appropriate extinguishing media."
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Suitable extinguishing media: Use water spray, alcohol-resistant foam, dry chemical or carbon dioxide.",
+                          "Markup": [
+                            {
+                              "Start": 34,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 87,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/carbon%20dioxide",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-280"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Advice for firefighters: Wear self-contained breathing apparatus for firefighting if necessary."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Spillage Disposal",
+                "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ACCIDENTAL RELEASE MEASURES: Personal precautions, protective equipment and emergency procedures: Avoid dust formation. Avoid breathing vapors, mist or gas. Environmental precautions: No special environmental precautions required. Methods and materials for containment and cleaning up: Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)",
+                        "Matched": {
+                          "PCLID": 900037147,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Spills on land: Contain if possible by forming mechanical barriers to prevent spreading. Shovel material into containers for recovery or disposal."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in air, soil or water; effects on animal, aquatic and plant life; and conformance with environmental and public health regulations. If it is possible or reasonable use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination.",
+                          "Markup": [
+                            {
+                              "Start": 238,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Product: Offer surplus and non-recyclable solutions to a licensed disposal company. Contaminated packaging: Dispose of as unused product."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.47 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.47 (1985)",
+                        "Matched": {
+                          "PCLID": 900057695,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.47 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Waste sodium sulfate must never be discharged directly into sewers or surface waters. Recovered sodium sulfate may be disposed of by burial in a landfill.",
+                          "Markup": [
+                            {
+                              "Start": 6,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 96,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Precautions for safe handling: Further processing of solid materials may result in the formation of combustible dusts. The potential for combustible dust formation should be taken into consideration before additional processing occurs. Provide appropriate exhaust ventilation at places where dust is formed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Gloves must be inspected prior to use. Use proper glove removal technique (without touching glove's outer surface) to avoid skin contact with this product. Dispose of contaminated gloves after use in accordance with applicable laws and good laboratory practices. Wash and dry hands."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "ACCIDENTAL RELEASE MEASURES: Personal precautions, protective equipment and emergency procedures: Avoid dust formation. Avoid breathing vapors, mist or gas. Environmental precautions: No special environmental precautions required."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants. Ensure that the local ventilation moves the contaminant away from the worker."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep container tightly closed in a dry and well-ventilated place. Hygroscopic. Storage class (TRGS 510): Non Combustible Solids."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607",
+                        "Matched": {
+                          "PCLID": 900059301,
+                          "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Keep well closed in a cool place. /Decahydrate/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evaporation at 20Â °C is negligible; a nuisance-causing concentration of airborne particles can, however, be reached quickly."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ingestion could cause effects on the gastrointestinal tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900086150,
+                          "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium sulfate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest. Use: solid diluent, carrier.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906271117,
+                          "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium sulfate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals. Use: solid diluent, carrier.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)",
+                        "Matched": {
+                          "PCLID": 900037147,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If the spilled material is known to be sodium sulfate: Tight-fitting safety goggles, rubber gloves, and protective clothing should be worn.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye/face protection: Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin protection: Handle with gloves."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Body Protection: Choose body protection in relation to its type, to the concentration and amount of dangerous substances, and to the specific work-place. The type of protective equipment must be selected according to the concentration and amount of the dangerous substance at the specific workplace."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection is not required. Where protection from nuisance levels of dusts are desired, use type N95 (US) or type P1 (EN 143) dust masks. Use respirators and components tested and approved under appropriate government standards such as NIOSH (US) or CEN (EU)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Prevention",
+                "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Use ventilation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin Prevention",
+                "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Protective gloves."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Eye Prevention",
+                "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Wear safety spectacles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Ingestion Prevention",
+                "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Do not eat, drink, or smoke during work."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatible materials: Strong acids, aluminum, magnesium.",
+                          "Markup": [
+                            {
+                              "Start": 38,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            },
+                            {
+                              "Start": 48,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281",
+                        "Matched": {
+                          "PCLID": 900100954,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Violent reaction with aluminum.",
+                          "Markup": [
+                            {
+                              "Start": 22,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.46 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.46 (1985)",
+                        "Matched": {
+                          "PCLID": 900147091,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.46 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium sulfate reacts violently with magnesium.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 37,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Magnesium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Magnesium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.46 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.46 (1985)",
+                        "Matched": {
+                          "PCLID": 900147091,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.46 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "At a temperature of 800 °C, sodium sulfate and aluminum will explode.",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 47,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Aluminum"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 4,
+                "Name": "California Safe Cosmetics Program (CSCP) Reportable Ingredient",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Hazard Traits - Respiratory Toxicity"
+                    },
+                    {
+                      "String": "Authoritative List - OEHHA RELs"
+                    },
+                    {
+                      "String": "Report - if used as a fragrance or flavor ingredient"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "EFSA Legal Basis",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Regulation (EC) No 1333/2008 (amended)",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 38,
+                          "URL": "https://doi.org/doi:10.2903/j.efsa.2019.5868"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 18-05-2023 https://echa.europa.eu/registration-dossier/-/registered-dossier/15539",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/15539"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Status: Active Update: 07-09-2021 https://echa.europa.eu/registration-dossier/-/registered-dossier/13138",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/13138"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 59,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sulfuric acid, sodium salt: Does not have an individual approval but may be used as a component in a product covered by a group standard. It is not approved for use as a chemical in its own right.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 26,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfuric%20acid%2C%20sodium%20salt",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 60,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sodium sulfate: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Federal Drinking Water Guidelines",
+                "Description": "Federal drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "EPA 250,000 ug/L /Sulfate ion/",
+                          "Markup": [
+                            {
+                              "Start": 18,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Standards",
+                "Description": "State drinking water standards (e.g. maximum containment level (MCL)) for this chemical.  These standards are legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(AL) ALABAMA 500,000 ug/L /Sulfate ion/",
+                          "Markup": [
+                            {
+                              "Start": 27,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(UT) UTAH 1,000,000 ug/L /Sulfate ion/",
+                          "Markup": [
+                            {
+                              "Start": 26,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "State Drinking Water Guidelines",
+                "Description": "State drinking water guidelines (e.g. maximum containment level (MCL)) for this chemical.  In general, these guidelines are recommendations and not legally enforceable.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(CA) CALIFORNIA 250000 ug/L (Recommended); 500000 ug/L (Upper); Short-term 600000 ug/L /Sulfate ion/",
+                          "Markup": [
+                            {
+                              "Start": 88,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present",
+                        "Matched": {
+                          "PCLID": 906275520,
+                          "Citation": "USEPA/Office of Water; Federal-State Toxicology and Risk   Analysis Committee (FSTRAC). Summary of State and Federal   Drinking Water Standards and Guidelines (11/93)  To Present"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(UT) UTAH 500,000 ug/L /Sulfate ion/",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900086150,
+                          "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium sulfate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest. Use: solid diluent, carrier.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906271117,
+                          "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium sulfate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals. Use: solid diluent, carrier.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 152.25 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 152.25 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900084008,
+                          "Citation": "40 CFR 152.25 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Exemptions for pesticides of a character not requiring FIFRA regulation. The pesticides or classes of pesticides listed in this section have been determined to be of a character not requiring regulation under FIFRA, and are therefore exempt from all provisions of FIFRA when intended for use, and used, only in the manner specified. ... Permitted inert ingredients. A pesticide product exempt under paragraph (f)(1) of this section may only include the inert ingredients listed in paragraphs (f)(2)(i) through (iv) of this section. All listed inert ingredients may be used in non-food use products. Under FFDCA section 408 and EPA implementing regulations at part 180 of this chapter, food and animal feed in commerce can bear pesticide residues only for those ingredients that have tolerances or tolerance exemptions in part 180 of this chapter. Sodium sulfate is included on this list.",
+                          "Markup": [
+                            {
+                              "Start": 847,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 186.1797 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 186.1797 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900030453,
+                          "Citation": "21 CFR 186.1797 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Indirect food substances affirmed as generally recognized as safe ... The ingredient is used as a constituent of paper and paperboard used for food packaging, and cotton and cotton fabric used for dry food packaging. ... The ingredient is used at levels not to exceed good manufacturing practice in accordance with section 186.1(b)(1)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Section": [
+              {
+                "TOCHeading": "Toxic Combustion Products",
+                "Description": "Toxic products (e.g., gases and vapors) produced from the combustion of this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Special hazards arising from the substance or mixture: Sulfur oxides, sodium oxides."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cosmetic Ingredient Review; Final Amended Safety Assessment of Sodium Sulfate as Used in Cosmetics (2016).[Available from, as of September 20, 2017: http://www.cir-safety.org/ingredients]",
+                          "Markup": [
+                            {
+                              "Start": 63,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate (1985)",
+                          "Markup": [
+                            {
+                              "Start": 50,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20Sulphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "California Safe Cosmetics Program (CSCP) Product Database",
+        "SourceID": "b0a4045bdc6fe6e04873850183ca75da",
+        "Name": "Sodium sulfate",
+        "Description": "The California Safe Cosmetics Program (CSCP) is charged with implementing the California Safe Cosmetics Act (CSCA) and the Cosmetic Fragrance and Flavor Ingredient Right to Know Act (CFFIRKA). The goal of CSCP is to collect and share information on hazardous and potentially hazardous ingredients in cosmetics sold in California and to make this information available to the public.",
+        "URL": "https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/OHB/CSCP/Pages/About-CSCP.aspx",
+        "LicenseURL": "https://www.cdph.ca.gov/Pages/Conditions-of-Use.aspx",
+        "ANID": 39996622
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "36a826afa3936be355627a5ade7950bc",
+        "Name": "Sodium sulphate",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49733339
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-820-9",
+        "Name": "Sodium sulphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.928",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981368
+      },
+      {
+        "ReferenceNumber": 59,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "d4afaa58199a8768d5c1f9a620e0ad68",
+        "Name": "Sulfuric acid, sodium salt",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37144536
+      },
+      {
+        "ReferenceNumber": 60,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "dcf291cd5e35ffd159a0a7d9e1e6363a",
+        "Name": "Sodium sulfate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162246
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "EPA Safer Choice",
+        "SourceID": "7757-82-6",
+        "Name": "Sodium sulfate",
+        "Description": "The Safer Choice of the U.S. Environmental Protection Agency (EPA) helps consumers, businesses, and purchasers find products that perform and are safer for human health and the environment.",
+        "URL": "https://www.epa.gov/saferchoice/safer-ingredients",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 2128784
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "116245",
+        "Name": "Sodium sulphate (EC: 231-820-9)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116245",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1885197,
+        "SortOrder": 7277
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "221200",
+        "Name": "sodium sulphate (EC: 689-159-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/221200",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37173713,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "224769",
+        "Name": "SODIUM SULFATE (EC: 691-538-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/224769",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37174147,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 61,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R01_A_017",
+        "Name": "Disodium sulfate - FY2019 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/19-mhlw-0017e.html",
+        "ANID": 39312863,
+        "SortOrder": 2019
+      },
+      {
+        "ReferenceNumber": 42,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2030",
+        "Name": "Sodium sulfate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2030",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277478
+      },
+      {
+        "ReferenceNumber": 43,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5042",
+        "Name": "Sodium sulfate",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5042",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3132
+      },
+      {
+        "ReferenceNumber": 45,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0952",
+        "Name": "SODIUM SULFATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0952",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260827
+      }
+    ]
+  }
+}

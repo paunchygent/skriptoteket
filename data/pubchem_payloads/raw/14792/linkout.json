@@ -1,0 +1,26 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 14792,
+    "ObjUrl": [
+      {
+        "Url": "http://partnersolution.ingenuity.com/?cid=97ae3f91eab87a&p1=EntrezPubChem&p2=GV&s=&ipaUri=%2Fpa%2Fapi%2Fv2%2Fgeneview%3Fapplicationname%3DEntrezPubChem%26geneId%3DING:1e91g%26geneidtype%3Dingenuity",
+        "SubjectType": [
+          "molecular interactions"
+        ],
+        "Category": [
+          "Chemical Information"
+        ],
+        "Attribute": [
+          "subscription/membership/fee required"
+        ],
+        "Provider": {
+          "Name": "Ingenuity Pathways Analysis",
+          "NameAbbr": "Ingenuity",
+          "Id": "5628",
+          "Url": "http://www.ingenuity.com"
+        }
+      }
+    ]
+  }
+}

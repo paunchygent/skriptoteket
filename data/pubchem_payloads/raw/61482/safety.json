@@ -1,0 +1,184 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 61482,
+    "RecordTitle": "Cupric chloride dihydrate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Reactivity Alerts",
+                "Description": "Special alerts if the chemical is especially reactive.",
+                "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactivity_alerts.htm",
+                "Section": [
+                  {
+                    "TOCHeading": "CSL Reaction Information",
+                    "Description": "Reaction information for potentially hazardous chemicals, integrated from the Pistoia Alliance Chemical Safety Library (CSL).",
+                    "URL": "https://safescience.cas.org/",
+                    "DisplayControls": {
+                      "CreateTable": {
+                        "FromInformationIn": "ThisSection",
+                        "NumberOfColumns": 2,
+                        "ColumnContents": [
+                          "Name",
+                          "Value"
+                        ]
+                      }
+                    },
+                    "Information": [
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "CSL No",
+                        "URL": "https://safescience.cas.org/detail/CSL00134",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "CSL00134"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "Reactants/Reagents",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "OXYGEN + COPPER(II) CHLORIDE DIHYDRATE + 2,6-DIBROMOPYRIDINE + N-BUTYLLITHIUM + DIETHYL ETHER",
+                              "Markup": [
+                                {
+                                  "Start": 0,
+                                  "Length": 6,
+                                  "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                                  "Type": "PubChem Internal Link",
+                                  "Extra": "Element-Oxygen"
+                                },
+                                {
+                                  "Start": 9,
+                                  "Length": 29,
+                                  "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/COPPER%28II%29%20CHLORIDE%20DIHYDRATE",
+                                  "Type": "PubChem Internal Link",
+                                  "Extra": "CID-61482"
+                                },
+                                {
+                                  "Start": 41,
+                                  "Length": 19,
+                                  "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/2%2C6-DIBROMOPYRIDINE",
+                                  "Type": "PubChem Internal Link",
+                                  "Extra": "CID-12274"
+                                },
+                                {
+                                  "Start": 63,
+                                  "Length": 14,
+                                  "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/N-BUTYLLITHIUM",
+                                  "Type": "PubChem Internal Link",
+                                  "Extra": "CID-53627823"
+                                },
+                                {
+                                  "Start": 80,
+                                  "Length": 13,
+                                  "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/DIETHYL%20ETHER",
+                                  "Type": "PubChem Internal Link",
+                                  "Extra": "CID-3283"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "Warning Message",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "O2 reacted with the organocopper (or remaining organolithium) reagent to form some peroxides which exploded"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "GHS Category",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Explosive"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "Reaction Class",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Ullmann coupling"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "Reference Source",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "ACS Safety Letters"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "Modified Date",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "7/8/18"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "ReferenceNumber": 10,
+                        "Name": "Create Date",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "2/27/18"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "Pistoia Alliance Chemical Safety Library",
+        "SourceID": "CSL00134",
+        "Name": "OXYGEN + COPPER(II) CHLORIDE DIHYDRATE + 2,6-DIBROMOPYRIDINE + N-BUTYLLITHIUM + DIETHYL ETHER",
+        "Description": "The Pistoia Alliance Chemical Safety Library (CSL) provides unique crowd sourced data content containing hazardous reactions that can be used to alert scientists to potential dangerous experiments. CAS, a division of the American Chemical Society, is committed to increasing safety in the lab and has provided this open access platform to serve scientists worldwide.",
+        "URL": "https://safescience.cas.org/",
+        "LicenseURL": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+        "ANID": 5123097
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "cid": 61520,
+  "hazard_key": "SrCl2",
+  "display_name": "Strontiumklorid",
+  "captured_at": "2026-01-31T18:43:15.018058+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/61520",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/61520/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/61520/linkout.json",
+      "sha256": "3835595540340b226c537ace3aa5d56405f3e45fc40025a6a3141ed2dff192f8"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/61520/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 33877,
+      "file": "data/pubchem_payloads/raw/61520/lcss.json",
+      "sha256": "33335d3725aa4b7e36a7b2af26b2afaaa42db843c18974c1f80e101291e82808"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/61520/JSON?heading=Safety%20and%20Hazards",
+      "status": 404,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 84
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/61520.png"
+}

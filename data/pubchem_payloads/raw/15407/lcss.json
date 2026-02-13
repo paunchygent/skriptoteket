@@ -1,0 +1,1641 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 15407,
+    "RecordTitle": "Strontium carbonate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 41,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "3D Conformer",
+        "Description": "A three-dimensional (3D) structure representation of the compound.  This 3D structure is not experimentally determined, but computed by PubChem.  This structure may or may not be the same as the inherent structure of the compound you would expect to see in vacuum or in the gas phase, because the underlying computational algorithm aims to generate a protein-bound structure, which would be observed in a protein-ligand complex.  More detailed information on this conformer model can be found in Kim et al., J. Cheminform. 2013, 5, 1.",
+        "URL": "https://doi.org/10.1186/1758-2946-5-1",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 41,
+            "Name": "3D Conformer of Parent",
+            "Description": "Carbonic Acid",
+            "Value": {
+              "Number": [
+                767
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 12,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "Not Classified"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 99.3% (398 of 401) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 86,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 398 of 401 companies (only 0.7% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 161,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/55997"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 401 reports by companies from 5 notifications to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 116,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 398 of 401 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 80,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 2 notifications provided by 3 of 401 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 98,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/55997"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1633-05-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 41,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "strontium carbonate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 41,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "STRONTIUM CARBONATE"
+                    },
+                    {
+                      "String": "1633-05-2"
+                    },
+                    {
+                      "String": "Strontianite"
+                    },
+                    {
+                      "String": "Carbonic acid, strontium salt (1:1)"
+                    },
+                    {
+                      "String": "Strontium carbonate (SrCO3)"
+                    },
+                    {
+                      "String": "CI 77837"
+                    },
+                    {
+                      "String": "41YPU4MMCA"
+                    },
+                    {
+                      "String": "Carbonic acid strontium salt (1:1)"
+                    },
+                    {
+                      "String": "DTXSID3029651"
+                    },
+                    {
+                      "String": "C.I. 77837"
+                    },
+                    {
+                      "String": "STRONTIUM CARBONICUM"
+                    },
+                    {
+                      "String": "DTXCID009651"
+                    },
+                    {
+                      "String": "NSC-112224"
+                    },
+                    {
+                      "String": "RefChem:58367"
+                    },
+                    {
+                      "String": "216-643-7"
+                    },
+                    {
+                      "String": "strontium;carbonate"
+                    },
+                    {
+                      "String": "CO3Sr"
+                    },
+                    {
+                      "String": "MFCD00011250"
+                    },
+                    {
+                      "String": "CCRIS 3203"
+                    },
+                    {
+                      "String": "HSDB 5845"
+                    },
+                    {
+                      "String": "EINECS 216-643-7"
+                    },
+                    {
+                      "String": "UNII-41YPU4MMCA"
+                    },
+                    {
+                      "String": "NSC 112224"
+                    },
+                    {
+                      "String": "SrCO3"
+                    },
+                    {
+                      "String": "STRONTIUM CARBONAS"
+                    },
+                    {
+                      "String": "Strontium Carbonate Powder"
+                    },
+                    {
+                      "String": "EC 216-643-7"
+                    },
+                    {
+                      "String": "SCHEMBL48480"
+                    },
+                    {
+                      "String": "Strontium Carbonate Submicron"
+                    },
+                    {
+                      "String": "Strontium carbonate, >=98%"
+                    },
+                    {
+                      "String": "orb3023599"
+                    },
+                    {
+                      "String": "CHEMBL3188467"
+                    },
+                    {
+                      "String": "STRONTIUM CARBONATE [MI]"
+                    },
+                    {
+                      "String": "Strontium carbonate (High purity)"
+                    },
+                    {
+                      "String": "STRONTIUM CARBONATE [HSDB]"
+                    },
+                    {
+                      "String": "STRONTIUM CARBONICUM [HPUS]"
+                    },
+                    {
+                      "String": "STRONTIUM CARBONAS [WHO-DD]"
+                    },
+                    {
+                      "String": "Strontium carbonate, technical grade"
+                    },
+                    {
+                      "String": "Tox21_202776"
+                    },
+                    {
+                      "String": "Strontium carbonate, p.a., 97.0%"
+                    },
+                    {
+                      "String": "AKOS015836320"
+                    },
+                    {
+                      "String": "NCGC00260323-01"
+                    },
+                    {
+                      "String": "Formic-14C acid(6CI,7CI,8CI,9CI)"
+                    },
+                    {
+                      "String": "FS175717"
+                    },
+                    {
+                      "String": "Strontium carbonate, puriss., >=97.0%"
+                    },
+                    {
+                      "String": "CAS-1633-05-2"
+                    },
+                    {
+                      "String": "Strontium carbonate nanopowder (<500 nm)"
+                    },
+                    {
+                      "String": "NS00083423"
+                    },
+                    {
+                      "String": "F494395"
+                    },
+                    {
+                      "String": "Q413629"
+                    },
+                    {
+                      "String": "Strontium carbonate (low alkali and heavy metals)"
+                    },
+                    {
+                      "String": "Strontium carbonate, >=99.9% trace metals basis"
+                    },
+                    {
+                      "String": "Strontium carbonate, 99.995% trace metals basis"
+                    },
+                    {
+                      "String": "Strontium carbonate, NIST(R) SRM(R) 987, isotopic standard"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SrCO3",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 41,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CO3Sr"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 41,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "147.63"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 41,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/CH2O3.Sr/c2-1(3)4;/h(H2,2,3,4);/q;+2/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 41,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "LEDMRZGFZIAGGB-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Solid; Dry Powder"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White odorless solid; [Merck Index] Colorless or white odorless hygroscopic solid; [HSDB] White odorless powder; [MSDSonline]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE ODOURLESS POWDER."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Metals, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-87"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-87",
+                    "Matched": {
+                      "PCLID": 900161212,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-87"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1494 °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Clayton, G.D., F.E. Clayton (eds.) Patty's Industrial Hygiene and Toxicology. Volumes 2A, 2B, 2C, 2D, 2E, 2F: Toxicology. 4th ed. New York, NY: John Wiley & Sons Inc., 1993-1994., p. 2218"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Clayton, G.D., F.E. Clayton (eds.) Patty's Industrial Hygiene and Toxicology. Volumes 2A, 2B, 2C, 2D, 2E, 2F: Toxicology. 4th ed. New York, NY: John Wiley & Sons Inc., 1993-1994., p. 2218",
+                    "Matched": {
+                      "PCLID": 900115468,
+                      "Citation": "Clayton, G.D., F.E. Clayton (eds.) Patty's Industrial Hygiene and Toxicology. Volumes 2A, 2B, 2C, 2D, 2E, 2F: Toxicology. 4th ed. New York, NY: John Wiley & Sons Inc., 1993-1994., p. 2218"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "11 MG/L OF WATER AT 18 °C; 650 MG/L OF WATER AT 100 °C",
+                      "Markup": [
+                        {
+                          "Start": 11,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 39,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Clayton, G.D., F.E. Clayton (eds.) Patty's Industrial Hygiene and Toxicology. Volumes 2A, 2B, 2C, 2D, 2E, 2F: Toxicology. 4th ed. New York, NY: John Wiley & Sons Inc., 1993-1994., p. 2218"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Clayton, G.D., F.E. Clayton (eds.) Patty's Industrial Hygiene and Toxicology. Volumes 2A, 2B, 2C, 2D, 2E, 2F: Toxicology. 4th ed. New York, NY: John Wiley & Sons Inc., 1993-1994., p. 2218",
+                    "Matched": {
+                      "PCLID": 900115468,
+                      "Citation": "Clayton, G.D., F.E. Clayton (eds.) Patty's Industrial Hygiene and Toxicology. Volumes 2A, 2B, 2C, 2D, 2E, 2F: Toxicology. 4th ed. New York, NY: John Wiley & Sons Inc., 1993-1994., p. 2218"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sol in ammonium salts"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510",
+                    "Matched": {
+                      "PCLID": 900050957,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sol in dilute acids"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510",
+                    "Matched": {
+                      "PCLID": 900050957,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SOL IN 100,000 PARTS WATER; IN ABOUT 1000 PARTS WATER SATURATED WITH CARBON DIOXIDE.",
+                      "Markup": [
+                        {
+                          "Start": 21,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 48,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CARBON%20DIOXIDE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 1094"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 1094",
+                    "Matched": {
+                      "PCLID": 900010245,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 1094"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Soluble in acids, carbonated water, and solutions of ammonium salts",
+                      "Markup": [
+                        {
+                          "Start": 29,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/100ml at 18Â °C: 0.011 (very poor)",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 4-87"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 4-87",
+                    "Matched": {
+                      "PCLID": 900082051,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 4-87"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.5 g/cu-cm"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.5 g/cmÂ³"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510",
+                    "Matched": {
+                      "PCLID": 900050957,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE POWDER"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V22 952"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V22 952",
+                    "Matched": {
+                      "PCLID": 900032005,
+                      "Citation": "Kirk-Othmer Encyclopedia of Chemical Technology. 4th ed. Volumes 1: New York, NY. John Wiley and Sons, 1991-Present., p. V22 952"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colorless or white rhombic crystalline solid transforming to hexagonal above 926 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 487"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 487",
+                    "Matched": {
+                      "PCLID": 900089718,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 487"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White orthorhombic crystals"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 1094"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 1094",
+                    "Matched": {
+                      "PCLID": 900010245,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical Dictionary. 12th ed. New York, NY: Van Nostrand Rheinhold Co., 1993, p. 1094"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White crystalline powder"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Odor",
+            "Description": "The property of certain chemicals, in very small concentrations, to stimulate chemical sense receptors that sample the air or water.",
+            "URL": "https://www.britannica.com/science/odor",
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510",
+                    "Matched": {
+                      "PCLID": 900050957,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ODORLESS"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Taste",
+            "Description": "The sensation of flavor perceived in the mouth and throat on contact with a substance.",
+            "URL": "https://www.britannica.com/science/taste-sense",
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510",
+                    "Matched": {
+                      "PCLID": 900050957,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "TASTELESS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Decomposition",
+            "Description": "Information on the decomposition of this compound, including the decomposition conditions and products.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510",
+                    "Matched": {
+                      "PCLID": 900050957,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1510"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "DECOMPOSES AT 1100 °C INTO STRONTIUM OXIDE AND CARBON DIOXIDE",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/STRONTIUM%20OXIDE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-73975"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CARBON%20DIOXIDE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-280"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Reacts with acids."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 16,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "An irritant to the eyes and the respiratory tract; Strontium ion has effects on the calcium content of the bones and teeth, but data concerning harmful doses of strontium carbonate are inadequate. [ICSC] May cause irritation; [MSDSonline] See Strontium.",
+                          "Markup": [
+                            {
+                              "Start": 51,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Strontium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-104798"
+                            },
+                            {
+                              "Start": 84,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Calcium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Calcium"
+                            },
+                            {
+                              "Start": 161,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/strontium%20carbonate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-15407"
+                            },
+                            {
+                              "Start": 243,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Strontium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Strontium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A nuisance-causing concentration of airborne particles can be reached quickly."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 18,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause mechanical irritation to the eyes and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Exposure Prevention",
+                    "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 18,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "PREVENT DISPERSION OF DUST!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 18,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 18,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety goggles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 18,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Avoid inhalation of dust."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 18,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Separated from acids."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 17,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_6958",
+        "Name": "Carbonic acid, strontium salt (1:1)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39366983
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0001633052",
+        "Name": "Strontium carbonate",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0001633052",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 787608
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "033972229bd11cb6c37604f732f5e1d5",
+        "Name": "Carbonic acid, strontium salt (1:1)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38379128
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "bc9f77452561aa0642b6310ef6cfc822",
+        "Name": "Carbonic acid, strontium salt (1:1)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38395763
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID3029651",
+        "Name": "Carbonic acid, strontium salt (1:1)",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID3029651",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1155603
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "216-643-7",
+        "Name": "Strontium carbonate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.015.131",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1996812
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "41YPU4MMCA",
+        "Name": "STRONTIUM CARBONATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/41YPU4MMCA",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5811459
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5845",
+        "Name": "STRONTIUM CARBONATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5845",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3854
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1695",
+        "Name": "STRONTIUM CARBONATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1695",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2261486
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "3aa4dfbbb430e847a8fe338bd57093be",
+        "Name": "Strontium carbonate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37145359
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz7214",
+        "Name": "Strontium carbonate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/7214",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17280358
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "55997",
+        "Name": "Strontium carbonate (EC: 216-643-7)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/55997",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1867541,
+        "SortOrder": 3401
+      },
+      {
+        "ReferenceNumber": 41,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

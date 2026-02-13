@@ -1,0 +1,403 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 29011,
+    "RecordTitle": "Cassiterite",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 34,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=18282-10-5",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "18282-10-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 3,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=1317-45-9",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-45-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-45-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "18282-10-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-45-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-45-9"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 34,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "dioxotin"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 34,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Cassiterite (SnO2)"
+                    },
+                    {
+                      "String": "dioxotin"
+                    },
+                    {
+                      "String": "Cassiterite"
+                    },
+                    {
+                      "String": "1317-45-9"
+                    },
+                    {
+                      "String": "MFCD00011244"
+                    },
+                    {
+                      "String": "18232-10-5"
+                    },
+                    {
+                      "String": "SnO2"
+                    },
+                    {
+                      "String": "Stannic oxide (SnO2)"
+                    },
+                    {
+                      "String": "tin-oxide"
+                    },
+                    {
+                      "String": "HSDB 5064"
+                    },
+                    {
+                      "String": "EINECS 242-159-0"
+                    },
+                    {
+                      "String": "Tin Oxide Nanowires"
+                    },
+                    {
+                      "String": "Tin Oxide Nanopowder"
+                    },
+                    {
+                      "String": "Stannic Oxide Nanopowder"
+                    },
+                    {
+                      "String": "UNII-KM7N50LOS6"
+                    },
+                    {
+                      "String": "SCHEMBL64143"
+                    },
+                    {
+                      "String": "Tin Oxide Nanowires Properties"
+                    },
+                    {
+                      "String": "DTXSID201316016"
+                    },
+                    {
+                      "String": "Tin(IV) oxide (99.998%-Sn)"
+                    },
+                    {
+                      "String": "FT33030"
+                    },
+                    {
+                      "String": "Tin oxide  nanopowder  (50-70 nm)"
+                    },
+                    {
+                      "String": "SY061104"
+                    },
+                    {
+                      "String": "Ruthenium Oxide (RuO2) Sputtering Targets"
+                    },
+                    {
+                      "String": "NS00074409"
+                    },
+                    {
+                      "String": "T4006"
+                    },
+                    {
+                      "String": "Tin(IV) oxide, 99.996% (metals basis)"
+                    },
+                    {
+                      "String": "EC 242-159-0"
+                    },
+                    {
+                      "String": "Tin oxide powder, (stannic), white 325 mesh"
+                    },
+                    {
+                      "String": "Tin(IV) oxide, >=99.99% trace metals basis"
+                    },
+                    {
+                      "String": "Q129163"
+                    },
+                    {
+                      "String": "Tin(IV) oxide, -325 mesh, 99.9% trace metals basis"
+                    },
+                    {
+                      "String": "Tin(IV) oxide, nanopowder, <=100 nm avg. part. size"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 34,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "O2Sn"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 34,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "150.71"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 34,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2O.Sn"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 34,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "XOLBLPGZBRYERU-UHFFFAOYSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "18282-10-5",
+        "Name": "Tin oxide (SnO2)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=18282-10-5",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12806348
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "1317-45-9",
+        "Name": "Cassiterite (SnO2)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=1317-45-9",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12905115
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0001317459",
+        "Name": "Cassiterite",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0001317459",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 784844
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0018282105",
+        "Name": "Tin oxide",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0018282105",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 851413
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID201316016",
+        "Name": "Cassiterite (SnO2)",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID201316016",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 24210939
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "36f3fa9e1cd1bc0f28ad734935c8d9cc",
+        "Name": "Cassiterite (SnO2)",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142670
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

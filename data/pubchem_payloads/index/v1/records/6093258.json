@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "cid": 6093258,
+  "captured_at": "2026-01-31T14:35:57.314368+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6093258",
+    "lcss_sha256": "64ab573c250ab8d1c66b4e9032d0ef37e44f5f982a930a6468e2987be73a4a85",
+    "linkout_sha256": "f96130dced4d0ce08ee0ddd61fcbfecbef3e3548260aff038ba58611c7e03317",
+    "meta_sha256": "d6304167ff29b0d60d8991b11b5410ce0dfd933a1cd7dd894352b3b58f308b46"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H290",
+      "H302",
+      "H314",
+      "H315",
+      "H318",
+      "H412"
+    ],
+    "hazard_statements_sv": {
+      "H290": "Kan vara korrosivt för metaller. 1.2 Faroangivelser för hälsofaror",
+      "H302": "Skadligt vid förtäring.",
+      "H314": "Orsakar allvarliga frätskador på hud och ögon.",
+      "H315": "Irriterar huden.",
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P234",
+      "P260",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P273",
+      "P280",
+      "P301+P317",
+      "P301+P330+P331",
+      "P302+P352",
+      "P302+P361+P354",
+      "P304+P340",
+      "P305+P354+P338",
+      "P316",
+      "P317",
+      "P321",
+      "P330",
+      "P332+P317",
+      "P362+P364",
+      "P363",
+      "P390",
+      "P405",
+      "P406",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P234": "Förvaras endast i originalförpackningen.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P301+P330+P331": "VID FÖRTÄRING: Skölj munnen. Framkalla INTE kräkning.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P302+P361+P354": "VID HUDKONTAKT: Ta omedelbart av alla förorenade kläder. Skölj genast huden med vatten i flera minuter.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P316": "Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P363": "Nedstänkta kläder ska tvättas innan de används igen.",
+      "P390": "Sug upp spill för att undvika materiella skador.",
+      "P405": "Förvaras inlåst.",
+      "P406": "* Förvaras i korrosionsbeständig/… behållare med beständigt innerhölje.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.016620+00:00"
+}

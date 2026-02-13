@@ -1,0 +1,34 @@
+{
+  "cid": 14829,
+  "hazard_key": "CuO",
+  "display_name": "Koppar(II)oxid",
+  "captured_at": "2026-01-31T16:43:32.931565+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14829",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14829/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14829/linkout.json",
+      "sha256": "aca31132626177e5afbef32676fbd68d915b19fb57defa2ca85cc40e55d3eb38"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14829/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 17806,
+      "file": "data/pubchem_payloads/raw/14829/lcss.json",
+      "sha256": "7135815234d6b4c909214e1bc6797ce4aacc2e54d774359ed283d765d47a689d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14829/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1963,
+      "file": "data/pubchem_payloads/raw/14829/safety.json",
+      "sha256": "a99bef647e3e90f50a822bacce94f737c3e7b6303c30f2d2e6de92af68c34da6"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14829.png"
+}

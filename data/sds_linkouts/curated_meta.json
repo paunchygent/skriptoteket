@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "as_of": "2026-02-01",
+  "entries": {
+    "180": {
+      "density_g_ml": 0.79,
+      "clp_bands": [
+        {
+          "min_molarity": null,
+          "max_molarity": null,
+          "hazard_codes": [
+            "H225",
+            "H319",
+            "H336"
+          ],
+          "pictograms": [],
+          "signal_word": null,
+          "notes": []
+        }
+      ],
+      "sources": [
+        "https://corecheminc.com/wp-content/uploads/2024/03/Acetone-CCI-Safety-Data-Sheet-2.26.2024-Rev-2.pdf"
+      ]
+    },
+    "5359268": {
+      "density_g_ml": 2.0,
+      "clp_bands": [
+        {
+          "min_molarity": null,
+          "max_molarity": null,
+          "hazard_codes": [
+            "H228",
+            "H250",
+            "H260",
+            "H261",
+            "H317",
+            "H319",
+            "H334",
+            "H351",
+            "H372",
+            "H400",
+            "H410",
+            "H411",
+            "H412",
+            "H413"
+          ],
+          "pictograms": [],
+          "signal_word": null,
+          "notes": []
+        }
+      ],
+      "sources": [
+        "https://www.twmetals.com/media/category_pdfs/SDS-AluminumAlloys.pdf"
+      ]
+    },
+    "24012": {
+      "density_g_ml": 2.44,
+      "clp_bands": [
+        {
+          "min_molarity": null,
+          "max_molarity": null,
+          "hazard_codes": [
+            "H314"
+          ],
+          "pictograms": [],
+          "signal_word": null,
+          "notes": []
+        }
+      ],
+      "sources": [
+        "https://download.basf.com/p1/000000000030046443_SDS_GEN_US/en/Aluminium_chloride_anhydrous_screened_Safety_Data_Sheet_English.pdf"
+      ]
+    },
+    "24564": {
+      "density_g_ml": 2.398,
+      "clp_bands": [
+        {
+          "min_molarity": null,
+          "max_molarity": null,
+          "hazard_codes": [
+            "H315",
+            "H319",
+            "H335",
+            "H412"
+          ],
+          "pictograms": [],
+          "signal_word": "warning",
+          "notes": []
+        }
+      ],
+      "sources": [
+        "https://www.cdhfinechemical.com/images/product/msds/54_1161394769_AluminiumChlorideHexahydrate-CASNO-7784-13-6-MSDS.pdf"
+      ]
+    },
+    "9989226": {
+      "density_g_ml": 3.97,
+      "clp_bands": [
+        {
+          "min_molarity": null,
+          "max_molarity": null,
+          "hazard_codes": [
+            "H332",
+            "H372"
+          ],
+          "pictograms": [],
+          "signal_word": "danger",
+          "notes": []
+        }
+      ],
+      "sources": [
+        "https://alpharesources.com/documents/product/sds/alumina1.3US.pdf"
+      ]
+    }
+  }
+}

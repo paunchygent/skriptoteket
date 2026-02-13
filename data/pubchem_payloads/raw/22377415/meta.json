@@ -1,0 +1,34 @@
+{
+  "cid": 22377415,
+  "hazard_key": "Al2(SO4)3·18H2O",
+  "display_name": "Aluminiumsulfat (octadecahydrat)",
+  "captured_at": "2026-01-31T14:14:26.031650+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/22377415",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/22377415/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82,
+      "file": "data/pubchem_payloads/raw/22377415/linkout.json",
+      "sha256": "c59276e70fb6ce524abb32b24a73e8f65b660798ad5e9f1f3e88618b839582bd"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/22377415/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 37992,
+      "file": "data/pubchem_payloads/raw/22377415/lcss.json",
+      "sha256": "eb6436db2c75e2a646f7f837c40968ddd4fdf53a1df41bbc5c90328e18898885"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/22377415/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 26327,
+      "file": "data/pubchem_payloads/raw/22377415/safety.json",
+      "sha256": "a7068dc8fcc18c661860e1c744f10d5df7800b4a720f7f23b399a2eee0d0ce2f"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/22377415.png"
+}

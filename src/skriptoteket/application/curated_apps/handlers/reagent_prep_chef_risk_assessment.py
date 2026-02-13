@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from decimal import Decimal
 
 import structlog
 from pydantic import JsonValue, ValidationError
@@ -22,7 +21,11 @@ from skriptoteket.domain.curated_apps.reagent_prep_chef.errors import (
     ReagentPrepChefErrorCode,
     rpc_validation_error,
 )
-from skriptoteket.domain.curated_apps.reagent_prep_chef.models import HazardEntry, HazardSdsData
+from skriptoteket.domain.curated_apps.reagent_prep_chef.models import (
+    ClpBand,
+    HazardEntry,
+    HazardSdsData,
+)
 from skriptoteket.domain.curated_apps.reagent_prep_chef.risk_assessment import (
     DEFAULT_RISK_LEVELS,
     RiskTemplate,
@@ -76,16 +79,10 @@ def _prep_fingerprint(command: ReagentPrepChefRiskAssessmentRequest) -> str:
 
 def _build_clp_classification(
     *,
-    hazard_entry: HazardEntry,
-    molarity: Decimal,
+    band: ClpBand | None,
 ) -> ReagentPrepChefClpClassification:
-    band = select_clp_band(bands=hazard_entry.clp_bands, molarity=molarity)
     if band is None:
-        raise rpc_validation_error(
-            app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
-            message="CLP-klassning saknas för vald koncentration.",
-            details={"formula": hazard_entry.key},
-        )
+        return ReagentPrepChefClpClassification()
 
     return ReagentPrepChefClpClassification(
         hazard_codes=list(band.hazard_codes),
@@ -100,7 +97,7 @@ def _build_heuristics(*, hazard_entry: HazardEntry | None) -> ReagentPrepChefChe
         return ReagentPrepChefChemistryHeuristics()
     return ReagentPrepChefChemistryHeuristics(
         incompatibilities=list(hazard_entry.incompatibilities),
-        exothermicity=hazard_entry.exothermicity or "none",
+        exothermicity=hazard_entry.exothermicity,
         reaction_notes=list(hazard_entry.reaction_notes),
     )
 
@@ -163,6 +160,8 @@ def _merge_sds(*, hazard: HazardEntry, sds: HazardSdsData) -> HazardEntry:
         disposal=hazard.disposal,
         notes=hazard.notes,
         aliases=hazard.aliases,
+        search_aliases=hazard.search_aliases,
+        pubchem_cid=hazard.pubchem_cid,
         sds_ref=sds.sds_ref,
         clp_bands=sds.clp_bands,
         incompatibilities=sds.incompatibilities,
@@ -196,6 +195,8 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         *,
         actor: User,
         command: ReagentPrepChefRiskAssessmentRequest,
+        allow_fetch: bool = True,
+        require_complete: bool = False,
     ) -> ReagentPrepChefRiskAssessmentResult:
         prep_result = await self._prep.handle(actor=actor, command=command.prep)
         tool_id = curated_app_tool_id(app_id=APP_ID)
@@ -246,28 +247,61 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         overrides = inputs.overrides if inputs else []
 
         hazard_entry = self._hazards.lookup(formula_clean=prep_result.sheet.chemistry.formula_clean)
+        sds_data: HazardSdsData | None = None
 
         if hazard_entry is None:
-            raise rpc_validation_error(
-                app_code=ReagentPrepChefErrorCode.RISK_CHEMICAL_MISSING,
-                message="Okänt ämne: saknar kuraterad SDS-post.",
-                details={"formula": prep_result.sheet.chemistry.formula_clean},
+            warnings.append("Okänt ämne: riskklassning kan inte beräknas. Öppna SDS.")
+            if require_complete:
+                raise rpc_validation_error(
+                    app_code=ReagentPrepChefErrorCode.RISK_CHEMICAL_MISSING,
+                    message="Okänt ämne: saknar kuraterad SDS-post.",
+                    details={"formula": prep_result.sheet.chemistry.formula_clean},
+                )
+        else:
+            try:
+                sds_data = await self._sds_index.ensure(
+                    hazard=hazard_entry,
+                    allow_fetch=allow_fetch,
+                )
+            except Exception as exc:  # noqa: BLE001
+                if require_complete:
+                    raise rpc_validation_error(
+                        app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
+                        message="SDS saknas eller kunde inte laddas.",
+                        details={"formula": hazard_entry.key},
+                    ) from exc
+                warnings.append("SDS saknas: riskklassning kan inte beräknas. Öppna SDS.")
+                sds_data = None
+
+        if sds_data is not None and hazard_entry is not None:
+            hazard_entry = _merge_sds(hazard=hazard_entry, sds=sds_data)
+        else:
+            hazard_entry = None
+
+        band = None
+        if hazard_entry is not None and hazard_entry.clp_bands:
+            band = select_clp_band(
+                bands=hazard_entry.clp_bands,
+                molarity=command.prep.target_molarity,
             )
+            if band is None:
+                if require_complete:
+                    raise rpc_validation_error(
+                        app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
+                        message="CLP-klassning saknas för vald koncentration.",
+                        details={"formula": hazard_entry.key},
+                    )
+                warnings.append("CLP-klassning kan inte beräknas för vald koncentration.")
+        elif hazard_entry is not None:
+            if require_complete:
+                raise rpc_validation_error(
+                    app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
+                    message="CLP-klassning saknas i SDS.",
+                    details={"formula": hazard_entry.key},
+                )
+            warnings.append("CLP-klassning saknas i SDS.")
 
-        sds_data = await self._sds_index.ensure(hazard=hazard_entry)
-        hazard_entry = _merge_sds(hazard=hazard_entry, sds=sds_data)
-
-        if not hazard_entry.clp_bands:
-            raise rpc_validation_error(
-                app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
-                message="CLP-klassning saknas i SDS.",
-                details={"formula": hazard_entry.key},
-            )
-
-        clp = _build_clp_classification(
-            hazard_entry=hazard_entry,
-            molarity=command.prep.target_molarity,
-        )
+        clp = _build_clp_classification(band=band)
         heuristics = _build_heuristics(hazard_entry=hazard_entry)
 
         templates = self._risk_templates.get()
@@ -315,7 +349,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
 
         draft = ReagentPrepChefRiskAssessmentDraft(
             sheet=prep_result.sheet,
-            sds_ref=hazard_entry.sds_ref,
+            sds_ref=hazard_entry.sds_ref if hazard_entry is not None else None,
             context=inputs.context if inputs else None,
             clp=clp,
             heuristics=heuristics,

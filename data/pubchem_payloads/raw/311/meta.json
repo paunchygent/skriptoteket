@@ -1,0 +1,34 @@
+{
+  "cid": 311,
+  "hazard_key": "C6H8O7",
+  "display_name": "Citronsyra",
+  "captured_at": "2026-01-31T14:33:19.408533+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/311",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/311/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 77,
+      "file": "data/pubchem_payloads/raw/311/linkout.json",
+      "sha256": "fb6fb1d093af717df1ee03d1f98593bd19d315d608ee49af739a0b2675215535"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/311/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 265786,
+      "file": "data/pubchem_payloads/raw/311/lcss.json",
+      "sha256": "a992e5ecfc8554dd9433621be1aba6c13aa4f44cc6aaabb6bb872bb330cb3504"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/311/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 156519,
+      "file": "data/pubchem_payloads/raw/311/safety.json",
+      "sha256": "2768b0e95db58b6c060167b9d9fad77d71128acd411952408751aa6aa7a31c9f"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/311.png"
+}

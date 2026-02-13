@@ -1,0 +1,34 @@
+{
+  "cid": 84512,
+  "hazard_key": "CaF2",
+  "display_name": "Kalciumfluorid",
+  "captured_at": "2026-01-31T14:42:42.597994+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/84512",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/84512/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/84512/linkout.json",
+      "sha256": "8118e47d0135352e9676ee8ba2973788e610a860c1cb2774a51fe43736483859"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/84512/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 125809,
+      "file": "data/pubchem_payloads/raw/84512/lcss.json",
+      "sha256": "53e3e7cc8e3882f0a8aed602d832be7ca824f9cf37a35b27848d7f36cd0284b4"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/84512/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 71074,
+      "file": "data/pubchem_payloads/raw/84512/safety.json",
+      "sha256": "54b12a2d86f782ae74ea4cdf3f39f9c01b7f90f65dbd5f46c885d682f5a0c742"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/84512.png"
+}

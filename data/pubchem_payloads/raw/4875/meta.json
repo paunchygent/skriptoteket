@@ -1,0 +1,34 @@
+{
+  "cid": 4875,
+  "hazard_key": "KI",
+  "display_name": "Kaliumjodid",
+  "captured_at": "2026-01-31T21:18:43.241620+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/4875",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/4875/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 735,
+      "file": "data/pubchem_payloads/raw/4875/linkout.json",
+      "sha256": "d0cae63ed6fca9509a8669e130ac96d399246d781af48f9545f1851a77a1d5c1"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/4875/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 168164,
+      "file": "data/pubchem_payloads/raw/4875/lcss.json",
+      "sha256": "b7a465105aeb3ccc14b83732ee950bb1ad0010a4cea4137bcff3a04da05d44b1"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/4875/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 114846,
+      "file": "data/pubchem_payloads/raw/4875/safety.json",
+      "sha256": "f8df17ecef56b97fad35d5abf470cf39c9d5f12e41b61312a105eca918209732"
+    }
+  },
+  "screenshot": "/tmp/skriptoteket/artifacts/pubchem-payload-capture/4875.png"
+}

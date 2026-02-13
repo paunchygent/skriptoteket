@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "cid": 14801,
+  "captured_at": "2026-01-31T16:57:08.942347+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14801",
+    "lcss_sha256": "fce858784d1de98b22fcc5a64d5bd1f5ec7c42f4c0965c79036840296bbe2966",
+    "linkout_sha256": "e3415c9878e5e679de58e8ab2bb1fb71caafab9582a964b7d9a04c176f2060ae",
+    "meta_sha256": "9187bfd106ec9b178dc2676c17998d44e98615d7e28a457cc664bd681c98aa96"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H302",
+      "H332",
+      "H370",
+      "H372"
+    ],
+    "hazard_statements_sv": {
+      "H302": "Skadligt vid förtäring.",
+      "H332": "Skadligt vid inandning.",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>"
+    },
+    "precautionary_codes": [
+      "P260",
+      "P261",
+      "P264",
+      "P270",
+      "P271",
+      "P301+P317",
+      "P304+P340",
+      "P308+P316",
+      "P317",
+      "P319",
+      "P321",
+      "P330",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS07",
+      "GHS08"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.104636+00:00"
+}

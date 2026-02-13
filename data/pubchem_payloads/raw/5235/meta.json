@@ -1,0 +1,34 @@
+{
+  "cid": 5235,
+  "hazard_key": "NaF",
+  "display_name": "Natriumfluorid",
+  "captured_at": "2026-01-31T16:58:24.173995+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5235",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5235/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1328,
+      "file": "data/pubchem_payloads/raw/5235/linkout.json",
+      "sha256": "5a626f184f06f0de75df8f6bd0fb47583df8da9a6c716ea3fb282585ab8dd3c5"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5235/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 522808,
+      "file": "data/pubchem_payloads/raw/5235/lcss.json",
+      "sha256": "d7f4c70da83b7a41ea3b9bb97715cc288165f889a1e8846ae33f47a705385348"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5235/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 327188,
+      "file": "data/pubchem_payloads/raw/5235/safety.json",
+      "sha256": "cb411e681e633ea9499428604aecab54922c3f1f62b197cbd7dd0f794fcf050d"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5235.png"
+}

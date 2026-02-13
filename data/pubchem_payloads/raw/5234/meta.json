@@ -1,0 +1,34 @@
+{
+  "cid": 5234,
+  "hazard_key": "NaCl",
+  "display_name": "Natriumklorid",
+  "captured_at": "2026-01-31T14:09:54.190048+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5234",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5234/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 735,
+      "file": "data/pubchem_payloads/raw/5234/linkout.json",
+      "sha256": "5379b75b853df6876cccd8bf33c73ce7e7b18cdce67e769951916c33d98ecacb"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5234/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 224266,
+      "file": "data/pubchem_payloads/raw/5234/lcss.json",
+      "sha256": "b97d7791779080ab11a5b96a958e2169a1897f4b8737eea4395d0dc2d58226f3"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5234/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 109383,
+      "file": "data/pubchem_payloads/raw/5234/safety.json",
+      "sha256": "f2ed7a2f2a873972dd58db4b1f1ed7a25d159a9480e46de061005a8e7f3a02db"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5234.png"
+}

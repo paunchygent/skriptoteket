@@ -1,0 +1,43 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 14829,
+    "RecordTitle": "Copper oxide",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 9,
+                "Name": "Status Regulation (EC)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2009/37/EC, Reg. (EU) 2020/1093, Reg. (EU) No 2018/1981, Reg. (EU) No 232/2015, Reg. (EU) No 540/2011, Reg.(EU) No 84/2018"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "EU Pesticides Database",
+        "SourceID": "580",
+        "Name": "Copper oxide",
+        "Description": "EU Pesticides Database contains pesticides and related chemical information, approval status, and the maximum residue levels.",
+        "URL": "https://ec.europa.eu/food/plant/pesticides/eu-pesticides-database/start/screen/active-substances/details/580",
+        "ANID": 13193623
+      }
+    ]
+  }
+}

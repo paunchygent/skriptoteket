@@ -1,0 +1,34 @@
+{
+  "cid": 516951,
+  "hazard_key": "KH2PO4",
+  "display_name": "Kaliumdihydrogenfosfat",
+  "captured_at": "2026-01-31T16:45:02.572939+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516951",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/516951/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 80,
+      "file": "data/pubchem_payloads/raw/516951/linkout.json",
+      "sha256": "4985d5243fb5e276fa112f47aff9e7092791ec49ce158dc3f19a43ca08dbf5e3"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516951/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 140512,
+      "file": "data/pubchem_payloads/raw/516951/lcss.json",
+      "sha256": "3d6a5e06a887df840800c482b2850ff8e9c01c418d753136b73fd246c923ff01"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516951/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 74182,
+      "file": "data/pubchem_payloads/raw/516951/safety.json",
+      "sha256": "30889cad10ab27fb8b67545f6b1ca89d1aed271cf950d85f05f00deed0295346"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/516951.png"
+}

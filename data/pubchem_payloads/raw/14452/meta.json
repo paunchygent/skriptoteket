@@ -1,0 +1,34 @@
+{
+  "cid": 14452,
+  "hazard_key": "CuCO3",
+  "display_name": "Kopparkarbonat",
+  "captured_at": "2026-01-31T16:43:22.424073+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14452",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14452/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14452/linkout.json",
+      "sha256": "b8f52fdd4fc2fe4b503c9821a938f097451782e6bda4c08a734e955b24f29dd9"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14452/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 87637,
+      "file": "data/pubchem_payloads/raw/14452/lcss.json",
+      "sha256": "0201dfa5693ea9ea33627fcd82ce65bb3492c7b42815d08055f28b32dae1ea10"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14452/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 58361,
+      "file": "data/pubchem_payloads/raw/14452/safety.json",
+      "sha256": "282d21809ec79166285aeecbb68a2bd62ad7d963fc8491fe9c68c195c3a3a2b2"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14452.png"
+}

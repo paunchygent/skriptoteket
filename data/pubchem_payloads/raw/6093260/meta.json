@@ -1,0 +1,34 @@
+{
+  "cid": 6093260,
+  "hazard_key": "CaCl2·2H2O",
+  "display_name": "Kalciumklorid (dihydrat)",
+  "captured_at": "2026-01-31T16:42:48.243038+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6093260",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6093260/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/6093260/linkout.json",
+      "sha256": "1232b1970bc02ba39c5625dc5cdb3e53a95fc7a4a448cd93fd0a056d24bf417f"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6093260/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 27459,
+      "file": "data/pubchem_payloads/raw/6093260/lcss.json",
+      "sha256": "5a9f5d185db243111067dd44667bd49a3ff7a04590e4a49a638177b919e56f24"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6093260/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 17116,
+      "file": "data/pubchem_payloads/raw/6093260/safety.json",
+      "sha256": "fe9887e178580161298c7ac7fe962514fa858813d1b1b8d7d264e86650fed088"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/6093260.png"
+}

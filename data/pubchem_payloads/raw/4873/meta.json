@@ -1,0 +1,34 @@
+{
+  "cid": 4873,
+  "hazard_key": "KCl",
+  "display_name": "Kaliumklorid",
+  "captured_at": "2026-01-31T14:10:03.279537+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/4873",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/4873/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 78,
+      "file": "data/pubchem_payloads/raw/4873/linkout.json",
+      "sha256": "073183fb523d86b665f0a94de262fda10a76a99ad169ed30b692daf4f020d07f"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/4873/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 222012,
+      "file": "data/pubchem_payloads/raw/4873/lcss.json",
+      "sha256": "e8cd89d7be62a17cdb5f125726b8ba3ac70c39d3032140db0a3ca1b190117886"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/4873/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 97150,
+      "file": "data/pubchem_payloads/raw/4873/safety.json",
+      "sha256": "a9a75ccf526111356d2b282af6186bcdce2fc2106204e53fd60923df748e60cf"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/4873.png"
+}

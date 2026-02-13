@@ -21,6 +21,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
+- Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`
+- Llama kodassistent eval v2: `docs/reference/ref-llama-kodassistent-eval-v2.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
 - Hemma critical paths + ops inventory: `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
@@ -477,6 +479,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/reports/ref-hemma-gpu-compatibility-notes-2026-01-05.md`
 - `docs/reference/reports/ref-hemma-runpm0-before-after-2026-01-05.md`
 - `docs/reference/reports/ref-hemma-perflevel-auto-vs-high-2026-01-05.md`
+- `docs/reference/ref-llama-kodassistent-eval-v1.md`
+- `docs/reference/ref-llama-kodassistent-eval-v2.md`
 - `docs/reference/reports/ref-hemma-canonical-chat-v3-run-2026-01-05.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-02-083355-083455.md`
 - `docs/reference/reports/ref-hemma-incident-log-2026-01-04-153900-154030.md`
@@ -509,6 +513,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/runbooks/runbook-tabby-codemirror.md`
 - `docs/runbooks/runbook-testing.md`
 - `docs/runbooks/runbook-user-management.md`
+
+### Tooling
+
+- `scripts/ai_prompt_eval/README.md`
 
 ### Templates
 

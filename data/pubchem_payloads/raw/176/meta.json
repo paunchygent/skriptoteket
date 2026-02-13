@@ -1,0 +1,34 @@
+{
+  "cid": 176,
+  "hazard_key": "CH3COOH",
+  "display_name": "Ättiksyra (CH3COOH)",
+  "captured_at": "2026-01-31T18:48:48.674172+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/176",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/176/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1326,
+      "file": "data/pubchem_payloads/raw/176/linkout.json",
+      "sha256": "2f28a4747786ec7c13fb12cb2645a38b017842aa1d0b0f2142615fc777d228c7"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/176/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 489535,
+      "file": "data/pubchem_payloads/raw/176/lcss.json",
+      "sha256": "d8134fab4f222bf43db0b68d7e4ade0d1b4014519a270dc24852f12f35a68912"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/176/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 449154,
+      "file": "data/pubchem_payloads/raw/176/safety.json",
+      "sha256": "6f6d15ffe9537a879bba188fb2bc32a3c3a9822d88e679147e62850f30d9762b"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/176.png"
+}

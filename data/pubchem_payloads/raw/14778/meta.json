@@ -1,0 +1,34 @@
+{
+  "cid": 14778,
+  "hazard_key": "CaO",
+  "display_name": "Kalciumoxid",
+  "captured_at": "2026-01-31T21:18:28.399201+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14778",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14778/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/14778/linkout.json",
+      "sha256": "69cd31d12f5ab3a103938700f9a8fb1ebdbb548c4e5ea4726813fa35eb8dc0f4"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14778/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 252417,
+      "file": "data/pubchem_payloads/raw/14778/lcss.json",
+      "sha256": "303d85782ddef73570bf13ab089f937daeec10ab347d16c64f601941d3eece34"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14778/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 278542,
+      "file": "data/pubchem_payloads/raw/14778/safety.json",
+      "sha256": "c885142d1a4d103b8936b76252242923d1e9e13dd3db6b2c15cc9b957cea1b1b"
+    }
+  },
+  "screenshot": "/tmp/skriptoteket/artifacts/pubchem-payload-capture/14778.png"
+}

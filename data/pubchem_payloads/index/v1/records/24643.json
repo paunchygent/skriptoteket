@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "cid": 24643,
+  "captured_at": "2026-01-31T16:43:06.387007+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24643",
+    "lcss_sha256": "9a758ebb7ea398820a45b8f77109936ca90cd037157dd33079ededd0ea571f9f",
+    "linkout_sha256": "f8d5c65a5821f045d9f5aaac71133585bf86319b92cf3ab1e1a4adbef6e3172f",
+    "meta_sha256": "654c1a72399ca276b5ab919e48d2f7d5c50347b5e322c8ecb0f6ac44b4efb224"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H302",
+      "H317",
+      "H318",
+      "H332",
+      "H334",
+      "H341",
+      "H350",
+      "H360",
+      "H372",
+      "H400",
+      "H410"
+    ],
+    "hazard_statements_sv": {
+      "H302": "Skadligt vid förtäring.",
+      "H317": "Kan orsaka allergisk hudreaktion.",
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H332": "Skadligt vid inandning.",
+      "H334": "Kan orsaka allergi- eller astmasymtom eller andningssvårigheter vid inandning.",
+      "H341": "Misstänks kunna orsaka genetiska defekter <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H350": "Kan orsaka cancer <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H360": "Kan skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H400": "Mycket giftigt för vattenlevande organismer.",
+      "H410": "Mycket giftigt för vattenlevande organismer med långtidseffekter."
+    },
+    "precautionary_codes": [
+      "P203",
+      "P233",
+      "P260",
+      "P261",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P271",
+      "P272",
+      "P273",
+      "P280",
+      "P284",
+      "P301+P317",
+      "P302+P352",
+      "P304+P340",
+      "P305+P354+P338",
+      "P317",
+      "P318",
+      "P319",
+      "P321",
+      "P330",
+      "P333+P317",
+      "P342+P316",
+      "P362+P364",
+      "P391",
+      "P403",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P272": "Nedstänkta arbetskläder får inte avlägsnas från arbetsplatsen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P284": "* [Vid otillräcklig ventilation], använd andningsskydd.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P317": "Sök läkarhjälp.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P333+P317": "Vid hudirritation eller utslag: Sök läkarhjälp.",
+      "P342+P316": "Vid besvär i luftvägarna: Sök omedelbar läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P391": "Samla upp spill.",
+      "P403": "Förvaras på väl ventilerad plats.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS07",
+      "GHS08",
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.073577+00:00"
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 517044,
+  "hazard_key": "KC2H3O2",
+  "display_name": "Kaliumacetat",
+  "captured_at": "2026-01-31T16:44:36.340279+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/517044",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/517044/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 80,
+      "file": "data/pubchem_payloads/raw/517044/linkout.json",
+      "sha256": "17c4cd46f4f520e2de9a35d9c77cc500682b9026f15949cfb26fab1508a17faf"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/517044/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79800,
+      "file": "data/pubchem_payloads/raw/517044/lcss.json",
+      "sha256": "5d5131c90831606980ac43985cd87e40e451fd20d85e210cf7d55eb821a0eb8b"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/517044/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 45764,
+      "file": "data/pubchem_payloads/raw/517044/safety.json",
+      "sha256": "f9fd7c824e26425ba65e00c12a742de3d02f48c5e825a7a3a27b9ae2a5634f40"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/517044.png"
+}

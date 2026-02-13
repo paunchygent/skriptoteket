@@ -1,0 +1,3686 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24436,
+    "RecordTitle": "Sodium Sulfate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 84,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 32,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "Not Classified"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 32,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 96.5% (4127 of 4277) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 88,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 4127 of 4277 companies (only 3.5% companies provided GHS information). For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 163,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116245"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 32,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 4277 reports by companies from 10 notifications to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 118,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 4127 of 4277 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 82,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 7 notifications provided by 150 of 4277 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 101,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116245"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 36,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 110,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/221200"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 37,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 110,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/224769"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 61,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 61,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 61,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H320: Causes eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 29,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H370: Causes damage to organs [Danger Specific target organ toxicity, single exposure]",
+                      "Markup": [
+                        {
+                          "Start": 31,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 61,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P264, P264+P265, P270, P305+P351+P338, P308+P316, P321, P337+P317, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 45,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P308+P316"
+                        },
+                        {
+                          "Start": 56,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 62,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 73,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 83,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13759-07-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "68081-98-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "68140-10-3"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "68412-82-8"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 28,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 34,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 35,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7557-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 46,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 59,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "15124-09-1"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 60,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7757-82-6"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 84,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "disodium;sulfate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 84,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SODIUM SULFATE"
+                    },
+                    {
+                      "String": "7757-82-6"
+                    },
+                    {
+                      "String": "Sodium sulfate anhydrous"
+                    },
+                    {
+                      "String": "Disodium sulfate"
+                    },
+                    {
+                      "String": "Sodium sulfate, anhydrous"
+                    },
+                    {
+                      "String": "Salt cake"
+                    },
+                    {
+                      "String": "Sodium sulphate"
+                    },
+                    {
+                      "String": "Sulfuric acid disodium salt"
+                    },
+                    {
+                      "String": "Disodium sulphate"
+                    },
+                    {
+                      "String": "Sodium sulphate anhydrous"
+                    },
+                    {
+                      "String": "Sodium sulfate (2:1)"
+                    },
+                    {
+                      "String": "Bisodium sulfate"
+                    },
+                    {
+                      "String": "Sodium sulfate, dried"
+                    },
+                    {
+                      "String": "Anhydrous sodium sulfate"
+                    },
+                    {
+                      "String": "Disodium monosulfate"
+                    },
+                    {
+                      "String": "Dibasic sodium sulfate"
+                    },
+                    {
+                      "String": "Sodium sulphate, anhydrous"
+                    },
+                    {
+                      "String": "Sodium sulfate (Na2SO4)"
+                    },
+                    {
+                      "String": "Mirabilite"
+                    },
+                    {
+                      "String": "Natriumsulfat"
+                    },
+                    {
+                      "String": "DTXSID1021291"
+                    },
+                    {
+                      "String": "36KCS0R750"
+                    },
+                    {
+                      "String": "NSC-403914"
+                    },
+                    {
+                      "String": "DTXCID601291"
+                    },
+                    {
+                      "String": "CHEBI:32149"
+                    },
+                    {
+                      "String": "Sulfuric acid disodium salt, anhydrous"
+                    },
+                    {
+                      "String": "natrii sulphas"
+                    },
+                    {
+                      "String": "Nat Sulph"
+                    },
+                    {
+                      "String": "Natrum Sulph 3X"
+                    },
+                    {
+                      "String": "Nat Sulph 3X"
+                    },
+                    {
+                      "String": "NATRUM SULPH"
+                    },
+                    {
+                      "String": "Natrum Sulphuricum 6X"
+                    },
+                    {
+                      "String": "RefChem:6690"
+                    },
+                    {
+                      "String": "Natrum sulphuricum 30C"
+                    },
+                    {
+                      "String": "NAT SULPH 6X"
+                    },
+                    {
+                      "String": "TONICPET 11"
+                    },
+                    {
+                      "String": "Natrum Sulphuricum 8011"
+                    },
+                    {
+                      "String": "BQCELL REVIRGIN GUNG"
+                    },
+                    {
+                      "String": "NATRIUM SULFURICUM 6X"
+                    },
+                    {
+                      "String": "Bestmade Natural Products Nat Sulph"
+                    },
+                    {
+                      "String": "231-820-9"
+                    },
+                    {
+                      "String": "689-159-0"
+                    },
+                    {
+                      "String": "691-538-0"
+                    },
+                    {
+                      "String": "0YPR65R21J"
+                    },
+                    {
+                      "String": "BLI801 COMPONENT SODIUM SULFATE"
+                    },
+                    {
+                      "String": "CHEBI:32586"
+                    },
+                    {
+                      "String": "D-131"
+                    },
+                    {
+                      "String": "E-514(I)"
+                    },
+                    {
+                      "String": "Glauber's Salt"
+                    },
+                    {
+                      "String": "Glaubers Salt"
+                    },
+                    {
+                      "String": "INS NO.514(I)"
+                    },
+                    {
+                      "String": "INS-514(I)"
+                    },
+                    {
+                      "String": "Kemsol"
+                    },
+                    {
+                      "String": "Mang xiao"
+                    },
+                    {
+                      "String": "Mangxiao"
+                    },
+                    {
+                      "String": "Natrii sulfas"
+                    },
+                    {
+                      "String": "Natrum Sulphuricum"
+                    },
+                    {
+                      "String": "NSC403914"
+                    },
+                    {
+                      "String": "sodium sulphate decahydrate"
+                    },
+                    {
+                      "String": "Sulfuric Acid Disodium Salt, Decahydrate"
+                    },
+                    {
+                      "String": "disodium;sulfate"
+                    },
+                    {
+                      "String": "sodiumsulfate"
+                    },
+                    {
+                      "String": "15124-09-1"
+                    },
+                    {
+                      "String": "Sulfuric acid, sodium salt"
+                    },
+                    {
+                      "String": "Sulfate, sodium"
+                    },
+                    {
+                      "String": "Na2O4S"
+                    },
+                    {
+                      "String": "Sodium sulfate, dried [JAN]"
+                    },
+                    {
+                      "String": "Na2SO4"
+                    },
+                    {
+                      "String": "MFCD00003504"
+                    },
+                    {
+                      "String": "13759-07-4"
+                    },
+                    {
+                      "String": "Natriumsulfat (German)"
+                    },
+                    {
+                      "String": "Na sulphate"
+                    },
+                    {
+                      "String": "Caswell No. 793"
+                    },
+                    {
+                      "String": "HSDB 5042"
+                    },
+                    {
+                      "String": "Sulfuric acid sodium salt (1:2)"
+                    },
+                    {
+                      "String": "Thenardite (Na2(SO4))"
+                    },
+                    {
+                      "String": "UNII-36KCS0R750"
+                    },
+                    {
+                      "String": "EINECS 231-820-9"
+                    },
+                    {
+                      "String": "EPA Pesticide Chemical Code 005604"
+                    },
+                    {
+                      "String": "NSC 403914"
+                    },
+                    {
+                      "String": "Sodium sulfate anhyfrous"
+                    },
+                    {
+                      "String": "Sodium sulfate anyhdrous"
+                    },
+                    {
+                      "String": "AI3-02398"
+                    },
+                    {
+                      "String": "Sulfuric acid sodium salt"
+                    },
+                    {
+                      "String": "SCHEMBL412"
+                    },
+                    {
+                      "String": "EC 231-820-9"
+                    },
+                    {
+                      "String": "SODIUM SULFATE [MI]"
+                    },
+                    {
+                      "String": "Sodium sulfate, ACS reagent"
+                    },
+                    {
+                      "String": "SODIUM SULFATE [HSDB]"
+                    },
+                    {
+                      "String": "NATRII SULFAS ANHYDRICUS"
+                    },
+                    {
+                      "String": "CHEMBL233406"
+                    },
+                    {
+                      "String": "Anhydous sodium sulfate (JP18)"
+                    },
+                    {
+                      "String": "Tox21_201045"
+                    },
+                    {
+                      "String": "SODIUM SULFATE ANHYDROUS [II]"
+                    },
+                    {
+                      "String": "AKOS015833463"
+                    },
+                    {
+                      "String": "ANHYDROUS SODIUM SULFATE [JAN]"
+                    },
+                    {
+                      "String": "Sodium sulfate, BioXtra, >=99.0%"
+                    },
+                    {
+                      "String": "DB09472"
+                    },
+                    {
+                      "String": "FS12179"
+                    },
+                    {
+                      "String": "ANHYDROUS SODIUM SULFATE [MART.]"
+                    },
+                    {
+                      "String": "NCGC00258598-01"
+                    },
+                    {
+                      "String": "Sodium sulfate, LR, anhydrous, >=99%"
+                    },
+                    {
+                      "String": "SODIUM SULFATE ANHYDROUS [USP-RS]"
+                    },
+                    {
+                      "String": "SODIUM SULFATE ANHYDROUS [WHO-DD]"
+                    },
+                    {
+                      "String": "CAS-7757-82-6"
+                    },
+                    {
+                      "String": "Sodium sulfate 5% (w/w) aqueous solution"
+                    },
+                    {
+                      "String": "DB-231847"
+                    },
+                    {
+                      "String": "SODIUM SULFATE, ANHYDROUS [WHO-IP]"
+                    },
+                    {
+                      "String": "Sodium sulfate, AR, anhydrous, >=99.5%"
+                    },
+                    {
+                      "String": "NS00081401"
+                    },
+                    {
+                      "String": "S0566"
+                    },
+                    {
+                      "String": "Sodium sulfate, 99.9955% (metals basis)"
+                    },
+                    {
+                      "String": "Sodium sulfate, ReagentPlus(R), >=99.0%"
+                    },
+                    {
+                      "String": "SODIUM SULFATE ANHYDROUS [ORANGE BOOK]"
+                    },
+                    {
+                      "String": "Sodium sulfate, Trace metals grade, 99.99%"
+                    },
+                    {
+                      "String": "D01732"
+                    },
+                    {
+                      "String": "NATRII SULFAS ANHYDRICUS [WHO-IP LATIN]"
+                    },
+                    {
+                      "String": "Sodium sulfate, >=99.99% trace metals basis"
+                    },
+                    {
+                      "String": "Sodium sulfate, JIS special grade, >=99.0%"
+                    },
+                    {
+                      "String": "Sodium sulfate, Vetec(TM) reagent grade, 99%"
+                    },
+                    {
+                      "String": "SODIUM SULFATE ANHYDROUS [USP MONOGRAPH]"
+                    },
+                    {
+                      "String": "SODIUM SULFATE, ANHYDROUS [EP MONOGRAPH]"
+                    },
+                    {
+                      "String": "F044702"
+                    },
+                    {
+                      "String": "Q211737"
+                    },
+                    {
+                      "String": "Sodium sulfate, for HPLC, 99.0-101.0% (T)"
+                    },
+                    {
+                      "String": "Sodium sulfate, purum, anhydrous, >=99.0% (T)"
+                    },
+                    {
+                      "String": "Sodium sulfate, SAJ first grade, >=99.0%, beads"
+                    },
+                    {
+                      "String": "Sodium sulfate, SAJ first grade, >=99.0%, powder"
+                    },
+                    {
+                      "String": "Sodium sulfate, >=99.0%, plant cell culture tested"
+                    },
+                    {
+                      "String": "Sodium sulfate, BioUltra, anhydrous, >=99.0% (T)"
+                    },
+                    {
+                      "String": "Sodium sulfate, p.a., 99.0-101.0%, reag. ISO"
+                    },
+                    {
+                      "String": "Sodium sulfate, tested according to Ph.Eur., anhydrous"
+                    },
+                    {
+                      "String": "SULFURIC ACID DISODIUM SALT, ANHYDROUS [WHO-IP]"
+                    },
+                    {
+                      "String": "Sodium sulfate, ACS reagent, >=99.0%, anhydrous, powder"
+                    },
+                    {
+                      "String": "Sodium sulfate, ACS reagent, >=99.0%, anhydrous, granular"
+                    },
+                    {
+                      "String": "Sodium sulfate, anhydrous, free-flowing, Redi-Dri(TM), ACS reagent, >=99%"
+                    },
+                    {
+                      "String": "Sodium sulfate, anhydrous, free-flowing, Redi-Dri(TM), ReagentPlus(R), >=99%"
+                    },
+                    {
+                      "String": "Sodium sulfate, anhydrous, granular, free-flowing, Redi-Dri(TM), ACS reagent, >=99%"
+                    },
+                    {
+                      "String": "Sodium sulfate, puriss. p.a., ACS reagent, reag. ISO, reag. Ph. Eur., anhydrous, >=99.0%"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Na2SO4",
+                      "Markup": [
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        },
+                        {
+                          "Start": 5,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 84,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Na2O4S"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 84,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "142.04"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 84,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2Na.H2O4S/c;;1-5(2,3)4/h;;(H2,1,2,3,4)/q2*+1;/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 84,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "PMZURENOXWZQFD-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 26,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Gas or Vapor; Dry Powder, Pellets or Large Crystals; Pellets or Large Crystals; Water or Solvent Wet Solid; Dry Powder; Dry Powder, Pellets or Large Crystals, Liquid; Liquid; Dry Powder, Liquid, Other Solid; Dry Powder, Other Solid; Liquid, Other Solid; Dry Powder, Water or Solvent Wet Solid; Other Solid",
+                      "Markup": [
+                        {
+                          "Start": 80,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 266,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colourless crystals or a fine, white, crystalline powder; The decahydrate is efflorescent"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 42,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White, hygroscopic solid; Available forms are anhydrous (7757-82-6) and decahydrate (7727-73-3); [CHEMINFO]",
+                      "Markup": [
+                        {
+                          "Start": 57,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/7757-82-6",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        },
+                        {
+                          "Start": 85,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/7727-73-3",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-62649"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE HYGROSCOPIC SOLID IN VARIOUS FORMS."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Classes -> Sulfur Compounds",
+                      "Markup": [
+                        {
+                          "Start": 17,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sulfur",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Sulfur"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91",
+                    "Matched": {
+                      "PCLID": 900045423,
+                      "Citation": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "884 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate (Draft) p.3 (1985)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate (Draft) p.3 (1985)",
+                    "Matched": {
+                      "PCLID": 900028668,
+                      "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate (Draft) p.3 (1985)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Latent heat of fusion: 24.4 kJ at melting point"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "884Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91",
+                    "Matched": {
+                      "PCLID": 900045423,
+                      "Citation": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In water, 28.1 g/100 g water at 25 °C",
+                      "Markup": [
+                        {
+                          "Start": 3,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "ECHA; Search for Chemicals. Sodium Sulphate (7757-82-6) Registered Substances Dossier. European Chemical Agency. Available from, as of June 15, 2017: https://echa.europa.eu/"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "ECHA; Search for Chemicals. Sodium Sulphate (7757-82-6) Registered Substances Dossier. European Chemical Agency. Available from, as of June 15, 2017: https://echa.europa.eu/",
+                    "Matched": {
+                      "PCLID": 900119390,
+                      "Citation": "ECHA; Search for Chemicals. Sodium Sulphate (7757-82-6) Registered Substances Dossier. European Chemical Agency. Available from, as of June 15, 2017: https://echa.europa.eu/"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "In water, 445.47 g/L at 20 °C and pH 5.23 (shake flask method)",
+                      "Markup": [
+                        {
+                          "Start": 3,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607",
+                    "Matched": {
+                      "PCLID": 900059301,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Soluble in about 3.6 parts water; 1 in 2 parts water is maximum solubility at 33 °C; at 100 °C it requires 2.4 parts water",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 117,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607",
+                    "Matched": {
+                      "PCLID": 900059301,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Soluble in glycerin; insoluble in alcohol",
+                      "Markup": [
+                        {
+                          "Start": 11,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/glycerin",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-753"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-128"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-128",
+                    "Matched": {
+                      "PCLID": 900033805,
+                      "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-128"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SOL IN HYDROGEN IODIDE"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water: very good",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1254"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1254",
+                    "Matched": {
+                      "PCLID": 906273545,
+                      "Citation": "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1254"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.671"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Relative density (water = 1): 2.7",
+                      "Markup": [
+                        {
+                          "Start": 18,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Corrosivity",
+            "Description": "The ability of a chemical to damage or destroy other substances when it comes into contact.",
+            "URL": "https://www.usgs.gov/mission-areas/water-resources/science/corrosivity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "NIH/EPA; OHM/TADS (1986)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "NIH/EPA; OHM/TADS (1986)",
+                    "Matched": {
+                      "PCLID": 900126292,
+                      "Citation": "NIH/EPA; OHM/TADS (1986)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The rates of corrosion of iron and steel in water are a function of the specific mineral quality as well as the alkalinity and pH values. Sodium sulfate ... is a strong contributor to the rate of corrosion. For example, in water with 400 mg/l of alkalinity (as CaCO3) at pH 7, the corrosion rate will be zero at 200 mg/l of Na2SO4, but when the concentration of sodium sulfate is 400 mg/l, the corrosion rate will be about 100 mg per square cm per day.",
+                      "Markup": [
+                        {
+                          "Start": 26,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iron",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Iron"
+                        },
+                        {
+                          "Start": 44,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 138,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        },
+                        {
+                          "Start": 223,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 362,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607",
+                    "Matched": {
+                      "PCLID": 900059301,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Powder or orthorhombic bipyramidal crystals"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91",
+                    "Matched": {
+                      "PCLID": 900045423,
+                      "Citation": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014-2015, p. 4-91"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White orthorhombic crystals or powder"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Odor",
+            "Description": "The property of certain chemicals, in very small concentrations, to stimulate chemical sense receptors that sample the air or water.",
+            "URL": "https://www.britannica.com/science/odor",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1254"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1254",
+                    "Matched": {
+                      "PCLID": 906273545,
+                      "Citation": "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1254"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Odorless"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Taste",
+            "Description": "The sensation of flavor perceived in the mouth and throat on contact with a substance.",
+            "URL": "https://www.britannica.com/science/taste-sense",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1245"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1245",
+                    "Matched": {
+                      "PCLID": 900149867,
+                      "Citation": "Larranaga, M.D., Lewis, R.J. Sr., Lewis, R.A.; Hawley's Condensed Chemical Dictionary 16th  Edition. John Wiley & Sons, Inc. Hoboken, NJ 2016., p. 1245"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Bitter saline taste"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Potential",
+            "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)",
+                    "Matched": {
+                      "PCLID": 900037147,
+                      "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Noncombustible solid"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "NIH/EPA; OHM/TADS (1986)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "NIH/EPA; OHM/TADS (1986)",
+                    "Matched": {
+                      "PCLID": 900126292,
+                      "Citation": "NIH/EPA; OHM/TADS (1986)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Nonflammable"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Decomposition",
+            "Description": "Information on the decomposition of this compound, including the decomposition conditions and products.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281",
+                    "Matched": {
+                      "PCLID": 900100954,
+                      "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "When heated to decomposition it emits toxic fumes of sulfur oxides and sodium oxide.",
+                      "Markup": [
+                        {
+                          "Start": 71,
+                          "Length": 12,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20oxide",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-73971"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Decomposes on heating. This produces sulfur oxides and sodium oxides."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Toxicity Summary",
+                "Description": "Summary of the toxicity of this compound, provided by the Hazardous Substances Data Bank (HSDB) and other sources.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Cosmetic Ingredient Review Conclusion",
+                    "Reference": [
+                      "International Journal of Toxicology 19(S1):77-87, 2000",
+                      "International Journal of Toxicology 40(S1):86-94,2021"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Journal of Toxicology 19(S1):77-87, 2000",
+                        "Matched": {
+                          "PCLID": 906421661,
+                          "Citation": "International Journal of Toxicology 19(S1):77-87, 2000"
+                        }
+                      },
+                      {
+                        "Citation": "International Journal of Toxicology 40(S1):86-94,2021",
+                        "Matched": {
+                          "PCLID": 906421372,
+                          "Citation": "International Journal of Toxicology 40(S1):86-94,2021"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The CIR Expert Panel concluded that Sodium Sulfate is safe in cosmetics in the present practices of use and concentrations described in this safety assessment when formulated to be non-irritating.",
+                          "Markup": [
+                            {
+                              "Start": 36,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20Sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 17,
+                    "Name": "Cosmetic Ingredient Review Finding(s)",
+                    "Reference": [
+                      "International Journal of Toxicology 19(S1):77-87, 2000",
+                      "International Journal of Toxicology 40(S1):86-94,2021"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Journal of Toxicology 19(S1):77-87, 2000",
+                        "Matched": {
+                          "PCLID": 906421661,
+                          "Citation": "International Journal of Toxicology 19(S1):77-87, 2000"
+                        }
+                      },
+                      {
+                        "Citation": "International Journal of Toxicology 40(S1):86-94,2021",
+                        "Matched": {
+                          "PCLID": 906421372,
+                          "Citation": "International Journal of Toxicology 40(S1):86-94,2021"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Safe for use in cosmetics, with qualifications"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IDENTIFICATION AND USE: Sodium sulfate is a white powder, or crystals. It is used for standardizing dyes, in freezing mixtures, and in dying and printing textiles. It is also used as cathartic and purgative in humans and in veterinary medicine. HUMAN STUDIES: It may result in gastrointestinal irritation and diarrhea. ANIMAL STUDIES: Poultry mortality was 33% after drinking water containing 7500 mg/L sodium sulfate for 15 days. Outbreaks of poisoning in pigs due to overdosage were characterized by twitching, tremors and convulsions. The most noticeable lesion at post mortem was widespread vacuolation and necrosis of cerebral cortex. ECOTOXICITY STUDIES: Plants were injured by sodium sulfate levels of 4000 mg/L in soil; 710 mg/L depressed root growth and water absorption. Among aquatic species, the cladoceran and mussel were acutely more sensitive to sulfate than the midge and fathead minnow, whereas the fathead minnow was chronically more sensitive than the other 3 species.",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 376,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 403,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 684,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 763,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 861,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Non-Human Toxicity Values",
+                "Description": "Quantitative non-human toxicity values (e.g., lethal dose) for this compound.  The data shown here are mostly for lab animals (e.g., rat, mouse, guinea pig, and rabbit).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281",
+                        "Matched": {
+                          "PCLID": 900100954,
+                          "Citation": "Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 11th Edition. Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2004., p. 3281"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Mouse oral 5,989 mg/kg"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate (Draft) p.44 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate (Draft) p.44 (1985)",
+                        "Matched": {
+                          "PCLID": 900086046,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate (Draft) p.44 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "LD50 Rabbit percutaneous > 4.0 g/kg"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Absorption",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Absorption of sodium sulfate after ingestion in rats was investigated. 35)S-Radioactivity excreted in urine during 24 hr indicated almost complete absorption from GI tract.  Determination in serum 2 hr after admin revealed 3-fold increase in sulfate concentration rapid and  almost complete absorption of inorganic  sulfate occurs after oral admin in rats.",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 242,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 316,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 20,
+                    "Name": "Route of Elimination",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Rectal effluent if unabsorbed sulfates ;  urine (predominant route for absorbed sulfates  )"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:7493551",
+                      "Kim HJ et al; Drug Metab Dispos 23 (8): 840-5 (1995)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:7493551",
+                        "Matched": {
+                          "PCLID": 17153552,
+                          "Citation": "Kim HJ, Madhu C, Cho JH, Klaassen CD. In vivo modification of 3'-phosphoadenosine 5'-phosphosulfate and sulfate by infusion of sodium sulfate, cysteine, and methionine. Drug Metabolism and Disposition. 1995 Aug;23(8):840–5. doi: 10.1016/s0090-9556(25)06666-8.",
+                          "PMID": 7493551,
+                          "DOI": "10.1016/s0090-9556(25)06666-8"
+                        }
+                      },
+                      {
+                        "Citation": "Kim HJ et al; Drug Metab Dispos 23 (8): 840-5 (1995)",
+                        "Matched": {
+                          "PCLID": 17153552,
+                          "Citation": "Kim HJ, Madhu C, Cho JH, Klaassen CD. In vivo modification of 3'-phosphoadenosine 5'-phosphosulfate and sulfate by infusion of sodium sulfate, cysteine, and methionine. Drug Metabolism and Disposition. 1995 Aug;23(8):840–5. doi: 10.1016/s0090-9556(25)06666-8.",
+                          "PMID": 7493551,
+                          "DOI": "10.1016/s0090-9556(25)06666-8"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The importance of tissue sulfate concentrations in regulating 3'-phosphoadenosine 5'-phosphosulfate (PAPS) synthesis is not known. Therefore, this study was conducted to determine the influence of increased availability of inorganic sulfate on steady-state PAPS concentrations in various tissues. To increase tissue sulfate concentrations, 2-16 mmol/kg of sodium sulfate and sulfur-containing amino acids (cysteine or methionine) were infused intravenously for 2 hr into pentobarbital-anesthetized rats. Serial blood samples were taken during the infusion and analyzed for sulfate concentrations. After 2 hr of infusion, liver, kidney, and brain were removed for quantification of tissue PAPS and sulfate concentrations. Infusion of sodium sulfate, cysteine, and methionine increased serum and tissue sulfate concentrations in a dose- and time-dependent manner. Serum sulfate concentrations increased from 0.8 to 14 mM during the infusion of sodium sulfate, whereas infusions of cysteine and methionine increased serum sulfate concentrations to 4.8 and 2.0 mM, respectively. Tissue sulfate concentrations also increased during sulfate infusion. Liver sulfate concentration increased from 0.8 to 4.8 mM, kidney concentration increased from 0.6 to 31 mM, and brain concentration increased from 0.1 to 0.6 mM. Similar to the serum sulfate concentrations, sulfate infusion was the most effective in increasing tissue sulfate concentrations, cysteine was intermediate, and methionine the least effective. Although sulfate concentrations in liver, kidney, and brain increased 6-, 50-, and 6-fold by infusing sulfate, respectively; tissue PAPS levels were not altered markedly. Hepatic PAPS concentrations increased significantly (30-35%) only when infused with the higher doses (8 or 16 mmol/kg/2 hr) of sodium sulfate.",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 62,
+                              "Length": 37,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/3%27-phosphoadenosine%205%27-phosphosulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-10214"
+                            },
+                            {
+                              "Start": 233,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 316,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 356,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 406,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/cysteine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5862"
+                            },
+                            {
+                              "Start": 418,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/methionine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-876"
+                            },
+                            {
+                              "Start": 471,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/pentobarbital",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4737"
+                            },
+                            {
+                              "Start": 573,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 697,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 733,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 749,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/cysteine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5862"
+                            },
+                            {
+                              "Start": 763,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/methionine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-876"
+                            },
+                            {
+                              "Start": 801,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 868,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 942,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 979,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/cysteine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5862"
+                            },
+                            {
+                              "Start": 992,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/methionine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-876"
+                            },
+                            {
+                              "Start": 1019,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1082,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1127,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1151,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1328,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1352,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1413,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1437,
+                              "Length": 8,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/cysteine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5862"
+                            },
+                            {
+                              "Start": 1468,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/methionine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-876"
+                            },
+                            {
+                              "Start": 1509,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1602,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 1798,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:476150",
+                      "Krijgsheld KR et al; Biochim Biophys Acta 586 (3): 492-500 (1979)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:476150",
+                        "Matched": {
+                          "PCLID": 16575,
+                          "Citation": "KRIJGSHELD K, FRANKENA H, SCHOLTENS E, ZWEENS J, MULDER G. Absorption, serum levels and urinary excretion of inorganic sulfate after oral administration of sodium sulfate in the conscious rat. Biochimica et Biophysica Acta (BBA) - General Subjects. 1979 Sep 03;586(3):492–500. doi: 10.1016/0304-4165(79)90039-4.",
+                          "PMID": 476150,
+                          "DOI": "10.1016/0304-4165(79)90039-4"
+                        }
+                      },
+                      {
+                        "Citation": "Krijgsheld KR et al; Biochim Biophys Acta 586 (3): 492-500 (1979)",
+                        "Matched": {
+                          "PCLID": 16575,
+                          "Citation": "KRIJGSHELD K, FRANKENA H, SCHOLTENS E, ZWEENS J, MULDER G. Absorption, serum levels and urinary excretion of inorganic sulfate after oral administration of sodium sulfate in the conscious rat. Biochimica et Biophysica Acta (BBA) - General Subjects. 1979 Sep 03;586(3):492–500. doi: 10.1016/0304-4165(79)90039-4.",
+                          "PMID": 476150,
+                          "DOI": "10.1016/0304-4165(79)90039-4"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The absorption of inorganic sulfate after ingestion was investigated in rats. After oral administration of Na235SO4, 35S radioactivity was measurable in plasma already after 15 min and its plasma concentration reached a peak after about 1.5-2 hr. The 35S-radioactivity excreted in urine during 24 hr after ingestion of Na235SO4 together with varying amounts of unlabelled Na2SO4 (0.25-5.0 mmol Na2SO4 per rat) indicated an almost complete absorption of inorganic sulfate from the gastrointestinal tract. Determination of the inorganic sulfate concentration in rat serum 2 hr after oral administration of 5.0 mmol Na2SO4 revealed a three-fold increase in serum sulfate concentration. The data suggest a rapid and almost complete absorption of inorganic sulfate after oral administration in the rat. Its importance in relation to the sulfate availability for sulfate conjugation of drugs is discussed.",
+                          "Markup": [
+                            {
+                              "Start": 28,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 463,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 535,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 660,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 752,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 832,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 857,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:7264905",
+                      "Cocchetto DM, Levy G; J Pharm Sci 70 (3): 331-3 (1981)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:7264905",
+                        "Matched": {
+                          "PCLID": 33342264,
+                          "Citation": "Cocchetto DM, Levyx G. Absorption of Orally Administered Sodium Sulfate in Humans. Journal of Pharmaceutical Sciences. 1981 Mar;70(3):331–3. doi: 10.1002/jps.2600700330.",
+                          "PMID": 7264905,
+                          "DOI": "10.1002/jps.2600700330"
+                        }
+                      },
+                      {
+                        "Citation": "Cocchetto DM, Levy G; J Pharm Sci 70 (3): 331-3 (1981)",
+                        "Matched": {
+                          "PCLID": 33342264,
+                          "Citation": "Cocchetto DM, Levyx G. Absorption of Orally Administered Sodium Sulfate in Humans. Journal of Pharmaceutical Sciences. 1981 Mar;70(3):331–3. doi: 10.1002/jps.2600700330.",
+                          "PMID": 7264905,
+                          "DOI": "10.1002/jps.2600700330"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium sulfate can be used to enhance the conjugation of phenolic drugs with sulfate and to treat hypercalcemia. It is thought that sulfate in is absorbed slowly and incompletely from the digestive tract. The purposes of this investigation were to determine the absorption of large amount of sodium sulfate(18.1 g as the decahydrate, equivalent to 8.0 g of the anhydrous salt) and to compare the bioavailability when this amount is administered orally to normal subjects as a single dose and as four equally divided hourly doses. The 72-hr urinary recovery of free sulfate following single and divided doses was 53.4 +/- 15.8 and 61.8 +/- 7.8%, respectively (mean +/- SD, n=5, p > 0.2). The single dose produced severe diarrhea while the divided doses caused only mild or no diarrhea. Thus, a large amount of sodium sulfate, when administered orally in divided doses over 3 hr, is well tolerated and is absorbed to a significant extent. Orally administered sodium sulfate may be useful for the early treatment of acetaminophen overdose.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 77,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 132,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 292,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 565,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1117"
+                            },
+                            {
+                              "Start": 809,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 957,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 1013,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/acetaminophen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1983"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "PMID:645906",
+                      "Rabinowitz L, Gunther RA; Am J Physiol 234 (5): F371-5 (1978)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "PMID:645906",
+                        "Matched": {
+                          "PCLID": 25163226,
+                          "Citation": "Rabinowitz L, Gunther RA. Renal potassium excretion in sheep during sodium sulfate, phosphate, and chloride infusion. American Journal of Physiology-Renal Physiology. 1978 May 01;234(5):F371–5. doi: 10.1152/ajprenal.1978.234.5.f371.",
+                          "PMID": 645906,
+                          "DOI": "10.1152/ajprenal.1978.234.5.f371"
+                        }
+                      },
+                      {
+                        "Citation": "Rabinowitz L, Gunther RA; Am J Physiol 234 (5): F371-5 (1978)",
+                        "Matched": {
+                          "PCLID": 25163226,
+                          "Citation": "Rabinowitz L, Gunther RA. Renal potassium excretion in sheep during sodium sulfate, phosphate, and chloride infusion. American Journal of Physiology-Renal Physiology. 1978 May 01;234(5):F371–5. doi: 10.1152/ajprenal.1978.234.5.f371.",
+                          "PMID": 645906,
+                          "DOI": "10.1152/ajprenal.1978.234.5.f371"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The renal excretion of potassium by unanesthetized sheep was studied in clearance studies in which water and sodium excretion were elevated by intravenous infusion of isotonic sodium chloride, hypertonic sodium phosphate, or hypertonic sodium sulfate. Aldosterone was infused at 10 ug/hr in some experiments with sodium sulfate. Sodium excretion increased in all experiments, rising at times to equal 25% of the filtered load. Urine flow increased in most experiments. Glomerular filtration rate increased only with infusion of isotonic saline. No consistent change in potassium excretion occurred under any of these loading conditions. This finding contrasts with the increase in potassium excretion commonly seen in man, dogs, and rats intravenously loaded with sodium salts.",
+                          "Markup": [
+                            {
+                              "Start": 23,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            },
+                            {
+                              "Start": 99,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 109,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sodium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Sodium"
+                            },
+                            {
+                              "Start": 176,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            },
+                            {
+                              "Start": 204,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 236,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 252,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Aldosterone",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5839"
+                            },
+                            {
+                              "Start": 313,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 329,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Sodium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Sodium"
+                            },
+                            {
+                              "Start": 569,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            },
+                            {
+                              "Start": 681,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Biological Half-Life",
+                "Description": "The time required for a biological system (e.g., human body) to eliminate, by natural processes, half of the amount of a chemical (e.g., alcohol, medication, or radioactive material) that has entered it.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 20,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Serum sulfate: 8.5 hours"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Mechanism of Action",
+                "Description": "In medicine, the term \"mechanism of action\" (also called MOA) is used to describe how a drug or other substance produces an effect in the body. For example, a drug's mechanism of action could be how it affects a specific target in a cell, such as an enzyme, or a cell function, such as cell growth. Knowing the mechanism of action of a drug may help provide information about the safety of the drug and how it affects the body. It may also help identify the right dose of a drug and which patients are most likely to respond to treatment.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 20,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "MoviPrep produces a watery stool leading to cleansing of the colon. The osmotic activity of polyethylene glycol 3350, sodium sulfate, sodium chloride, potassium chloride, sodium ascorbate, and ascorbic acid, when taken with 1 liter of additional clear fluid, usually results in no net absorption or excretion of ions or water.",
+                          "Markup": [
+                            {
+                              "Start": 118,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            },
+                            {
+                              "Start": 134,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5234"
+                            },
+                            {
+                              "Start": 151,
+                              "Length": 18,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20chloride",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4873"
+                            },
+                            {
+                              "Start": 171,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20ascorbate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23667548"
+                            },
+                            {
+                              "Start": 193,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ascorbic%20acid",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-155903693"
+                            },
+                            {
+                              "Start": 320,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 42,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause gastrointestinal disturbance if ingested; [ICSC] Nonirritating to skin and mucous membranes; [HSDB]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "Ingestion Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Nausea. Vomiting. Abdominal pain. Diarrhoea."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Skin, Eye, and Respiratory Irritations",
+                "Description": "Skin, eye and respiratory irritations caused by exposure to this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.45 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.45 (1985)",
+                        "Matched": {
+                          "PCLID": 900087150,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.45 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Considered nontoxic and nonirritating to skin and mucous membranes."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Evaporation at 20Â °C is negligible; a nuisance-causing concentration of airborne particles can, however, be reached quickly."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 45,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ingestion could cause effects on the gastrointestinal tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900086150,
+                          "Citation": "40 CFR 180.910 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium sulfate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest. Use: solid diluent, carrier.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906271117,
+                          "Citation": "40 CFR 180.930 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of July 5, 2017: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium sulfate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to animals. Use: solid diluent, carrier.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)",
+                        "Matched": {
+                          "PCLID": 900037147,
+                          "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "If the spilled material is known to be sodium sulfate: Tight-fitting safety goggles, rubber gloves, and protective clothing should be worn.",
+                          "Markup": [
+                            {
+                              "Start": 39,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24436"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye/face protection: Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin protection: Handle with gloves."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Body Protection: Choose body protection in relation to its type, to the concentration and amount of dangerous substances, and to the specific work-place. The type of protective equipment must be selected according to the concentration and amount of the dangerous substance at the specific workplace."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 43,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900075976,
+                          "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection is not required. Where protection from nuisance levels of dusts are desired, use type N95 (US) or type P1 (EN 143) dust masks. Use respirators and components tested and approved under appropriate government standards such as NIOSH (US) or CEN (EU)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 45,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 45,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety spectacles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 45,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use ventilation."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 45,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Storage Conditions",
+            "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                    "Matched": {
+                      "PCLID": 900075976,
+                      "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Keep container tightly closed in a dry and well-ventilated place. Hygroscopic. Storage class (TRGS 510): Non Combustible Solids."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607",
+                    "Matched": {
+                      "PCLID": 900059301,
+                      "Citation": "O'Neil, M.J. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Cambridge, UK:  Royal Society of Chemistry, 2013., p. 1607"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Keep well closed in a cool place. /Decahydrate/"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability/Shelf Life",
+            "Description": "Tendency of a material to resist change or decomposition due to internal reaction, or due to the action of air, heat, light, pressure, etc. See also the Stability and Reactivity subsection under the Safety and Hazards section on this page (when available).",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                    "Matched": {
+                      "PCLID": 900075976,
+                      "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Stable under recommended storage conditions."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 45,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers. If appropriate, moisten first to prevent dusting."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Cleanup Methods",
+            "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                    "Matched": {
+                      "PCLID": 900075976,
+                      "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ACCIDENTAL RELEASE MEASURES: Personal precautions, protective equipment and emergency procedures: Avoid dust formation. Avoid breathing vapors, mist or gas. Environmental precautions: No special environmental precautions required. Methods and materials for containment and cleaning up: Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)",
+                    "Matched": {
+                      "PCLID": 900037147,
+                      "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulphate p.47 (1985)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Spills on land: Contain if possible by forming mechanical barriers to prevent spreading. Shovel material into containers for recovery or disposal."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in air, soil or water; effects on animal, aquatic and plant life; and conformance with environmental and public health regulations. If it is possible or reasonable use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination.",
+                      "Markup": [
+                        {
+                          "Start": 238,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html",
+                    "Matched": {
+                      "PCLID": 900075976,
+                      "Citation": "Sigma-Aldrich; Safety Data Sheet for Sodium sulfate. Product Number: 239313, Version 4.5 (Revision Date 11/28/2014). Available from, as of June 30, 2017: https://www.sigmaaldrich.com/safety-center.html"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Product: Offer surplus and non-recyclable solutions to a licensed disposal company. Contaminated packaging: Dispose of as unused product."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.47 (1985)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.47 (1985)",
+                    "Matched": {
+                      "PCLID": 900057695,
+                      "Citation": "Environment Canada; Tech Info for Problem Spills: Sodium Sulfate p.47 (1985)"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Waste sodium sulfate must never be discharged directly into sewers or surface waters. Recovered sodium sulfate may be disposed of by burial in a landfill.",
+                      "Markup": [
+                        {
+                          "Start": 6,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        },
+                        {
+                          "Start": 96,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20sulfate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24436"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0007757826",
+        "Name": "Sodium sulfate anhydrous",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0007757826",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 823510
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0013759074",
+        "Name": "Thenardite (Na2(SO4))",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0013759074",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 836837
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0068081981",
+        "Name": "Sulfuric acid, mono-C14-18-alkyl esters, sodium salts",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0068081981",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 960245
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0068140103",
+        "Name": "Sulfuric acid, monotallow alkyl esters, sodium salts",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0068140103",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 961344
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0068412828",
+        "Name": "Sulfuric acid, mono-C8-30-alkyl esters, sodium salts",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0068412828",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 964602
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "DrugBank",
+        "SourceID": "DB09472",
+        "Name": "Sodium sulfate",
+        "Description": "The DrugBank database is a unique bioinformatics and cheminformatics resource that combines detailed drug (i.e. chemical, pharmacological and pharmaceutical) data with comprehensive drug target (i.e. sequence, structure, and pathway) information.",
+        "URL": "https://www.drugbank.ca/drugs/DB09472",
+        "LicenseNote": "Creative Common's Attribution-NonCommercial 4.0 International License (http://creativecommons.org/licenses/by-nc/4.0/legalcode)",
+        "LicenseURL": "https://www.drugbank.ca/legal/terms_of_use",
+        "ANID": 3626432
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "82857cc2cff79897bb979db8cc85cdac",
+        "Name": "Sulfuric acid sodium salt (1:2)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38381662
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "75157f029495687db8cd79807dac5abf",
+        "Name": "Sulfuric acid sodium salt (1:2)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38401915
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID1021291",
+        "Name": "Sodium sulfate anhydrous",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID1021291",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1149718
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-820-9",
+        "Name": "Sodium sulphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.928",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981368
+      },
+      {
+        "ReferenceNumber": 34,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "689-159-0",
+        "Name": "sodium sulphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.215.944",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 15157744
+      },
+      {
+        "ReferenceNumber": 35,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "691-538-0",
+        "Name": "SODIUM SULFATE",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.219.213",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 15159176
+      },
+      {
+        "ReferenceNumber": 38,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "36KCS0R750",
+        "Name": "Sodium sulfate anhydrous",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/36KCS0R750",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5794715
+      },
+      {
+        "ReferenceNumber": 43,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5042",
+        "Name": "Sodium sulfate",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5042",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3132
+      },
+      {
+        "ReferenceNumber": 45,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "0952",
+        "Name": "SODIUM SULFATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=0952",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260827
+      },
+      {
+        "ReferenceNumber": 46,
+        "SourceName": "International Fragrance Association (IFRA)",
+        "SourceID": "34b4cce7a0766dc38a4e2edf542bfecc",
+        "Name": "Sodium sulphate",
+        "Description": "The IFRA Fragrance Ingredient Glossary (FIG), provides a harmonized list of positive olfactory descriptors of fragrance ingredients.",
+        "URL": "https://ifrafragrance.org/priorities/ingredients/ifra-transparency-list",
+        "LicenseNote": "(c) The International Fragrance Association, 2007-2021. All rights reserved.",
+        "LicenseURL": "https://ifrafragrance.org/links/copyright",
+        "ANID": 49746592
+      },
+      {
+        "ReferenceNumber": 59,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "d4afaa58199a8768d5c1f9a620e0ad68",
+        "Name": "Sulfuric acid, sodium salt",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37144536
+      },
+      {
+        "ReferenceNumber": 60,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "dcf291cd5e35ffd159a0a7d9e1e6363a",
+        "Name": "Sodium sulfate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162246
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "Cosmetic Ingredient Review (CIR)",
+        "SourceID": "71c72ee4-ee95-40d4-b5a1-41bb66a610fd",
+        "Name": "Sodium Sulfate",
+        "Description": "The Cosmetic Ingredient Review (CIR) studies individual chemical compounds as they are used in cosmetic products. CIR relies heavily on the International Nomenclature of Cosmetic Ingredients (INCI) when identifying the ingredients to be assessed. The Expert Panel for Cosmetic Ingredient Safety (Panel) assess the safety of ingredients for use in cosmetics. The function of an ingredient in cosmetics is noted. The Panel reviews the data relevant to the safety of an ingredient and concludes whether an ingredient is safe in cosmetics in the present practices of use and concentration described in a safety assessment.",
+        "URL": "https://cir-reports.cir-safety.org/cir-ingredient-status-report/?id=71c72ee4-ee95-40d4-b5a1-41bb66a610fd",
+        "LicenseURL": "https://cir-safety.org/terms-use",
+        "ANID": 39001946
+      },
+      {
+        "ReferenceNumber": 31,
+        "SourceName": "EU Food Improvement Agents",
+        "SourceID": "E 514 (i) SODIUM SULPHATE",
+        "Name": "SODIUM SULPHATE",
+        "Description": "Commission Regulation (EU) No 231/2012 of 9 March 2012 laying down specifications for food additives listed in Annexes II and III to Regulation (EC) No 1333/2008 of the European Parliament and of the Council Text with EEA relevance",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2012/231/oj",
+        "ANID": 5177169
+      },
+      {
+        "ReferenceNumber": 42,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz2030",
+        "Name": "Sodium sulfate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/2030",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17277478
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "116245",
+        "Name": "Sodium sulphate (EC: 231-820-9)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/116245",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1885197,
+        "SortOrder": 7277
+      },
+      {
+        "ReferenceNumber": 36,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "221200",
+        "Name": "sodium sulphate (EC: 689-159-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/221200",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37173713,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "224769",
+        "Name": "SODIUM SULFATE (EC: 691-538-0)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/224769",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37174147,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 61,
+        "SourceName": "NITE-CMC",
+        "SourceID": "R01_A_017",
+        "Name": "Disodium sulfate - FY2019 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/19-mhlw-0017e.html",
+        "ANID": 39312863,
+        "SortOrder": 2019
+      },
+      {
+        "ReferenceNumber": 84,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

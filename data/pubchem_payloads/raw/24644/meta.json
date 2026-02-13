@@ -1,0 +1,34 @@
+{
+  "cid": 24644,
+  "hazard_key": "MgCl2·6H2O",
+  "display_name": "Magnesiumklorid (hexahydrat)",
+  "captured_at": "2026-01-31T16:56:39.565377+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24644",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24644/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24644/linkout.json",
+      "sha256": "5693661021a95db3190d8fa22d5b4b2b281903847d119e13385bfca5e073db7c"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24644/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 34027,
+      "file": "data/pubchem_payloads/raw/24644/lcss.json",
+      "sha256": "30be54fd07d354ae79a76353ea4e581738ae1b79b364eb6681076597b4a278a4"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24644/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 20348,
+      "file": "data/pubchem_payloads/raw/24644/safety.json",
+      "sha256": "d0a4f78a2d28ddc2a714db05b185433949e599a03fac26f281da213aa86996cc"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24644.png"
+}

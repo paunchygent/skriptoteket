@@ -1,0 +1,2439 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 5238,
+    "RecordTitle": "Sodium Iodide",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 42,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 19,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                      "Type": "Icon",
+                      "Extra": "Health Hazard"
+                    },
+                    {
+                      "Start": 2,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                      "Type": "Icon",
+                      "Extra": "Environmental Hazard"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 7.9% (39  of 495) of reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 81,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS08.svg",
+                          "Type": "Icon",
+                          "Extra": "Health Hazard"
+                        },
+                        {
+                          "Start": 2,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H315 (70.9%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H319 (72.7%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 45,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H335 (16.8%): May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 48,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H372 (42.8%): Causes damage to organs through prolonged or repeated exposure [Danger Specific target organ toxicity, repeated exposure]",
+                      "Markup": [
+                        {
+                          "Start": 78,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H400 (61.8%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 42,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H411 (10.1%): Toxic to aquatic life with long lasting effects [Hazardous to the aquatic environment, long-term hazard]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P260, P261, P264, P264+P265, P270, P271, P273, P280, P302+P352, P304+P340, P305+P351+P338, P319, P321, P332+P317, P337+P317, P362+P364, P391, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P260"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P270"
+                        },
+                        {
+                          "Start": 35,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 41,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 47,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 53,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 64,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 75,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                        },
+                        {
+                          "Start": 91,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 97,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 103,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 114,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                        },
+                        {
+                          "Start": 125,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        },
+                        {
+                          "Start": 136,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 142,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 153,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 163,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 495 reports by companies from 36 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 178,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 39 of 495 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 79,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 35 notifications provided by 456 of 495 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 101,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/71791"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 3,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=7681-82-5",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 13,
+                "Name": "CAS",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681825"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 31,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7681-82-5"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "sodium iodide"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "sodium iodide"
+                    },
+                    {
+                      "String": "7681-82-5"
+                    },
+                    {
+                      "String": "Sodium monoiodide"
+                    },
+                    {
+                      "String": "Ioduril"
+                    },
+                    {
+                      "String": "Soiodin"
+                    },
+                    {
+                      "String": "Iodure de sodium"
+                    },
+                    {
+                      "String": "Jodid sodny"
+                    },
+                    {
+                      "String": "Sodium iodide (NaI)"
+                    },
+                    {
+                      "String": "Natriumjodid"
+                    },
+                    {
+                      "String": "Natrii iodidum"
+                    },
+                    {
+                      "String": "DTXSID2041125"
+                    },
+                    {
+                      "String": "Iodide (as sodium iodide)"
+                    },
+                    {
+                      "String": "NSC-77388"
+                    },
+                    {
+                      "String": "Fdy-5301"
+                    },
+                    {
+                      "String": "F5WR8N145C"
+                    },
+                    {
+                      "String": "DTXCID0021125"
+                    },
+                    {
+                      "String": "CHEBI:33167"
+                    },
+                    {
+                      "String": "Sodium Iodide 20%"
+                    },
+                    {
+                      "String": "RefChem:6238"
+                    },
+                    {
+                      "String": "231-679-3"
+                    },
+                    {
+                      "String": "sodiumiodide"
+                    },
+                    {
+                      "String": "sodium;iodide"
+                    },
+                    {
+                      "String": "MFCD00003532"
+                    },
+                    {
+                      "String": "Sodium Iodide,99%"
+                    },
+                    {
+                      "String": "CHEMBL1644695"
+                    },
+                    {
+                      "String": "Sodium iodide, ultra dry"
+                    },
+                    {
+                      "String": "Jodid sodny [Czech]"
+                    },
+                    {
+                      "String": "Caswell No. 777"
+                    },
+                    {
+                      "String": "Natriumjodid [German]"
+                    },
+                    {
+                      "String": "HSDB 750"
+                    },
+                    {
+                      "String": "EINECS 231-679-3"
+                    },
+                    {
+                      "String": "NSC 77388"
+                    },
+                    {
+                      "String": "EPA Pesticide Chemical Code 075702"
+                    },
+                    {
+                      "String": "Sodium iodide [USP:JAN]"
+                    },
+                    {
+                      "String": "UNII-F5WR8N145C"
+                    },
+                    {
+                      "String": "Anayodin; Ioduril; NSC 77388; Sodium Monoiodide; Soiodin;"
+                    },
+                    {
+                      "String": "sodium-iodide"
+                    },
+                    {
+                      "String": "iodeto de sodio"
+                    },
+                    {
+                      "String": "ioduro di sodio"
+                    },
+                    {
+                      "String": "yoduro de sodio"
+                    },
+                    {
+                      "String": "sodium iodide-"
+                    },
+                    {
+                      "String": "Sodium iodide, anhydrous"
+                    },
+                    {
+                      "String": "SCHEMBL750"
+                    },
+                    {
+                      "String": "Sodium iodide, ACS grade"
+                    },
+                    {
+                      "String": "WLN: NA I"
+                    },
+                    {
+                      "String": "EC 231-679-3"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [II]"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [MI]"
+                    },
+                    {
+                      "String": "sodium iodine-131(1-)"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [JAN]"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [HSDB]"
+                    },
+                    {
+                      "String": "Sodium iodide (JP17/USP)"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [VANDF]"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [MART.]"
+                    },
+                    {
+                      "String": "orb1945024"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [WHO-DD]"
+                    },
+                    {
+                      "String": "SCHEMBL27455930"
+                    },
+                    {
+                      "String": "Sodium iodide, Trace metals grade"
+                    },
+                    {
+                      "String": "HY-B1770"
+                    },
+                    {
+                      "String": "NSC77388"
+                    },
+                    {
+                      "String": "Tox21_301379"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [EP MONOGRAPH]"
+                    },
+                    {
+                      "String": "SODIUM IODIDE [USP MONOGRAPH]"
+                    },
+                    {
+                      "String": "AKOS015950612"
+                    },
+                    {
+                      "String": "AKOS016015354"
+                    },
+                    {
+                      "String": "DB11119"
+                    },
+                    {
+                      "String": "FS01276"
+                    },
+                    {
+                      "String": "NCGC00255631-01"
+                    },
+                    {
+                      "String": "CAS-7681-82-5"
+                    },
+                    {
+                      "String": "IODIDE (AS SODIUM IODIDE) [VANDF]"
+                    },
+                    {
+                      "String": "CS-0013799"
+                    },
+                    {
+                      "String": "NS00075686"
+                    },
+                    {
+                      "String": "S0564"
+                    },
+                    {
+                      "String": "D04874"
+                    },
+                    {
+                      "String": "F545155"
+                    },
+                    {
+                      "String": "Q390305"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "INa"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "NaI"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 42,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "INa"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "149.8942"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/HI.Na/h1H;/q;+1/p-1"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 42,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "FVAUCKIRQBBSSJ-UHFFFAOYSA-M"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Dry Powder, Liquid; Liquid; Dry Powder"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White odorless deliquescent solid; Turned brown by air; [Merck Index] Colorless to white hygroscopic solid; [ICSC] White odorless crystalline powder; [MSDSonline]"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "COLOURLESS-TO-WHITE HYGROSCOPIC CRYSTALS OR WHITE POWDER. TURNS BROWN ON EXPOSURE TO AIR."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Other Classes -> Halogens, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Boiling Point",
+            "Description": "The temperature at which this compound changes state from liquid to gas at a given atmospheric pressure.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.02%3A_Boiling_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Reference": [
+                  "MSDS"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "MSDS",
+                    "Matched": {
+                      "PCLID": 900289440,
+                      "Citation": "MSDS"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Decomposes"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126",
+                    "Matched": {
+                      "PCLID": 900032337,
+                      "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1304 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1304Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Reference": [
+                  "MSDS"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "MSDS",
+                    "Matched": {
+                      "PCLID": 900289440,
+                      "Citation": "MSDS"
+                    }
+                  }
+                ],
+                "Value": {
+                  "Number": [
+                    651
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "651 °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "660Â °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 12,
+                "Reference": [
+                  "MSDS"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "MSDS",
+                    "Matched": {
+                      "PCLID": 900289440,
+                      "Citation": "MSDS"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Soluble"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126",
+                    "Matched": {
+                      "PCLID": 900032337,
+                      "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SOLUBILITY (G/100 CC SOLVENT): 184 G IN WATER @ 25 °C; 302 G IN WATER @ 100 °C; 42.57 G IN ALCOHOL @ 25 °C; 39.9 G IN ACETONE @ 25 °C",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 64,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 118,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ACETONE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-180"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1 G SOL IN 1 ML GLYCEROL"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/100ml at 25Â °C: 184",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.67"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "3.67 g/cmÂ³"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Vapor Pressure",
+            "Description": "Vapor pressure (or equilibrium vapor pressure) is the pressure of a vapor in thermodynamic equilibrium with its condensed phases in a closed system.",
+            "URL": "https://chem.libretexts.org/Bookshelves/General_Chemistry/Map%3A_Chemistry_-_The_Central_Science_(Brown_et_al.)/11%3A_Liquids_and_Intermolecular_Forces/11.05%3A_Vapor_Pressure",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Sax, N.I. Dangerous Properties of Industrial Materials. 4th ed. New York: Van Nostrand Reinhold, 1975., p. 1112"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Sax, N.I. Dangerous Properties of Industrial Materials. 4th ed. New York: Van Nostrand Reinhold, 1975., p. 1112",
+                    "Matched": {
+                      "PCLID": 900056789,
+                      "Citation": "Sax, N.I. Dangerous Properties of Industrial Materials. 4th ed. New York: Van Nostrand Reinhold, 1975., p. 1112"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1 MM HG @ 767 °C"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126",
+                    "Matched": {
+                      "PCLID": 900032337,
+                      "Citation": "Weast, R.C. (ed.). Handbook of Chemistry and Physics. 60th ed. Boca Raton, Florida: CRC Press Inc., 1979., p. B-126"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "COLORLESS, CUBIC CRYSTALS"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE CRYSTALS OR GRANULES"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Hawley, G.G. The Condensed Chemical Dictionary. 9th ed. New York: Van Nostrand Reinhold Co., 1977., p. 793"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Hawley, G.G. The Condensed Chemical Dictionary. 9th ed. New York: Van Nostrand Reinhold Co., 1977., p. 793",
+                    "Matched": {
+                      "PCLID": 900098071,
+                      "Citation": "Hawley, G.G. The Condensed Chemical Dictionary. 9th ed. New York: Van Nostrand Reinhold Co., 1977., p. 793"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "WHITE POWDER"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Odor",
+            "Description": "The property of certain chemicals, in very small concentrations, to stimulate chemical sense receptors that sample the air or water.",
+            "URL": "https://www.britannica.com/science/odor",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ODORLESS"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Taste",
+            "Description": "The sensation of flavor perceived in the mouth and throat on contact with a substance.",
+            "URL": "https://www.britannica.com/science/taste-sense",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Hawley, G.G. The Condensed Chemical Dictionary. 9th ed. New York: Van Nostrand Reinhold Co., 1977., p. 793"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Hawley, G.G. The Condensed Chemical Dictionary. 9th ed. New York: Van Nostrand Reinhold Co., 1977., p. 793",
+                    "Matched": {
+                      "PCLID": 900098071,
+                      "Citation": "Hawley, G.G. The Condensed Chemical Dictionary. 9th ed. New York: Van Nostrand Reinhold Co., 1977., p. 793"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SALINE, SOMEWHAT BITTER TASTE"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Potential",
+            "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "National Fire Protection Association. Fire Protection Guide on Hazardous Materials. 7th ed. Boston, Mass.: National Fire Protection Association, 1978., p. 491M-388"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "National Fire Protection Association. Fire Protection Guide on Hazardous Materials. 7th ed. Boston, Mass.: National Fire Protection Association, 1978., p. 491M-388",
+                    "Matched": {
+                      "PCLID": 900063739,
+                      "Citation": "National Fire Protection Association. Fire Protection Guide on Hazardous Materials. 7th ed. Boston, Mass.: National Fire Protection Association, 1978., p. 491M-388"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "PERCHLORIC ACID IGNITES IN CONTACT WITH SODIUM IODIDE.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 15,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/PERCHLORIC%20ACID",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24247"
+                        },
+                        {
+                          "Start": 40,
+                          "Length": 13,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/SODIUM%20IODIDE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-5238"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Chemical Dangers",
+            "Description": "Chemical Dangers",
+            "Information": [
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Reacts violently with strong oxidants. This produces iodine fumes.",
+                      "Markup": [
+                        {
+                          "Start": 53,
+                          "Length": 6,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Iodine"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Absorption",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Iodide salts are readily absorbed in the gastrointestinal tract."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Route of Elimination",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Iodides are expected to be renal excreted."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 12,
+                    "Name": "Volume of Distribution",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Iodides are distributed widely throughout extracellular fluid of thyroid gland."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Mechanism of Action",
+                "Description": "In medicine, the term \"mechanism of action\" (also called MOA) is used to describe how a drug or other substance produces an effect in the body. For example, a drug's mechanism of action could be how it affects a specific target in a cell, such as an enzyme, or a cell function, such as cell growth. Knowing the mechanism of action of a drug may help provide information about the safety of the drug and how it affects the body. It may also help identify the right dose of a drug and which patients are most likely to respond to treatment.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1412"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1412",
+                        "Matched": {
+                          "PCLID": 906282737,
+                          "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1412"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "RESPONSE TO IODIDE IN HYPERTHYROIDISM: /IN THYROID GLAND/...VASCULARITY IS REDUCED, GLAND BECOMES MUCH FIRMER & EVEN HARD TO THE TOUCH, CELLS BECOME SMALLER, COLLOID REACCUMULATES IN FOLLICLES, & QUANTITY OF BOUND IODINE INCREASES. /IODIDES/",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 214,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413",
+                        "Matched": {
+                          "PCLID": 900033427,
+                          "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "HIGH CONCN OF IODIDE APPEAR TO INFLUENCE ALL IMPORTANT ASPECTS OF IODINE METABOLISM BY THE THYROID GLAND. CAPACITY OF IODIDE TO LIMIT ITS OWN TRANSPORT... ACUTE INHIBITION OF SYNTHESIS OF IODOTYROSINE & IODOTHYRONINE BY IODIDE IS ALSO WELL KNOWN (THE WOLFF-CHAIKOFF EFFECT)... /IODIDES/",
+                          "Markup": [
+                            {
+                              "Start": 14,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 66,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            },
+                            {
+                              "Start": 118,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 188,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODOTYROSINE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-439744"
+                            },
+                            {
+                              "Start": 203,
+                              "Length": 13,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODOTHYRONINE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-22833547"
+                            },
+                            {
+                              "Start": 220,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413",
+                        "Matched": {
+                          "PCLID": 900033427,
+                          "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "THIS INHIBITION /WOLFF-CHAIKOFF EFFECT/ IS OBSERVED ONLY ABOVE CRITICAL CONCN OF IODIDE, & THE INTRACELLULAR...CONCN OF ANION APPEARS TO BE MAJOR DETERMINANT. WITH TIME THERE IS \"ESCAPE\" FOR THIS INHIBITION...ASSOCIATED WITH AN ADAPTIVE DECR IN IODIDE TRANSPORT & LOWERED INTRACELLULAR IODIDE CONCN. /IODIDES/",
+                          "Markup": [
+                            {
+                              "Start": 81,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 245,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 286,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413",
+                        "Matched": {
+                          "PCLID": 900033427,
+                          "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "THE MOST IMPORTANT CLINICAL EFFECT OF HIGH IODIDE CONCN IS AN INHIBITION OF THE RELEASE OF THYROID HORMONE. THIS ACTION IS RAPID & EFFICACIOUS IN SEVERE THYROTOXICOSIS. THE EFFECT IS EXERTED DIRECTLY ON THE THYROID GLAND, & IT CAN BE DEMONSTRATED IN EUTHYROID SUBJECT & EXPTL ANIMALS AS WELL AS IN HYPERTHYROID PT. /IODIDES/",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413",
+                        "Matched": {
+                          "PCLID": 900033427,
+                          "Citation": "Gilman, A. G., L. S. Goodman, and A. Gilman. (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 6th ed. New York: Macmillan Publishing Co., Inc. 1980., p. 1413"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "IODIDE ANTAGONIZES THE ABILITY OF BOTH THYROTROPIN & CYCLIC AMP TO STIMULATE ENDOCYTOSIS OF COLLOID, PROTEOLYSIS, & HORMONE SECRETION. /REPORTEDLY/... IODIDE ATTENUATES THE EFFECT OF TSH ON CYCLIC AMP IN VIVO & IN ISOLATED TISSUES. /IODIDES/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 53,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CYCLIC-AMP",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "multiple-CIDs"
+                            },
+                            {
+                              "Start": 151,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/IODIDE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5326470"
+                            },
+                            {
+                              "Start": 190,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/CYCLIC-AMP",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "multiple-CIDs"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A skin, eye, and respiratory tract irritant; If ingested: the substance may have effects on the thyroid and may cause systemic sensitization. Symptoms of systemic sensitization may include airway obstruction and various skin reactions or even anaphylactic shock. Exposure during pregnancy may affect the thyroid function of the newborn. [ICSC] An irritant; [MSDSonline] See Iodine for the TLV of Iodides.",
+                          "Markup": [
+                            {
+                              "Start": 374,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Iodine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Iodine"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough. Sore throat. Headache."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Skin Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "Ingestion Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Diarrhoea. Nausea. Vomiting."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance can be absorbed into the body by ingestion."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A harmful concentration of airborne particles can be reached quickly , especially if powdered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.01 [ppm], inhalable fraction and vapor (iodides)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "0.01 ppm as TWA; A4 (not classifiable as a human carcinogen)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The substance is irritating to the eyes, skin and respiratory tract."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 25,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ingestion may cause effects on the thyroid. May cause systemic sensitization."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Section": [
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Exposure Prevention",
+                    "Description": "Prevention measures to avoid exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 25,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "PREVENT DISPERSION OF DUST! AVOID EXPOSURE OF (PREGNANT) WOMEN!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Skin Prevention",
+                    "Description": "Precautionary measures to avoid skin exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 25,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Protective gloves."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 25,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety goggles or eye protection in combination with breathing protection if powder."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 25,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use ventilation (not if powder), local exhaust or breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 25,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Safe Storage",
+            "Description": "Measures to take for safe storage of this chemical.",
+            "URL": "https://www.ncbi.nlm.nih.gov/books/NBK379129/",
+            "Information": [
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Separated from strong oxidants and food and feedstuffs. Dry. Well closed."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Storage Conditions",
+            "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "KEEP WELL CLOSED & PROTECTED FROM LIGHT."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability/Shelf Life",
+            "Description": "Tendency of a material to resist change or decomposition due to internal reaction, or due to the action of air, heat, light, pressure, etc. See also the Stability and Reactivity subsection under the Safety and Hazards section on this page (when available).",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116",
+                    "Matched": {
+                      "PCLID": 900114592,
+                      "Citation": "The Merck Index. 9th ed. Rahway, New Jersey: Merck & Co., Inc., 1976., p. 1116"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IT IS MADE SLIGHTLY ALKALINE TO RENDER IT MORE STABLE"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 25,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into covered containers."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11223",
+        "Name": "Sodium iodide (NaI)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39360663
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "7681-82-5",
+        "Name": "Sodium iodide",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=7681-82-5",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12818083
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0007681825",
+        "Name": "Sodium iodide [USP:JAN]",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0007681825",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 823206
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "DrugBank",
+        "SourceID": "DB11119",
+        "Name": "Sodium iodide",
+        "Description": "The DrugBank database is a unique bioinformatics and cheminformatics resource that combines detailed drug (i.e. chemical, pharmacological and pharmaceutical) data with comprehensive drug target (i.e. sequence, structure, and pathway) information.",
+        "URL": "https://www.drugbank.ca/drugs/DB11119",
+        "LicenseNote": "Creative Common's Attribution-NonCommercial 4.0 International License (http://creativecommons.org/licenses/by-nc/4.0/legalcode)",
+        "LicenseURL": "https://www.drugbank.ca/legal/terms_of_use",
+        "ANID": 3627344
+      },
+      {
+        "ReferenceNumber": 13,
+        "SourceName": "DTP/NCI",
+        "SourceID": "NSC 77388",
+        "Name": "sodium iodide",
+        "Description": "The NCI Development Therapeutics Program (DTP) provides services and resources to the academic and private-sector research communities worldwide to facilitate the discovery and development of new cancer therapeutic agents.",
+        "URL": "https://dtp.cancer.gov/dtpstandard/servlet/dwindex?searchtype=NSC&outputformat=html&searchlist=77388",
+        "LicenseNote": "Unless otherwise indicated, all text within NCI products is free of copyright and may be reused without our permission. Credit the National Cancer Institute as the source.",
+        "LicenseURL": "https://www.cancer.gov/policies/copyright-reuse",
+        "ANID": 6827535
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "80e10ff7a2095ea2b0a007f6ca28b524",
+        "Name": "Sodium iodide (NaI)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38380289
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "fcea4bf3282365b9ec55ee16fa8fc2a4",
+        "Name": "Sodium iodide (NaI)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38401843
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID2041125",
+        "Name": "Sodium iodide",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID2041125",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1157775
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-679-3",
+        "Name": "Sodium iodide",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.800",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981348
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "F5WR8N145C",
+        "Name": "Sodium iodide",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/F5WR8N145C",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5864388
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "750",
+        "Name": "SODIUM IODIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/750",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 675
+      },
+      {
+        "ReferenceNumber": 25,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1009",
+        "Name": "SODIUM IODIDE (ANHYDROUS)",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1009",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2260875
+      },
+      {
+        "ReferenceNumber": 31,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "94cab5987b0ed6c9dcd4825d0a645d0e",
+        "Name": "Sodium iodide",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37162100
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11223",
+        "Name": "Sodium iodide (NaI)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39401036
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz7125",
+        "Name": "Sodium iodide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/7125",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17280296
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "71791",
+        "Name": "Sodium iodide (EC: 231-679-3)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/71791",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1872330,
+        "SortOrder": 3495
+      },
+      {
+        "ReferenceNumber": 42,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

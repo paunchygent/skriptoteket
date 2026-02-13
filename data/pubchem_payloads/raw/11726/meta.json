@@ -1,0 +1,34 @@
+{
+  "cid": 11726,
+  "hazard_key": "MnCO3",
+  "display_name": "Rodokrosit",
+  "captured_at": "2026-01-31T18:42:10.940126+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/11726",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/11726/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/11726/linkout.json",
+      "sha256": "e3acea11d00e8c5607b8111ffbcec62fcb78263880d306b1a8cfd354f19131c1"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/11726/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 100017,
+      "file": "data/pubchem_payloads/raw/11726/lcss.json",
+      "sha256": "1d835e5529a3023f5d4fbec780b7c0fffa1047db40d66acb596dd521e0930ffe"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/11726/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 74038,
+      "file": "data/pubchem_payloads/raw/11726/safety.json",
+      "sha256": "78721bd428bfbf8bf0659a09fee7f8a62d63bb739db34453e4c6c919a5171862"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/11726.png"
+}

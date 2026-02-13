@@ -1,0 +1,34 @@
+{
+  "cid": 24580,
+  "hazard_key": "MnSO4",
+  "display_name": "Mangan(II)sulfat",
+  "captured_at": "2026-01-31T16:57:15.948541+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24580",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24580/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24580/linkout.json",
+      "sha256": "171a99ad6f47dc32dd18de013d09d8769c89250a372bde58f7dfa413020acb81"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24580/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 124857,
+      "file": "data/pubchem_payloads/raw/24580/lcss.json",
+      "sha256": "ab6936192b764829bf6bcb378a14ea645fe5b09c800b792ae63db897c0a31924"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24580/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 104746,
+      "file": "data/pubchem_payloads/raw/24580/safety.json",
+      "sha256": "1ede2fa34caede9ffda23a6452de5260954ae02e9922135b1cf2eb4c53463487"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24580.png"
+}

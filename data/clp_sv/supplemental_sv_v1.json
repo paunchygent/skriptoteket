@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "language": "sv-SE",
+  "as_of": "2026-01-31",
+  "sources": [
+    {
+      "name": "UNECE GHS Rev.10 (English) – curated Swedish renderings",
+      "hazard_url": "https://unece.org/sites/default/files/2023-11/GHS_Rev10_2023e_Section3.1_HazardStatements.pdf",
+      "precautionary_url": "https://unece.org/sites/default/files/2023-11/GHS_Rev10_2023e_Section3.3_PrecautionaryStatements.pdf",
+      "note": "Svenska fraser är manuellt kuraterade för koder som saknas i svenska CLP‑listor."
+    }
+  ],
+  "statements": {
+    "hazard": {
+      "H303": "Kan vara skadligt vid förtäring.",
+      "H320": "Orsakar ögonirritation.",
+      "H305": "Kan vara skadligt vid förtäring om det kommer ner i luftvägarna.",
+      "H313": "Kan vara skadligt vid hudkontakt.",
+      "H316": "Orsakar mild hudirritation.",
+      "H333": "Kan vara skadligt vid inandning.",
+      "H401": "Giftigt för vattenlevande organismer.",
+      "H402": "Skadligt för vattenlevande organismer."
+    },
+    "precautionary": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P301+P316": "VID FÖRTÄRING: Sök omedelbar läkarhjälp.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P302+P317": "VID HUDKONTAKT: Sök läkarhjälp.",
+      "P302+P361+P354": "VID HUDKONTAKT: Ta omedelbart av alla förorenade kläder. Skölj genast huden med vatten i flera minuter.",
+      "P304+P317": "VID INANDNING: Sök läkarhjälp.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P316": "Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P333+P317": "Vid hudirritation eller utslag: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P342+P316": "Vid besvär i luftvägarna: Sök omedelbar läkarhjälp."
+    }
+  }
+}

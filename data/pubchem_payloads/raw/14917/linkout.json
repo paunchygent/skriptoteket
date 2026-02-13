@@ -1,0 +1,46 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 14917,
+    "ObjUrl": [
+      {
+        "Url": "http://sideeffects.embl.de/drugs/14917/",
+        "LinkName": "Side effects of fluoride",
+        "SubjectType": [
+          "biological properties"
+        ],
+        "Category": [
+          "Chemical Information"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "SIDER Side Effect Resource",
+          "NameAbbr": "SIDER",
+          "Id": "9337",
+          "Url": "http://sideeffects.embl.de"
+        }
+      },
+      {
+        "Url": "https://linkout.scitegrity.com/14917",
+        "LinkName": "This is a controlled substance. Complete access to the full Controlled Substances Squared application for 24 hours",
+        "SubjectType": [
+          "supplemental materials"
+        ],
+        "Category": [
+          "Other Literature Sources"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "Scitegrity database",
+          "NameAbbr": "scitegrity",
+          "Id": "10090",
+          "Url": "https://www.scitegrity.co.uk/"
+        }
+      }
+    ]
+  }
+}

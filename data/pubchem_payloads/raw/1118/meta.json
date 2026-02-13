@@ -1,0 +1,34 @@
+{
+  "cid": 1118,
+  "hazard_key": "H2SO4",
+  "display_name": "Svavelsyra (H2SO4)",
+  "captured_at": "2026-01-31T18:46:45.715254+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/1118",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/1118/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1328,
+      "file": "data/pubchem_payloads/raw/1118/linkout.json",
+      "sha256": "1f059f7bbdda31807691b49be9461a01970dd4ac5107b768d6b86d6f264603c7"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/1118/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 545701,
+      "file": "data/pubchem_payloads/raw/1118/lcss.json",
+      "sha256": "3182211db8aebfcafb8660b7f847b98b02e13f41b8b81a4ec0ef3795189ba5d8"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/1118/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 554813,
+      "file": "data/pubchem_payloads/raw/1118/safety.json",
+      "sha256": "b13c40c0665c2d5691911cd304a0f35f5b93828f128dc2d280d6eb5fc4556530"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/1118.png"
+}

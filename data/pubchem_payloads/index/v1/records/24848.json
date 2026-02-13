@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "cid": 24848,
+  "captured_at": "2026-01-31T18:43:23.514542+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24848",
+    "lcss_sha256": "afa931dd787745ea4d961c043f06da3f5c44b16bac9f9953aebe8842b98a174c",
+    "linkout_sha256": "5708a09e76b9b5bd03ccd53586672a218504ac22db3766ebeffb3376358ea3cb",
+    "meta_sha256": "2c79d4974f9955eb74e4cb4eeb4a321f2a37cac3fa1f3ee22d6c0b56967c0408"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H271",
+      "H272",
+      "H302",
+      "H315",
+      "H318",
+      "H319",
+      "H320",
+      "H335"
+    ],
+    "hazard_statements_sv": {
+      "H271": "Kan orsaka brand eller explosion. Starkt oxiderande.",
+      "H272": "Kan intensifiera brand. Oxiderande.",
+      "H302": "Skadligt vid förtäring.",
+      "H315": "Irriterar huden.",
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H320": "Orsakar ögonirritation.",
+      "H335": "Kan orsaka irritation i luftvägarna."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P220",
+      "P261",
+      "P264",
+      "P264+P265",
+      "P270",
+      "P271",
+      "P280",
+      "P283",
+      "P301+P317",
+      "P302+P352",
+      "P304+P340",
+      "P305+P351+P338",
+      "P305+P354+P338",
+      "P306+P360",
+      "P317",
+      "P319",
+      "P321",
+      "P330",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P370+P378",
+      "P371+P380+P375",
+      "P403+P233",
+      "P405",
+      "P420",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P220": "Hålls åtskilt från kläder och andra brännbara material.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P283": "Använd brandsäkra eller flamhämmande kläder.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P306+P360": "VID KONTAKT MED KLÄDERNA: Skölj genast nedstänkta kläder och hud med mycket vatten innan du tar av dig kläderna.",
+      "P317": "Sök läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P371+P380+P375": "Vid större brand och stora mängder: Utrym området. Bekämpa branden på avstånd på grund av explosionsrisken.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P420": "Förvaras separat.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS03",
+      "GHS05",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1743.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.184514+00:00"
+}

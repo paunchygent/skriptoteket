@@ -1,0 +1,34 @@
+{
+  "cid": 24597,
+  "hazard_key": "K2CrO4",
+  "display_name": "Kaliumkromat",
+  "captured_at": "2026-01-31T16:44:15.765824+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24597",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24597/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24597/linkout.json",
+      "sha256": "c34b5e247c1d51f5ae37d78c27e3dbd07d3364d5e79dba9e03be9a19dfd2f5cc"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24597/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 309396,
+      "file": "data/pubchem_payloads/raw/24597/lcss.json",
+      "sha256": "51c5a4897d508a84666b6a166a83cb3af8863e4e67df503b3141a57d6f1c6a90"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24597/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 310082,
+      "file": "data/pubchem_payloads/raw/24597/safety.json",
+      "sha256": "2489cd5e667d416bf3285790941913383dc08ca661070cfbabcafc147b0381c0"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24597.png"
+}

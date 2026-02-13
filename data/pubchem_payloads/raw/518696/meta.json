@@ -1,0 +1,34 @@
+{
+  "cid": 518696,
+  "hazard_key": "Fe2O3",
+  "display_name": "Järn(III)oxid",
+  "captured_at": "2026-01-31T14:42:12.399316+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/518696",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/518696/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 697,
+      "file": "data/pubchem_payloads/raw/518696/linkout.json",
+      "sha256": "0f4dc0a1c314f9a892a60027357040d86ae94897a074db2e9d5cd52a3abd0703"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/518696/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 194218,
+      "file": "data/pubchem_payloads/raw/518696/lcss.json",
+      "sha256": "a264c05a1e43a118b40491e35adc8e5e9ff22e67f46eec038d29bfdb7bd4ad81"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/518696/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 156207,
+      "file": "data/pubchem_payloads/raw/518696/safety.json",
+      "sha256": "cc61a48d73117685f3a0eb4c16b54796381ac6ee6acc69e36b02dc2d7ffdbcd3"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/518696.png"
+}

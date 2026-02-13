@@ -1,0 +1,34 @@
+{
+  "cid": 29011,
+  "hazard_key": "SnO2",
+  "display_name": "Kassiterit",
+  "captured_at": "2026-01-31T16:45:43.038722+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/29011",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/29011/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/29011/linkout.json",
+      "sha256": "421ae95286da000556536878702e3d8ae89d5a211a34c6ebed2998f69694fc65"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/29011/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 17044,
+      "file": "data/pubchem_payloads/raw/29011/lcss.json",
+      "sha256": "a2c9e280d16b1565f7204bd45a9e8a3b514bdd842e88dc5ece144c4a954ef707"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/29011/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 2382,
+      "file": "data/pubchem_payloads/raw/29011/safety.json",
+      "sha256": "d7cc955e2e41504283660b8556c7f6be6a46cd7a36d1a2796ae0e6e103500319"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/29011.png"
+}

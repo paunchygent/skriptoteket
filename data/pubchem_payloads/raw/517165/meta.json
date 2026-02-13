@@ -1,0 +1,34 @@
+{
+  "cid": 517165,
+  "hazard_key": "NH4C2H3O2",
+  "display_name": "Ammoniumacetat",
+  "captured_at": "2026-01-31T14:09:22.897655+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/517165",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/517165/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 80,
+      "file": "data/pubchem_payloads/raw/517165/linkout.json",
+      "sha256": "786c8b2bc5a183310f4d566df732455bd83187960097cf435fb3cb3575ccf1aa"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/517165/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 89692,
+      "file": "data/pubchem_payloads/raw/517165/lcss.json",
+      "sha256": "c5f42028d22735c84f6d95bc0f35054209a167400d076f7ba4f953eaa1a4fdbe"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/517165/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 53547,
+      "file": "data/pubchem_payloads/raw/517165/safety.json",
+      "sha256": "c9c26b2df1108b9bbd2a8fc32e79d5ee5ad70dd0117727a74db92595c487b0a6"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/517165.png"
+}

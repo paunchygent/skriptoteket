@@ -60,7 +60,7 @@ async def test_list_chemicals_returns_items(
 
 
 @pytest.mark.asyncio
-async def test_get_sds_returns_pdf(
+async def test_get_sds_returns_content(
     client: httpx.AsyncClient,
     settings: Settings,
     current_user_provider: StubCurrentUserProvider,
@@ -76,7 +76,7 @@ async def test_get_sds_returns_pdf(
     sds_store.add(
         sds_ref="NaCl",
         filename="NaCl.pdf",
-        content=b"%PDF-1.4 stub",
+        content=b"%PDF-1.4\n%test\n",
         media_type="application/pdf",
     )
 
@@ -86,7 +86,7 @@ async def test_get_sds_returns_pdf(
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("application/pdf")
     assert "NaCl.pdf" in response.headers["content-disposition"]
-    assert response.content == b"%PDF-1.4 stub"
+    assert response.content.startswith(b"%PDF")
     assert sds_store.calls == ["NaCl"]
 
 

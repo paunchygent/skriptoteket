@@ -1,0 +1,34 @@
+{
+  "cid": 23665760,
+  "hazard_key": "NaClO",
+  "display_name": "Natriumhypoklorit",
+  "captured_at": "2026-01-31T16:58:01.000645+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23665760",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/23665760/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1336,
+      "file": "data/pubchem_payloads/raw/23665760/linkout.json",
+      "sha256": "ddf5317b89fb632d7a1b97e4a9f61bde611b3bbd0a4d7896806da4a15270ff6a"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23665760/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 290128,
+      "file": "data/pubchem_payloads/raw/23665760/lcss.json",
+      "sha256": "e8cdbba45ad6c894a3db7bbfd6c82222c2fc938df5a4b27f3796a7c492157ece"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23665760/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 315125,
+      "file": "data/pubchem_payloads/raw/23665760/safety.json",
+      "sha256": "ab045b5f1dd9a14a94117cce7baa4879884da1b27ae7d37f95aca716ce855b62"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/23665760.png"
+}

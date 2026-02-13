@@ -1,0 +1,34 @@
+{
+  "cid": 516872,
+  "hazard_key": "KSCN",
+  "display_name": "Kaliumtiocyanat",
+  "captured_at": "2026-01-31T16:45:26.719462+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516872",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/516872/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 697,
+      "file": "data/pubchem_payloads/raw/516872/linkout.json",
+      "sha256": "b02b37c0218b94dc187b5aa2ec4496a476dbed067e5368609ebf5f434715455f"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516872/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81037,
+      "file": "data/pubchem_payloads/raw/516872/lcss.json",
+      "sha256": "041b9214ef165790ae51e1632b45a2c2bc9adfb8572180a203453036f5eb12e5"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/516872/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 65750,
+      "file": "data/pubchem_payloads/raw/516872/safety.json",
+      "sha256": "b8e328621e7a8b6f7bcdef5c539e27d9af8d4150a68821184ce30a999f896f14"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/516872.png"
+}

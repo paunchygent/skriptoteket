@@ -1,0 +1,34 @@
+{
+  "cid": 24268,
+  "hazard_key": "NaNO3",
+  "display_name": "Natriumnitrat",
+  "captured_at": "2026-01-31T18:39:36.475869+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24268",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24268/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/24268/linkout.json",
+      "sha256": "a352b6984557e4bb4097e19eac0dafbfeaaf8175b7b3644fe3c7c0a6c2152999"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24268/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 286515,
+      "file": "data/pubchem_payloads/raw/24268/lcss.json",
+      "sha256": "56092968b64906f18e72213a9b903e7dbbaff98d6c1d786664621a2c75fcad73"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24268/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 245838,
+      "file": "data/pubchem_payloads/raw/24268/safety.json",
+      "sha256": "3003b079004089bcd19c301cfe0367295db0cf76f9297bc147e3a7898e0be243"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24268.png"
+}

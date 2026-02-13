@@ -53,6 +53,7 @@ class _SdsIndexEntry(BaseModel):
     incompatibilities: list[str] = Field(default_factory=list)
     exothermicity: ExothermicityLevel | None = None
     reaction_notes: list[str] = Field(default_factory=list)
+    density_g_ml: float | None = None
     sources: list[str] = Field(default_factory=list)
 
 
@@ -77,15 +78,26 @@ class FileSystemReagentPrepChefSdsIndexStore(ReagentPrepChefSdsIndexStoreProtoco
         self._lock = asyncio.Lock()
         self._index = self._load_index()
 
-    async def ensure(self, *, hazard: HazardEntry) -> HazardSdsData:
+    async def ensure(self, *, hazard: HazardEntry, allow_fetch: bool = True) -> HazardSdsData:
         async with self._lock:
             entry = self._index.entries.get(hazard.key)
-            if entry and self._file_exists(entry):
+            if entry and self._file_exists(entry) and _entry_is_complete(entry):
                 return _entry_to_data(entry)
+
+        if not allow_fetch:
+            raise not_found("SDS", hazard.key)
 
         fetched = await self._fetcher.fetch(hazard=hazard)
         entry = self._store_fetch(hazard=hazard, fetched=fetched)
         return _entry_to_data(entry)
+
+    def is_cached_complete(self, *, hazard: HazardEntry) -> bool:
+        entry = self._index.entries.get(hazard.key)
+        if entry is None:
+            return False
+        if not self._file_exists(entry):
+            return False
+        return _entry_is_complete(entry)
 
     def get_cached(self, *, sds_ref: str) -> tuple[str, bytes, str]:
         entry = self._index.entries.get(sds_ref)
@@ -93,12 +105,16 @@ class FileSystemReagentPrepChefSdsIndexStore(ReagentPrepChefSdsIndexStoreProtoco
             entry = self._find_by_sds_ref(sds_ref)
         if entry is None:
             raise not_found("SDS", sds_ref)
+        if not _is_pdf_entry(entry):
+            raise not_found("SDS", sds_ref)
         path = self._files_dir / entry.file_name
         if not path.is_file():
             raise not_found("SDS", sds_ref)
         return (entry.file_name, path.read_bytes(), entry.media_type)
 
     def _file_exists(self, entry: _SdsIndexEntry) -> bool:
+        if not _is_pdf_entry(entry):
+            return False
         path = self._files_dir / entry.file_name
         return path.is_file()
 
@@ -106,6 +122,7 @@ class FileSystemReagentPrepChefSdsIndexStore(ReagentPrepChefSdsIndexStoreProtoco
         self._cache_root.mkdir(parents=True, exist_ok=True)
         self._files_dir.mkdir(parents=True, exist_ok=True)
 
+        existing = self._index.entries.get(hazard.key)
         extension = _extension_for_media_type(fetched.media_type)
         file_name = f"{fetched.sds_ref}{extension}"
         file_path = self._files_dir / file_name
@@ -128,6 +145,7 @@ class FileSystemReagentPrepChefSdsIndexStore(ReagentPrepChefSdsIndexStoreProtoco
             incompatibilities=list(fetched.incompatibilities),
             exothermicity=fetched.exothermicity,
             reaction_notes=list(fetched.reaction_notes),
+            density_g_ml=float(fetched.density_g_ml) if fetched.density_g_ml is not None else None,
             sources=list(fetched.sources),
         )
 
@@ -135,6 +153,10 @@ class FileSystemReagentPrepChefSdsIndexStore(ReagentPrepChefSdsIndexStoreProtoco
         if hazard.key != entry.sds_ref:
             self._index.entries[entry.sds_ref] = entry
         self._persist_index()
+        if existing is not None and existing.file_name != entry.file_name:
+            previous_path = self._files_dir / existing.file_name
+            if previous_path.is_file():
+                previous_path.unlink()
         return entry
 
     def _load_index(self) -> _SdsIndex:
@@ -212,7 +234,23 @@ def _model_to_band(model: _ClpBandModel) -> ClpBand:
     )
 
 
+def _entry_is_complete(entry: _SdsIndexEntry) -> bool:
+    if not entry.clp_bands:
+        return False
+    if entry.density_g_ml is None:
+        return False
+    if not entry.incompatibilities and not entry.reaction_notes and entry.exothermicity is None:
+        return False
+    return True
+
+
 def _extension_for_media_type(media_type: str) -> str:
     if media_type == "application/pdf":
         return ".pdf"
+    if media_type == "application/json":
+        return ".json"
     return ".bin"
+
+
+def _is_pdf_entry(entry: _SdsIndexEntry) -> bool:
+    return entry.media_type == "application/pdf"

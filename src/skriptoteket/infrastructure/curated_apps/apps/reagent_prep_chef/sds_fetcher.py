@@ -1,181 +1,450 @@
 from __future__ import annotations
 
-import re
-from collections.abc import AsyncIterator, Iterable
-from dataclasses import dataclass
-from urllib.parse import quote_plus, urlparse
+import asyncio
+import random
+import time
+from collections.abc import Awaitable, Callable
+from decimal import Decimal
 
 import httpx
+import structlog
 
+from skriptoteket.domain.curated_apps.reagent_prep_chef.formulas import molar_mass_g_mol
 from skriptoteket.domain.curated_apps.reagent_prep_chef.models import (
-    ClpBand,
     HazardEntry,
     SdsFetchResult,
 )
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.pubchem_client import (
-    PubChemClient,
+    AsyncClientProtocol,
+    PubChemClientProtocol,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_curated_meta_store import (
+    CuratedSdsMetaStore,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_fetcher_settings import (
+    ProgressReporter,
+    SdsFetcherSettings,
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers import (
-    extract_candidate_urls,
-    extract_hazard_codes_from_text,
-    extract_pdf_text,
-    extract_pictograms_from_text,
+    extract_density_g_ml,
     extract_pubchem_ghs,
-    extract_signal_word_from_text,
-    parse_sds_heuristics_from_text,
+    extract_pubchem_nonhazardous,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_pdf_fetcher import (
+    SdsPdfDocument,
+    SdsPdfFetcher,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_pdf_providers import (
+    SdsPdfProviderContext,
+    SdsPdfProviderRegistry,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_query_variants import (
+    dedupe_preserve_order,
+    extract_autocomplete_terms,
+    looks_like_formula,
+    normalize_formula_variants,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_result_builder import (
+    GhsSnapshot,
+    build_clp_bands,
+    merge_heuristics,
+    merge_pdf_ghs,
 )
 
-
-@dataclass(frozen=True, slots=True)
-class SdsFetcherSettings:
-    timeout_seconds: float
-    user_agent: str
-    sds_required: bool = True
+logger = structlog.get_logger(__name__)
 
 
 class PubChemSdsFetcher:
-    def __init__(self, *, pubchem: PubChemClient, settings: SdsFetcherSettings) -> None:
+    def __init__(
+        self,
+        *,
+        pubchem: PubChemClientProtocol,
+        settings: SdsFetcherSettings,
+        progress: ProgressReporter | None = None,
+        sds_http: AsyncClientProtocol | None = None,
+        pdf_provider_registry: SdsPdfProviderRegistry | None = None,
+        curated_meta_store: CuratedSdsMetaStore | None = None,
+    ) -> None:
         self._pubchem = pubchem
         self._settings = settings
+        self._progress = progress
+        self._pdf_fetcher = SdsPdfFetcher(
+            settings=settings,
+            progress=progress,
+            http_client=sds_http,
+            provider_registry=pdf_provider_registry,
+        )
+        self._curated_meta_store = curated_meta_store
 
     async def fetch(self, *, hazard: HazardEntry) -> SdsFetchResult:
-        cid = await self._resolve_cid(hazard)
-        if cid is None:
+        log = logger.bind(hazard_key=hazard.key, hazard_name=hazard.display_name)
+        self._emit(log, "fetch_start")
+        candidates: list[int] = []
+        allow_fallback = hazard.pubchem_cid is None
+        if hazard.pubchem_cid is not None:
+            candidates = [hazard.pubchem_cid]
+            self._emit(log, "resolve_cid_fixed", cid=hazard.pubchem_cid)
+        else:
+            if self._settings.require_pubchem_cid:
+                self._emit(log, "resolve_cid_missing")
+                raise validation_error(f"SDS saknas: saknar PubChem CID för {hazard.key}.")
+            candidates = await self._resolve_cid_candidates(
+                hazard,
+                log=log,
+                max_candidates=self._settings.cid_candidate_limit,
+            )
+        if not candidates:
+            candidates = await self._resolve_cid_candidates(
+                hazard,
+                log=log,
+                use_autocomplete=True,
+                max_candidates=self._settings.cid_candidate_limit,
+            )
+        if not candidates:
+            self._emit(log, "resolve_cid_missing")
             raise validation_error(f"SDS saknas: kunde inte hitta PubChem CID för {hazard.key}.")
 
-        pug_view = await self._pubchem.fetch_pug_view(cid=cid)
-        linkout = await self._pubchem.fetch_linkout(cid=cid)
+        last_attempted: list[int] = []
+        for cid in candidates:
+            last_attempted.append(cid)
+            result = await self._fetch_for_cid(hazard=hazard, cid=cid, log=log)
+            if result is not None:
+                return result
 
-        candidate_urls = self._collect_candidate_urls(pug_view, linkout, hazard)
+        if not allow_fallback:
+            self._emit(log, "fetch_failed_fixed_cid", cid=hazard.pubchem_cid)
+            raise validation_error(f"SDS saknas: ingen komplett SDS-data för {hazard.key}.")
 
-        pubchem_hazard_codes, pubchem_pictograms, pubchem_signal = extract_pubchem_ghs(pug_view)
-
-        async for sds_bytes, media_type, source_url in self._iter_pdf_candidates(candidate_urls):
-            sds_text = extract_pdf_text(sds_bytes)
-            incompatibilities, exothermicity, reaction_notes = parse_sds_heuristics_from_text(
-                sds_text
+        if len(candidates) >= self._settings.cid_candidate_limit:
+            self._emit(log, "resolve_cid_expand", attempted=len(last_attempted))
+            expanded_candidates = await self._resolve_cid_candidates(
+                hazard,
+                log=log,
+                exclude_cids=last_attempted,
+                max_candidates=None,
             )
-            if not incompatibilities and not reaction_notes and exothermicity is None:
-                continue
+            for cid in expanded_candidates:
+                last_attempted.append(cid)
+                result = await self._fetch_for_cid(hazard=hazard, cid=cid, log=log)
+                if result is not None:
+                    return result
 
-            hazard_codes = pubchem_hazard_codes or extract_hazard_codes_from_text(sds_text)
-            if not hazard_codes:
-                continue
+        fallback_candidates = await self._resolve_cid_candidates(
+            hazard,
+            log=log,
+            use_autocomplete=True,
+            exclude_cids=last_attempted,
+            max_candidates=self._settings.cid_candidate_limit,
+        )
+        for cid in fallback_candidates:
+            last_attempted.append(cid)
+            result = await self._fetch_for_cid(hazard=hazard, cid=cid, log=log)
+            if result is not None:
+                return result
 
-            pictograms = pubchem_pictograms or extract_pictograms_from_text(sds_text)
-            signal_word = pubchem_signal or extract_signal_word_from_text(sds_text)
+        self._emit(log, "fetch_failed_no_hazard_codes", cids=last_attempted)
+        raise validation_error(f"SDS saknas: ingen komplett SDS-data för {hazard.key}.")
 
-            clp_bands = (
-                ClpBand(
-                    min_molarity=None,
-                    max_molarity=None,
-                    hazard_codes=tuple(hazard_codes),
-                    pictograms=tuple(pictograms),
-                    signal_word=signal_word,
-                    notes=(),
-                ),
+    async def _resolve_cid_candidates(
+        self,
+        hazard: HazardEntry,
+        *,
+        log: structlog.stdlib.BoundLogger,
+        use_autocomplete: bool = False,
+        exclude_cids: list[int] | None = None,
+        max_candidates: int | None,
+    ) -> list[int]:
+        base_queries = [*hazard.search_aliases, hazard.key, *hazard.aliases]
+        expanded_queries: list[str] = []
+        for query in base_queries:
+            if looks_like_formula(query):
+                expanded_queries.extend(normalize_formula_variants(query))
+        queries = dedupe_preserve_order([*base_queries, *expanded_queries])
+        self._emit(log, "resolve_cid_start", queries=queries)
+        if use_autocomplete:
+            autocomplete_queries = await self._expand_queries_with_autocomplete(
+                queries=queries,
+                log=log,
             )
+            if autocomplete_queries:
+                self._emit(log, "resolve_cid_autocomplete", queries=autocomplete_queries)
+                queries = autocomplete_queries
+        candidates = await self._pubchem.resolve_cids(
+            queries=queries, max_candidates=max_candidates
+        )
+        if exclude_cids:
+            candidates = [cid for cid in candidates if cid not in exclude_cids]
+        self._emit(log, "resolve_cid_candidates", cids=candidates)
+        return candidates
 
-            return SdsFetchResult(
-                sds_ref=hazard.sds_ref or hazard.key,
-                sds_bytes=sds_bytes,
-                media_type=media_type,
-                source_url=source_url,
-                hazard_codes=tuple(hazard_codes),
-                pictograms=tuple(pictograms),
-                signal_word=signal_word,
-                clp_bands=clp_bands,
-                incompatibilities=tuple(incompatibilities),
-                exothermicity=exothermicity,
-                reaction_notes=tuple(reaction_notes),
-                sources=(source_url, "PubChem"),
-            )
-
-        if not pubchem_hazard_codes:
-            raise validation_error(f"SDS saknas: ingen GHS-klassning för {hazard.key}.")
-        raise validation_error(f"SDS saknas: ingen reaktivitetsdata för {hazard.key}.")
-
-    async def _resolve_cid(self, hazard: HazardEntry) -> int | None:
-        queries = [hazard.key, hazard.display_name, *hazard.aliases]
-        return await self._pubchem.resolve_cid(queries=queries)
-
-    def _collect_candidate_urls(
-        self, pug_view: dict, linkout: dict, hazard: HazardEntry
+    async def _expand_queries_with_autocomplete(
+        self,
+        *,
+        queries: list[str],
+        log: structlog.stdlib.BoundLogger,
     ) -> list[str]:
-        urls = set(extract_candidate_urls(pug_view))
-        urls.update(extract_candidate_urls(linkout))
-        urls.update(self._search_queries(hazard))
-        ranked = sorted(urls, key=_score_url, reverse=True)
-        return ranked
-
-    def _search_queries(self, hazard: HazardEntry) -> Iterable[str]:
-        terms = [hazard.display_name, hazard.key]
-        for term in terms:
-            if not term:
+        suggestions: list[str] = []
+        for query in queries:
+            if not query:
                 continue
-            encoded = quote_plus(f"{term} SDS pdf")
-            yield f"https://duckduckgo.com/html/?q={encoded}"
+            if looks_like_formula(query):
+                continue
+            try:
+                terms = await self._pubchem.autocomplete_compound(
+                    query=query,
+                    max_terms=self._settings.autocomplete_limit,
+                )
+            except httpx.HTTPError as exc:
+                self._emit(
+                    log,
+                    "autocomplete_error",
+                    query=query,
+                    error=str(exc),
+                )
+                continue
+            suggestions.extend(terms)
+        expanded: list[str] = []
+        for suggestion in dedupe_preserve_order(suggestions):
+            expanded.extend(extract_autocomplete_terms(suggestion))
+        return dedupe_preserve_order(expanded)
 
-    async def _iter_pdf_candidates(self, urls: list[str]) -> AsyncIterator[tuple[bytes, str, str]]:
-        async with httpx.AsyncClient(
-            timeout=self._settings.timeout_seconds,
-            headers={"User-Agent": self._settings.user_agent},
-            follow_redirects=True,
-        ) as client:
-            index = 0
-            seen: set[str] = set()
-            while index < len(urls):
-                url = urls[index]
-                index += 1
-                if url in seen:
-                    continue
-                seen.add(url)
-                if "duckduckgo.com/html" in url:
-                    urls_from_search = await self._parse_search_results(client=client, url=url)
-                    urls.extend(urls_from_search)
-                    continue
-                try:
-                    response = await client.get(url)
-                except httpx.HTTPError:
-                    continue
-                if response.status_code >= 400:
-                    continue
-                content = response.content
-                media_type = response.headers.get("content-type", "").split(";")[0]
-                if _is_pdf(content, media_type):
-                    yield (content, media_type or "application/pdf", url)
+    async def _fetch_for_cid(
+        self, *, hazard: HazardEntry, cid: int, log: structlog.stdlib.BoundLogger
+    ) -> SdsFetchResult | None:
+        curated_meta = None
+        if self._curated_meta_store is not None:
+            curated_meta = self._curated_meta_store.get(cid=cid)
+        self._emit(log, "pubchem_fetch_start", cid=cid)
+        lcss_payload = await self._fetch_lcss_payload(cid=cid, log=log)
+        ghs = await self._resolve_ghs_snapshot(cid=cid, lcss_payload=lcss_payload, log=log)
+        pdf_document = await self._fetch_pdf_document(
+            hazard=hazard,
+            cid=cid,
+            lcss_payload=lcss_payload,
+            log=log,
+        )
+        if pdf_document is None:
+            self._emit(log, "candidate_missing_pdf", cid=cid)
+            return None
 
-    async def _parse_search_results(self, *, client: httpx.AsyncClient, url: str) -> list[str]:
+        ghs = merge_pdf_ghs(snapshot=ghs, pdf_text=pdf_document.text)
+        if not ghs.hazard_codes and not ghs.nonhazardous:
+            self._emit(log, "candidate_no_pdf_hazard_codes", cid=cid)
+            return None
+
+        incompatibilities, exothermicity, reaction_notes = merge_heuristics(
+            pdf_text=pdf_document.text,
+        )
+        if not incompatibilities and not reaction_notes and exothermicity is None:
+            self._emit(log, "candidate_missing_heuristics", cid=cid)
+            return None
+
+        used_curated_meta = False
+        density_g_ml = None
+        if curated_meta is not None and curated_meta.density_g_ml is not None:
+            density_g_ml = curated_meta.density_g_ml
+            used_curated_meta = True
+            self._emit(log, "density_from_curated", cid=cid)
+        else:
+            density_g_ml = await self._fetch_density(cid=cid, log=log)
+        if density_g_ml is None:
+            self._emit(log, "candidate_missing_density", cid=cid)
+            return None
+
+        clp_bands = None
+        if curated_meta is not None and curated_meta.clp_bands:
+            clp_bands = curated_meta.clp_bands
+            used_curated_meta = True
+            self._emit(log, "clp_bands_from_curated", cid=cid)
+        else:
+            clp_bands = build_clp_bands(
+                pdf_text=pdf_document.text,
+                molar_mass=molar_mass_g_mol(formula_clean=hazard.key),
+                density_g_ml=density_g_ml,
+                snapshot=ghs,
+                emit=lambda stage: self._emit(log, stage),
+            )
+            if clp_bands is None:
+                return None
+
+        sources = [*ghs.sources, pdf_document.source_url, "PubChem"]
+        if used_curated_meta and curated_meta is not None and curated_meta.sources:
+            sources.extend(curated_meta.sources)
+        sources = list(dict.fromkeys(sources))
+
+        return SdsFetchResult(
+            sds_ref=hazard.sds_ref or hazard.key,
+            sds_bytes=pdf_document.sds_bytes,
+            media_type=pdf_document.media_type,
+            source_url=pdf_document.source_url,
+            hazard_codes=tuple(ghs.hazard_codes),
+            pictograms=tuple(ghs.pictograms),
+            signal_word=ghs.signal_word,
+            clp_bands=clp_bands,
+            incompatibilities=tuple(incompatibilities),
+            exothermicity=exothermicity,
+            reaction_notes=tuple(reaction_notes),
+            density_g_ml=density_g_ml,
+            sources=tuple(sources),
+        )
+
+    async def _fetch_lcss_payload(self, *, cid: int, log: structlog.stdlib.BoundLogger) -> dict:
+        return await self._call_with_retry(
+            log=log,
+            stage="pubchem_lcss",
+            call=lambda: self._pubchem.fetch_lcss(cid=cid),
+        )
+
+    async def _resolve_ghs_snapshot(
+        self,
+        *,
+        cid: int,
+        lcss_payload: dict,
+        log: structlog.stdlib.BoundLogger,
+    ) -> GhsSnapshot:
+        hazard_codes, pictograms, signal_word = extract_pubchem_ghs(lcss_payload)
+        nonhazardous = extract_pubchem_nonhazardous(lcss_payload)
+        sources = [f"{self._pubchem.base_url}/rest/pug_view/data/compound/{cid}/JSON?toc=LCSS+TOC"]
+
+        if not hazard_codes and not nonhazardous:
+            ghs_payload = await self._fetch_heading_payload(
+                cid=cid,
+                heading="GHS Classification",
+                stage="pubchem_ghs_heading",
+                log=log,
+            )
+            if ghs_payload is not None:
+                ghs_codes, ghs_pictograms, ghs_signal = extract_pubchem_ghs(ghs_payload)
+                ghs_nonhazardous = extract_pubchem_nonhazardous(ghs_payload)
+                hazard_codes = ghs_codes
+                pictograms = sorted({*pictograms, *ghs_pictograms})
+                signal_word = ghs_signal or signal_word
+                nonhazardous = ghs_nonhazardous
+                if hazard_codes or nonhazardous:
+                    sources.append(
+                        f"{self._pubchem.base_url}/rest/pug_view/data/compound/{cid}/JSON?heading=GHS+Classification"
+                    )
+
+        return GhsSnapshot(
+            hazard_codes=hazard_codes,
+            pictograms=pictograms,
+            signal_word=signal_word,
+            nonhazardous=nonhazardous,
+            sources=sources,
+        )
+
+    async def _fetch_heading_payload(
+        self,
+        *,
+        cid: int,
+        heading: str,
+        stage: str,
+        log: structlog.stdlib.BoundLogger,
+    ) -> dict | None:
         try:
-            response = await client.get(url)
-            response.raise_for_status()
-        except httpx.HTTPError:
-            return []
-        html = response.text
-        links = re.findall(r"href=\"(https?://[^\"]+)\"", html)
-        filtered = [link for link in links if _score_url(link) > 0]
-        return filtered[:20]
+            return await self._call_with_retry(
+                log=log,
+                stage=stage,
+                call=lambda: self._pubchem.fetch_heading(cid=cid, heading=heading),
+            )
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 404:
+                self._emit(log, f"{stage}_missing", cid=cid)
+                return None
+            raise
 
+    async def _fetch_pdf_document(
+        self,
+        *,
+        hazard: HazardEntry,
+        cid: int,
+        lcss_payload: dict,
+        log: structlog.stdlib.BoundLogger,
+    ) -> SdsPdfDocument | None:
+        linkout_payload = await self._call_with_retry(
+            log=log,
+            stage="pubchem_linkout",
+            call=lambda: self._pubchem.fetch_linkout(cid=cid),
+        )
+        safety_payload = await self._fetch_heading_payload(
+            cid=cid,
+            heading="Safety and Hazards",
+            stage="pubchem_safety_heading",
+            log=log,
+        )
+        context = SdsPdfProviderContext(
+            hazard=hazard,
+            cid=cid,
+            lcss_payload=lcss_payload,
+            linkout_payload=linkout_payload,
+            safety_payload=safety_payload,
+        )
+        return await self._pdf_fetcher.fetch(context=context, log=log)
 
-def _is_pdf(content: bytes, media_type: str) -> bool:
-    if media_type.lower() == "application/pdf":
-        return True
-    return content.startswith(b"%PDF")
+    async def _fetch_density(
+        self, *, cid: int, log: structlog.stdlib.BoundLogger
+    ) -> Decimal | None:
+        density_payload = await self._fetch_heading_payload(
+            cid=cid,
+            heading="Density",
+            stage="pubchem_density_heading",
+            log=log,
+        )
+        if density_payload is None:
+            return None
+        return extract_density_g_ml(density_payload)
 
+    async def _call_with_retry(
+        self,
+        *,
+        log: structlog.stdlib.BoundLogger,
+        stage: str,
+        call: Callable[[], Awaitable[dict]],
+    ) -> dict:
+        attempts = max(self._settings.retry_attempts, 1)
+        for attempt in range(1, attempts + 1):
+            self._emit(log, f"{stage}_start", attempt=attempt, attempts=attempts)
+            start = time.monotonic()
+            try:
+                result = await call()
+            except httpx.HTTPError as exc:
+                elapsed = time.monotonic() - start
+                self._emit(
+                    log,
+                    f"{stage}_error",
+                    attempt=attempt,
+                    elapsed_seconds=round(elapsed, 2),
+                    error=str(exc),
+                )
+                if attempt == attempts:
+                    raise
+                await self._backoff_sleep(attempt=attempt)
+                continue
+            elapsed = time.monotonic() - start
+            self._emit(
+                log,
+                f"{stage}_done",
+                attempt=attempt,
+                elapsed_seconds=round(elapsed, 2),
+            )
+            return result
+        raise validation_error("SDS saknas: kunde inte hämta PubChem-data.")
 
-def _score_url(url: str) -> int:
-    lowered = url.lower()
-    score = 0
-    if "sds" in lowered or "msds" in lowered:
-        score += 5
-    if lowered.endswith(".pdf"):
-        score += 4
-    if "safety-data-sheet" in lowered:
-        score += 4
-    if "safety" in lowered and "sheet" in lowered:
-        score += 2
-    parsed = urlparse(url)
-    if parsed.path.endswith(".pdf"):
-        score += 2
-    return score
+    async def _backoff_sleep(self, *, attempt: int) -> None:
+        base = self._settings.retry_backoff_seconds
+        max_sleep = self._settings.retry_backoff_max_seconds
+        jitter = random.uniform(0.5, 1.5)
+        delay = min(max_sleep, base * (2 ** (attempt - 1)) * jitter)
+        await asyncio.sleep(delay)
+
+    def _emit(
+        self,
+        log: structlog.stdlib.BoundLogger,
+        stage: str,
+        **payload: object,
+    ) -> None:
+        if self._progress is not None:
+            self._progress(stage, payload)
+            return
+        log.info("sds_fetch_progress", stage=stage, **payload)

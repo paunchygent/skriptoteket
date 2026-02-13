@@ -58,12 +58,22 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.pubchem_cli
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.risk_templates_store import (
     InMemoryReagentPrepChefRiskTemplateStore,
 )
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_curated_meta_store import (
+    CuratedSdsMetaStore,
+)
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_fetcher import (
     PubChemSdsFetcher,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_fetcher_settings import (
     SdsFetcherSettings,
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_index_store import (
     FileSystemReagentPrepChefSdsIndexStore,
+)
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_pdf_providers import (
+    CuratedSdsLinkoutStore,
+    SdsPdfProviderRegistry,
+    build_sds_pdf_provider_registry,
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store import (
     CachedReagentPrepChefSdsStore,
@@ -125,8 +135,17 @@ class CuratedAppsProvider(Provider):
         client = PubChemClient(
             settings=PubChemClientSettings(
                 base_url=settings.PUBCHEM_BASE_URL,
-                timeout_seconds=settings.PUBCHEM_TIMEOUT_SECONDS,
+                timeout_seconds=settings.SDS_FETCH_TIMEOUT_SECONDS,
                 user_agent=settings.SDS_FETCH_USER_AGENT,
+                listkey_max_wait_seconds=settings.SDS_FETCH_LISTKEY_MAX_SECONDS,
+                listkey_poll_interval_seconds=settings.SDS_FETCH_LISTKEY_POLL_SECONDS,
+                resolve_retry_attempts=settings.SDS_FETCH_RETRY_ATTEMPTS,
+                resolve_retry_backoff_seconds=settings.SDS_FETCH_RETRY_BACKOFF_SECONDS,
+                resolve_retry_backoff_max_seconds=settings.SDS_FETCH_RETRY_BACKOFF_MAX_SECONDS,
+                rate_limit_per_second=settings.PUBCHEM_RATE_LIMIT_PER_SECOND,
+                max_in_flight=settings.PUBCHEM_MAX_IN_FLIGHT,
+                throttle_yellow_delay_seconds=settings.PUBCHEM_THROTTLE_YELLOW_DELAY_SECONDS,
+                throttle_red_delay_seconds=settings.PUBCHEM_THROTTLE_RED_DELAY_SECONDS,
             )
         )
         try:
@@ -135,16 +154,38 @@ class CuratedAppsProvider(Provider):
             await client.close()
 
     @provide(scope=Scope.APP)
+    def reagent_prep_chef_sds_pdf_registry(self, settings: Settings) -> SdsPdfProviderRegistry:
+        curated_store = None
+        if settings.SDS_CURATED_LINKOUTS_PATH is not None:
+            curated_store = CuratedSdsLinkoutStore(path=settings.SDS_CURATED_LINKOUTS_PATH)
+        return build_sds_pdf_provider_registry(curated_store=curated_store)
+
+    @provide(scope=Scope.APP)
     def reagent_prep_chef_sds_fetcher(
         self,
         settings: Settings,
         pubchem: PubChemClient,
+        sds_pdf_registry: SdsPdfProviderRegistry,
     ) -> ReagentPrepChefSdsFetcherProtocol:
+        curated_meta_store = None
+        if settings.SDS_CURATED_META_PATH is not None:
+            curated_meta_store = CuratedSdsMetaStore(path=settings.SDS_CURATED_META_PATH)
         fetcher_settings = SdsFetcherSettings(
             timeout_seconds=settings.SDS_FETCH_TIMEOUT_SECONDS,
             user_agent=settings.SDS_FETCH_USER_AGENT,
+            retry_attempts=settings.SDS_FETCH_RETRY_ATTEMPTS,
+            retry_backoff_seconds=settings.SDS_FETCH_RETRY_BACKOFF_SECONDS,
+            retry_backoff_max_seconds=settings.SDS_FETCH_RETRY_BACKOFF_MAX_SECONDS,
+            require_pubchem_cid=True,
+            cid_candidate_limit=settings.SDS_FETCH_CID_CANDIDATE_LIMIT,
+            autocomplete_limit=settings.SDS_FETCH_AUTOCOMPLETE_LIMIT,
         )
-        return PubChemSdsFetcher(pubchem=pubchem, settings=fetcher_settings)
+        return PubChemSdsFetcher(
+            pubchem=pubchem,
+            settings=fetcher_settings,
+            pdf_provider_registry=sds_pdf_registry,
+            curated_meta_store=curated_meta_store,
+        )
 
     @provide(scope=Scope.APP)
     def reagent_prep_chef_sds_index_store(

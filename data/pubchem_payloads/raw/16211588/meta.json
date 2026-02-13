@@ -1,0 +1,34 @@
+{
+  "cid": 16211588,
+  "hazard_key": "FeCl2·4H2O",
+  "display_name": "Järn(II)klorid (tetrahydrat)",
+  "captured_at": "2026-01-31T14:35:27.403372+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/16211588",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/16211588/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82,
+      "file": "data/pubchem_payloads/raw/16211588/linkout.json",
+      "sha256": "468f22fadfe5f0b0887c7edb4d5fc2e9e58b02023ebab56372cc0e4bf033ed20"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16211588/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 39853,
+      "file": "data/pubchem_payloads/raw/16211588/lcss.json",
+      "sha256": "c4b70a84931c141f9c0eb0104199b461355c44e8452add6cad370e471a9bf02f"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16211588/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 30523,
+      "file": "data/pubchem_payloads/raw/16211588/safety.json",
+      "sha256": "b2e99c7aa2f98615e9c957050d17ee9c777d9c7e6dd3cbfd556fdb03c6c1ce41"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/16211588.png"
+}

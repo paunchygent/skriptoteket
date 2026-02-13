@@ -1,0 +1,34 @@
+{
+  "cid": 253881,
+  "hazard_key": "NaBr",
+  "display_name": "Natriumbromid",
+  "captured_at": "2026-01-31T16:57:44.227188+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/253881",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/253881/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 697,
+      "file": "data/pubchem_payloads/raw/253881/linkout.json",
+      "sha256": "bbc264304904613ef4c845df1bd799dff8cb1d3178b6da215f480891bb18a2e2"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/253881/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 140387,
+      "file": "data/pubchem_payloads/raw/253881/lcss.json",
+      "sha256": "c25c045127522d63d67ae01ee1878129a78f0c90a7ea2edef618353c2f4e326d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/253881/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 61316,
+      "file": "data/pubchem_payloads/raw/253881/safety.json",
+      "sha256": "60dbf29868cae6c47b227603b6d75f0c516fb11637daecd038ca9a00d249cdcc"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/253881.png"
+}

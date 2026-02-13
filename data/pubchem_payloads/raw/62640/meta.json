@@ -1,0 +1,34 @@
+{
+  "cid": 62640,
+  "hazard_key": "ZnSO4·7H2O",
+  "display_name": "Zinksulfat (heptahydrat)",
+  "captured_at": "2026-01-31T18:48:25.050924+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/62640",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/62640/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/62640/linkout.json",
+      "sha256": "156efea9e326b74b9129c5ac3f203e263fce73ec3d49a855b9db2ba77caf0fb2"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62640/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82435,
+      "file": "data/pubchem_payloads/raw/62640/lcss.json",
+      "sha256": "d2df1b18b613b2442f450a3a5811ec1d0088e9145f777c214e773a926ae5472e"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62640/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 73393,
+      "file": "data/pubchem_payloads/raw/62640/safety.json",
+      "sha256": "88e5eb464561a5d695ec06aa3a5b1b91033a94b6a5ac5b3441fb715335086ba8"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/62640.png"
+}

@@ -1,0 +1,41 @@
+KODASSISTENTEN EVAL v2 - STEG 3 (PATCH: input_schema + usage)
+
+Task: produce a patch as a unified diff.
+
+Strict output rules:
+- Output ONLY a unified diff. No prose. No preamble. No explanations.
+- Do not output any triple backticks.
+- The FIRST line of your output MUST be exactly:
+  diff --git a/input_schema.json b/input_schema.json
+- Only modify input_schema.json and usage_instructions.md.
+- If you cannot comply, output exactly: CANNOT_COMPLY
+
+Patch requirements:
+- Uppdatera input_schema.json så att CSV laddas upp som fil (accept .csv, min 1 max 1),
+  samt behåll ett boolean-fält för PDF (ta bort övriga fält).
+- Uppdatera usage_instructions.md så att den beskriver CSV-formatet (kolumner: name, subject, score),
+  samt hur PDF-valet fungerar.
+- All användartext ska vara på svenska.
+
+Diff headers must use these file names:
+- a/input_schema.json b/input_schema.json
+- a/usage_instructions.md b/usage_instructions.md
+
+Original files:
+
+FILE: input_schema.json
+[
+  {"name": "csv_path", "label": "Sökväg till CSV", "kind": "string"},
+  {"name": "generate_pdf", "label": "Skapa PDF", "kind": "boolean"},
+  {"name": "currency", "label": "Valuta", "kind": "string"}
+]
+
+FILE: usage_instructions.md
+# Betygsrapport
+
+1. Ange sökvägen till CSV-filen i fältet.
+2. Välj eventuell valuta för poäng.
+3. Klicka kör.
+
+CSV ska ha kolumnerna name, subject, score.
+Verktyget hämtar valutakurser från nätet och skapar en HTML-rapport.

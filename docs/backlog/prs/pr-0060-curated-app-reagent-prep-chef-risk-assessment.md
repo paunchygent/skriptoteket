@@ -2,10 +2,10 @@
 type: pr
 id: PR-0060
 title: "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-01-28
-updated: 2026-01-28
+updated: 2026-02-01
 stories:
   - "ST-20-02"
 tags: ["curated-apps", "backend", "frontend"]
@@ -35,6 +35,23 @@ Add a first-class **Riskbedömning** workflow to the existing curated app:
 - Full chemistry heuristics (reaction prediction, incompatibilities, exothermicity, etc.).
 - Concentration-dependent CLP classification engine.
 - Automatic risk scoring + teacher must explicitly confirm or modify seriousness/rating.
+
+## Implementation status (as of 2026-02-01)
+
+Delivered so far:
+
+- Riskbedömning endpoints wired (draft/export/save) and SPA tab uses tool_sessions with optimistic concurrency.
+- PDF export + Vault save follow existing patterns (WeasyPrint + run recording + Vault quota checks).
+- SDS fetch/cache pipeline stores and serves **PDF** SDS (backend-hosted), keeping LCSS JSON for structured GHS.
+- Multi-source SDS provider registry wired (curated linkouts + PubChem LinkOut + safety URLs + LCSS URL scan).
+- Curated SDS meta store added; curated density/CLP bands are now loaded and used when present.
+- Seed SDS cache supports parallel fetches and strict validation; sample batch (C3H6O/Al/AlCl3/AlCl3·6H2O/Al2O3) now completes cleanly with curated meta.
+
+Remaining to close for acceptance:
+
+- **Full dataset prefetch validation**: ran `seed-sds-cache` on 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`). All misses must be resolved.
+- Populate curated SDS linkouts + curated meta (density + CLP bands) for every hazard; no gaps.
+- Confirm the remaining CLP/heuristics outputs match acceptance criteria across the full hazard list.
 
 ## API contract (app-specific)
 

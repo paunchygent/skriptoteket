@@ -117,6 +117,8 @@ class ReagentPrepChefRiskAssessmentHandlerProtocol(Protocol):
         *,
         actor: User,
         command: ReagentPrepChefRiskAssessmentRequest,
+        allow_fetch: bool = True,
+        require_complete: bool = False,
     ) -> ReagentPrepChefRiskAssessmentResult: ...
 
 
@@ -143,7 +145,7 @@ class ReagentPrepChefSdsStoreProtocol(Protocol):
 
 
 class ReagentPrepChefSdsIndexStoreProtocol(Protocol):
-    async def ensure(self, *, hazard: HazardEntry) -> HazardSdsData: ...
+    async def ensure(self, *, hazard: HazardEntry, allow_fetch: bool = True) -> HazardSdsData: ...
 
     def get_cached(self, *, sds_ref: str) -> tuple[str, bytes, str]: ...
 

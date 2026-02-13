@@ -1,0 +1,34 @@
+{
+  "cid": 5462224,
+  "hazard_key": "Mg",
+  "display_name": "Magnesium (Mg)",
+  "captured_at": "2026-01-31T16:56:10.311606+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5462224",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5462224/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1334,
+      "file": "data/pubchem_payloads/raw/5462224/linkout.json",
+      "sha256": "30e95b09c90b11720d38d2d84b2b37a061b4713ae024a8a8575e815b0a0223c7"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5462224/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 337278,
+      "file": "data/pubchem_payloads/raw/5462224/lcss.json",
+      "sha256": "d876140a2a7a7700892b8a854672528a3bd1b7d4f54f854331d6dcdd07e9a3eb"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5462224/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 346148,
+      "file": "data/pubchem_payloads/raw/5462224/safety.json",
+      "sha256": "cb02f8389ee3aac70540d6ca9b57253b9982e1b6c24a67d95eb32299b68747fa"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5462224.png"
+}

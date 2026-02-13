@@ -1,0 +1,34 @@
+{
+  "cid": 24843,
+  "hazard_key": "MgSO4·7H2O",
+  "display_name": "Magnesiumsulfat (heptahydrat)",
+  "captured_at": "2026-01-31T16:56:54.014844+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24843",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24843/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24843/linkout.json",
+      "sha256": "fa1751903dda660162cba45fe93eff51baa6776d55689a0e89e6fc0977ff16c8"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24843/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 38255,
+      "file": "data/pubchem_payloads/raw/24843/lcss.json",
+      "sha256": "4bb6a63e5b44ab146ccb7f2c02232dab502087a9037529bffe2cc7f3a078df50"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24843/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 24199,
+      "file": "data/pubchem_payloads/raw/24843/safety.json",
+      "sha256": "6714dcff1df0e154a35b75636d373ae1f27dc705e65edac204a9a1a8b13649b1"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24843.png"
+}

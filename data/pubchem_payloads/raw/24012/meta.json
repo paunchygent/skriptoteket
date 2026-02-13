@@ -1,0 +1,34 @@
+{
+  "cid": 24012,
+  "hazard_key": "AlCl3",
+  "display_name": "Aluminiumklorid",
+  "captured_at": "2026-01-31T14:14:05.145060+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24012",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24012/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/24012/linkout.json",
+      "sha256": "11f6ebc2f105eb6c4dd326d39ee9a5f660209fa100942bbb43da1e46decd667b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24012/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 380836,
+      "file": "data/pubchem_payloads/raw/24012/lcss.json",
+      "sha256": "41c982551009a7f7ba97de802863599f17c8a00dbdbdb2debb46f98803114044"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24012/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 364674,
+      "file": "data/pubchem_payloads/raw/24012/safety.json",
+      "sha256": "c4835d301345612de775c35711b62bde6b1899d026cff4d300f839196292e8cd"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24012.png"
+}

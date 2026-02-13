@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "cid": 62662,
+  "captured_at": "2026-01-31T14:35:33.118145+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/62662",
+    "lcss_sha256": "51104aca71d2415d45904cc13dc14de1f2e35233f596b59266102336d754db50",
+    "linkout_sha256": "bd2d125314cae3f557a74dd34d22a35e6b05bf7cd3dfaaecee8626be8e554643",
+    "meta_sha256": "92197a08d76e408dea78b29a46b8b2723f6abd15bd98c8ccbc1619937d73040c"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H319",
+      "H402"
+    ],
+    "hazard_statements_sv": {
+      "H302": "Skadligt vid förtäring.",
+      "H315": "Irriterar huden.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H402": "Skadligt för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P264",
+      "P264+P265",
+      "P270",
+      "P273",
+      "P280",
+      "P301+P317",
+      "P302+P352",
+      "P305+P351+P338",
+      "P321",
+      "P330",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "warning",
+    "signal_word_sv": "Varning",
+    "pictograms": [
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.013442+00:00"
+}

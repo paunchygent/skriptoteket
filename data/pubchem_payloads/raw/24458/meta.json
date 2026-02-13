@@ -1,0 +1,34 @@
+{
+  "cid": 24458,
+  "hazard_key": "FeCl2",
+  "display_name": "Järn(II)klorid",
+  "captured_at": "2026-01-31T14:35:20.671961+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24458",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24458/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24458/linkout.json",
+      "sha256": "f2dab11ccd414b6ca06efeaa0c0835392f28587aa0efece52bacad5597fd09f0"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24458/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 199629,
+      "file": "data/pubchem_payloads/raw/24458/lcss.json",
+      "sha256": "3114f3d2b2cf41d6daf7145973918ded8232e2a671ac817d8c57f8eb112b0323"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24458/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 223784,
+      "file": "data/pubchem_payloads/raw/24458/safety.json",
+      "sha256": "cb506ad625a08e50fc44dd547e797f8e6fd5e6a84ca4c585283e9d72fc07f151"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24458.png"
+}

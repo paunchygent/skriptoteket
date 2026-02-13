@@ -1,0 +1,34 @@
+{
+  "cid": 14828,
+  "hazard_key": "FeS",
+  "display_name": "Järnsulfid",
+  "captured_at": "2026-01-31T14:42:25.814440+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14828",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14828/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14828/linkout.json",
+      "sha256": "8905348f2320a82d87ab5fb6cc5b7a9f4fbe6f4c5e67ce78511c9127b49099ec"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14828/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 73194,
+      "file": "data/pubchem_payloads/raw/14828/lcss.json",
+      "sha256": "c0c399ace9afc9f8726402b59d1fbe02b0c7801728d98825bfcafda28cfceda4"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14828/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 55539,
+      "file": "data/pubchem_payloads/raw/14828/safety.json",
+      "sha256": "4dbadd03e6d1b68c1659d4a7536f3c8e5618fe7a1607850b5293545c2c7500ea"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14828.png"
+}

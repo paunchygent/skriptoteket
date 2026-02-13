@@ -1,0 +1,32 @@
+{
+  "cid": 6352,
+  "hazard_key": "CaC2",
+  "display_name": "Kalciumkarbid",
+  "captured_at": "2026-01-31T21:17:26.976831+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/6352",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/6352/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 78,
+      "file": "data/pubchem_payloads/raw/6352/linkout.json",
+      "sha256": "0e3c17b118fb8d15e27ddf98fb7728d567843e749bde2826cc1956917239b842"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6352/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 5938,
+      "file": "data/pubchem_payloads/raw/6352/lcss.json",
+      "sha256": "70e96f94a4dc2b6776a75f0a8128fbf3e9737655d831036762e452eeed1cac2d"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/6352/JSON?heading=Safety%20and%20Hazards",
+      "status": 404,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 84
+    }
+  },
+  "screenshot": "/tmp/skriptoteket/artifacts/pubchem-payload-capture/6352.png"
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 5727,
+  "hazard_key": "ZnCl2",
+  "display_name": "Zinkklorid",
+  "captured_at": "2026-01-31T18:47:52.490205+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5727",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/5727/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 596,
+      "file": "data/pubchem_payloads/raw/5727/linkout.json",
+      "sha256": "dcc98075b9e75d80b8df291064ce662c374d91db64b9b2b79f666faff18250d9"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5727/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 353753,
+      "file": "data/pubchem_payloads/raw/5727/lcss.json",
+      "sha256": "199bd78e902c9ea6c2806d41c62b3e555a962188c6a9d2afeaab6abca8427c48"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5727/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 367210,
+      "file": "data/pubchem_payloads/raw/5727/safety.json",
+      "sha256": "ddfd9c9d692d7183e09af7c259b0f23795994d5365b09484db812e2dd52c5272"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/5727.png"
+}

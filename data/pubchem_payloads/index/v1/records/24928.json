@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "cid": 24928,
+  "captured_at": "2026-01-31T16:43:00.896793+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24928",
+    "lcss_sha256": "793bfcfc341117b5fed10050d03496b64490b990ed742d9683655d71babdc3cd",
+    "linkout_sha256": "07b0fb5fc27a51ad35b1232912105d2cdc7d67784c6c7798157b583b95240194",
+    "meta_sha256": "fe27b319f3f8925ad6439326fee6d162679569abd32e584fcd29aaa92d9c1e70"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H335"
+    ],
+    "hazard_statements_sv": {
+      "H335": "Kan orsaka irritation i luftvägarna."
+    },
+    "precautionary_codes": [
+      "P261",
+      "P271",
+      "P304+P340",
+      "P319",
+      "P403+P233",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P319": "Sök läkarhjälp.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "warning",
+    "signal_word_sv": "Varning",
+    "pictograms": [
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.036924+00:00"
+}

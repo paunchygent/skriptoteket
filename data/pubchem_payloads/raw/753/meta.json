@@ -1,0 +1,34 @@
+{
+  "cid": 753,
+  "hazard_key": "C3H8O3",
+  "display_name": "Propantriol",
+  "captured_at": "2026-01-31T18:42:03.859770+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/753",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/753/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1233,
+      "file": "data/pubchem_payloads/raw/753/linkout.json",
+      "sha256": "239510822cdddd4fa4ebe782c17523625cced98240cc31941a03e8229f78b3c0"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/753/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 372099,
+      "file": "data/pubchem_payloads/raw/753/lcss.json",
+      "sha256": "d2eaf5c4907c17bf9d483defef5bdf269aba90d9209ddea6deecb721567ef076"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/753/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 179074,
+      "file": "data/pubchem_payloads/raw/753/safety.json",
+      "sha256": "919d691f168ce5c8d53f3de7a850bb89ecbf5ce282b8f9503b0e21df8ca048c5"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/753.png"
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 14792,
+  "hazard_key": "MgO",
+  "display_name": "Magnesiumoxid",
+  "captured_at": "2026-01-31T21:18:52.086050+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14792",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14792/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 738,
+      "file": "data/pubchem_payloads/raw/14792/linkout.json",
+      "sha256": "4999e24b89a4c7fee8f21cddedd6f9676ce77b0c60b0d7c65dc7c8b72ed89164"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14792/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 199457,
+      "file": "data/pubchem_payloads/raw/14792/lcss.json",
+      "sha256": "6d2ecaf94df54c66e1b61000df1269f9ac5db0174ef3e01a3b5ea1b9d06314b6"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14792/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 145740,
+      "file": "data/pubchem_payloads/raw/14792/safety.json",
+      "sha256": "073b84c531ed0951c400e3b656a45705d6f905c03355f8ae66cdb43d2189a15a"
+    }
+  },
+  "screenshot": "/tmp/skriptoteket/artifacts/pubchem-payload-capture/14792.png"
+}

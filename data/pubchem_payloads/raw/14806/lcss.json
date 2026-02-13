@@ -1,0 +1,1051 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 14806,
+    "RecordTitle": "Desitin",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 39,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 14,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                      "Type": "Icon",
+                      "Extra": "Environmental Hazard"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Warning",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H400 (100%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410 (100%): Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 67,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P273, P391, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 16,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The GHS information provided by 1 company from 1 notification to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 92,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS02.svg",
+                          "Type": "Icon",
+                          "Extra": "Flammable"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+                          "Type": "Icon",
+                          "Extra": "Environmental Hazard"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H226 (100%): Flammable liquid and vapor [Warning Flammable liquids]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H400 (100%): Very toxic to aquatic life [Warning Hazardous to the aquatic environment, acute hazard]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H410 (100%): Very toxic to aquatic life with long lasting effects [Warning Hazardous to the aquatic environment, long-term hazard]",
+                      "Markup": [
+                        {
+                          "Start": 67,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P210, P233, P240, P241, P242, P243, P273, P280, P303+P361+P353, P370+P378, P391, P403+P235, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P210"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P233"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P240"
+                        },
+                        {
+                          "Start": 18,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P241"
+                        },
+                        {
+                          "Start": 24,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P242"
+                        },
+                        {
+                          "Start": 30,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P243"
+                        },
+                        {
+                          "Start": 36,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P273"
+                        },
+                        {
+                          "Start": 42,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 48,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P303+P361+P353"
+                        },
+                        {
+                          "Start": 64,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P370+P378"
+                        },
+                        {
+                          "Start": 75,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P391"
+                        },
+                        {
+                          "Start": 81,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P235"
+                        },
+                        {
+                          "Start": 96,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "The GHS information provided by 1 company from 1 notification to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 92,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 1 of 1 companies. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 110,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/83737"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-84-5",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "174846-84-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 3,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=1314-13-2",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-13-2"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-83-4",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "174846-83-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=155149-97-6",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "155149-97-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=20431-17-8",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "20431-17-8"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-87-8",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "174846-87-8"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-85-6",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "174846-85-6"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1314-13-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 39,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "oxozinc"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 39,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Zinc Oxide Powder"
+                    },
+                    {
+                      "String": "Supertah"
+                    },
+                    {
+                      "String": "Zincite"
+                    },
+                    {
+                      "String": "ZNO"
+                    },
+                    {
+                      "String": "Zinc oxide [USAN]"
+                    },
+                    {
+                      "String": "Caswell No. 920"
+                    },
+                    {
+                      "String": "Cynku tlenek [Polish]"
+                    },
+                    {
+                      "String": "Desitin"
+                    },
+                    {
+                      "String": "Nogenol"
+                    },
+                    {
+                      "String": "C-Weiss 8 [German]"
+                    },
+                    {
+                      "String": "zincum oxidatum"
+                    },
+                    {
+                      "String": "Zinc gelatin"
+                    },
+                    {
+                      "String": "oxyde de zinc"
+                    },
+                    {
+                      "String": "Zinc oxide fume"
+                    },
+                    {
+                      "String": "MFCD00011300"
+                    },
+                    {
+                      "String": "RVPaque"
+                    },
+                    {
+                      "String": "No-Genol"
+                    },
+                    {
+                      "String": "Zinc oxide substrate, 10x10x0.5mm, polished one side, 0001 orientation"
+                    },
+                    {
+                      "String": "Zinc oxide, 99.99% trace metals basis"
+                    },
+                    {
+                      "String": "174846-84-5"
+                    },
+                    {
+                      "String": "CCRIS 1309"
+                    },
+                    {
+                      "String": "HSDB 5024"
+                    },
+                    {
+                      "String": "A&D Medicated Ointment"
+                    },
+                    {
+                      "String": "EINECS 215-222-5"
+                    },
+                    {
+                      "String": "UNII-SOI2LOH54Z"
+                    },
+                    {
+                      "String": "Zinc oxide [USP:JAN]"
+                    },
+                    {
+                      "String": "oxido de cinc"
+                    },
+                    {
+                      "String": "Leaded zinc oxide"
+                    },
+                    {
+                      "String": "ZN-0401 E 3/16''"
+                    },
+                    {
+                      "String": "ZnO Quantum Dots"
+                    },
+                    {
+                      "String": "Zinc Oxide Slurry"
+                    },
+                    {
+                      "String": "Zinc oxide, heavy"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanowire"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanowires"
+                    },
+                    {
+                      "String": "Zinc Oxide Dispersion"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanopowder"
+                    },
+                    {
+                      "String": "Zinc oxide, Nanotek?"
+                    },
+                    {
+                      "String": "Zinc oxide, dispersion"
+                    },
+                    {
+                      "String": "Zinc oxide, Puratronic"
+                    },
+                    {
+                      "String": "Zinc Oxide Quantum Dots"
+                    },
+                    {
+                      "String": "Zinc oxide,99.99%"
+                    },
+                    {
+                      "String": "EC 215-222-5"
+                    },
+                    {
+                      "String": "SCHEMBL5900"
+                    },
+                    {
+                      "String": "Zinc oxide (JP18/USP)"
+                    },
+                    {
+                      "String": "Zinc oxide, sintered tablets"
+                    },
+                    {
+                      "String": "Zinc oxide, LR, >=99%"
+                    },
+                    {
+                      "String": "Aluminium Doped ZnO Dispersion"
+                    },
+                    {
+                      "String": "orb2944022"
+                    },
+                    {
+                      "String": "Zinc oxide [USAN:USP:JAN]"
+                    },
+                    {
+                      "String": "Zinc oxide, analytical standard"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanopowder Dispersion"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanopowder (Type I)"
+                    },
+                    {
+                      "String": "Zinc oxide, NanoArc ZN-0605"
+                    },
+                    {
+                      "String": "Zinc oxide, p.a., 99.0%"
+                    },
+                    {
+                      "String": "Zinc oxide nanopowder (200 nm)"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanopowder (Type II)"
+                    },
+                    {
+                      "String": "Zinc Oxide Dispersion Wood Coating"
+                    },
+                    {
+                      "String": "Yttrium Doped Zinc Oxide Dispersion"
+                    },
+                    {
+                      "String": "Europium Doped Zinc Oxide Dispersion"
+                    },
+                    {
+                      "String": "Zinc oxide - Complexometric standard"
+                    },
+                    {
+                      "String": "Zinc oxide powder (200-800 nm)"
+                    },
+                    {
+                      "String": "Zinc oxide, USP, 99-100.5%"
+                    },
+                    {
+                      "String": "AKOS015904168"
+                    },
+                    {
+                      "String": "Zinc oxide nanopowder  (10-30 nm)"
+                    },
+                    {
+                      "String": "DB09321"
+                    },
+                    {
+                      "String": "FZ32039"
+                    },
+                    {
+                      "String": "Zinc oxide, ACS reagent, >=99.0%"
+                    },
+                    {
+                      "String": "Zinc oxide, 30nm,20 wt.% isopropanol"
+                    },
+                    {
+                      "String": "Zinc oxide, tested according to Ph.Eur."
+                    },
+                    {
+                      "String": "Zinc oxide, 99.999% trace metals basis"
+                    },
+                    {
+                      "String": "Zinc oxide, SAJ first grade, >=99.0%"
+                    },
+                    {
+                      "String": "Zinc oxide, JIS special grade, >=99.0%"
+                    },
+                    {
+                      "String": "CS-0179846"
+                    },
+                    {
+                      "String": "Antimony Tin Dioxide (ATO) Sputtering Targets"
+                    },
+                    {
+                      "String": "D01170"
+                    },
+                    {
+                      "String": "Zinc oxide, nanopowder, <100 nm particle size"
+                    },
+                    {
+                      "String": "Q190077"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanodispersion Type A-Nonionic (70nm)"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanodispersion Type B-Anionic (70nm)"
+                    },
+                    {
+                      "String": "Zinc Oxide Nanodispersion Type C-Cationic (70nm)"
+                    },
+                    {
+                      "String": "Zinc oxide, nanowires, diam. x L 90 nm x 1 mum"
+                    },
+                    {
+                      "String": "Zinc oxide nanopowder (2% Alumina doped) (40 nm)"
+                    },
+                    {
+                      "String": "Zinc oxide, nanowires, diam. x L 50 nm x 300 nm"
+                    },
+                    {
+                      "String": "Zinc oxide, nanowires, diam. x L 300 nm x 4-5 mum"
+                    },
+                    {
+                      "String": "Zinc oxide, puriss. p.a., ACS reagent, >=99.0% (KT)"
+                    },
+                    {
+                      "String": "AZO Powder / AZO MicroPowder / ZnO Doped with Metal Aluminum"
+                    },
+                    {
+                      "String": "Zinc oxide, nanopowder, <50 nm particle size (BET), >97%"
+                    },
+                    {
+                      "String": "Zinc oxide, ReagentPlus(R), powder, <5 mum particle size, 99.9%"
+                    },
+                    {
+                      "String": "Zinc oxide, United States Pharmacopeia (USP) Reference Standard"
+                    },
+                    {
+                      "String": "Zinc oxide nanopowder (treated with silane coupling agents) (10-30 nm)"
+                    },
+                    {
+                      "String": "Zinc oxide substrate, 10x10x0.5mm, polished two sides, 0001 orientation"
+                    },
+                    {
+                      "String": "20 wt% Zinc Oxide in water, 20 wt% (ZnO) (pale yellow powder), >99% Nano"
+                    },
+                    {
+                      "String": "Zinc oxide sputtering target, 50.8mm (2.0in) dia x 3.18mm (0.125in) thick"
+                    },
+                    {
+                      "String": "Zinc oxide sputtering target, 50.8mm (2.0in) dia x 6.35mm (0.250in) thick"
+                    },
+                    {
+                      "String": "Zinc oxide, NanoTek Z1102PMA, 50% in 1,2-propanediol monomethyl ether acetate, colloidal dispersion"
+                    },
+                    {
+                      "String": "Zinc oxide, sputtering target, diam. x thickness 3.00 in. x 0.125 in., 99.99% trace metals basis"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 39,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "OZn"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 39,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "81.4"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 39,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/O.Zn"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 39,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "XLOMVQKBTHCTTD-UHFFFAOYSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "174846-84-5",
+        "Name": "Zinc oxide (Zn3O3)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-84-5",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12765828
+      },
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "1314-13-2",
+        "Name": "Zinc oxide (ZnO)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=1314-13-2",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12796257
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "174846-83-4",
+        "Name": "Zinc oxide (Zn2O2)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-83-4",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12843706
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "155149-97-6",
+        "Name": "Zinc oxide (Zn12O12)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=155149-97-6",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12857953
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "20431-17-8",
+        "Name": "Zincite",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=20431-17-8",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12874467
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "174846-87-8",
+        "Name": "Zinc oxide (Zn6O6)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-87-8",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 12971467
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "CAS Common Chemistry",
+        "SourceID": "174846-85-6",
+        "Name": "Zinc oxide (Zn4O4)",
+        "Description": "CAS Common Chemistry is an open community resource for accessing chemical information. Nearly 500,000 chemical substances from CAS REGISTRY cover areas of community interest, including common and frequently regulated chemicals, and those relevant to high school and undergraduate chemistry classes. This chemical information, curated by our expert scientists, is provided in alignment with our mission as a division of the American Chemical Society.",
+        "URL": "https://commonchemistry.cas.org/detail?cas_rn=174846-85-6",
+        "LicenseNote": "The data from CAS Common Chemistry is provided under a CC-BY-NC 4.0 license, unless otherwise stated.",
+        "LicenseURL": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "ANID": 13007855
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0001314132",
+        "Name": "Zinc oxide [USAN:USP:JAN]",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0001314132",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 784788
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "148396",
+        "Name": "Zinc Oxide Dispersion (EC: 910-472-8)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/148396",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1891252,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "234433",
+        "Name": "Zinc oxide Dispersion (EC: 939-819-1)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/234433",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1957233,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "83737",
+        "Name": "Zincite (EC: 606-554-5)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/83737",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37169888,
+        "SortOrder": 3001
+      },
+      {
+        "ReferenceNumber": 39,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

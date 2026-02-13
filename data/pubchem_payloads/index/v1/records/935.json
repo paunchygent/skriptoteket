@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "cid": 935,
+  "captured_at": "2026-01-31T18:41:45.007186+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/935",
+    "lcss_sha256": "e87115f53cdef474a76c3a9cccd88bec5d33a4fdffdc85ed8f1dcb80106a66cd",
+    "linkout_sha256": "d04bff0ebbab9d75ef0a926957901ad916dd3076d458bd517657dc62c9f3fd61",
+    "meta_sha256": "65e0df552ec19202a5395498d36c44b819798a28d85f60d9c29b7453bed6e55c"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H250",
+      "H317",
+      "H334",
+      "H341",
+      "H350",
+      "H351",
+      "H360",
+      "H370",
+      "H372",
+      "H411",
+      "H412",
+      "H413"
+    ],
+    "hazard_statements_sv": {
+      "H250": "Spontanantänder vid kontakt med luft.",
+      "H317": "Kan orsaka allergisk hudreaktion.",
+      "H334": "Kan orsaka allergi- eller astmasymtom eller andningssvårigheter vid inandning.",
+      "H341": "Misstänks kunna orsaka genetiska defekter <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H350": "Kan orsaka cancer <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H351": "Misstänks kunna orsaka cancer <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H360": "Kan skada fertiliteten eller det ofödda barnet <ange specifik effekt om denna är känd> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H370": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H372": "Orsakar organskador <eller ange vilka organ som påverkas, om detta är känt> genom lång eller upprepad exponering <ange exponeringsväg om det är definitivt bevisat att faran inte kan orsakas av några andra exponeringsvägar>",
+      "H411": "Giftigt för vattenlevande organismer med långtidseffekter.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer.",
+      "H413": "Kan ge skadliga långtidseffekter på vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P203",
+      "P210",
+      "P222",
+      "P231",
+      "P233",
+      "P260",
+      "P261",
+      "P264",
+      "P270",
+      "P271",
+      "P272",
+      "P273",
+      "P280",
+      "P284",
+      "P302+P335+P334",
+      "P302+P352",
+      "P304+P340",
+      "P308+P316",
+      "P318",
+      "P319",
+      "P321",
+      "P333+P317",
+      "P342+P316",
+      "P362+P364",
+      "P370+P378",
+      "P391",
+      "P403",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P203": "Inhämta, läs och följ alla säkerhetsanvisningar före användning.",
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P222": "Undvik kontakt med luft.",
+      "P231": "* Hantera och förvara innehållet under inert gas/…",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P272": "Nedstänkta arbetskläder får inte avlägsnas från arbetsplatsen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P284": "* [Vid otillräcklig ventilation], använd andningsskydd.",
+      "P302+P335+P334": "VID HUDKONTAKT: Borsta bort lösa partiklar från huden. Skölj under kallt vatten [eller använd våta omslag].",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P308+P316": "Vid exponering eller misstanke om exponering: Sök omedelbar läkarhjälp.",
+      "P318": "Sök omedelbart läkarhjälp.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P333+P317": "Vid hudirritation eller utslag: Sök läkarhjälp.",
+      "P342+P316": "Vid besvär i luftvägarna: Sök omedelbar läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P391": "Samla upp spill.",
+      "P403": "Förvaras på väl ventilerad plats.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS02",
+      "GHS06",
+      "GHS07",
+      "GHS08",
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.epa.gov/sites/default/files/2016-09/documents/nickle-compounds.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1341.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.156048+00:00"
+}

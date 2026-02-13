@@ -1,0 +1,34 @@
+{
+  "cid": 62655,
+  "hazard_key": "Na2S2O8",
+  "display_name": "Natriumpersulfat",
+  "captured_at": "2026-01-31T18:40:11.589896+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/62655",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/62655/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/62655/linkout.json",
+      "sha256": "f21dfbd1fd43eeb27a368f95a05aaa0c3b614068a8e0468de4afb943abf6560b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62655/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 144280,
+      "file": "data/pubchem_payloads/raw/62655/lcss.json",
+      "sha256": "0dd2aa3720d2af23ef7cf774f124705b86651a1df0a9b5c6ae9349fbc4037919"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62655/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 153376,
+      "file": "data/pubchem_payloads/raw/62655/safety.json",
+      "sha256": "14d838e6cbc8e7501787eb00306c36ca4d15a41323e47c9333d2d49d84729a52"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/62655.png"
+}

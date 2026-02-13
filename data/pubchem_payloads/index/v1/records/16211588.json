@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "cid": 16211588,
+  "captured_at": "2026-01-31T14:35:27.403372+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/16211588",
+    "lcss_sha256": "c4b70a84931c141f9c0eb0104199b461355c44e8452add6cad370e471a9bf02f",
+    "linkout_sha256": "468f22fadfe5f0b0887c7edb4d5fc2e9e58b02023ebab56372cc0e4bf033ed20",
+    "meta_sha256": "7909b33b2c33774244459783fe6c8f44f2430298f9d6fef377cb4d92f6754333"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H302",
+      "H314"
+    ],
+    "hazard_statements_sv": {
+      "H302": "Skadligt vid förtäring.",
+      "H314": "Orsakar allvarliga frätskador på hud och ögon."
+    },
+    "precautionary_codes": [
+      "P260",
+      "P264",
+      "P270",
+      "P280",
+      "P301+P317",
+      "P301+P330+P331",
+      "P302+P361+P354",
+      "P304+P340",
+      "P305+P354+P338",
+      "P316",
+      "P321",
+      "P330",
+      "P363",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P301+P330+P331": "VID FÖRTÄRING: Skölj munnen. Framkalla INTE kräkning.",
+      "P302+P361+P354": "VID HUDKONTAKT: Ta omedelbart av alla förorenade kläder. Skölj genast huden med vatten i flera minuter.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P316": "Sök omedelbar läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P363": "Nedstänkta kläder ska tvättas innan de används igen.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.012519+00:00"
+}

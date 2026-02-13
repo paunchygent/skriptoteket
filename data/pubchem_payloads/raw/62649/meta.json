@@ -1,0 +1,34 @@
+{
+  "cid": 62649,
+  "hazard_key": "Na2SO4·10H2O",
+  "display_name": "Natriumsulfat (decahydrat)",
+  "captured_at": "2026-01-31T18:40:35.296507+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/62649",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/62649/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/62649/linkout.json",
+      "sha256": "d40dffa7c2526c181d64a83c31ff3f282b6e5c90f093fe34c93e77932749a7a7"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62649/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 29742,
+      "file": "data/pubchem_payloads/raw/62649/lcss.json",
+      "sha256": "879109077689d86d85cfec4e2e53aafab1ccd4a29ee32be93fea2383aa50ba21"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62649/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 15166,
+      "file": "data/pubchem_payloads/raw/62649/safety.json",
+      "sha256": "3b2023759d4d67a2a3bf1336612b7cb3b4b3115413c5a1c3e31c67a5288cde59"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/62649.png"
+}

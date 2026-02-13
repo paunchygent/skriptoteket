@@ -1,0 +1,34 @@
+{
+  "cid": 14806,
+  "hazard_key": "ZnO",
+  "display_name": "Zinkoxid",
+  "captured_at": "2026-01-31T18:47:58.877797+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14806",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14806/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 738,
+      "file": "data/pubchem_payloads/raw/14806/linkout.json",
+      "sha256": "e5df905babf2fd54992794817a8da68a09f346460a8c8727851827cf709d303b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14806/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 46554,
+      "file": "data/pubchem_payloads/raw/14806/lcss.json",
+      "sha256": "9c797de9bfbf6393507a70ccab774ccb8a8121e314be3bfcb103164654df4b64"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14806/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 21729,
+      "file": "data/pubchem_payloads/raw/14806/safety.json",
+      "sha256": "376046feae51893375f72def0954b97f4642fa0c06bc4d6e2fe2771f51558081"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14806.png"
+}

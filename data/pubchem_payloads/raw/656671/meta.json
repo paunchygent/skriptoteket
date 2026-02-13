@@ -1,0 +1,34 @@
+{
+  "cid": 656671,
+  "hazard_key": "Na2S2O5",
+  "display_name": "Natriumpyrosulfit",
+  "captured_at": "2026-01-31T18:40:20.555447+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/656671",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/656671/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 80,
+      "file": "data/pubchem_payloads/raw/656671/linkout.json",
+      "sha256": "85a4384f3fd22038b1c3f4488e6b15b26e1fc7e6a2d8433aaa9320710cca9769"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/656671/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 241710,
+      "file": "data/pubchem_payloads/raw/656671/lcss.json",
+      "sha256": "c7416cf253d1df0f875037b26d63052a05cddbd65f4b169f86aab76bfc318fe3"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/656671/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 181320,
+      "file": "data/pubchem_payloads/raw/656671/safety.json",
+      "sha256": "00844edfa5633632628c3138035b3fc2fb58ec89b45cf678302d46758239c464"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/656671.png"
+}

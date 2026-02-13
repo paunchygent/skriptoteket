@@ -2,6 +2,7 @@
   "name": "skriptoteket-frontend",
   "private": true,
   "packageManager": "pnpm@10.26.1",
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter @skriptoteket/spa dev",
     "build": "pnpm --filter @skriptoteket/spa build",

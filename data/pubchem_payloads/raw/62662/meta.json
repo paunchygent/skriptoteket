@@ -1,0 +1,34 @@
+{
+  "cid": 62662,
+  "hazard_key": "FeSO4·7H2O",
+  "display_name": "Järn(II)sulfat (heptahydrat)",
+  "captured_at": "2026-01-31T14:35:33.118145+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/62662",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/62662/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/62662/linkout.json",
+      "sha256": "bd2d125314cae3f557a74dd34d22a35e6b05bf7cd3dfaaecee8626be8e554643"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62662/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 67910,
+      "file": "data/pubchem_payloads/raw/62662/lcss.json",
+      "sha256": "51104aca71d2415d45904cc13dc14de1f2e35233f596b59266102336d754db50"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/62662/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 50367,
+      "file": "data/pubchem_payloads/raw/62662/safety.json",
+      "sha256": "fd0222f0fe8ba1460d2712d7181598cf35303b31e77f369dd11e5cbc627d0bf6"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/62662.png"
+}

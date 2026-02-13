@@ -1,0 +1,27 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 24450,
+    "ObjUrl": [
+      {
+        "Url": "http://sideeffects.embl.de/drugs/24450/",
+        "LinkName": "Side effects of potassium phosphate",
+        "SubjectType": [
+          "biological properties"
+        ],
+        "Category": [
+          "Chemical Information"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "SIDER Side Effect Resource",
+          "NameAbbr": "SIDER",
+          "Id": "9337",
+          "Url": "http://sideeffects.embl.de"
+        }
+      }
+    ]
+  }
+}

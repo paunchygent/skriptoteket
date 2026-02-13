@@ -89,7 +89,7 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
         ),
         heuristics=ReagentPrepChefChemistryHeuristics(
             incompatibilities=[],
-            exothermicity="none",
+            exothermicity=None,
             reaction_notes=[],
         ),
         risks=[

@@ -82,7 +82,12 @@ async def risk_assessment(
     _: None = Depends(require_csrf_token),
 ) -> ReagentPrepChefRiskAssessmentResult:
     _require_app_access(registry=registry, user=user)
-    return await handler.handle(actor=user, command=command)
+    return await handler.handle(
+        actor=user,
+        command=command,
+        allow_fetch=True,
+        require_complete=True,
+    )
 
 
 @router.post("/export-pdf")

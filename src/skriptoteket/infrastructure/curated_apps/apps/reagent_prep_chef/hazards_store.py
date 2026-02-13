@@ -33,6 +33,16 @@ def _clean_optional_text(value: object) -> str | None:
     return cleaned or None
 
 
+def _clean_optional_positive_int(value: object) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError("expected integer")
+    if value <= 0:
+        raise ValueError("expected positive integer")
+    return value
+
+
 def _clean_text_list(value: object) -> list[str]:
     if value is None:
         return []
@@ -79,6 +89,8 @@ class _HazardEntryModel(BaseModel):
     disposal: str | None = None
     notes: list[str] = Field(default_factory=list)
     aliases: list[str] = Field(default_factory=list)
+    search_aliases: list[str] = Field(default_factory=list)
+    pubchem_cid: int | None = None
     sds_ref: str | None = None
     clp_bands: list[_ClpBandModel] = Field(default_factory=list)
     incompatibilities: list[str] = Field(default_factory=list)
@@ -91,6 +103,8 @@ class _HazardEntryModel(BaseModel):
     _strip_ppe = field_validator("ppe", mode="before")(_clean_text_list)
     _strip_notes = field_validator("notes", mode="before")(_clean_text_list)
     _strip_aliases = field_validator("aliases", mode="before")(_clean_text_list)
+    _strip_search_aliases = field_validator("search_aliases", mode="before")(_clean_text_list)
+    _strip_pubchem_cid = field_validator("pubchem_cid", mode="before")(_clean_optional_positive_int)
     _strip_incompatibilities = field_validator("incompatibilities", mode="before")(_clean_text_list)
     _strip_reaction_notes = field_validator("reaction_notes", mode="before")(_clean_text_list)
     _strip_disposal = field_validator("disposal", mode="before")(_clean_optional_text)
@@ -138,6 +152,8 @@ def _to_domain(entry: _HazardEntryModel) -> HazardEntry:
         disposal=entry.disposal,
         notes=tuple(entry.notes),
         aliases=tuple(entry.aliases),
+        search_aliases=tuple(entry.search_aliases),
+        pubchem_cid=entry.pubchem_cid,
         sds_ref=entry.sds_ref,
         clp_bands=clp_bands,
         incompatibilities=tuple(entry.incompatibilities),

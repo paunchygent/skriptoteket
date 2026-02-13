@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "cid": 5462224,
+  "captured_at": "2026-01-31T16:56:10.311606+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/5462224",
+    "lcss_sha256": "d876140a2a7a7700892b8a854672528a3bd1b7d4f54f854331d6dcdd07e9a3eb",
+    "linkout_sha256": "30e95b09c90b11720d38d2d84b2b37a061b4713ae024a8a8575e815b0a0223c7",
+    "meta_sha256": "296a71da5dcba6152ee2372a9183233b3ff9f8d8746b456f6a36bad08c68d109"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H228",
+      "H250",
+      "H252",
+      "H260",
+      "H261",
+      "H315",
+      "H319",
+      "H335",
+      "H413"
+    ],
+    "hazard_statements_sv": {
+      "H228": "Brandfarligt fast ämne.",
+      "H250": "Spontanantänder vid kontakt med luft.",
+      "H252": "Självupphettande i stora mängder. Kan börja brinna.",
+      "H260": "Vid kontakt med vatten utvecklas brandfarliga gaser som kan självantända.",
+      "H261": "Vid kontakt med vatten utvecklas brandfarliga gaser.",
+      "H315": "Irriterar huden.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H335": "Kan orsaka irritation i luftvägarna.",
+      "H413": "Kan ge skadliga långtidseffekter på vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P222",
+      "P223",
+      "P231",
+      "P231+P232",
+      "P233",
+      "P235",
+      "P240",
+      "P241",
+      "P261",
+      "P264",
+      "P264+P265",
+      "P271",
+      "P273",
+      "P280",
+      "P302+P335+P334",
+      "P302+P352",
+      "P304+P340",
+      "P305+P351+P338",
+      "P319",
+      "P321",
+      "P332+P317",
+      "P337+P317",
+      "P362+P364",
+      "P370+P378",
+      "P402+P404",
+      "P403+P233",
+      "P405",
+      "P407",
+      "P410",
+      "P413",
+      "P420",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P222": "Undvik kontakt med luft.",
+      "P223": "Undvik all kontakt med vatten.",
+      "P231": "* Hantera och förvara innehållet under inert gas/…",
+      "P231+P232": "* Hantera och förvara innehållet under inert gas/…. Skyddas från fukt. 1.3 Skyddsangivelser – Åtgärder",
+      "P233": "Behållaren ska vara väl tillsluten.",
+      "P235": "Förvaras svalt.",
+      "P240": "Jorda och potentialförbind behållare och mottagarutrustning.",
+      "P241": "* Använd explosionssäker [elektrisk/ventilations-/belysnings-/...]utrustning.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P302+P335+P334": "VID HUDKONTAKT: Borsta bort lösa partiklar från huden. Skölj under kallt vatten [eller använd våta omslag].",
+      "P302+P352": "* VID HUDKONTAKT: Tvätta med mycket vatten/…",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P319": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P332+P317": "Vid hudirritation: Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P362+P364": "Ta av nedstänkta kläder och tvätta dem innan de används igen.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P402+P404": "Förvaras torrt. Förvaras i sluten behållare.",
+      "P403+P233": "Förvaras på väl ventilerad plats. Förpackningen ska förvaras väl tillsluten.",
+      "P405": "Förvaras inlåst.",
+      "P407": "Se till att det finns luft mellan staplar eller pallar.",
+      "P410": "Skyddas från solljus.",
+      "P413": "* Bulkprodukter som väger mer än … kg/… lbs förvaras vid högst …°C/…°F.",
+      "P420": "Förvaras separat.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS02",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1136.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.094257+00:00"
+}

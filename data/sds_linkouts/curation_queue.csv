@@ -1,0 +1,457 @@
+cid,hazard_key,display_name,compound_url,candidate_index,candidate_url,candidate_source,likely_sds
+176,CH3COOH,Ättiksyra (CH3COOH),https://pubchem.ncbi.nlm.nih.gov/compound/176,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+176,CH3COOH,Ättiksyra (CH3COOH),https://pubchem.ncbi.nlm.nih.gov/compound/176,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+176,CH3COOH,Ättiksyra (CH3COOH),https://pubchem.ncbi.nlm.nih.gov/compound/176,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+176,CH3COOH,Ättiksyra (CH3COOH),https://pubchem.ncbi.nlm.nih.gov/compound/176,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0004.pdf,safety,false
+176,CH3COOH,Ättiksyra (CH3COOH),https://pubchem.ncbi.nlm.nih.gov/compound/176,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+176,CH3COOH,Ättiksyra (CH3COOH),https://pubchem.ncbi.nlm.nih.gov/compound/176,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+180,C3H6O,Aceton,https://pubchem.ncbi.nlm.nih.gov/compound/180,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+180,C3H6O,Aceton,https://pubchem.ncbi.nlm.nih.gov/compound/180,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+180,C3H6O,Aceton,https://pubchem.ncbi.nlm.nih.gov/compound/180,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+180,C3H6O,Aceton,https://pubchem.ncbi.nlm.nih.gov/compound/180,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0006.pdf,safety,false
+180,C3H6O,Aceton,https://pubchem.ncbi.nlm.nih.gov/compound/180,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+180,C3H6O,Aceton,https://pubchem.ncbi.nlm.nih.gov/compound/180,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+222,NH3,Ammoniak (NH3),https://pubchem.ncbi.nlm.nih.gov/compound/222,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+222,NH3,Ammoniak (NH3),https://pubchem.ncbi.nlm.nih.gov/compound/222,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+222,NH3,Ammoniak (NH3),https://pubchem.ncbi.nlm.nih.gov/compound/222,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+222,NH3,Ammoniak (NH3),https://pubchem.ncbi.nlm.nih.gov/compound/222,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0084.pdf,safety,false
+222,NH3,Ammoniak (NH3),https://pubchem.ncbi.nlm.nih.gov/compound/222,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+222,NH3,Ammoniak (NH3),https://pubchem.ncbi.nlm.nih.gov/compound/222,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+243,C7H6O2,Bensoesyra,https://pubchem.ncbi.nlm.nih.gov/compound/243,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0209.pdf,safety,false
+243,C7H6O2,Bensoesyra,https://pubchem.ncbi.nlm.nih.gov/compound/243,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+243,C7H6O2,Bensoesyra,https://pubchem.ncbi.nlm.nih.gov/compound/243,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+311,C6H8O7,Citronsyra,https://pubchem.ncbi.nlm.nih.gov/compound/311,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,1,https://www.epa.gov/sites/default/files/2016-09/documents/hydrochloric-acid.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,2,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,3,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,4,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1012.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,5,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+313,HCl,Saltsyra (HCl),https://pubchem.ncbi.nlm.nih.gov/compound/313,6,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+338,C7H6O3,Salicylsyra,https://pubchem.ncbi.nlm.nih.gov/compound/338,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+702,C2H6O,Etanol,https://pubchem.ncbi.nlm.nih.gov/compound/702,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+702,C2H6O,Etanol,https://pubchem.ncbi.nlm.nih.gov/compound/702,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+702,C2H6O,Etanol,https://pubchem.ncbi.nlm.nih.gov/compound/702,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+702,C2H6O,Etanol,https://pubchem.ncbi.nlm.nih.gov/compound/702,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0844.pdf,safety,false
+702,C2H6O,Etanol,https://pubchem.ncbi.nlm.nih.gov/compound/702,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+702,C2H6O,Etanol,https://pubchem.ncbi.nlm.nih.gov/compound/702,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+753,C3H8O3,Propantriol,https://pubchem.ncbi.nlm.nih.gov/compound/753,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+784,H2O2,Väteperoxid (H2O2),https://pubchem.ncbi.nlm.nih.gov/compound/784,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+784,H2O2,Väteperoxid (H2O2),https://pubchem.ncbi.nlm.nih.gov/compound/784,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+784,H2O2,Väteperoxid (H2O2),https://pubchem.ncbi.nlm.nih.gov/compound/784,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+784,H2O2,Väteperoxid (H2O2),https://pubchem.ncbi.nlm.nih.gov/compound/784,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1015.pdf,safety,false
+784,H2O2,Väteperoxid (H2O2),https://pubchem.ncbi.nlm.nih.gov/compound/784,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+784,H2O2,Väteperoxid (H2O2),https://pubchem.ncbi.nlm.nih.gov/compound/784,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+807,I2,Jod (I2),https://pubchem.ncbi.nlm.nih.gov/compound/807,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+807,I2,Jod (I2),https://pubchem.ncbi.nlm.nih.gov/compound/807,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1026.pdf,safety,false
+807,I2,Jod (I2),https://pubchem.ncbi.nlm.nih.gov/compound/807,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+807,I2,Jod (I2),https://pubchem.ncbi.nlm.nih.gov/compound/807,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,1,https://www.epa.gov/sites/default/files/2016-09/documents/methanol.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,2,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,3,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,4,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1222.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,5,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+887,CH4O,Metanol,https://pubchem.ncbi.nlm.nih.gov/compound/887,6,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,1,https://www.epa.gov/sites/default/files/2016-09/documents/nickle-compounds.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,2,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,3,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,4,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1341.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,5,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+935,Ni,Nickel,https://pubchem.ncbi.nlm.nih.gov/compound/935,6,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+944,HNO3,Salpetersyra (HNO3),https://pubchem.ncbi.nlm.nih.gov/compound/944,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+944,HNO3,Salpetersyra (HNO3),https://pubchem.ncbi.nlm.nih.gov/compound/944,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+944,HNO3,Salpetersyra (HNO3),https://pubchem.ncbi.nlm.nih.gov/compound/944,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+944,HNO3,Salpetersyra (HNO3),https://pubchem.ncbi.nlm.nih.gov/compound/944,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1356.pdf,safety,false
+944,HNO3,Salpetersyra (HNO3),https://pubchem.ncbi.nlm.nih.gov/compound/944,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+944,HNO3,Salpetersyra (HNO3),https://pubchem.ncbi.nlm.nih.gov/compound/944,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+1004,H3PO4,Fosforsyra (H3PO4),https://pubchem.ncbi.nlm.nih.gov/compound/1004,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+1004,H3PO4,Fosforsyra (H3PO4),https://pubchem.ncbi.nlm.nih.gov/compound/1004,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+1004,H3PO4,Fosforsyra (H3PO4),https://pubchem.ncbi.nlm.nih.gov/compound/1004,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1516.pdf,safety,false
+1004,H3PO4,Fosforsyra (H3PO4),https://pubchem.ncbi.nlm.nih.gov/compound/1004,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+1004,H3PO4,Fosforsyra (H3PO4),https://pubchem.ncbi.nlm.nih.gov/compound/1004,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+1118,H2SO4,Svavelsyra (H2SO4),https://pubchem.ncbi.nlm.nih.gov/compound/1118,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+1118,H2SO4,Svavelsyra (H2SO4),https://pubchem.ncbi.nlm.nih.gov/compound/1118,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+1118,H2SO4,Svavelsyra (H2SO4),https://pubchem.ncbi.nlm.nih.gov/compound/1118,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+1118,H2SO4,Svavelsyra (H2SO4),https://pubchem.ncbi.nlm.nih.gov/compound/1118,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1761.pdf,safety,false
+1118,H2SO4,Svavelsyra (H2SO4),https://pubchem.ncbi.nlm.nih.gov/compound/1118,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+1118,H2SO4,Svavelsyra (H2SO4),https://pubchem.ncbi.nlm.nih.gov/compound/1118,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+1176,CH4N2O,Urea,https://pubchem.ncbi.nlm.nih.gov/compound/1176,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+1176,CH4N2O,Urea,https://pubchem.ncbi.nlm.nih.gov/compound/1176,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+3776,C3H8O,Isopropanol,https://pubchem.ncbi.nlm.nih.gov/compound/3776,0,http://www-ehs.ucsd.edu/lab/pdf/kelly_peroxides.pdf,safety,false
+3776,C3H8O,Isopropanol,https://pubchem.ncbi.nlm.nih.gov/compound/3776,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+3776,C3H8O,Isopropanol,https://pubchem.ncbi.nlm.nih.gov/compound/3776,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+3776,C3H8O,Isopropanol,https://pubchem.ncbi.nlm.nih.gov/compound/3776,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1076.pdf,safety,false
+3776,C3H8O,Isopropanol,https://pubchem.ncbi.nlm.nih.gov/compound/3776,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+3776,C3H8O,Isopropanol,https://pubchem.ncbi.nlm.nih.gov/compound/3776,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+3939,LiOH,Litiumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/3939,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+3939,LiOH,Litiumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/3939,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+4764,C20H14O4,Fenolftalein,https://pubchem.ncbi.nlm.nih.gov/compound/4764,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+4764,C20H14O4,Fenolftalein,https://pubchem.ncbi.nlm.nih.gov/compound/4764,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+4764,C20H14O4,Fenolftalein,https://pubchem.ncbi.nlm.nih.gov/compound/4764,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/4110.pdf,safety,false
+4764,C20H14O4,Fenolftalein,https://pubchem.ncbi.nlm.nih.gov/compound/4764,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+4764,C20H14O4,Fenolftalein,https://pubchem.ncbi.nlm.nih.gov/compound/4764,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+4873,KCl,Kaliumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/4873,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+4875,KI,Kaliumjodid,https://pubchem.ncbi.nlm.nih.gov/compound/4875,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5234,NaCl,Natriumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5234,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5235,NaF,Natriumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/5235,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+5235,NaF,Natriumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/5235,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+5235,NaF,Natriumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/5235,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1699.pdf,safety,false
+5235,NaF,Natriumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/5235,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5235,NaF,Natriumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/5235,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5238,NaI,Natriumjodid,https://pubchem.ncbi.nlm.nih.gov/compound/5238,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5727,ZnCl2,Zinkklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5727,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+5727,ZnCl2,Zinkklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5727,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+5727,ZnCl2,Zinkklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5727,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/2030.pdf,safety,false
+5727,ZnCl2,Zinkklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5727,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5727,ZnCl2,Zinkklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5727,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5793,C6H12O6,Glukos,https://pubchem.ncbi.nlm.nih.gov/compound/5793,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5988,C12H22O11,Sackaros,https://pubchem.ncbi.nlm.nih.gov/compound/5988,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6116,Ca(C2H3O2)2,Kalciumacetat,https://pubchem.ncbi.nlm.nih.gov/compound/6116,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6125,Na2C2O4,Natriumoxalat,https://pubchem.ncbi.nlm.nih.gov/compound/6125,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6450,C27H28Br2O5S,Bromtymolblått,https://pubchem.ncbi.nlm.nih.gov/compound/6450,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+7628,H3BO3,Borsyra,https://pubchem.ncbi.nlm.nih.gov/compound/7628,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+10112,CaCO3,Kalciumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/10112,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+10340,Na2CO3,Natriumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/10340,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+11029,MgCO3,Magnesit,https://pubchem.ncbi.nlm.nih.gov/compound/11029,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+11125,Li2CO3,Litiumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/11125,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+11125,Li2CO3,Litiumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/11125,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1124.pdf,safety,false
+11125,Li2CO3,Litiumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/11125,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+11125,Li2CO3,Litiumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/11125,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+11248,FeCO3,Järnspat,https://pubchem.ncbi.nlm.nih.gov/compound/11248,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+11430,K2CO3,Kaliumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/11430,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+11726,MnCO3,Rodokrosit,https://pubchem.ncbi.nlm.nih.gov/compound/11726,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14013,NH4HCO3,Ammoniumvätekarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/14013,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14013,NH4HCO3,Ammoniumvätekarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/14013,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0088.pdf,safety,false
+14013,NH4HCO3,Ammoniumvätekarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/14013,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+14013,NH4HCO3,Ammoniumvätekarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/14013,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14452,CuCO3,Kopparkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/14452,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14778,CaO,Kalciumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14778,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+14778,CaO,Kalciumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14778,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14778,CaO,Kalciumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14778,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0325.pdf,safety,false
+14778,CaO,Kalciumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14778,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+14778,CaO,Kalciumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14778,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14792,MgO,Magnesiumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14792,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14797,KOH,Kaliumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14797,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+14797,KOH,Kaliumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14797,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+14797,KOH,Kaliumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14797,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14797,KOH,Kaliumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14797,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1571.pdf,safety,false
+14797,KOH,Kaliumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14797,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+14797,KOH,Kaliumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14797,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14798,NaOH,Natriumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14798,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+14798,NaOH,Natriumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14798,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+14798,NaOH,Natriumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14798,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14798,NaOH,Natriumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14798,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1706.pdf,safety,false
+14798,NaOH,Natriumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14798,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+14798,NaOH,Natriumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/14798,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14801,MnO2,Mangandioxid,https://pubchem.ncbi.nlm.nih.gov/compound/14801,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14804,Na2S,Natriumsulfid,https://pubchem.ncbi.nlm.nih.gov/compound/14804,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+14804,Na2S,Natriumsulfid,https://pubchem.ncbi.nlm.nih.gov/compound/14804,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14804,Na2S,Natriumsulfid,https://pubchem.ncbi.nlm.nih.gov/compound/14804,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1728.pdf,safety,false
+14804,Na2S,Natriumsulfid,https://pubchem.ncbi.nlm.nih.gov/compound/14804,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+14804,Na2S,Natriumsulfid,https://pubchem.ncbi.nlm.nih.gov/compound/14804,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14806,ZnO,Zinkoxid,https://pubchem.ncbi.nlm.nih.gov/compound/14806,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14827,PbO,Blyoxider,https://pubchem.ncbi.nlm.nih.gov/compound/14827,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14827,PbO,Blyoxider,https://pubchem.ncbi.nlm.nih.gov/compound/14827,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14828,FeS,Järnsulfid,https://pubchem.ncbi.nlm.nih.gov/compound/14828,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+14917,HF,Fluorvätesyra,https://pubchem.ncbi.nlm.nih.gov/compound/14917,0,https://www.epa.gov/sites/default/files/2016-10/documents/hydrogen-fluoride.pdf,safety,false
+14917,HF,Fluorvätesyra,https://pubchem.ncbi.nlm.nih.gov/compound/14917,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+14917,HF,Fluorvätesyra,https://pubchem.ncbi.nlm.nih.gov/compound/14917,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+14917,HF,Fluorvätesyra,https://pubchem.ncbi.nlm.nih.gov/compound/14917,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/3759.pdf,safety,false
+14917,HF,Fluorvätesyra,https://pubchem.ncbi.nlm.nih.gov/compound/14917,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+14917,HF,Fluorvätesyra,https://pubchem.ncbi.nlm.nih.gov/compound/14917,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+15407,SrCO3,Strontianit,https://pubchem.ncbi.nlm.nih.gov/compound/15407,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+19005,ZnCO3,Zinkspat,https://pubchem.ncbi.nlm.nih.gov/compound/19005,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/2028.pdf,safety,false
+19005,ZnCO3,Zinkspat,https://pubchem.ncbi.nlm.nih.gov/compound/19005,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+19005,ZnCO3,Zinkspat,https://pubchem.ncbi.nlm.nih.gov/compound/19005,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+22985,NH4NO3,Ammoniumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/22985,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+22985,NH4NO3,Ammoniumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/22985,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+22985,NH4NO3,Ammoniumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/22985,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0106.pdf,safety,false
+22985,NH4NO3,Ammoniumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/22985,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+22985,NH4NO3,Ammoniumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/22985,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23925,Fe,Järn (Fe),https://pubchem.ncbi.nlm.nih.gov/compound/23925,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+23925,Fe,Järn (Fe),https://pubchem.ncbi.nlm.nih.gov/compound/23925,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23925,Fe,Järn (Fe),https://pubchem.ncbi.nlm.nih.gov/compound/23925,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23930,Mn,Mangan,https://pubchem.ncbi.nlm.nih.gov/compound/23930,0,https://www.epa.gov/sites/default/files/2016-10/documents/manganese.pdf,safety,false
+23930,Mn,Mangan,https://pubchem.ncbi.nlm.nih.gov/compound/23930,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23930,Mn,Mangan,https://pubchem.ncbi.nlm.nih.gov/compound/23930,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1155.pdf,safety,false
+23930,Mn,Mangan,https://pubchem.ncbi.nlm.nih.gov/compound/23930,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+23930,Mn,Mangan,https://pubchem.ncbi.nlm.nih.gov/compound/23930,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23978,Cu,Koppar (Cu),https://pubchem.ncbi.nlm.nih.gov/compound/23978,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23978,Cu,Koppar (Cu),https://pubchem.ncbi.nlm.nih.gov/compound/23978,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0528.pdf,safety,false
+23978,Cu,Koppar (Cu),https://pubchem.ncbi.nlm.nih.gov/compound/23978,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+23978,Cu,Koppar (Cu),https://pubchem.ncbi.nlm.nih.gov/compound/23978,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23994,Zn,Zink (Zn),https://pubchem.ncbi.nlm.nih.gov/compound/23994,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+23994,Zn,Zink (Zn),https://pubchem.ncbi.nlm.nih.gov/compound/23994,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23994,Zn,Zink (Zn),https://pubchem.ncbi.nlm.nih.gov/compound/23994,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/2021.pdf,safety,false
+23994,Zn,Zink (Zn),https://pubchem.ncbi.nlm.nih.gov/compound/23994,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+23994,Zn,Zink (Zn),https://pubchem.ncbi.nlm.nih.gov/compound/23994,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24012,AlCl3,Aluminiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/24012,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+24012,AlCl3,Aluminiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/24012,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24012,AlCl3,Aluminiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/24012,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24012,AlCl3,Aluminiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/24012,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0057.pdf,safety,false
+24012,AlCl3,Aluminiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/24012,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24012,AlCl3,Aluminiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/24012,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24083,MgSO4,Magnesiumsulfat (anhydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24083,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24203,Na2HPO4,Dinatriumhydrogenfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/24203,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1723.pdf,safety,false
+24203,Na2HPO4,Dinatriumhydrogenfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/24203,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24203,Na2HPO4,Dinatriumhydrogenfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/24203,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24261,SiO2,Kiseldioxid,https://pubchem.ncbi.nlm.nih.gov/compound/24261,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24261,SiO2,Kiseldioxid,https://pubchem.ncbi.nlm.nih.gov/compound/24261,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24268,NaNO3,Natriumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24268,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24268,NaNO3,Natriumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24268,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24268,NaNO3,Natriumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24268,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24380,FeCl3,Järn(III)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24380,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24380,FeCl3,Järn(III)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24380,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24380,FeCl3,Järn(III)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24380,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1034.pdf,safety,false
+24380,FeCl3,Järn(III)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24380,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24380,FeCl3,Järn(III)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24380,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24412,K2S2O8,Kaliumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24412,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24412,K2S2O8,Kaliumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24412,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24412,K2S2O8,Kaliumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24412,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1580.pdf,safety,false
+24412,K2S2O8,Kaliumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24412,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24412,K2S2O8,Kaliumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24412,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24414,BaSO4,Bariumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24414,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24414,BaSO4,Bariumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24414,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24414,BaSO4,Bariumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24414,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/4000.pdf,safety,false
+24414,BaSO4,Bariumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24414,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24414,BaSO4,Bariumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24414,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24424,ZnSO4,Zinksulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24424,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24424,ZnSO4,Zinksulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24424,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/2044.pdf,safety,false
+24424,ZnSO4,Zinksulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24424,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24424,ZnSO4,Zinksulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24424,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24434,KNO3,Kaliumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24434,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+24434,KNO3,Kaliumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24434,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24434,KNO3,Kaliumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24434,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24434,KNO3,Kaliumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24434,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1574.pdf,safety,false
+24434,KNO3,Kaliumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24434,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24434,KNO3,Kaliumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24434,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24436,Na2SO4,Natriumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24436,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24437,Na2SO3,Natriumsulfit,https://pubchem.ncbi.nlm.nih.gov/compound/24437,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24441,CaHPO4,Kalciumvätefosfat,https://pubchem.ncbi.nlm.nih.gov/compound/24441,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24450,K2HPO4,Dikaliumhydrogenfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/24450,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24456,Ca3(PO4)2,Kalciumfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/24456,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24458,FeCl2,Järn(II)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24458,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24458,FeCl2,Järn(II)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24458,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0930.pdf,safety,false
+24458,FeCl2,Järn(II)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24458,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24458,FeCl2,Järn(II)klorid,https://pubchem.ncbi.nlm.nih.gov/compound/24458,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24462,CuSO4,Kopparsulfat (anhydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24462,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24462,CuSO4,Kopparsulfat (anhydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24462,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0549.pdf,safety,false
+24462,CuSO4,Kopparsulfat (anhydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24462,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24462,CuSO4,Kopparsulfat (anhydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24462,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24463,CuSO4·5H2O,Kopparsulfat (pentahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24463,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24463,CuSO4·5H2O,Kopparsulfat (pentahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24463,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24470,AgNO3,Silvernitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24470,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+24470,AgNO3,Silvernitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24470,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24470,AgNO3,Silvernitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24470,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24470,AgNO3,Silvernitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24470,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1672.pdf,safety,false
+24470,AgNO3,Silvernitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24470,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24470,AgNO3,Silvernitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24470,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24477,Na2S2O3,Natriumtiosulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24477,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24488,Na2CrO4,Natriumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24488,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24488,Na2CrO4,Natriumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24488,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1692.pdf,safety,false
+24488,Na2CrO4,Natriumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24488,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24488,Na2CrO4,Natriumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24488,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24502,K2Cr2O7,Kaliumdikromat,https://pubchem.ncbi.nlm.nih.gov/compound/24502,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24502,K2Cr2O7,Kaliumdikromat,https://pubchem.ncbi.nlm.nih.gov/compound/24502,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1564.pdf,safety,false
+24502,K2Cr2O7,Kaliumdikromat,https://pubchem.ncbi.nlm.nih.gov/compound/24502,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24502,K2Cr2O7,Kaliumdikromat,https://pubchem.ncbi.nlm.nih.gov/compound/24502,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24507,K2SO4,Kaliumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24507,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24564,AlCl3·6H2O,Aluminiumklorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24564,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24580,MnSO4,Mangan(II)sulfat,https://pubchem.ncbi.nlm.nih.gov/compound/24580,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24597,K2CrO4,Kaliumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24597,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24597,K2CrO4,Kaliumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24597,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1561.pdf,safety,false
+24597,K2CrO4,Kaliumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24597,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24597,K2CrO4,Kaliumkromat,https://pubchem.ncbi.nlm.nih.gov/compound/24597,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24643,CoCl2·6H2O,Kobolt(II)klorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24643,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24644,MgCl2·6H2O,Magnesiumklorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24644,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24645,NiCl2·6H2O,Nickel(II)klorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24645,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/4060.pdf,safety,false
+24645,NiCl2·6H2O,Nickel(II)klorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24645,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24645,NiCl2·6H2O,Nickel(II)klorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24645,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24798,Ba(NO3)2,Bariumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24798,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24798,Ba(NO3)2,Bariumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24798,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24798,Ba(NO3)2,Bariumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24798,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0186.pdf,safety,false
+24798,Ba(NO3)2,Bariumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24798,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24798,Ba(NO3)2,Bariumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24798,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24841,HI,Vätejodid,https://pubchem.ncbi.nlm.nih.gov/compound/24841,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24841,HI,Vätejodid,https://pubchem.ncbi.nlm.nih.gov/compound/24841,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24841,HI,Vätejodid,https://pubchem.ncbi.nlm.nih.gov/compound/24841,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1009.pdf,safety,false
+24841,HI,Vätejodid,https://pubchem.ncbi.nlm.nih.gov/compound/24841,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24841,HI,Vätejodid,https://pubchem.ncbi.nlm.nih.gov/compound/24841,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24843,MgSO4·7H2O,Magnesiumsulfat (heptahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/24843,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24848,Sr(NO3)2,Strontiumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24848,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24848,Sr(NO3)2,Strontiumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24848,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24848,Sr(NO3)2,Strontiumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24848,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1743.pdf,safety,false
+24848,Sr(NO3)2,Strontiumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24848,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24848,Sr(NO3)2,Strontiumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24848,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24924,Pb(NO3)2,Bly(II)nitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24924,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24924,Pb(NO3)2,Bly(II)nitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24924,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24924,Pb(NO3)2,Bly(II)nitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24924,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1108.pdf,safety,false
+24924,Pb(NO3)2,Bly(II)nitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24924,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24924,Pb(NO3)2,Bly(II)nitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24924,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24928,CaSO4·2H2O,"Kalciumsulfat (dihydrat, gips)",https://pubchem.ncbi.nlm.nih.gov/compound/24928,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+24963,Ca(NO3)2,Kalciumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24963,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+24963,Ca(NO3)2,Kalciumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24963,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+24963,Ca(NO3)2,Kalciumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24963,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0324.pdf,safety,false
+24963,Ca(NO3)2,Kalciumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24963,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+24963,Ca(NO3)2,Kalciumnitrat,https://pubchem.ncbi.nlm.nih.gov/compound/24963,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+25204,BaCl2,Bariumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25204,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+25204,BaCl2,Bariumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25204,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+25204,BaCl2,Bariumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25204,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+25517,NH4Cl,Ammoniumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25517,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+25517,NH4Cl,Ammoniumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25517,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0093.pdf,safety,false
+25517,NH4Cl,Ammoniumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25517,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+25517,NH4Cl,Ammoniumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/25517,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+61373,H2C2O4·2H2O,Oxalsyra (dihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/61373,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+61473,Na3PO4·12H2O,Natriumfosfat (dodekahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/61473,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+61475,Na2S2O3·5H2O,Natriumtiosulfat (pentahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/61475,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+61482,CuCl2·2H2O,Koppar(II)klorid (dihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/61482,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+61482,CuCl2·2H2O,Koppar(II)klorid (dihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/61482,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+62640,ZnSO4·7H2O,Zinksulfat (heptahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/62640,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+62649,Na2SO4·10H2O,Natriumsulfat (decahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/62649,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+62655,Na2S2O8,Natriumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/62655,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+62655,Na2S2O8,Natriumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/62655,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1721.pdf,safety,false
+62655,Na2S2O8,Natriumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/62655,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+62655,Na2S2O8,Natriumpersulfat,https://pubchem.ncbi.nlm.nih.gov/compound/62655,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+62662,FeSO4·7H2O,Järn(II)sulfat (heptahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/62662,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+64655,AlPO4,Berlinit,https://pubchem.ncbi.nlm.nih.gov/compound/64655,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+64655,AlPO4,Berlinit,https://pubchem.ncbi.nlm.nih.gov/compound/64655,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0062.pdf,safety,false
+64655,AlPO4,Berlinit,https://pubchem.ncbi.nlm.nih.gov/compound/64655,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+64655,AlPO4,Berlinit,https://pubchem.ncbi.nlm.nih.gov/compound/64655,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+73971,Na2O,Natriumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/73971,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+73981,Mg(OH)2,Magnesiumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/73981,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+84512,CaF2,Kalciumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/84512,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+151402,Na2CO3·10H2O,Natriumkarbonat (decahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/151402,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+165914,CuS,Kopparindigo,https://pubchem.ncbi.nlm.nih.gov/compound/165914,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+253877,KBr,Kaliumbromid,https://pubchem.ncbi.nlm.nih.gov/compound/253877,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+253881,NaBr,Natriumbromid,https://pubchem.ncbi.nlm.nih.gov/compound/253881,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+253881,NaBr,Natriumbromid,https://pubchem.ncbi.nlm.nih.gov/compound/253881,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+433294,LiCl,Litiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/433294,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+444305,C4H6O6,Vinsyra,https://pubchem.ncbi.nlm.nih.gov/compound/444305,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516871,NaSCN,Natriumtiocyanat,https://pubchem.ncbi.nlm.nih.gov/compound/516871,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516872,KSCN,Kaliumtiocyanat,https://pubchem.ncbi.nlm.nih.gov/compound/516872,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516875,KMnO4,Kaliumpermanganat,https://pubchem.ncbi.nlm.nih.gov/compound/516875,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+516875,KMnO4,Kaliumpermanganat,https://pubchem.ncbi.nlm.nih.gov/compound/516875,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+516875,KMnO4,Kaliumpermanganat,https://pubchem.ncbi.nlm.nih.gov/compound/516875,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+516875,KMnO4,Kaliumpermanganat,https://pubchem.ncbi.nlm.nih.gov/compound/516875,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1578.pdf,safety,false
+516875,KMnO4,Kaliumpermanganat,https://pubchem.ncbi.nlm.nih.gov/compound/516875,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+516875,KMnO4,Kaliumpermanganat,https://pubchem.ncbi.nlm.nih.gov/compound/516875,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516892,NaHCO3,Natriumvätekarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/516892,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516900,KClO4,Kaliumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516900,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+516900,KClO4,Kaliumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516900,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+516900,KClO4,Kaliumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516900,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1577.pdf,safety,false
+516900,KClO4,Kaliumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516900,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+516900,KClO4,Kaliumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516900,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516902,NaClO3,Natriumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516902,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+516902,NaClO3,Natriumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516902,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+516902,NaClO3,Natriumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516902,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1688.pdf,safety,false
+516902,NaClO3,Natriumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516902,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+516902,NaClO3,Natriumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/516902,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516910,KNO2,Kaliumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/516910,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+516910,KNO2,Kaliumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/516910,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+516910,KNO2,Kaliumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/516910,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+516910,KNO2,Kaliumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/516910,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1575.pdf,safety,false
+516910,KNO2,Kaliumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/516910,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+516910,KNO2,Kaliumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/516910,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516919,NaHSO4,Natriumvätesulfat,https://pubchem.ncbi.nlm.nih.gov/compound/516919,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+516919,NaHSO4,Natriumvätesulfat,https://pubchem.ncbi.nlm.nih.gov/compound/516919,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+516951,KH2PO4,Kaliumdihydrogenfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/516951,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+517044,KC2H3O2,Kaliumacetat,https://pubchem.ncbi.nlm.nih.gov/compound/517044,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+517045,NaC2H3O2,Natriumacetat,https://pubchem.ncbi.nlm.nih.gov/compound/517045,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+517111,(NH4)2CO3,Ammoniumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/517111,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0092.pdf,safety,false
+517111,(NH4)2CO3,Ammoniumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/517111,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+517111,(NH4)2CO3,Ammoniumkarbonat,https://pubchem.ncbi.nlm.nih.gov/compound/517111,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+517165,NH4C2H3O2,Ammoniumacetat,https://pubchem.ncbi.nlm.nih.gov/compound/517165,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0085.pdf,safety,false
+517165,NH4C2H3O2,Ammoniumacetat,https://pubchem.ncbi.nlm.nih.gov/compound/517165,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+517165,NH4C2H3O2,Ammoniumacetat,https://pubchem.ncbi.nlm.nih.gov/compound/517165,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+518696,Fe2O3,Järn(III)oxid,https://pubchem.ncbi.nlm.nih.gov/compound/518696,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+522606,NaClO4,Natriumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/522606,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+522606,NaClO4,Natriumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/522606,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+522606,NaClO4,Natriumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/522606,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1716.pdf,safety,false
+522606,NaClO4,Natriumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/522606,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+522606,NaClO4,Natriumperklorat,https://pubchem.ncbi.nlm.nih.gov/compound/522606,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+522689,KF,Kaliumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/522689,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+522689,KF,Kaliumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/522689,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+522689,KF,Kaliumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/522689,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1565.pdf,safety,false
+522689,KF,Kaliumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/522689,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+522689,KF,Kaliumfluorid,https://pubchem.ncbi.nlm.nih.gov/compound/522689,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+656671,Na2S2O5,Natriumpyrosulfit,https://pubchem.ncbi.nlm.nih.gov/compound/656671,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+656671,Na2S2O5,Natriumpyrosulfit,https://pubchem.ncbi.nlm.nih.gov/compound/656671,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1708.pdf,safety,false
+656671,Na2S2O5,Natriumpyrosulfit,https://pubchem.ncbi.nlm.nih.gov/compound/656671,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+656671,Na2S2O5,Natriumpyrosulfit,https://pubchem.ncbi.nlm.nih.gov/compound/656671,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+3084026,SrSO4,Celestin,https://pubchem.ncbi.nlm.nih.gov/compound/3084026,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5284346,BaCl2·2H2O,Bariumklorid (dihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/5284346,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+5284346,BaCl2·2H2O,Bariumklorid (dihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/5284346,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5284359,CaCl2,Kalciumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5284359,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5352425,Pb,Bly,https://pubchem.ncbi.nlm.nih.gov/compound/5352425,0,https://www.epa.gov/sites/default/files/2016-09/documents/lead-compounds.pdf,safety,false
+5352425,Pb,Bly,https://pubchem.ncbi.nlm.nih.gov/compound/5352425,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+5352425,Pb,Bly,https://pubchem.ncbi.nlm.nih.gov/compound/5352425,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1096.pdf,safety,false
+5352425,Pb,Bly,https://pubchem.ncbi.nlm.nih.gov/compound/5352425,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5352425,Pb,Bly,https://pubchem.ncbi.nlm.nih.gov/compound/5352425,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5352426,Sn,Tenn,https://pubchem.ncbi.nlm.nih.gov/compound/5352426,0,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1858.pdf,safety,false
+5352426,Sn,Tenn,https://pubchem.ncbi.nlm.nih.gov/compound/5352426,1,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5352426,Sn,Tenn,https://pubchem.ncbi.nlm.nih.gov/compound/5352426,2,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/0054.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5359268,Al,Aluminium (Al),https://pubchem.ncbi.nlm.nih.gov/compound/5359268,6,https://www.fishersci.ca/content/dam/fishersci/en_US/documents/programs/education/regulatory-documents/sds/chemicals/chemicals-a/S25146.pdf,lcss,true
+5360315,MgCl2,Magnesiumklorid,https://pubchem.ncbi.nlm.nih.gov/compound/5360315,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5362487,S,Svavel,https://pubchem.ncbi.nlm.nih.gov/compound/5362487,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+5362487,S,Svavel,https://pubchem.ncbi.nlm.nih.gov/compound/5362487,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+5362487,S,Svavel,https://pubchem.ncbi.nlm.nih.gov/compound/5362487,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1757.pdf,safety,false
+5362487,S,Svavel,https://pubchem.ncbi.nlm.nih.gov/compound/5362487,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5362487,S,Svavel,https://pubchem.ncbi.nlm.nih.gov/compound/5362487,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+5462224,Mg,Magnesium (Mg),https://pubchem.ncbi.nlm.nih.gov/compound/5462224,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+5462224,Mg,Magnesium (Mg),https://pubchem.ncbi.nlm.nih.gov/compound/5462224,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+5462224,Mg,Magnesium (Mg),https://pubchem.ncbi.nlm.nih.gov/compound/5462224,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+5462224,Mg,Magnesium (Mg),https://pubchem.ncbi.nlm.nih.gov/compound/5462224,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1136.pdf,safety,false
+5462224,Mg,Magnesium (Mg),https://pubchem.ncbi.nlm.nih.gov/compound/5462224,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+5462224,Mg,Magnesium (Mg),https://pubchem.ncbi.nlm.nih.gov/compound/5462224,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6093208,Ca(OH)2,Kalciumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/6093208,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+6093208,Ca(OH)2,Kalciumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/6093208,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6093258,FeCl3·6H2O,Järn(III)klorid (hexahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/6093258,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6093260,CaCl2·2H2O,Kalciumklorid (dihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/6093260,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6093286,Ba(OH)2,Bariumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/6093286,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+6093286,Ba(OH)2,Bariumhydroxid,https://pubchem.ncbi.nlm.nih.gov/compound/6093286,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6097028,(NH4)2SO4,Ammoniumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/6097028,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+6097028,(NH4)2SO4,Ammoniumsulfat,https://pubchem.ncbi.nlm.nih.gov/compound/6097028,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+6426889,KClO3,Kaliumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/6426889,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+6426889,KClO3,Kaliumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/6426889,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+6426889,KClO3,Kaliumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/6426889,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1560.pdf,safety,false
+6426889,KClO3,Kaliumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/6426889,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+6426889,KClO3,Kaliumklorat,https://pubchem.ncbi.nlm.nih.gov/compound/6426889,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+9833931,ZnS,Zinksulfid,https://pubchem.ncbi.nlm.nih.gov/compound/9833931,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+9833931,ZnS,Zinksulfid,https://pubchem.ncbi.nlm.nih.gov/compound/9833931,1,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+9837674,Cu(NO3)2·3H2O,Koppar(II)nitrat (trihydrat),https://pubchem.ncbi.nlm.nih.gov/compound/9837674,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+9989219,K2O,Kaliumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/9989219,0,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+9989219,K2O,Kaliumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/9989219,1,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1576.pdf,safety,false
+9989219,K2O,Kaliumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/9989219,2,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+9989219,K2O,Kaliumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/9989219,3,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+9989226,Al2O3,Aluminiumoxid,https://pubchem.ncbi.nlm.nih.gov/compound/9989226,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+16211214,Na2B4O7·10H2O,"Borax (natriumtetraborat, decahydrat)",https://pubchem.ncbi.nlm.nih.gov/compound/16211214,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+16211566,Fe(NO3)3·9H2O,Järn(III)nitrat (nonahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/16211566,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+16211588,FeCl2·4H2O,Järn(II)klorid (tetrahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/16211588,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+16211978,Fe3O4,"Järn(II,III)oxid",https://pubchem.ncbi.nlm.nih.gov/compound/16211978,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+22377415,Al2(SO4)3·18H2O,Aluminiumsulfat (octadecahydrat),https://pubchem.ncbi.nlm.nih.gov/compound/22377415,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23665760,NaClO,Natriumhypoklorit,https://pubchem.ncbi.nlm.nih.gov/compound/23665760,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+23665760,NaClO,Natriumhypoklorit,https://pubchem.ncbi.nlm.nih.gov/compound/23665760,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+23665760,NaClO,Natriumhypoklorit,https://pubchem.ncbi.nlm.nih.gov/compound/23665760,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23665760,NaClO,Natriumhypoklorit,https://pubchem.ncbi.nlm.nih.gov/compound/23665760,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1707.pdf,safety,false
+23665760,NaClO,Natriumhypoklorit,https://pubchem.ncbi.nlm.nih.gov/compound/23665760,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+23665760,NaClO,Natriumhypoklorit,https://pubchem.ncbi.nlm.nih.gov/compound/23665760,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23665763,NaHSO3,Natriumvätesulfit,https://pubchem.ncbi.nlm.nih.gov/compound/23665763,0,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+23665763,NaHSO3,Natriumvätesulfit,https://pubchem.ncbi.nlm.nih.gov/compound/23665763,1,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23665763,NaHSO3,Natriumvätesulfit,https://pubchem.ncbi.nlm.nih.gov/compound/23665763,2,https://www.nj.gov/health/eoh/rtkweb/documents/fs/1685.pdf,safety,false
+23665763,NaHSO3,Natriumvätesulfit,https://pubchem.ncbi.nlm.nih.gov/compound/23665763,3,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+23665763,NaHSO3,Natriumvätesulfit,https://pubchem.ncbi.nlm.nih.gov/compound/23665763,4,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23668193,NaNO2,Natriumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/23668193,0,https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf,safety,false
+23668193,NaNO2,Natriumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/23668193,1,https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf,safety,false
+23668193,NaNO2,Natriumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/23668193,2,https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf,safety,false
+23668193,NaNO2,Natriumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/23668193,3,https://www.nj.gov/health/eoh/rtkweb/documents/fs/2258.pdf,safety,false
+23668193,NaNO2,Natriumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/23668193,4,https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf,safety,false
+23668193,NaNO2,Natriumnitrit,https://pubchem.ncbi.nlm.nih.gov/compound/23668193,5,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false
+23672064,NaH2PO4,Natriumdihydrogenfosfat,https://pubchem.ncbi.nlm.nih.gov/compound/23672064,0,https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf,safety,false

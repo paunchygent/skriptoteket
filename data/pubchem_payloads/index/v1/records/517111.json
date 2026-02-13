@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "cid": 517111,
+  "captured_at": "2026-01-31T14:09:30.263673+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/517111",
+    "lcss_sha256": "d8793e3a99bed506685d6e1f63a674495639e25323b6f7a0bdd70569bfeaff45",
+    "linkout_sha256": "e58be1ba05e46040a2c01b9a1a1e1a8e46afc6e6fc9a58428c57554190d23ddf",
+    "meta_sha256": "1adf2ac10c1dcfdcf46c2411c4aea9a02df6f46c638a888e356cf7bd9cf81443"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H302",
+      "H412"
+    ],
+    "hazard_statements_sv": {
+      "H302": "Skadligt vid förtäring.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P264",
+      "P270",
+      "P273",
+      "P301+P317",
+      "P330",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P330": "Skölj munnen.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "warning",
+    "signal_word_sv": "Varning",
+    "pictograms": [
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/0092.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:02.950065+00:00"
+}

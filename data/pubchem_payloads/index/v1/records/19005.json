@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "cid": 19005,
+  "captured_at": "2026-01-31T18:48:05.664419+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/19005",
+    "lcss_sha256": "ba0fb888059aab9de2bbca3409041eb22ccbbf57f0886f8509d579429b9a3de0",
+    "linkout_sha256": "40b33eaecc6334290b314e4224dc7d177e942d9e7293516fdea66da65f52796b",
+    "meta_sha256": "9a3a12245c7f9a9970e356314bf27ddfa5d445fda1a5e55664e468f228d52c4e"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H400",
+      "H410",
+      "H411"
+    ],
+    "hazard_statements_sv": {
+      "H400": "Mycket giftigt för vattenlevande organismer.",
+      "H410": "Mycket giftigt för vattenlevande organismer med långtidseffekter.",
+      "H411": "Giftigt för vattenlevande organismer med långtidseffekter."
+    },
+    "precautionary_codes": [
+      "P273",
+      "P391",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P273": "Undvik utsläpp till miljön.",
+      "P391": "Samla upp spill.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "warning",
+    "signal_word_sv": "Varning",
+    "pictograms": [
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/2028.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.208271+00:00"
+}

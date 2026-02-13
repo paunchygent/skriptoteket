@@ -1,0 +1,34 @@
+{
+  "cid": 24462,
+  "hazard_key": "CuSO4",
+  "display_name": "Kopparsulfat (anhydrat)",
+  "captured_at": "2026-01-31T16:43:42.122500+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24462",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24462/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/24462/linkout.json",
+      "sha256": "63adfaf02a4b9423251c7ab799f4b2dd51c047cd6c75afd31849133a6ddfcb4e"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24462/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 310768,
+      "file": "data/pubchem_payloads/raw/24462/lcss.json",
+      "sha256": "d43b54b4d5d04dc1103579c81479be0a473b08d2fc6e057662566abe38926577"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24462/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 214716,
+      "file": "data/pubchem_payloads/raw/24462/safety.json",
+      "sha256": "194e1aa997f5c0d42d3e488bdd5d660eebe581a6f021e30278fbed828e5db6b4"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24462.png"
+}

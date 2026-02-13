@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "cid": 9989219,
+  "captured_at": "2026-01-31T15:13:50.597412+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/9989219",
+    "lcss_sha256": "219963e6e986f8c503a6a44218d9dd769e0e12a8c2957509b3276b46b55a57fc",
+    "linkout_sha256": "55f57d75c48a4679ebdabafcc505e8c2200ade571d4fa98457732d2c368cf423",
+    "meta_sha256": "462516e8637c75b0c929987f65131b7620382c7f7f41b6e4d7511a35d434af81"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H314",
+      "H318"
+    ],
+    "hazard_statements_sv": {
+      "H314": "Orsakar allvarliga frätskador på hud och ögon.",
+      "H318": "Orsakar allvarliga ögonskador."
+    },
+    "precautionary_codes": [
+      "P260",
+      "P264",
+      "P264+P265",
+      "P280",
+      "P301+P330+P331",
+      "P302+P361+P354",
+      "P304+P340",
+      "P305+P354+P338",
+      "P316",
+      "P317",
+      "P321",
+      "P363",
+      "P405",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P260": "* Inandas inte damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P301+P330+P331": "VID FÖRTÄRING: Skölj munnen. Framkalla INTE kräkning.",
+      "P302+P361+P354": "VID HUDKONTAKT: Ta omedelbart av alla förorenade kläder. Skölj genast huden med vatten i flera minuter.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P316": "Sök omedelbar läkarhjälp.",
+      "P317": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P363": "Nedstänkta kläder ska tvättas innan de används igen.",
+      "P405": "Förvaras inlåst.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1576.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.062293+00:00"
+}

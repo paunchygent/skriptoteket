@@ -26,6 +26,7 @@ outcome: "Teachers can generate a deterministic solution prep sheet (hydrates/pu
 ## Stories
 
 - [ST-20-01: Curated app — Reagent Prep Chef (v1)](../stories/story-20-01-curated-app-reagent-prep-chef.md)
+- [ST-20-02: Curated app — Reagent Prep Chef — Riskbedömning + dokumentation (v1)](../stories/story-20-02-curated-app-reagent-prep-chef-risk-assessment.md)
 
 ## Risks
 

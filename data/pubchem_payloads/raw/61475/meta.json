@@ -1,0 +1,34 @@
+{
+  "cid": 61475,
+  "hazard_key": "Na2S2O3·5H2O",
+  "display_name": "Natriumtiosulfat (pentahydrat)",
+  "captured_at": "2026-01-31T18:41:09.809027+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/61475",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/61475/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 611,
+      "file": "data/pubchem_payloads/raw/61475/linkout.json",
+      "sha256": "4d187270819ef26ddf50c92e9279fb53d9b7f309061e52e1523308605c3ee603"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/61475/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 34801,
+      "file": "data/pubchem_payloads/raw/61475/lcss.json",
+      "sha256": "ebfb642773ef1e5b4f17f68691f609dee1371b9117bab894d053aa7c9472efcf"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/61475/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 20815,
+      "file": "data/pubchem_payloads/raw/61475/safety.json",
+      "sha256": "930d26dfa4e195fd2e2bbbaf6d709921a7233e01634803d42a6caa37d619836d"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/61475.png"
+}

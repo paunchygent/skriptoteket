@@ -1,0 +1,34 @@
+{
+  "cid": 23978,
+  "hazard_key": "Cu",
+  "display_name": "Koppar (Cu)",
+  "captured_at": "2026-01-31T15:14:18.608545+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23978",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/23978/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 599,
+      "file": "data/pubchem_payloads/raw/23978/linkout.json",
+      "sha256": "5fbdc2cf4d174fb42ef3e557b83360043e586e9e3b9b6b3bada4e95cf5f87131"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23978/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 589473,
+      "file": "data/pubchem_payloads/raw/23978/lcss.json",
+      "sha256": "304aee7cedfd230e798824f83c33eaf7229ca6e09886a90ab39f003aea9b0e3f"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23978/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 245310,
+      "file": "data/pubchem_payloads/raw/23978/safety.json",
+      "sha256": "d52c2c4e9d53064f75482655ec74e09b5a487403284bc3362c6d8eeb25644b3f"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/23978.png"
+}

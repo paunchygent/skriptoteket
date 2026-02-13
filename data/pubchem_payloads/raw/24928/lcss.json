@@ -1,0 +1,2418 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24928,
+    "RecordTitle": "Calcium Sulfate Dihydrate",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 43,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 19,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "Not Classified"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 100% (278 of 278) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 85,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 278 of 278 companies. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 114,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/23097"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 278 reports by companies from 2 notifications to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 116,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 278 of 278 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 80,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 0 notifications provided by 0 of 278 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 98,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/23097"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 100% (40 of 40) of all reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 83,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not Classified"
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria by 40 of 40 companies. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 112,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/64219"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 40 reports by companies from 1 notifications to the ECHA C&L Inventory.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 115,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 40 of 40 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 78,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 0 notifications provided by 0 of 40 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 97,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/64219"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Warning",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 29,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P271, P304+P340, P319, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 40,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 50,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Warning",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H335: May cause respiratory irritation [Warning Specific target organ toxicity, single exposure; Respiratory tract irritation]",
+                      "Markup": [
+                        {
+                          "Start": 40,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 30,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P261, P271, P304+P340, P319, P403+P233, P405, and P501",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P261"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P271"
+                        },
+                        {
+                          "Start": 12,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P304+P340"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P319"
+                        },
+                        {
+                          "Start": 29,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P403+P233"
+                        },
+                        {
+                          "Start": 40,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P405"
+                        },
+                        {
+                          "Start": 50,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P501"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 3,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 17,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "10101-41-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 28,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 39,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "13397-24-5"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "calcium;sulfate;dihydrate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Calcium sulfate dihydrate"
+                    },
+                    {
+                      "String": "10101-41-4"
+                    },
+                    {
+                      "String": "Satinite"
+                    },
+                    {
+                      "String": "Light spar"
+                    },
+                    {
+                      "String": "Satin spar"
+                    },
+                    {
+                      "String": "Annaline"
+                    },
+                    {
+                      "String": "Compactrol"
+                    },
+                    {
+                      "String": "Magnesia White"
+                    },
+                    {
+                      "String": "Native calcium sulfate"
+                    },
+                    {
+                      "String": "Sulfuric acid, calcium salt, hydrate (1:1:2)"
+                    },
+                    {
+                      "String": "Precipitated calcium sulfate"
+                    },
+                    {
+                      "String": "Calcium sulfate, dihydrate"
+                    },
+                    {
+                      "String": "Alabaster"
+                    },
+                    {
+                      "String": "Gypsum fibrosum"
+                    },
+                    {
+                      "String": "Calcium sulphate dihydrate"
+                    },
+                    {
+                      "String": "Sulfuric acid, calcium(2+) salt, dihydrate"
+                    },
+                    {
+                      "String": "Sulfuric acid, calcium salt (1:1), dihydrate"
+                    },
+                    {
+                      "String": "Calcium(II) sulfate, dihydrate (1:1:2)"
+                    },
+                    {
+                      "String": "C.I. 77231"
+                    },
+                    {
+                      "String": "4846Q921YM"
+                    },
+                    {
+                      "String": "DTXSID7047514"
+                    },
+                    {
+                      "String": "CHEBI:32583"
+                    },
+                    {
+                      "String": "RefChem:5638"
+                    },
+                    {
+                      "String": "DTXCID7015674"
+                    },
+                    {
+                      "String": "600-148-1"
+                    },
+                    {
+                      "String": "927-377-2"
+                    },
+                    {
+                      "String": "Terra alba"
+                    },
+                    {
+                      "String": "Phosphogypsum"
+                    },
+                    {
+                      "String": "Landplaster"
+                    },
+                    {
+                      "String": "Mineral White"
+                    },
+                    {
+                      "String": "GIPS"
+                    },
+                    {
+                      "String": "13397-24-5"
+                    },
+                    {
+                      "String": "calcium;sulfate;dihydrate"
+                    },
+                    {
+                      "String": "Calcium sulphate solution"
+                    },
+                    {
+                      "String": "MFCD00149625"
+                    },
+                    {
+                      "String": "Gypsite"
+                    },
+                    {
+                      "String": "Primoplast"
+                    },
+                    {
+                      "String": "Gypsum stone"
+                    },
+                    {
+                      "String": "Duracal Cemen"
+                    },
+                    {
+                      "String": "Tiger Kencoat"
+                    },
+                    {
+                      "String": "Crystacal R"
+                    },
+                    {
+                      "String": "CoCoat T"
+                    },
+                    {
+                      "String": "G 6 (refractory"
+                    },
+                    {
+                      "String": "SK (mineral)"
+                    },
+                    {
+                      "String": "G 75 (mineral"
+                    },
+                    {
+                      "String": "G 16 (gypsum"
+                    },
+                    {
+                      "String": "Gypsum (Ca(SO4).2H2O)"
+                    },
+                    {
+                      "String": "PE 20A"
+                    },
+                    {
+                      "String": "Calcium sulfate dihydrate (CaSO4.2H2O"
+                    },
+                    {
+                      "String": "land plaster"
+                    },
+                    {
+                      "String": "UNII-4846Q921YM"
+                    },
+                    {
+                      "String": "CaH4O6S"
+                    },
+                    {
+                      "String": "GYPSUM [JAN]"
+                    },
+                    {
+                      "String": "GYPSUM [JP]"
+                    },
+                    {
+                      "String": "CaSO4-2H2O"
+                    },
+                    {
+                      "String": "CaSO4.2H2O"
+                    },
+                    {
+                      "String": "SCHEMBL22965"
+                    },
+                    {
+                      "String": "GYPSUM FIBROSUM [CHP]"
+                    },
+                    {
+                      "String": "orb2942246"
+                    },
+                    {
+                      "String": "calcium sulfate--water (1/2)"
+                    },
+                    {
+                      "String": "CALCIUM SULFATE [WHO-IP]"
+                    },
+                    {
+                      "String": "Calcium sulfate dihydrate, reagent"
+                    },
+                    {
+                      "String": "Calcium sulfate--water (1/1/2)"
+                    },
+                    {
+                      "String": "Calcium sulfate dihydrate ACS grade"
+                    },
+                    {
+                      "String": "CALCII SULFAS [WHO-IP LATIN]"
+                    },
+                    {
+                      "String": "AKOS015903950"
+                    },
+                    {
+                      "String": "CALCIUM SULFATE DIHYDRATE [II]"
+                    },
+                    {
+                      "String": "CALCIUM SULFATE DIHYDRATE [MI]"
+                    },
+                    {
+                      "String": "CALCIUM SULFATE DIHYDRATE [WHO-DD]"
+                    },
+                    {
+                      "String": "NS00113026"
+                    },
+                    {
+                      "String": "CALCIUM SULFATE DIHYDRATE [EP MONOGRAPH]"
+                    },
+                    {
+                      "String": "CALCIUM SULFATE (1:1) DIHYDRATE [WHO-IP]"
+                    },
+                    {
+                      "String": "F492445"
+                    },
+                    {
+                      "String": "Q30135771"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CaSO4.2H2O"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CaSO4 . 2H2O",
+                      "Markup": [
+                        {
+                          "Start": 4,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        },
+                        {
+                          "Start": 10,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 43,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CaH4O6S"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "172.17"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/Ca.H2O4S.2H2O/c;1-5(2,3)4;;/h;(H2,1,2,3,4);2*1H2/q+2;;;/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 43,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "PASHVRUKOFIRIK-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Gypsum appears as white or nearly white, odorless, crystalline solid."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Water or Solvent Wet Solid",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White or nearly white, odorless, crystalline solid;"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White to slightly yellowish-white odorless solid; [Merck Index] Colorless hygroscopic solid; [OECD SIDS: Calcium sulfate, dihydrate - 2003] White powder; [Sigma-Aldrich MSDS]",
+                      "Markup": [
+                        {
+                          "Start": 105,
+                          "Length": 26,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20sulfate%2C%20dihydrate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24928"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CRYSTALLINE POWDER."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White or nearly white, odorless, crystalline solid."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White or nearly white, odorless, crystalline solid."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 22,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Mineral Dusts -> Other Mineral Dusts"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 23,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Metals, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "262 to 325 °F (Loses H2O) (NIOSH, 2024)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "100-150Â °C"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "262-325 °F (loses H₂O)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "262-325 °F (Loses H2O)",
+                      "Markup": [
+                        {
+                          "Start": 19,
+                          "Length": 1,
+                          "Type": "Subscript"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.2 % at 77 °F (NIOSH, 2024)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Solubility in water, g/100ml at 20Â °C: 0.2 (very poor)",
+                      "Markup": [
+                        {
+                          "Start": 14,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "(77 °F): 0.2%"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.32 (NIOSH, 2024) - Denser than water; will sink",
+                      "Markup": [
+                        {
+                          "Start": 33,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.32 g/cmÂ³"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.32"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "2.32"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Vapor Pressure",
+            "Description": "Vapor pressure (or equilibrium vapor pressure) is the pressure of a vapor in thermodynamic equilibrium with its condensed phases in a closed system.",
+            "URL": "https://chem.libretexts.org/Bookshelves/General_Chemistry/Map%3A_Chemistry_-_The_Central_Science_(Brown_et_al.)/11%3A_Liquids_and_Intermolecular_Forces/11.05%3A_Vapor_Pressure",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0 mmHg (approx) (NIOSH, 2024)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 33,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0 mmHg (approx)"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0 mmHg (approx)"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Fire Hazards",
+            "Description": "Fire hazard means any situation, process, material or condition which may cause a fire or explosion or provide a ready fuel supply to increase the spread or intensity of the fire or explosion and which poses a threat to life or property.  This section provides information on fire hazards involving this chemical.",
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Not combustible. Gives off irritating or toxic fumes (or gases) in a fire."
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Flammable Limits",
+            "Description": "The flammable limits (or the flammability limits) are the minimum and maximum concentrations of fuel vapor or gas in a fuel vapor or gas/gaseous oxidant mixture (usually expressed in percent by volume) defining the concentration range (flammable or explosive range) over which propagation of flame will occur on contact with an ignition source.  Also called explosive (or explosivity) limits.",
+            "Information": [
+              {
+                "ReferenceNumber": 38,
+                "Name": "Flammability",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Noncombustible Solid"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Stability and Reactivity",
+        "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+        "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+        "Section": [
+          {
+            "TOCHeading": "Reactivity Profile",
+            "Description": "Description of the chemical's potential reactivity with other chemicals, air, and water. Also it includes any other intrinsic reactive hazards (such as polymerizable or peroxidizable).",
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "GYPSUM is generally of low reactivity. Can serve as an oxidizing agent under forcing conditions. Incompatible with aluminum (at high temperatures) and diazomethane.",
+                      "Markup": [
+                        {
+                          "Start": 115,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Aluminum"
+                        },
+                        {
+                          "Start": 151,
+                          "Length": 12,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/diazomethane",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9550"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Hazardous Reactivities & Incompatibilities",
+            "Description": "Reactivities and Incompatibilities",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aluminum (at high temperatures), diazomethane",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 8,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Aluminum",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "Element-Aluminum"
+                        },
+                        {
+                          "Start": 33,
+                          "Length": 12,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/diazomethane",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-9550"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Air and Water Reactions",
+            "Description": "Special alerts if this chemical reacts with air, water, or moisture. ",
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "No rapid reaction with air. No rapid reaction with water.",
+                      "Markup": [
+                        {
+                          "Start": 51,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Reactive Group",
+            "Description": "List of reactive groups that this chemical belongs to, according to CAMEO Chemicals at the U.S. National Oceanic and Atmospheric Administration (NOAA).",
+            "URL": "https://cameochemicals.noaa.gov/help/reactivity/reactive_groups.htm",
+            "Information": [
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Non-Redox-Active Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Health Hazards",
+                "Description": "Description of the chemical's health hazards (e.g., toxicity, corrosivity, and flammability) that can have negative impacts on our short- or long-term health.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Gypsum:"
+                        },
+                        {
+                          "String": "Exposure Routes: Inhalation, skin and/or eye contact"
+                        },
+                        {
+                          "String": "Symptoms: Irritation eyes, skin, mucous membrane, upper respiratory system; cough, sneezing, rhinorrhea (discharge of thin nasal mucus)"
+                        },
+                        {
+                          "String": "Target Organs: Eyes, skin, respiratory system (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Reference": [
+                      "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020.",
+                        "Matched": {
+                          "PCLID": 900176185,
+                          "Citation": "ACGIH - Documentation of the TLVs and BEIs, 7th Ed. Cincinnati: ACGIH Worldwide, 2020."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A cross-sectional study of 241 British gypsum miners in Sussex and Nottinghamshire with over 20 years of exposure identified x-ray findings consistent with a simple pneumoconiosis. Sixty-four miners had >1/0 on the ILO scale and 3 miners had 2/1 or greater. The authors attributed the higher rates of slight pneumoconiosis in the Sussex miners to the higher levels of quartz in these mines where the levels of gypsum dust were lower. [ACGIH] See Calcium sulfate.",
+                          "Markup": [
+                            {
+                              "Start": 446,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24497"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not a skin irritant in rabbits; No evidence of skin sensitization in guinea pigs; Decreased total protein, albumin, BUN, AST, ALT, and creatinine observed in males at 300 and 1,000 mg/kg/day in repeated-dose oral study of rats (possible effect on excretion, distribution, or metabolism relating to the kidney); No adverse effects observed in females at dose up to 1,000 mg/kg/day; No evidence of reproductive or developmental toxicity in rats at oral doses up to 1,000 mg/kg/day; No evidence of mutagenicity; [OECD SIDS: Calcium sulfate, dihydrate - 2003] May cause mechanical irritation; Repeated or prolonged exposure to dust particles may cause lung effects; [ICSC] May cause irritation; [Sigma-Aldrich MSDS] See Calcium sulfate. See Gypsum.",
+                          "Markup": [
+                            {
+                              "Start": 135,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/creatinine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-588"
+                            },
+                            {
+                              "Start": 521,
+                              "Length": 26,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20sulfate%2C%20dihydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24928"
+                            },
+                            {
+                              "Start": 716,
+                              "Length": 15,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Calcium%20sulfate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24497"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "Inhalation Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Cough."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "Eye Exposure",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Redness."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "irritation eyes, skin, mucous membrane, upper respiratory system; cough, sneezing, rhinorrhea (discharge of thin nasal mucus)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "inhalation, skin and/or eye contact"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Target Organs",
+                "Description": "Organs that are affected by exposure to this chemical. Information in this section reflects human data unless otherwise noted.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eyes, skin, respiratory system"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "N.D."
+                        },
+                        {
+                          "String": "See: IDLH INDEX ",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 11,
+                              "URL": "https://www.cdc.gov/niosh/idlh/intridl4.html"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Inhalation Risk",
+                "Description": "Risk of exposure to this chemical through inhalation.  Note that the terms \"risk\" and \"hazard\" have different meanings.  A hazard is something that has the potential to cause harm, while risk is the likelihood of harm taking place, based on exposure to that hazard.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "A nuisance-causing concentration of airborne particles can be reached quickly when dispersed."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Recommended Exposure Limit (REL)",
+                "Description": "The recommended exposure limit (REL) is the maximum amount or concentration of a chemical that a worker may be exposed to.  The RELs are guidelines established and recommended by the NIOSH (National Institute for Occupational Safety and Health).  The RELs can be given in three ways. [1] Time-weighted average (REL-TWA): average exposure based on up to10h/day, 40h/week work schedule. [2] Short-term exposure limit (REL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (REL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#exposure",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "REL-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "10 mg/m³ (total), 5 mg/m³ (resp)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 10 mg/m3 (total) TWA 5 mg/m3 (resp)",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 31,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "15.0 [mg/m3](total dust), 5 mg/m3(respirable fraction)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "PEL-TWA (8-Hour Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "15 mg/m³ (total dust), 5 mg/m³ (respirable fraction)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "TWA 15 mg/m3 (total) TWA 5 mg/m3 (resp)",
+                          "Markup": [
+                            {
+                              "Start": 11,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            },
+                            {
+                              "Start": 31,
+                              "Length": 1,
+                              "Type": "Superscript"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 22,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "10.0 [mg/m3], inhalable fraction"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "10.0 [mg/m3], inhalable fraction"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "(inhalable fraction): 10 mg/m"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Name": "TLV-TWA (Time Weighted Average)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "10 mg/m³ (inhalable particulate matter) [2005]"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Short Term Exposure",
+                "Description": "This section provides health effects of short-term exposure to this compound.  The short-term exposure (also called acute exposure) is a short contact with a chemical. It may last a few seconds or a few hours. For example, it might take a few minutes to clean windows with ammonia, use nail polish remover or spray a can of paint. The fumes someone might inhale during these activities are examples of acute exposures.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May cause mechanical irritation."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Effects of Long Term Exposure",
+                "Description": "This section provides health effects of long-term exposure to this compound.  The long-term exposure (also called chronic exposure) is continuous or repeated contact with a toxic chemical over a long period of time (months or years). If a chemical is used every day on the job, the exposure would be chronic. Over time, some chemicals, such as PCBs and lead, can build up in the body. Chronic exposures can also occur at home. Some chemicals in household furniture, carpeting or cleaners can be sources of chronic exposure.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 24,
+                    "Name": "",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Lungs may be affected by repeated or prolongated exposure to dust particles."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Personal Protection",
+            "Information": [
+              {
+                "ReferenceNumber": 38,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "(General personal protection and sanitation codes)",
+                      "Markup": [
+                        {
+                          "Start": 1,
+                          "Length": 48,
+                          "URL": "https://www.cdc.gov/niosh/npg/protect.html"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Skin: No recommendation"
+                    },
+                    {
+                      "String": "Eyes: No recommendation"
+                    },
+                    {
+                      "String": "Wash skin: No recommendation"
+                    },
+                    {
+                      "String": "Remove: No recommendation"
+                    },
+                    {
+                      "String": "Change: No recommendation"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 5,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excerpt from NIOSH Pocket Guide for Gypsum:"
+                        },
+                        {
+                          "String": "Skin: No recommendation is made specifying the need for personal protective equipment for the body."
+                        },
+                        {
+                          "String": "Eyes: No recommendation is made specifying the need for eye protection."
+                        },
+                        {
+                          "String": "Wash skin: No recommendation is made specifying the need for washing the substance from the skin (either immediately or at the end of the work shift)."
+                        },
+                        {
+                          "String": "Remove: No recommendation is made specifying the need for removing clothing that becomes wet or contaminated."
+                        },
+                        {
+                          "String": "Change: No recommendation is made specifying the need for the worker to change clothing after the workshift. (NIOSH, 2024)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Respirator Recommendations",
+                "Description": "This section provides a list of allowable respirators to be used for this chemical, according to the NIOSH's Respirator Selection Recommendations.",
+                "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread",
+                "Information": [
+                  {
+                    "ReferenceNumber": 38,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Important additional information about respirator selection",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 59,
+                              "URL": "https://www.cdc.gov/niosh/npg/pgintrod.html#mustread"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protection Preventions",
+                "Section": [
+                  {
+                    "TOCHeading": "Eye Prevention",
+                    "Description": "Precautionary measures to avoid eye exposure to this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 24,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Wear safety spectacles."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Inhalation Prevention",
+                    "Description": "Precautionary measures to avoid inhalation of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 24,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Use local exhaust or breathing protection."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "TOCHeading": "Ingestion Prevention",
+                    "Description": "Precautionary measures to avoid ingestion of this chemical.",
+                    "Information": [
+                      {
+                        "ReferenceNumber": 24,
+                        "Name": "",
+                        "Value": {
+                          "StringWithMarkup": [
+                            {
+                              "String": "Do not eat, drink, or smoke during work."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "First Aid",
+        "Description": "First aid measures for exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+        "Information": [
+          {
+            "ReferenceNumber": 5,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "Excerpt from NIOSH Pocket Guide for Gypsum:"
+                },
+                {
+                  "String": "Eye: IRRIGATE IMMEDIATELY - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                  "Markup": [
+                    {
+                      "Start": 123,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    }
+                  ]
+                },
+                {
+                  "String": "Breathing: FRESH AIR - If a person breathes large amounts of this chemical, move the exposed person to fresh air at once. Other measures are usually unnecessary. (NIOSH, 2024)"
+                }
+              ]
+            }
+          },
+          {
+            "ReferenceNumber": 38,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "(General first aid procedures)",
+                  "Markup": [
+                    {
+                      "Start": 1,
+                      "Length": 28,
+                      "URL": "https://www.cdc.gov/niosh/npg/firstaid.html"
+                    }
+                  ]
+                },
+                {
+                  "String": "Eye: Irrigate immediately  - If this chemical contacts the eyes, immediately wash (irrigate) the eyes with large amounts of water, occasionally lifting the lower and upper lids. Get medical attention immediately.",
+                  "Markup": [
+                    {
+                      "Start": 124,
+                      "Length": 5,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                      "Type": "PubChem Internal Link",
+                      "Extra": "CID-962"
+                    }
+                  ]
+                },
+                {
+                  "String": "Breathing: Fresh air"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Spillage Disposal",
+            "Description": "Methods for containment and safety measures to protect workers dealing with a spillage of this chemical.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 24,
+                "Name": "",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Personal protection: particulate filter respirator adapted to the airborne concentration of the substance. Sweep spilled substance into containers. If appropriate, moisten first to prevent dusting."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 3,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_12453",
+        "Name": "Sulfuric acid, calcium salt, dihydrate",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39352034
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "CAMEO Chemicals",
+        "SourceID": "25028",
+        "Name": "GYPSUM",
+        "Description": "CAMEO Chemicals is a chemical database designed for people who are involved in hazardous material incident response and planning. CAMEO Chemicals contains a library with thousands of datasheets containing response-related information and recommendations for hazardous materials that are commonly transported, used, or stored in the United States. CAMEO Chemicals was developed by the National Oceanic and Atmospheric Administration's Office of Response and Restoration in partnership with the Environmental Protection Agency's Office of Emergency Management.",
+        "URL": "https://cameochemicals.noaa.gov/chemical/25028",
+        "LicenseNote": "CAMEO Chemicals and all other CAMEO products are available at no charge to those organizations and individuals (recipients) responsible for the safe handling of chemicals. However, some of the chemical data itself is subject to the copyright restrictions of the companies or organizations that provided the data.",
+        "LicenseURL": "https://cameochemicals.noaa.gov/help/reference/terms_and_conditions.htm?d_f=false",
+        "ANID": 758752
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0010101414",
+        "Name": "Calcium sulfate dihydrate",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0010101414",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 827589
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0013397245",
+        "Name": "Phosphogypsum",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0013397245",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 835062
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "831b182cc1fd4468f173e8d26e996db6",
+        "Name": "Calcium sulphate dihydrate",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49737231
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "6af4866add6ddccee1c5fd5d0013de8d",
+        "Name": "Gypsum (Ca(SO4).2H2O)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38379782
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID7047514",
+        "Name": "Calcium sulfate dihydrate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID7047514",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1162148
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "600-148-1",
+        "Name": "Sulfuric acid, calcium salt, hydrate (1:1:2)",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.110.965",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2087696
+      },
+      {
+        "ReferenceNumber": 17,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "603-783-2",
+        "Name": "Gypsum",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.119.141",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 2090734
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "4846Q921YM",
+        "Name": "CALCIUM SULFATE DIHYDRATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/4846Q921YM",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5849908
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "ILO-WHO International Chemical Safety Cards (ICSCs)",
+        "SourceID": "1734",
+        "Name": "CALCIUM SULFATE DIHYDRATE",
+        "Description": "The International Chemical Safety Cards (ICSCs) are data sheets intended to provide essential safety and health information on chemicals in a clear and concise way. The primary aim of the Cards is to promote the safe use of chemicals in the workplace.",
+        "URL": "https://chemicalsafety.ilo.org/dyn/icsc/showcard.display?p_card_id=1734",
+        "LicenseNote": "Creative Commons CC BY 4.0",
+        "LicenseURL": "https://www.ilo.org/global/copyright/lang--en/index.htm",
+        "ANID": 2261524
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "464ddafa9e5f909d549eec73ba1775eb",
+        "Name": "Calcium sulfate dihydrate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37138598
+      },
+      {
+        "ReferenceNumber": 28,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "d6e267266f7a725ebf7656c0c6103a25",
+        "Name": "Gypsum (Ca(SO4).2H2O)",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142983
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "Occupational Safety and Health Administration (OSHA)",
+        "SourceID": "240",
+        "Name": "GYPSUM",
+        "Description": "The OSHA Occupational Chemical Database contains over 800 entries with information such as physical properties, exposure guidelines, etc.",
+        "URL": "https://www.osha.gov/chemicaldata/240",
+        "LicenseNote": "Materials created by the federal government are generally part of the public domain and may be used, reproduced and distributed without permission. Therefore, content on this website which is in the public domain may be used without the prior permission of the U.S. Department of Labor (DOL). Warning: Some content - including both images and text - may be the copyrighted property of others and used by the DOL under a license.",
+        "LicenseURL": "https://www.dol.gov/general/aboutdol/copyright",
+        "ANID": 3410716
+      },
+      {
+        "ReferenceNumber": 39,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "MG2360000",
+        "Name": "Gypsum",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards (NPG) provides general industrial hygiene information for workers, employers, and occupational health professionals. It contains safety information and hazard data related to chemical substances or mixtures.",
+        "URL": "https://www.cdc.gov/niosh-rtecs/MG2402C0.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2267914
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz505",
+        "Name": "Gypsum",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/505",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17276337
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz20118",
+        "Name": "Calcium sulfate dihydrate",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/20118",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17286431
+      },
+      {
+        "ReferenceNumber": 38,
+        "SourceName": "The National Institute for Occupational Safety and Health (NIOSH)",
+        "SourceID": "npgd0308",
+        "Name": "Gypsum",
+        "Description": "The NIOSH Pocket Guide to Chemical Hazards is intended as a source of general industrial hygiene information on several hundred chemicals/classes for workers, employers, and occupational health professionals. Read more: https://www.cdc.gov/niosh/npg/",
+        "URL": "https://www.cdc.gov/niosh/npg/npgd0308.html",
+        "LicenseNote": "The information provided using CDC Web site is only intended to be general summary information to the public. It is not intended to take the place of either the written law or regulations.",
+        "LicenseURL": "https://www.cdc.gov/Other/disclaimer.html",
+        "ANID": 2266606
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "23097",
+        "Name": "Sulfuric acid, calcium salt, hydrate (1:1:2) (EC: 600-148-1)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/23097",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 24835114,
+        "SortOrder": 3278
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "64219",
+        "Name": "Gypsum (EC: 603-783-2)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/64219",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 24836748,
+        "SortOrder": 3040
+      },
+      {
+        "ReferenceNumber": 29,
+        "SourceName": "NITE-CMC",
+        "SourceID": "H27_A_016_C_016A_P",
+        "Name": "Calcium sulfate dihydrate [gypsum, gypsum dihydrate, soft gypsum] - FY2015 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/15-mhlw-0016e.html",
+        "ANID": 39312982,
+        "SortOrder": 2015
+      },
+      {
+        "ReferenceNumber": 30,
+        "SourceName": "NITE-CMC",
+        "SourceID": "H27_A_017_C_017A_P",
+        "Name": "Calcium sulfate dihydrate [gypsum (mineral)] - FY2015 (New/original classication)",
+        "Description": "The chemical classification in this section was conducted by the Chemical Management Center (CMC) of Japan National Institute of Technology and Evaluation (NITE) in accordance with GHS Classification Guidance for the Japanese Government, and is intended to provide a reference for preparing GHS labelling and SDS for users.",
+        "URL": "https://www.chem-info.nite.go.jp/chem/english/ghs/15-mhlw-0017e.html",
+        "ANID": 39313074,
+        "SortOrder": 2015
+      },
+      {
+        "ReferenceNumber": 43,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

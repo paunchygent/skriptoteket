@@ -1,0 +1,34 @@
+{
+  "cid": 24564,
+  "hazard_key": "AlCl3·6H2O",
+  "display_name": "Aluminiumklorid (hexahydrat)",
+  "captured_at": "2026-01-31T14:14:10.898482+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24564",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24564/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/24564/linkout.json",
+      "sha256": "02256abc945ec19f59c1eaaea42dfc26af25422e6b9117ec81d6bd8a31b46fc2"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24564/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 44534,
+      "file": "data/pubchem_payloads/raw/24564/lcss.json",
+      "sha256": "00f0becb4838f630c73964040b286330e356623b0d30c1b8eedde80979bf01dd"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24564/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 32508,
+      "file": "data/pubchem_payloads/raw/24564/safety.json",
+      "sha256": "df137d88746c97e1b4e4b4cf32987965e67a7ffab3af087ec84b9727eb81de12"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24564.png"
+}

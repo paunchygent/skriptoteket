@@ -54,13 +54,66 @@ def resolve_risk_level(*, score: int, levels: Sequence[RiskLevelBand]) -> RiskLe
 
 
 def select_clp_band(*, bands: Sequence[ClpBand], molarity: Decimal) -> ClpBand | None:
+    matches: list[ClpBand] = []
     for band in bands:
         if band.min_molarity is not None and molarity < band.min_molarity:
             continue
         if band.max_molarity is not None and molarity > band.max_molarity:
             continue
-        return band
-    return None
+        matches.append(band)
+    if not matches:
+        return None
+
+    hazard_codes: list[str] = []
+    pictograms: list[str] = []
+    notes: list[str] = []
+    hazard_seen: set[str] = set()
+    pictogram_seen: set[str] = set()
+    notes_seen: set[str] = set()
+    has_danger = False
+    has_warning = False
+
+    for band in matches:
+        for code in band.hazard_codes:
+            if code in hazard_seen:
+                continue
+            hazard_seen.add(code)
+            hazard_codes.append(code)
+        for pictogram in band.pictograms:
+            if pictogram in pictogram_seen:
+                continue
+            pictogram_seen.add(pictogram)
+            pictograms.append(pictogram)
+        for note in band.notes:
+            if note in notes_seen:
+                continue
+            notes_seen.add(note)
+            notes.append(note)
+        if band.signal_word == "danger":
+            has_danger = True
+        if band.signal_word == "warning":
+            has_warning = True
+
+    min_bounds = [band.min_molarity for band in matches if band.min_molarity is not None]
+    max_bounds = [band.max_molarity for band in matches if band.max_molarity is not None]
+    min_molarity = max(min_bounds) if min_bounds else None
+    max_molarity = min(max_bounds) if max_bounds else None
+    signal_word: Literal["danger", "warning"] | None
+    if has_danger:
+        signal_word = "danger"
+    elif has_warning:
+        signal_word = "warning"
+    else:
+        signal_word = None
+
+    return ClpBand(
+        min_molarity=min_molarity,
+        max_molarity=max_molarity,
+        hazard_codes=tuple(hazard_codes),
+        pictograms=tuple(pictograms),
+        signal_word=signal_word,
+        notes=tuple(notes),
+    )
 
 
 def filter_templates_by_hazard_codes(

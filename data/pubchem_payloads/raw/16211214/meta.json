@@ -1,0 +1,34 @@
+{
+  "cid": 16211214,
+  "hazard_key": "Na2B4O7·10H2O",
+  "display_name": "Borax (natriumtetraborat, decahydrat)",
+  "captured_at": "2026-01-31T14:32:44.644484+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/16211214",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/16211214/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 82,
+      "file": "data/pubchem_payloads/raw/16211214/linkout.json",
+      "sha256": "c8491d0150bf6eaa97b4e4e988887d64ca3acccf20c98e9d7a434a40cb3671ef"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16211214/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 223722,
+      "file": "data/pubchem_payloads/raw/16211214/lcss.json",
+      "sha256": "46509f73d64068b555ba091b1067fdd9b2fb83336bd526d3b4beac3316203bc3"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16211214/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 187702,
+      "file": "data/pubchem_payloads/raw/16211214/safety.json",
+      "sha256": "2d7f6d90f93f935dfbf3cb7aad04e87e188c2273455d778bd0f17253ef756497"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/16211214.png"
+}

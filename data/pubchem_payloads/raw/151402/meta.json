@@ -1,0 +1,34 @@
+{
+  "cid": 151402,
+  "hazard_key": "Na2CO3·10H2O",
+  "display_name": "Natriumkarbonat (decahydrat)",
+  "captured_at": "2026-01-31T16:57:31.156490+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/151402",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/151402/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 697,
+      "file": "data/pubchem_payloads/raw/151402/linkout.json",
+      "sha256": "8244370544a416442694e7fc0c8fe3dbee0d34a6544399c62147ea6108000344"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/151402/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 48971,
+      "file": "data/pubchem_payloads/raw/151402/lcss.json",
+      "sha256": "e417b458aa5ff67577f45f1452a3b259372c009ed18512d1c7ecfc9c52f2f92e"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/151402/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 34665,
+      "file": "data/pubchem_payloads/raw/151402/safety.json",
+      "sha256": "e0fd17757a2c814521a4ed846585a95425d6a9ff684f3e5349d0c0b25e951f45"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/151402.png"
+}

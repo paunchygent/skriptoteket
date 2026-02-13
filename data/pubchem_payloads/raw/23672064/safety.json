@@ -1,0 +1,1617 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 23672064,
+    "RecordTitle": "Monosodium phosphate",
+    "Section": [
+      {
+        "TOCHeading": "Safety and Hazards",
+        "Description": "Information on safety and hazards for this compound, including safety/hazards properties, reactivity, incompatibilities, management techniques, first aid treatments, and more.  For toxicity and related information, please see the Toxicity section.",
+        "Section": [
+          {
+            "TOCHeading": "Hazards Identification",
+            "Description": "This section identifies the hazards of the chemical presented on the safety data sheet (SDS) and the appropriate warning information associated with those hazards.  The information in this section includes, but are not limited to, the hazard classification of the chemical, signal word, pictograms, hazard statements and precautionary statements.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "GHS Classification",
+                "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  },
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 89% (597 of 671) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 84,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Pictogram(s)",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "          ",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 1,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                              "Type": "Icon",
+                              "Extra": "Irritant"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Signal",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Warning",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "H319 (11%): Causes serious eye irritation [Warning Serious eye damage/eye irritation]",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 7,
+                              "Type": "Color",
+                              "Extra": "GHSWarning"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "Precautionary Statement Codes",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "P264+P265, P280, P305+P351+P338, and P337+P317",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                            },
+                            {
+                              "Start": 11,
+                              "Length": 4,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                            },
+                            {
+                              "Start": 17,
+                              "Length": 14,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P351+P338"
+                            },
+                            {
+                              "Start": 37,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P337+P317"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 23,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 671 reports by companies from 12 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 117,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 597 of 671 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 80,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 9 notifications provided by 74 of 671 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 99,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/577"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "Note",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "This chemical does not meet GHS hazard criteria for 100% (2 of 2) of all reports.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 81,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "GHS Hazard Statements",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria by 2 of 2 companies. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 110,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/217052"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Name": "ECHA C&L Notifications Summary",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Aggregated GHS information provided per 2 reports by companies from 1 notifications to the ECHA C&L Inventory.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 114,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Reported as not meeting GHS hazard criteria per 2 of 2 reports by companies.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 76,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "There are 0 notifications provided by 0 of 2 reports by companies with hazard statement code(s).",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 96,
+                              "Type": "Italics"
+                            }
+                          ]
+                        },
+                        {
+                          "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                          "Markup": [
+                            {
+                              "Start": 327,
+                              "Length": 20,
+                              "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/217052"
+                            },
+                            {
+                              "Start": 0,
+                              "Length": 348,
+                              "Type": "Italics"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazard Classes and Categories",
+                "Description": "The Hazard Classes and Categories are aligned with GHS (Globally Harmonized System of Classification and Labelling of Chemicals) hazard statement codes.  The percentage data in the parenthesis from ECHA indicates that the hazard classes and categories information are consolidated from multiple companies.  Also, see the detailed explanation from the above GHS classification section.",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+                "DisplayControls": {
+                  "ShowAtMost": 1
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 23,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye Irrit. 2 (11%)"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Not Classified"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 32,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Emergency treatment: Inorganic phosphates; Inorganic phosphates can cause diarrhea, hyperphosphatemia, and hypocalcemia after ingestion; An adult died after receiving four sodium phosphate enemas within 24 hours; he had electrolyte abnormalities and died from cardiac arrest; [HSDB] A mild eye irritant in rabbits and humans; [RTECS]",
+                          "Markup": [
+                            {
+                              "Start": 172,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Fire Potential",
+                "Description": "This section describes fire potential of this chemical (e.g., whether it is combustible or flammable).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 15th  Edition. John Wiley & Sons, Inc. New York, NY 2007., p. 1153"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 15th  Edition. John Wiley & Sons, Inc. New York, NY 2007., p. 1153",
+                        "Matched": {
+                          "PCLID": 906277045,
+                          "Citation": "Lewis, R.J. Sr.; Hawley's Condensed Chemical Dictionary 15th  Edition. John Wiley & Sons, Inc. New York, NY 2007., p. 1153"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Nonflammable"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Fire Fighting",
+            "Description": "This section provides fire fighting information, including fire fighting procedures and hazards.",
+            "Section": [
+              {
+                "TOCHeading": "Fire Fighting Procedures",
+                "Description": "This section provides information on the actions to be taken in the event of a fire emergency involving this chemical, to prevent the spread of and extinguish fires.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Suitable extinguishing media: Use extinguishing measures that are appropriate to local circumstances and the surrounding environment."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Advice for firefighters: Wear self contained breathing apparatus for fire fighting if necessary."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The product itself does not burn."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Firefighting Hazards",
+                "Description": "Hazards associated with firefighting operations (such as smoke, oxygen deficiency, elevated temperatures, and poisonous atmospheres).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5.",
+                        "Matched": {
+                          "PCLID": 900090053,
+                          "Citation": "U.S. Coast Guard, Department of Transportation. CHRIS - Hazardous Chemical Data. Volume II. Washington, D.C.: U.S. Government Printing Office, 1984-5."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Behavior in fire: May melt with loss of steam. /Sodium Phosphates/"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Accidental Release Measures",
+            "Description": "This section provides recommendations on the appropriate response to spills, leaks, or releases, including containment and cleanup practices to prevent or minimize exposure to people, properties, or the environment. It may also include recommendations distinguishing between responses for large and small spills where the spill volume has a significant impact on the hazard.",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Cleanup Methods",
+                "Description": "Procedures for cleanup of chemical spill or hazardous waste",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Accidental Release Measures. Personal precautions, protective equipment and emergency procedures: Use personal protective equipment. Avoid dust formation. Avoid breathing vapors, mist or gas. Ensure adequate ventilation. Avoid breathing dust. Environmental precautions: Do not let product enter drains. Methods and materials for containment and cleaning up: Pick up and arrange disposal without creating dust. Sweep up and shovel. Keep in suitable, closed containers for disposal."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Disposal Methods",
+                "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: The most favorable course of action is to use an alternative chemical product with less inherent propensity for occupational harm/injury/toxicity or environmental contamination. Recycle any unused portion of the material for its approved use or return it to the manufacturer or supplier. Ultimate disposal of the chemical must consider: the material's impact on air quality; potential migration in soil or water; effects on animal and plant life; and conformance with environmental and public health regulations.",
+                          "Markup": [
+                            {
+                              "Start": 411,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Waste treatment methods. Product: Offer surplus and non-recyclable solutions to a licensed disposal company. Contaminated packaging: Dispose of as unused product."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Preventive Measures",
+                "Description": "Preventive measures to take to avoid suffering negative health effects from this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Precautions for safe handling: Avoid contact with skin and eyes. Avoid formation of dust and aerosols. Provide appropriate exhaust ventilation at places where dust is formed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Appropriate engineering controls: Handle in accordance with good industrial hygiene and safety practice. Wash hands before breaks and at the end of workday."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Gloves must be inspected prior to use. Use proper glove removal technique (without touching glove's outer surface) to avoid skin contact with this product. Dispose of contaminated gloves after use in accordance with applicable laws and good laboratory practices. Wash and dry hands."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "SRP: Local exhaust ventilation should be applied wherever there is an incidence of point source emissions or dispersion of regulated contaminants in the work area. Ventilation control of the contaminant as close to its point of generation is both the most economical and safest method to minimize personnel exposure to airborne contaminants. Ensure that the local ventilation moves the contaminant away from the worker."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Handling and Storage",
+            "Description": "This section provides guidance on the safe handling practices and storage conditions for this chemical.  The information in this section includes precautions for safe handling, such as recommendations for handling incompatible chemicals, minimizing the release of the chemical into the environment, and providing advice on general hygiene practices (e.g., eating, drinking, and smoking in work areas is prohibited).  In addition, this section provides recommendations on the conditions for safe storage (including any incompatibilities) as well as advice on specific storage requirements (e.g., ventilation requirements).  ",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Storage Conditions",
+                "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Santa Cruz Biotechnology, Inc; Material Safety Data Sheet: Sodium Phosphate Monobasic. Product Number: sc-215883 (CAS # 7558-80-7), (Issue Date: December 14, 2010; Print Date: February 9, 2011). Available from, as of January 28, 2015: https://datasheets.scbt.com/sc-215883.pdf"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Santa Cruz Biotechnology, Inc; Material Safety Data Sheet: Sodium Phosphate Monobasic. Product Number: sc-215883 (CAS # 7558-80-7), (Issue Date: December 14, 2010; Print Date: February 9, 2011). Available from, as of January 28, 2015: https://datasheets.scbt.com/sc-215883.pdf",
+                        "Matched": {
+                          "PCLID": 906275651,
+                          "Citation": "Santa Cruz Biotechnology, Inc; Material Safety Data Sheet: Sodium Phosphate Monobasic. Product Number: sc-215883 (CAS # 7558-80-7), (Issue Date: December 14, 2010; Print Date: February 9, 2011). Available from, as of January 28, 2015: https://datasheets.scbt.com/sc-215883.pdf"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Store in original containers. Keep containers securely sealed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Conditions for safe storage, including any incompatibilities: Keep container tightly closed in a dry and well-ventilated place. Hygroscopic. Keep in a dry place."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Exposure Control and Personal Protection",
+            "Description": "This section provides information on the exposure limits, engineering controls, and personal protective measures that can be used to minimize worker exposure.  The information in this section includes OSHA Permissible Exposure Limits (PELs), American Conference of Governmental Industrial Hygienists (ACGIH) Threshold Limit Values (TLVs), and any other exposure limit used or recommended by the chemical manufacturer, importer, or employer preparing the safety data sheet, where available. In addition, this section contains information on appropriate engineering controls (e.g., use local exhaust ventilation, or use only in an enclosed system) as well as recommendations for personal protective measures to prevent illness or injury from exposure to chemicals, such as personal protective equipment (PPE) (e.g., appropriate types of eye, face, skin or respiratory protection needed based on hazards and potential exposure).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Acceptable Daily Intakes",
+                "Description": "An estimate of the amount of a chemical in food or drinking water that can be consumed daily over a lifetime without presenting an appreciable risk to health. It is usually expressed as milligrams of the substance per kilogram of body weight per day and applies to chemicals such as food additives, pesticide residues and veterinary drugs.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641",
+                        "Matched": {
+                          "PCLID": 900011586,
+                          "Citation": "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "FAO/WHO Expert Committee on food additives ... recommended ... /levels/ for total dietary phosphorus ... unconditional acceptance level /of less than 30 mg/kg body wt/ is considered safe in any type of diet ... conditional acceptance level /of 30-70 mg/kg body wt/ is acceptable only when dietary calcium level is high. /Phosphates/",
+                          "Markup": [
+                            {
+                              "Start": 90,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 297,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Calcium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Calcium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.920 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.920 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906296509,
+                          "Citation": "40 CFR 180.920 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium dihydrogen phosphate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops only. Use: Buffering agent. Limit: None.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 27,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20dihydrogen%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24204"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(b) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(b) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900124698,
+                          "Citation": "40 CFR 180.940(b) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (b) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to ... dairy processing equipment, and food-processing equipment and utensils. Phosphoric acid, monosodium salt is included on this list. Limit: When ready for use, the end-use concentration is not to exceed 350 ppm."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900079420,
+                          "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (c) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to ...  food-processing equipment and utensils.  Phosphoric acid, monosodium salt is included on this list. Limit: When ready for use, the end-use concentration is not to exceed 350 ppm."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Personal Protective Equipment (PPE)",
+                "Description": "Personal protective equipment (PPE) to use when handling this chemical.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Eye/face protection: Safety glasses with side-shields conforming to EN166. Use equipment for eye protection tested and approved under appropriate government standards such as NIOSH (US) or EN 166(EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Skin protection: Handle with gloves."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Body Protection: Impervious clothing, The type of protective equipment must be selected according to the concentration and amount of the dangerous substance at the specific workplace."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Respiratory protection: For nuisance exposures use type P95 (US) or type P1 (EU EN 143) particle respirator. For higher level protection use type OV/AG/P99 (US) or type ABEK-P2 (EU EN 143) respirator cartridges. Use respirators and components tested and approved under appropriate government standards such as NIOSH (US) or CEN (EU)."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Santa Cruz Biotechnology, Inc; Material Safety Data Sheet: Sodium Phosphate Monobasic. Product Number: sc-215883 (CAS # 7558-80-7), (Issue Date: December 14, 2010; Print Date: February 9, 2011). Available from, as of January 28, 2015: https://datasheets.scbt.com/sc-215883.pdf"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Santa Cruz Biotechnology, Inc; Material Safety Data Sheet: Sodium Phosphate Monobasic. Product Number: sc-215883 (CAS # 7558-80-7), (Issue Date: December 14, 2010; Print Date: February 9, 2011). Available from, as of January 28, 2015: https://datasheets.scbt.com/sc-215883.pdf",
+                        "Matched": {
+                          "PCLID": 906275651,
+                          "Citation": "Santa Cruz Biotechnology, Inc; Material Safety Data Sheet: Sodium Phosphate Monobasic. Product Number: sc-215883 (CAS # 7558-80-7), (Issue Date: December 14, 2010; Print Date: February 9, 2011). Available from, as of January 28, 2015: https://datasheets.scbt.com/sc-215883.pdf"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Local exhaust ventilation is required where solids are handled as powders or crystals; even when particulates are relatively large, a certain proportion will be powdered by mutual friction.  If in spite of local exhaust an adverse concentration of the substance in air could occur, respiratory protection should be considered."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Stability and Reactivity",
+            "Description": "This section describes the stability and reactivity hazards of the chemical.  For some compounds, related information may also be found in the \"Stability/Shelf Life\" section under Experimental Properties (if available).",
+            "URL": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+            "Section": [
+              {
+                "TOCHeading": "Hazardous Reactivities and Incompatibilities",
+                "Description": "This compound may undergo hazardous reactions with other chemicals.  Therefore, it is considered incompatible with those chemicals and should not be used with them.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html",
+                        "Matched": {
+                          "PCLID": 900010258,
+                          "Citation": "Sigma-Aldrich; Material Safety Data Sheet for Sodium Phosphate Monobasic. Product Number: S8282, Version 4.7 (Revision Date 06/12/2014). Available from, as of October 8, 2014: https://www.sigmaaldrich.com/safety-center.html"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatible materials: Strong oxidizing agents."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 863"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 863",
+                        "Matched": {
+                          "PCLID": 900030567,
+                          "Citation": "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 863"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Incompatibilities: Since sodium biphosphate is an acid salt, it is incompatible with carbonates & alkalies in general. In solution with methenamine it causes slow evolution of formaldehyde. /Sodium dihydrogen phosphate monohydrate/",
+                          "Markup": [
+                            {
+                              "Start": 136,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/methenamine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-4101"
+                            },
+                            {
+                              "Start": 176,
+                              "Length": 12,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/formaldehyde",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-712"
+                            },
+                            {
+                              "Start": 191,
+                              "Length": 39,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20dihydrogen%20phosphate%20monohydrate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-516949"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Regulatory Information",
+            "Description": "This section lists the regulations related to the safety, health, and environment of the chemical and its associated products. The regulatory information, which may encompass national and/or regional regulations pertaining to the chemical or mixtures, is presented solely for informational purposes. For additional details, please consult the links to the information sources provided under each data entry.",
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Name": "The Australian Inventory of Industrial Chemicals",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Chemical: Phosphoric acid, monosodium salt"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Name": "EFSA Legal Basis",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Regulation (EC) No 1935/2004 (amended)",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 38,
+                          "URL": "https://doi.org/doi:10.2903/j.efsa.2013.3245"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 24,
+                "Name": "REACH Registered Substance",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Status: Active Update: 25-11-2022 https://echa.europa.eu/registration-dossier/-/registered-dossier/15379",
+                      "Markup": [
+                        {
+                          "Start": 34,
+                          "Length": 70,
+                          "URL": "https://echa.europa.eu/registration-dossier/-/registered-dossier/15379"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 41,
+                "Name": "New Zealand EPA Inventory of Chemical Status",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Sodium phosphate: Does not have an individual approval but may be used under an appropriate group standard",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 16,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-21225609"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "FIFRA Requirements",
+                "Description": "The Federal Insecticide, Fungicide, and Rodenticide Act (FIFRA) is the Federal statute that governs the registration, distribution, sale, and use of pesticides in the United States.",
+                "URL": "https://www.epa.gov/enforcement/federal-insecticide-fungicide-and-rodenticide-act-fifra-and-federal-facilities",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.920 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.920 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 906296509,
+                          "Citation": "40 CFR 180.920 (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of sodium dihydrogen phosphate are exempted from the requirement of a tolerance when used in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops only. Use: Buffering agent. Limit: None.",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 27,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20dihydrogen%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24204"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(b) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(b) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900124698,
+                          "Citation": "40 CFR 180.940(b) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (b) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to ... dairy processing equipment, and food-processing equipment and utensils. Phosphoric acid, monosodium salt is included on this list. Limit: When ready for use, the end-use concentration is not to exceed 350 ppm."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900079420,
+                          "Citation": "40 CFR 180.940(c) (USEPA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of the following chemical substances are exempted from the requirement of a tolerance when used in accordance with good manufacturing practice as ingredients in an antimicrobial pesticide formulation, provided that the substance is applied on a semi-permanent or permanent food-contact surface (other than being applied on food packaging) with adequate draining before contact with food. ... (c) The following chemical substances when used as ingredients in an antimicrobial pesticide formulation may be applied to ... food-processing equipment and utensils.  Phosphoric acid, monosodium salt is included on this list. Limit: When ready for use, the end-use concentration is not to exceed 350 ppm."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 318"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 318",
+                        "Matched": {
+                          "PCLID": 906272835,
+                          "Citation": "United States Environmental Protection Agency/ Prevention,  Pesticides and Toxic Substances; Status of Pesticides in  Registration, Reregistration, and Special Review. (1998) EPA  738-R-98-002, p. 318"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "As the federal pesticide law FIFRA directs, EPA is conducting a comprehensive review of older pesticides to consider their health and environmental effects and make decisions about their continued use. Under this pesticide reregistration program, EPA examines newer health and safety data for pesticide active ingredients initially registered before November 1, 1984, and determines whether the use of the pesticide does not pose unreasonable risk in accordance to newer saftey standards, such as those described in the Food Quality Protection Act of 1996. Pesticides for which EPA had not issued Registration Standards prior to the effective date of FIFRA '88 were divided into three lists based upon their potential for human exposure and other factors, with List B containing pesticides of greater concern than those on List C, and with List C containing pesticides of greater concern than those on List D. Monosodium phosphate is found on List D. Case No: 4053; Pesticide type: fungicide, herbicide, antimicrobial; Case Status: None of the active ingredients in the case are being supported for reregistration by their registrants. All are unsupported, or some are unsupported and some are cancelled. Cases described as \"unsupported\" generally are being processed for cancellation.; Active ingredient (AI): sodium phosphate; AI Status:  The active ingredient is no longer contained in any registered products. Thus, we characterize it as \"cancelled.\".",
+                          "Markup": [
+                            {
+                              "Start": 910,
+                              "Length": 20,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Monosodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23672064"
+                            },
+                            {
+                              "Start": 1311,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "FDA Requirements",
+                "Description": "FDA requirements regarding this chemical and products containing it.  FDA Requirements means any requirements of the Federal Food, Drug and Cosmetic Act (FDCA), as amended, and any rules or regulations promulgated thereunder which are or may be applicable to the manufacture, sale, labeling or distribution of the products regulated by FDA (e.g., drugs, biologics, dietary supplements, foods, cosmetics, tobacco products, etc.).",
+                "URL": "https://www.fda.gov/regulatory-information/laws-enforced-fda/federal-food-drug-and-cosmetic-act-fdc-act",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 172.892 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 172.892 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900103219,
+                          "Citation": "21 CFR 172.892 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Monosodium orthophosphate is a food additive permitted for direct addition to food for human consumption, as long as 1) the quantity of the substance added to food does not exceed the amount reasonably required to accomplish its intended physical, nutritive, or other technical effect in food, and 2) any substance intended for use in or on food is of appropriate food grade and is prepared and handled as a food ingredient.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 25,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Monosodium%20orthophosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23672064"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.1778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.1778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900159971,
+                          "Citation": "21 CFR 182.1778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium phosphate (mono-, di-, & tribasic) used as a multiple purpose food substance in food for human consumption is generally recognized as safe when used in accordance with good manufacturing practice. /Sodium phosphate (mono-, di-, & tribasic)/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 205,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.6085 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.6085 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900154146,
+                          "Citation": "21 CFR 182.6085 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium acid phosphate used as a sequestrant in food for human consumption is generally recognized as safe when used in accordance with good manufacturing practice.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 21,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20acid%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23672064"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "21 CFR 182.6778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "21 CFR 182.6778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov",
+                        "Matched": {
+                          "PCLID": 900004307,
+                          "Citation": "21 CFR 182.6778 (USFDA); U.S. National Archives and Records Administration's Electronic Code of Federal Regulations. Available from, as of October 27, 2014: https://www.ecfr.gov"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Sodium phosphate (mono-, di-, & tribasic) used as a sequesterant in food for human consumption is generally recognized as safe when used in accordance with good manufacturing practice. /Sodium phosphate (mono-, di-, & tribasic)/",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            },
+                            {
+                              "Start": 186,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21225609"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Description": "PEER REVIEWED",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "For more FDA Requirements (Complete) data for SODIUM DIHYDROGEN PHOSPHATE (9 total), please visit the HSDB record page.",
+                          "Markup": [
+                            {
+                              "Start": 102,
+                              "Length": 16,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/738#section=FDA-Requirements-(Complete)"
+                            },
+                            {
+                              "Start": 46,
+                              "Length": 27,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/SODIUM%20DIHYDROGEN%20PHOSPHATE",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24204"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Other Safety Information",
+            "Description": "Miscellaneous safety information for this chemical that is not shown in other sections, such as history, incidents, special reports, and so on.",
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Name": "Chemical Assessment",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "IMAP assessments - Phosphoric acid, monosodium salt: Human health tier I assessment"
+                    },
+                    {
+                      "String": "IMAP assessments - Phosphoric acid, monosodium salt: Environment tier I assessment"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Section": [
+              {
+                "TOCHeading": "Special Reports",
+                "Description": "Special reports on the safety and hazard of this chemical.  Most of them are government documents and review articles.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 33,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "WHO; Diseases Caused by Phosphorus and Its Toxic Compounds; Early Detection of Occupational Diseases pg 53-62 (1986). Review of diseases and health related effects resulting from exposure to phosphorus or phosphorus cmpd.",
+                          "Markup": [
+                            {
+                              "Start": 24,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 191,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 205,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 33,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "European Commission, ESIS; IUCLID Dataset, Sodium dihydrogenorthophosphate (7558-80-7) (2000 CD-ROM edition).[Available from, as of March, 6 2009: http://esis.jrc.ec.europa.eu/]",
+                          "Markup": [
+                            {
+                              "Start": 43,
+                              "Length": 31,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Sodium%20dihydrogenorthophosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23672064"
+                            },
+                            {
+                              "Start": 76,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/7558-80-7",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-23672064"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11138",
+        "Name": "Phosphoric acid, monosodium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39369311
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_11138",
+        "Name": "Phosphoric acid, monosodium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400880
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "8a536587cf740fbe0c72487fd7958bd8",
+        "Name": "Monosodium phosphate",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49732603
+      },
+      {
+        "ReferenceNumber": 24,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-449-2",
+        "Name": "Sodium dihydrogenorthophosphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.591",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981306
+      },
+      {
+        "ReferenceNumber": 41,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "15fb07f9400550cfbf13fc177181075e",
+        "Name": "Sodium phosphate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37161860
+      },
+      {
+        "ReferenceNumber": 23,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "577",
+        "Name": "Sodium dihydrogenorthophosphate (EC: 231-449-2)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/577",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1851136,
+        "SortOrder": 3671
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "217052",
+        "Name": "sodium dihydrogen phosphate (EC: 686-250-7)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/217052",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 37173306,
+        "SortOrder": 3002
+      },
+      {
+        "ReferenceNumber": 32,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz7104",
+        "Name": "Sodium phosphate, monobasic",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/7104",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17280289
+      },
+      {
+        "ReferenceNumber": 33,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "738",
+        "Name": "SODIUM DIHYDROGEN PHOSPHATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/738",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 663
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 14797,
+  "hazard_key": "KOH",
+  "display_name": "Kaliumhydroxid",
+  "captured_at": "2026-01-31T15:13:32.151868+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14797",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14797/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14797/linkout.json",
+      "sha256": "1c7cbf16ce8d70013ee07aa60df78000920c8225840155383ec9425b90b3475b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14797/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 397539,
+      "file": "data/pubchem_payloads/raw/14797/lcss.json",
+      "sha256": "9eaa758ae44529617647fe300ea226e7c1b2990bbe2f94932184f2e3db25a8ca"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14797/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 422053,
+      "file": "data/pubchem_payloads/raw/14797/safety.json",
+      "sha256": "fb122102a531770bd1198e6a7e6438b014eaf8ca71cffd5d66f8ede89c842123"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14797.png"
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 253877,
+  "hazard_key": "KBr",
+  "display_name": "Kaliumbromid",
+  "captured_at": "2026-01-31T15:13:41.634776+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/253877",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/253877/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1334,
+      "file": "data/pubchem_payloads/raw/253877/linkout.json",
+      "sha256": "fa6b5ca3de7303029c7f79fa6fe506646894ce13980874e27dbef6c85f1aaa6b"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/253877/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 204348,
+      "file": "data/pubchem_payloads/raw/253877/lcss.json",
+      "sha256": "07ec66834f9a2f9b83f55890c92b8fc45cbed3819daa7db460567cc487e27c12"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/253877/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 115703,
+      "file": "data/pubchem_payloads/raw/253877/safety.json",
+      "sha256": "8d173f3a3f6788acd414f5d879102e5c1fd8b102342b0b69be6392ffafabb4df"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/253877.png"
+}

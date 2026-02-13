@@ -1,0 +1,34 @@
+{
+  "cid": 24414,
+  "hazard_key": "BaSO4",
+  "display_name": "Bariumsulfat",
+  "captured_at": "2026-01-31T14:17:51.430009+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24414",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24414/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 607,
+      "file": "data/pubchem_payloads/raw/24414/linkout.json",
+      "sha256": "ae8642643aab5676cd4c13861b80b509c8640b0ec6781b25ce626984fc469b3f"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24414/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 282771,
+      "file": "data/pubchem_payloads/raw/24414/lcss.json",
+      "sha256": "2efbba0dc8ec7dddb510683d36918af8a615cb542e276329467a85a32dc42c41"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24414/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 246521,
+      "file": "data/pubchem_payloads/raw/24414/safety.json",
+      "sha256": "287b3076bd30d91083d68d860ee6e3c7ccb4c944fbf85495d22b0341585d3337"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24414.png"
+}

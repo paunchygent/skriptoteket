@@ -1,0 +1,34 @@
+{
+  "cid": 23930,
+  "hazard_key": "Mn",
+  "display_name": "Mangan",
+  "captured_at": "2026-01-31T16:57:03.109968+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23930",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/23930/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 736,
+      "file": "data/pubchem_payloads/raw/23930/linkout.json",
+      "sha256": "f29b6f87f926218472f07089b99e26557f6505e345b6f4c4af5a13e27825fc49"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23930/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 274265,
+      "file": "data/pubchem_payloads/raw/23930/lcss.json",
+      "sha256": "8c2e5191a44290f2ca8cebec5f90faabee4d1943209dfe26d01dc6bd7066d8bd"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23930/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 225426,
+      "file": "data/pubchem_payloads/raw/23930/safety.json",
+      "sha256": "79589dd8a85ccbfb99cab138ef06836ee4c96db0a611e5f886f33b138d8d4477"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/23930.png"
+}

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "cid": 22377415,
+  "captured_at": "2026-01-31T14:14:26.031650+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/22377415",
+    "lcss_sha256": "eb6436db2c75e2a646f7f837c40968ddd4fdf53a1df41bbc5c90328e18898885",
+    "linkout_sha256": "c59276e70fb6ce524abb32b24a73e8f65b660798ad5e9f1f3e88618b839582bd",
+    "meta_sha256": "760be6140b365dc0dd323a321d10a97afcf9a710ce561b77d9845778cfc0ed5c"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H290",
+      "H318",
+      "H319",
+      "H412"
+    ],
+    "hazard_statements_sv": {
+      "H290": "Kan vara korrosivt för metaller. 1.2 Faroangivelser för hälsofaror",
+      "H318": "Orsakar allvarliga ögonskador.",
+      "H319": "Orsakar allvarlig ögonirritation.",
+      "H412": "Skadliga långtidseffekter för vattenlevande organismer."
+    },
+    "precautionary_codes": [
+      "P234",
+      "P264+P265",
+      "P273",
+      "P280",
+      "P305+P351+P338",
+      "P305+P354+P338",
+      "P317",
+      "P337+P317",
+      "P390",
+      "P406",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P234": "Förvaras endast i originalförpackningen.",
+      "P264+P265": "Tvätta … grundligt efter användning. Undvik kontakt med ögonen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P305+P351+P338": "VID KONTAKT MED ÖGONEN: Skölj försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P305+P354+P338": "VID KONTAKT MED ÖGONEN: Skölj genast försiktigt med vatten i flera minuter. Ta ur eventuella kontaktlinser om det går lätt. Fortsätt att skölja.",
+      "P317": "Sök läkarhjälp.",
+      "P337+P317": "Vid bestående ögonirritation: Sök läkarhjälp.",
+      "P390": "Sug upp spill för att undvika materiella skador.",
+      "P406": "* Förvaras i korrosionsbeständig/… behållare med beständigt innerhölje.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS05",
+      "GHS07"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:02.944603+00:00"
+}

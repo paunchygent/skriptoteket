@@ -98,7 +98,7 @@ class StubActorCommandHandler(Generic[TCommand, TResult]):
     def set_result(self, result: TResult) -> None:
         self.result = result
 
-    async def handle(self, *, actor: User, command: TCommand) -> TResult:
+    async def handle(self, *, actor: User, command: TCommand, **_: object) -> TResult:
         self.calls.append((actor, command))
         if self.result is None:
             raise AssertionError(

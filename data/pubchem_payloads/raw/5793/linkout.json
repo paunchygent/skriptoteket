@@ -1,0 +1,27 @@
+{
+  "Linkout": {
+    "RecordType": "compound",
+    "RecordNumber": 5793,
+    "ObjUrl": [
+      {
+        "Url": "http://sideeffects.embl.de/drugs/206/",
+        "LinkName": "Side effects of glucose",
+        "SubjectType": [
+          "biological properties"
+        ],
+        "Category": [
+          "Chemical Information"
+        ],
+        "Attribute": [
+          "free resource"
+        ],
+        "Provider": {
+          "Name": "SIDER Side Effect Resource",
+          "NameAbbr": "SIDER",
+          "Id": "9337",
+          "Url": "http://sideeffects.embl.de"
+        }
+      }
+    ]
+  }
+}

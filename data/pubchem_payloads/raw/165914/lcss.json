@@ -1,0 +1,1545 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 165914,
+    "RecordTitle": "Copper sulfide (CuS)",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 18,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 4,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "11115-78-9"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "12054-07-8"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 7,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 8,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "1317-40-4"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by Lexichem TK 2.9.3 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "copper sulfide"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Copper(2+) sulfide"
+                    },
+                    {
+                      "String": "Copper Blue"
+                    },
+                    {
+                      "String": "Monocopper monosulfide"
+                    },
+                    {
+                      "String": "KL4YU612X7"
+                    },
+                    {
+                      "String": "DTXSID0061666"
+                    },
+                    {
+                      "String": "CHEBI:51110"
+                    },
+                    {
+                      "String": "NSC-47694"
+                    },
+                    {
+                      "String": "CI 77450"
+                    },
+                    {
+                      "String": "RefChem:127880"
+                    },
+                    {
+                      "String": "DTXCID401507829"
+                    },
+                    {
+                      "String": "cpd with unspecified MF of cupric sulfide"
+                    },
+                    {
+                      "String": "215-271-2"
+                    },
+                    {
+                      "String": "1317-40-4"
+                    },
+                    {
+                      "String": "C.I. 77450"
+                    },
+                    {
+                      "String": "Copper sulfide (CuS)"
+                    },
+                    {
+                      "String": "Copper(II) sulfide"
+                    },
+                    {
+                      "String": "Cupric sulfide"
+                    },
+                    {
+                      "String": "Horace Vernet's Blue"
+                    },
+                    {
+                      "String": "Natural covellite"
+                    },
+                    {
+                      "String": "sulfanylidenecopper"
+                    },
+                    {
+                      "String": "Copper sulfide"
+                    },
+                    {
+                      "String": "Copper sulfide (CuS2)"
+                    },
+                    {
+                      "String": "copper;sulfide"
+                    },
+                    {
+                      "String": "11115-78-9"
+                    },
+                    {
+                      "String": "Kupfer(II)-sulfid"
+                    },
+                    {
+                      "String": "CUPRIC SULFIDE [MI]"
+                    },
+                    {
+                      "String": "SCHEMBL32136"
+                    },
+                    {
+                      "String": "CUPRIC SULFIDE [HSDB]"
+                    },
+                    {
+                      "String": "copper monosulfide (covelline)"
+                    },
+                    {
+                      "String": "OMZSGWSJDCOLKM-UHFFFAOYSA-N"
+                    },
+                    {
+                      "String": "12054-07-8"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 2,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CuS"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "CuS"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "95.61"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/Cu.S/q+2;-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 18,
+                "Reference": [
+                  "Computed by InChI 1.07.4 (PubChem release 2025.09.15)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "OMZSGWSJDCOLKM-UHFFFAOYSA-N"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 6,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Pellets or Large Crystals; Water or Solvent Wet Solid; Other Solid",
+                      "Markup": [
+                        {
+                          "Start": 27,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Black solid; [Merck Index]"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 10,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Metals, Inorganic Compounds"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-90"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-90",
+                    "Matched": {
+                      "PCLID": 900117843,
+                      "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-90"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "0.000033 G/100 CC WATER @ 18 °C.",
+                      "Markup": [
+                        {
+                          "Start": 18,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/WATER",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56",
+                    "Matched": {
+                      "PCLID": 900096842,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Insoluble in water, ethanol, dilute acids and alkaline solutions",
+                      "Markup": [
+                        {
+                          "Start": 13,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 20,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-702"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA7 (1986) 586"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA7 (1986) 586",
+                    "Matched": {
+                      "PCLID": 900023318,
+                      "Citation": "Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. 5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA7 (1986) 586"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Virtually insoluble in water, but soluble in alkali cyanides and in aqueous ammonia solution with complex ion formation",
+                      "Markup": [
+                        {
+                          "Start": 23,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 76,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ammonia",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-222"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Density",
+            "Description": "This section provides information on the density (with unit) and specific gravity (without unit) of a compound. Density is mass of a unit volume of a compound and commonly expressed in units of kg/m3 or g/cm3. Specific gravity, also known as relative density, is a unit-less quantity, defined as the ratio of the density of a compound to that of a standard reference material (typically, water at 4 °C for liquids and air at room temperature [20 °C or 68 °F] for gases).",
+            "URL": "https://chem.libretexts.org/Bookshelves/Introductory_Chemistry/Map%3A_Fundamentals_of_General_Organic_and_Biological_Chemistry_(McMurry_et_al.)/01%3A_Matter_and_Measurements/1.12%3A_Density_and_Specific_Gravity",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56",
+                    "Matched": {
+                      "PCLID": 900096842,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "4.76"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 302"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 302",
+                    "Matched": {
+                      "PCLID": 900020532,
+                      "Citation": "Lewis, R.J., Sr (Ed.). Hawley's Condensed Chemical  Dictionary. 13th ed. New York, NY: John Wiley & Sons, Inc.  1997., p. 302"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Black powder or lumps"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56",
+                    "Matched": {
+                      "PCLID": 900096842,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-56"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Black hexagonal crystals"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Flammability and Explosivity",
+        "Description": "Information on flammability and explosivity of this chemical, including the lower/upper flammable/explosive limits, NFPA hazard classification, and critical temperature/pressure.",
+        "Section": [
+          {
+            "TOCHeading": "Decomposition",
+            "Description": "Information on the decomposition of this compound, including the decomposition conditions and products.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-90"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-90",
+                    "Matched": {
+                      "PCLID": 900117843,
+                      "Citation": "Weast, R.C. (ed.) Handbook of Chemistry and Physics, 68th ed. Boca Raton, Florida: CRC Press Inc., 1987-1988., p. B-90"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Melting point= 220 °C (decomp)"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Toxicity Summary",
+                "Description": "Summary of the toxicity of this compound, provided by the Hazardous Substances Data Bank (HSDB) and other sources.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "A174: Brewer GJ: A brand new mechanism for copper toxicity. J Hepatol. 2007 Oct;47(4):621-2. Epub 2007 Jul 23. PMID:17697726",
+                        "Matched": {
+                          "PCLID": 900176684,
+                          "Citation": "A174: Brewer GJ: A brand new mechanism for copper toxicity. J Hepatol. 2007 Oct;47(4):621-2. Epub 2007 Jul 23. PMID:17697726"
+                        }
+                      },
+                      {
+                        "Citation": "L277: Wikipedia. Copper. Last Updated 29 May 2009. http://en.wikipedia.org/wiki/Copper",
+                        "Matched": {
+                          "PCLID": 906299834,
+                          "Citation": "L277: Wikipedia. Copper. Last Updated 29 May 2009. http://en.wikipedia.org/wiki/Copper"
+                        }
+                      },
+                      {
+                        "Citation": "L280: US Environmental Protection Agency (2008). Drinking Water Health Advisory for 2,4-Dinitrotoluene and 2,6-Dinitrotoluene. http://www.epa.gov/OGWDW/ccl/pdfs/reg_determine2/healthadvisory_ccl2-reg2_dinitrotoluenes.pdf",
+                        "Matched": {
+                          "PCLID": 900177439,
+                          "Citation": "L280: US Environmental Protection Agency (2008). Drinking Water Health Advisory for 2,4-Dinitrotoluene and 2,6-Dinitrotoluene. http://www.epa.gov/OGWDW/ccl/pdfs/reg_determine2/healthadvisory_ccl2-reg2_dinitrotoluenes.pdf"
+                        }
+                      },
+                      {
+                        "Citation": "T49: Baxter PJ, Adams PH, & Aw TC (2000). Hunter's Diseases of Occupations. 9th ed. New York, NY: Oxford University Press Inc.",
+                        "Matched": {
+                          "PCLID": 900176373,
+                          "Citation": "T49: Baxter PJ, Adams PH, & Aw TC (2000). Hunter's Diseases of Occupations. 9th ed. New York, NY: Oxford University Press Inc."
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excess copper is sequestered within hepatocyte lysosomes, where it is complexed with metallothionein. Copper hepatotoxicity is believed to occur when the lysosomes become saturated and copper accumulates in the nucleus, causing nuclear damage. This damage is possibly a result of oxidative damage, including lipid peroxidation. Copper inhibits the sulfhydryl group enzymes such as glucose-6-phosphate 1-dehydrogenase, glutathione reductase, and paraoxonases, which protect the cell from free oxygen radicals. It also influences gene expression and is a co-factor for oxidative enzymes such as cytochrome C oxidase and lysyl oxidase. In addition, the oxidative stress induced by copper is thought to activate acid sphingomyelinase, which lead to the production of ceramide, an apoptotic signal, as well as cause hemolytic anemia. Copper-induced emesis results from stimulation of the vagus nerve. (L277, T49, A174, L280)",
+                          "Markup": [
+                            {
+                              "Start": 7,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 102,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 185,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 328,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 381,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/glucose-6-phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-5958"
+                            },
+                            {
+                              "Start": 418,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/glutathione",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-124886"
+                            },
+                            {
+                              "Start": 492,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            },
+                            {
+                              "Start": 678,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 829,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 11,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Venugopal, B. and T.D. Luckey. Metal Toxicity in Mammals, 2. New York: Plenum Press, 1978., p. 26"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Venugopal, B. and T.D. Luckey. Metal Toxicity in Mammals, 2. New York: Plenum Press, 1978., p. 26",
+                        "Matched": {
+                          "PCLID": 900013377,
+                          "Citation": "Venugopal, B. and T.D. Luckey. Metal Toxicity in Mammals, 2. New York: Plenum Press, 1978., p. 26"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "... COPPER SULFIDES ... ARE POORLY ABSORBED. /COPPER SULFIDES/"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 11,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Venugopal, B. and T.D. Luckey. Metal Toxicity in Mammals, 2. New York: Plenum Press, 1978., p. 26"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Venugopal, B. and T.D. Luckey. Metal Toxicity in Mammals, 2. New York: Plenum Press, 1978., p. 26",
+                        "Matched": {
+                          "PCLID": 900013377,
+                          "Citation": "Venugopal, B. and T.D. Luckey. Metal Toxicity in Mammals, 2. New York: Plenum Press, 1978., p. 26"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Ionic copper is absorbed from the stomach, duodenum, & jejunum. The initial absorption is about 30%, but the effective net absorption is only about 5% due to excretion of copper into the bile; biliary copper is bound to protein, & this complex is not reabsorbed. Absorption is influenced by a number of factors including the chemical forms of copper: oxides, hydroxides, iodides, glutamates, citrates, & pyrophosphates of copper are readily absorbed, but copper sulfides & other water insoluble salts are poorly absorbed. Copper complexes of some amino acids are easily absorbed, whereas copper porphyrins present in meat are very poorly absorbed. /Soluble copper salts/",
+                          "Markup": [
+                            {
+                              "Start": 6,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 171,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 201,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 343,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 422,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 479,
+                              "Length": 5,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-962"
+                            },
+                            {
+                              "Start": 522,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 657,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Metabolism/Metabolites",
+                "Description": "Metabolites are substances made or used when the body breaks down food, drugs or chemicals, or its own tissue (for example, fat or muscle tissue). This process is called metabolism and makes energy and the materials needed for growth, reproduction, and maintaining health. Metabolism also helps get rid of toxic substances.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L277: Wikipedia. Copper. Last Updated 29 May 2009. http://en.wikipedia.org/wiki/Copper",
+                        "Matched": {
+                          "PCLID": 906299834,
+                          "Citation": "L277: Wikipedia. Copper. Last Updated 29 May 2009. http://en.wikipedia.org/wiki/Copper"
+                        }
+                      },
+                      {
+                        "Citation": "L279: International Programme on Chemical Safety (IPCS) INCHEM (1998). Environmental Health Criteria for Copper. http://www.inchem.org/documents/ehc/ehc/ehc200.htm",
+                        "Matched": {
+                          "PCLID": 900177375,
+                          "Citation": "L279: International Programme on Chemical Safety (IPCS) INCHEM (1998). Environmental Health Criteria for Copper. http://www.inchem.org/documents/ehc/ehc/ehc200.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Copper is mainly absorbed through the gastrointestinal tract, but it can also be inhalated and absorbed dermally. It passes through the basolateral membrane, possibly via regulatory copper transporters, and is transported to the liver and kidney bound to serum albumin. The liver is the critical organ for copper homoeostasis. In the liver and other tissues, copper is stored bound to metallothionein, amino acids, and in association with copper-dependent enzymes, then partitioned for excretion through the bile or incorporation into intra- and extracellular proteins. The transport of copper to the peripheral tissues is accomplished through the plasma attached to serum albumin, ceruloplasmin or low-molecular-weight complexes. Copper may induce the production of metallothionein and ceruloplasmin. The membrane-bound copper transporting adenosine triphosphatase (Cu-ATPase) transports copper ions into and out of cells. Physiologically normal levels of copper in the body are held constant by alterations in the rate and amount of copper absorption, compartmental distribution, and excretion. (L277, L279)",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 182,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 306,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 359,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 439,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 587,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 731,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 821,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 841,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/adenosine",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-60961"
+                            },
+                            {
+                              "Start": 889,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 957,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 1035,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "May decompose on exposure to moisture; May cause irritation; [MSDSonline] See Copper.",
+                          "Markup": [
+                            {
+                              "Start": 78,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Signs and Symptoms",
+                "Description": "Symptoms of exposure to this chemical through various routes (for example, ingestion, inhalation, skin contact, and eye contact).",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L278: ATSDR - Agency for Toxic Substances and Disease Registry (2004). Toxicological profile for copper. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp132.html",
+                        "Matched": {
+                          "PCLID": 900176599,
+                          "Citation": "L278: ATSDR - Agency for Toxic Substances and Disease Registry (2004). Toxicological profile for copper. U.S. Public Health Service in collaboration with U.S. Environmental Protection Agency (EPA). http://www.atsdr.cdc.gov/toxprofiles/tp132.html"
+                        }
+                      },
+                      {
+                        "Citation": "L279: International Programme on Chemical Safety (IPCS) INCHEM (1998). Environmental Health Criteria for Copper. http://www.inchem.org/documents/ehc/ehc/ehc200.htm",
+                        "Matched": {
+                          "PCLID": 900177375,
+                          "Citation": "L279: International Programme on Chemical Safety (IPCS) INCHEM (1998). Environmental Health Criteria for Copper. http://www.inchem.org/documents/ehc/ehc/ehc200.htm"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Breathing high levels of copper can cause irritation of the nose and throat. Ingesting high levels of copper can cause nausea, vomiting, diarrhea, headache, dizziness, and respiratory difficulty. (L278, L279)",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            },
+                            {
+                              "Start": 102,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Carcinogen Classification",
+                "Description": "This section provides the International Agency for Research on Cancer (IARC) Carcinogenic Classification and related monograph links.  In the IARC Carcinogenic classification, chemicals are categorized into four groups: Group 1 (carcinogenic to humans), Group 2A (probably carcinogenic to humans), Group 2B (possibly carcinogenic to humans), and Group 3 (not classifiable as to its carcinogenicity to humans).",
+                "URL": "https://monographs.iarc.who.int/agents-classified-by-the-iarc/",
+                "DisplayControls": {
+                  "CreateTable": {
+                    "FromInformationIn": "ThisSection",
+                    "NumberOfColumns": 2,
+                    "ColumnContents": [
+                      "Name",
+                      "Value"
+                    ]
+                  }
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "No indication of carcinogenicity to humans (not listed by IARC)."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Exposure Routes",
+                "Description": "The way people or other living organisms may come into contact with a hazardous chemical.  Examples of common exposure routes are inhalation, ingestion, skin/eye contact.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 14,
+                    "ExtendedReference": [
+                      {
+                        "Citation": "L277: Wikipedia. Copper. Last Updated 29 May 2009. http://en.wikipedia.org/wiki/Copper",
+                        "Matched": {
+                          "PCLID": 906299834,
+                          "Citation": "L277: Wikipedia. Copper. Last Updated 29 May 2009. http://en.wikipedia.org/wiki/Copper"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Oral  (L277) ; inhalation  (L277) ; dermal (L277)"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Immediately Dangerous to Life or Health (IDLH)",
+                "Description": "The Immediately Dangerous to Life or Health air concentration values (IDLH values) characterize high-risk exposure concentrations and conditions and are used as a component of respirator selection criteria.  IDLH values are established (1) to ensure that the worker can escape from a given contaminated environment in the event of failure of the respiratory protection equipment and (2) to indicate a maximum level above which only a highly reliable breathing apparatus, providing maximum worker protection, is permitted.",
+                "URL": "https://www.cdc.gov/niosh/idlh/default.html",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "100.0 [mg/m3], as Cu"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Permissible Exposure Limit (PEL)",
+                "Description": "The permissible exposure limit (PEL) is the maximum amount or concentration of a chemical that a worker may be exposed to under OSHA regulations.  The PEL can be given in three ways. [1] Time-weighted average (PEL-TWA): average exposure based on an 8h/day, 40h/week work schedule. [2] Short-term exposure limit (PEL-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday. [3] Ceiling limit (PEL-C): absolute exposure limit that should not be exceeded at any time.",
+                "URL": "https://www.osha.gov/annotated-pels/",
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1.0 [mg/m3], as Cu"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Threshold Limit Values (TLV)",
+                "Description": "The threshold limit value (TLV) of a chemical is an airborne concentration at which a worker can be exposed day after day for a working lifetime without adverse effect.  There are three types of TLVs for chemicals. [1] Threshold limit value - time-weighted average (TLV-TWA): average exposure on the basis of a 8h/day, 40h/week work schedule. [2] Threshold limit value - short-term exposure limit (TLV-STEL): a 15-minute TWA exposure that should not be exceeded at any time during a workday, even if the 8-hour TWA is within the TLV-TWA. [3] Threshold limit value - ceiling limit (TLV-C): absolute exposure limit that should not be exceeded at any time. TLVs are developed by the American Conference of Governmental Industrial Hygienist.  While TLVs are widely accepted occupational exposure limits, they are not standards enforced by the U.S. Government.",
+                "URL": "https://www.acgih.org/science/tlv-bei-guidelines/tlv-chemical-substances-introduction/",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 10,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "1.0 [mg/m3], as Cu"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 11,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 21"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 21",
+                        "Matched": {
+                          "PCLID": 900003323,
+                          "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 21"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "8 hr Time Weighted Avg (TWA): 1 mg/cu m. /Copper dusts and mists, as Cu/",
+                          "Markup": [
+                            {
+                              "Start": 42,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 11,
+                    "Description": "QC REVIEWED",
+                    "Reference": [
+                      "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 5"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 5",
+                        "Matched": {
+                          "PCLID": 900002098,
+                          "Citation": "American Conference of Governmental Industrial Hygienists TLVs and BEIs. Threshold Limit Values for Chemical Substances and Physical Agents and Biological Exposure Indices. Cincinnati, OH, 2008, p. 5"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Excursion Limit Recommendation: Excursions in worker exposure levels may exceed 3 times the TLV-TWA for no more than a total of 30 minutes during a work day, and under no circumstances should they exceed 5 times the TLV-TWA, provided that the TLV-TWA is not exceeded. /Copper dusts and mists, as Cu/",
+                          "Markup": [
+                            {
+                              "Start": 269,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Copper",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Copper"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Stability/Shelf Life",
+            "Description": "Tendency of a material to resist change or decomposition due to internal reaction, or due to the action of air, heat, light, pressure, etc. See also the Stability and Reactivity subsection under the Safety and Hazards section on this page (when available).",
+            "Information": [
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 380"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 380",
+                    "Matched": {
+                      "PCLID": 906283281,
+                      "Citation": "The Merck Index. 10th ed. Rahway, New Jersey: Merck Co., Inc., 1983., p. 380"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "STABLE IN AIR WHEN DRY; OXIDIZED TO COPPER SULFATE BY MOIST AIR.",
+                      "Markup": [
+                        {
+                          "Start": 36,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/COPPER%20SULFATE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-24462"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 11,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "HELZ GR, HORZEMPA LM; WATER RES 17 (2): 167 (1983)"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "HELZ GR, HORZEMPA LM; WATER RES 17 (2): 167 (1983)",
+                    "Matched": {
+                      "PCLID": 640916800,
+                      "Citation": "Helz GR, Horzempa LM. EDTA as a kinetic inhibitor of copper(II) sulfide precipitation. Water Research. 1983 Jan;17(2):167–72. doi: 10.1016/0043-1354(83)90097-0.",
+                      "DOI": "10.1016/0043-1354(83)90097-0"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ETHYLENEDIAMINE TETRAACETIC ACID USED AS AN INHIBITOR OF COPPER SULFIDE PRECIPITATION IN ITS REMOVAL FROM WASTEWATER.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 32,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ETHYLENEDIAMINETETRAACETIC%20ACID",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-6049"
+                        },
+                        {
+                          "Start": 57,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/COPPER%20SULFIDE",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-170997322"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_6382",
+        "Name": "Copper sulfide (CuS)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39352069
+      },
+      {
+        "ReferenceNumber": 4,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0011115789",
+        "Name": "Copper sulfide",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0011115789",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 830402
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0012054078",
+        "Name": "Copper sulfide (CuS2)",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0012054078",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 831274
+      },
+      {
+        "ReferenceNumber": 6,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "fc506916fe7f620cd52888dc67051ca1",
+        "Name": "Copper sulfide (CuS)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38386354
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "3c3f411b3ce822ab43e4735eefcd1d9e",
+        "Name": "Copper sulfide (CuS)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38395164
+      },
+      {
+        "ReferenceNumber": 8,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID0061666",
+        "Name": "Copper sulfide (CuS)",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID0061666",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1169652
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "KL4YU612X7",
+        "Name": "CUPRIC SULFIDE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/KL4YU612X7",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5789963
+      },
+      {
+        "ReferenceNumber": 11,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "5805",
+        "Name": "CUPRIC SULFIDE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/5805",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 3819
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "50ffbdb66fd8da7d03d48867c57f1f5d",
+        "Name": "Copper sulfide (CuS)",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37142668
+      },
+      {
+        "ReferenceNumber": 2,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "inv_6382",
+        "Name": "Copper sulfide (CuS)",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-inventory/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39400522
+      },
+      {
+        "ReferenceNumber": 10,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz4549",
+        "Name": "Cupric sulfide",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/4549",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17279095
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "Toxin and Toxin Target Database (T3DB)",
+        "SourceID": "Compound::T3D1198",
+        "Name": "Copper(II) sulfide",
+        "Description": "The Toxin and Toxin Target Database (T3DB), or, soon to be referred as, the Toxic Exposome Database, is a unique bioinformatics resource that combines detailed toxin data with comprehensive toxin target information.",
+        "URL": "http://www.t3db.ca/toxins/T3D1198",
+        "LicenseNote": "T3DB is offered to the public as a freely available resource. Use and re-distribution of the data, in whole or in part, for commercial purposes requires explicit permission of the authors and explicit acknowledgment of the source material (T3DB) and the original publication.",
+        "LicenseURL": "http://www.t3db.ca/downloads",
+        "ANID": 20441394
+      },
+      {
+        "ReferenceNumber": 18,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

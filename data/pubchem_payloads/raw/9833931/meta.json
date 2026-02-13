@@ -1,0 +1,34 @@
+{
+  "cid": 9833931,
+  "hazard_key": "ZnS",
+  "display_name": "Zinksulfid",
+  "captured_at": "2026-01-31T21:19:06.230976+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/9833931",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/9833931/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/9833931/linkout.json",
+      "sha256": "89f1dd856f7c73ef2993cc1ca200c9bc3ff68e593127864874afc22f661f2399"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/9833931/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 115315,
+      "file": "data/pubchem_payloads/raw/9833931/lcss.json",
+      "sha256": "58e3741b1426d36b198d5525d309b715ef725c8d25afc4c07af8024d638af481"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/9833931/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 96886,
+      "file": "data/pubchem_payloads/raw/9833931/safety.json",
+      "sha256": "50cdc738fcf04b3ca01503f81fdb81a897ce8b698e767ef503b725c5cc2b802a"
+    }
+  },
+  "screenshot": "/tmp/skriptoteket/artifacts/pubchem-payload-capture/9833931.png"
+}

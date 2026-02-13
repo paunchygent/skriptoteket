@@ -1,0 +1,34 @@
+{
+  "cid": 24963,
+  "hazard_key": "Ca(NO3)2",
+  "display_name": "Kalciumnitrat",
+  "captured_at": "2026-01-31T16:42:42.935640+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/24963",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/24963/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 695,
+      "file": "data/pubchem_payloads/raw/24963/linkout.json",
+      "sha256": "c924d1174a1e5a89b5d745c7fe29ffe5abf4702415542f91d1004bed07fd528e"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24963/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 164204,
+      "file": "data/pubchem_payloads/raw/24963/lcss.json",
+      "sha256": "d4b252a0ac343a5bc518c9f381fd8231d38c462cd07d328a36749cce8695005c"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/24963/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 163519,
+      "file": "data/pubchem_payloads/raw/24963/safety.json",
+      "sha256": "2ef6fd10d709d9c8c46fc85165c1667fc8886c3ea3ef801ce887194be156fd7e"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/24963.png"
+}

@@ -1,0 +1,2091 @@
+{
+  "Record": {
+    "RecordType": "CID",
+    "RecordNumber": 24450,
+    "RecordTitle": "Potassium Phosphate, Dibasic",
+    "Section": [
+      {
+        "TOCHeading": "2D Structure",
+        "Description": "A two-dimensional (2D) structure representation of the compound.  Because this structure is processed through chemical structure standardization (Hähnke et al., J. Cheminform. 2018, 10, 36), it is not necessarily the same as the structures provided by individual data contributors.  ",
+        "URL": "https://doi.org/10.1186/s13321-018-0293-8",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 50,
+            "Value": {
+              "Boolean": [
+                true
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Primary Hazards",
+        "Description": "Link to the Safety and Hazard section of this page and link to the Laboratory Chemical Safety Summary (LCSS) datasheet for this compound.",
+        "DisplayControls": {
+          "HideThisSection": true,
+          "MoveToTop": true
+        },
+        "Information": [
+          {
+            "ReferenceNumber": 20,
+            "Value": {
+              "StringWithMarkup": [
+                {
+                  "String": "          ",
+                  "Markup": [
+                    {
+                      "Start": 0,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                      "Type": "Icon",
+                      "Extra": "Corrosive"
+                    },
+                    {
+                      "Start": 1,
+                      "Length": 1,
+                      "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                      "Type": "Icon",
+                      "Extra": "Irritant"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Hazard Classification",
+        "Description": "This section provides harzard classication data from GHS, NFPA, and/or DOT hazard classifications",
+        "Section": [
+          {
+            "TOCHeading": "GHS Classification",
+            "Description": "GHS (Globally Harmonized System of Classification and Labelling of Chemicals) is a United Nations system to identify hazardous chemicals and to inform users about these hazards. GHS has been adopted by many countries around the world and is now also used as the basis for international and national transport regulations for dangerous goods. The GHS hazard statements, class categories, pictograms, signal words, and the precautionary statements can be found on the PubChem GHS page.",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/",
+            "DisplayControls": {
+              "CreateTable": {
+                "FromInformationIn": "ThisSection",
+                "NumberOfColumns": 2,
+                "ColumnContents": [
+                  "Name",
+                  "Value"
+                ]
+              },
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 20,
+                "Name": "Note",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "This chemical does not meet GHS hazard criteria for 48.2% (580  of 1203) of reports.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 84,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "Pictogram(s)",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "          ",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+                          "Type": "Icon",
+                          "Extra": "Corrosive"
+                        },
+                        {
+                          "Start": 1,
+                          "Length": 1,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                          "Type": "Icon",
+                          "Extra": "Irritant"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "Signal",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Danger",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "GHS Hazard Statements",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "H315 (40.7%): Causes skin irritation [Warning Skin corrosion/irritation]",
+                      "Markup": [
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "Type": "Color",
+                          "Extra": "GHSWarning"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "H318 (10.4%): Causes serious eye damage [Danger Serious eye damage/eye irritation]",
+                      "Markup": [
+                        {
+                          "Start": 41,
+                          "Length": 6,
+                          "Type": "Color",
+                          "Extra": "GHSDanger"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "Precautionary Statement Codes",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "P264, P264+P265, P280, P302+P352, P305+P354+P338, P317, P321, P332+P317, and P362+P364",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264"
+                        },
+                        {
+                          "Start": 6,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P264+P265"
+                        },
+                        {
+                          "Start": 17,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P280"
+                        },
+                        {
+                          "Start": 23,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P302+P352"
+                        },
+                        {
+                          "Start": 34,
+                          "Length": 14,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P305+P354+P338"
+                        },
+                        {
+                          "Start": 50,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P317"
+                        },
+                        {
+                          "Start": 56,
+                          "Length": 4,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P321"
+                        },
+                        {
+                          "Start": 62,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P332+P317"
+                        },
+                        {
+                          "Start": 77,
+                          "Length": 9,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/ghs/#P362+P364"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 20,
+                "Name": "ECHA C&L Notifications Summary",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Aggregated GHS information provided per 1203 reports by companies from 9 notifications to the ECHA C&L Inventory. Each notification may be associated with multiple companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 178,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Reported as not meeting GHS hazard criteria per 580 of 1203 reports by companies.",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 81,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "There are 7 notifications provided by 623 of 1203 reports by companies with hazard statement code(s).",
+                      "Markup": [
+                        {
+                          "Start": 0,
+                          "Length": 101,
+                          "Type": "Italics"
+                        }
+                      ]
+                    },
+                    {
+                      "String": "Information may vary between notifications depending on impurities, additives, and other factors. The percentage value in parenthesis indicates the notified classification ratio from companies that provide hazard codes. Only hazard codes with percentage values above 10% are shown. For more detailed information, please visit  ECHA C&L website.",
+                      "Markup": [
+                        {
+                          "Start": 327,
+                          "Length": 20,
+                          "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/133569"
+                        },
+                        {
+                          "Start": 0,
+                          "Length": 348,
+                          "Type": "Italics"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Substance Identification",
+        "Description": "Important identifiers assigned to this chemical compound",
+        "Section": [
+          {
+            "TOCHeading": "CAS",
+            "Description": "A CAS Registry Number (also called CAS RN or CAS Number) is a proprietary registry number assigned by the Chemical Abstracts Service (CAS) division of the American Chemical Society (ACS).  It is a numeric identifier that can contain up to 10 digits, divided by hyphens into three parts.",
+            "URL": "https://www.cas.org/support/documentation/chemical-substances/faqs",
+            "DisplayControls": {
+              "MoveToTop": true,
+              "ShowAtMost": 1
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 1,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 5,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 9,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 12,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758 11 4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 15,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 16,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 21,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 22,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 37,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 41,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "IUPAC Name",
+            "Description": "Chemical name of this compound, computed from its structure based on the International Union of Pure and Applied Chemistry (IUPAC) nomenclature standards.",
+            "URL": "https://iupac.org/what-we-do/nomenclature/",
+            "Information": [
+              {
+                "ReferenceNumber": 50,
+                "Reference": [
+                  "Computed by Lexichem TK 2.7.0 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "dipotassium;hydrogen phosphate"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Depositor-Supplied Synonyms",
+            "Description": "Chemical names provided by individual data contributors. Synonyms of Substances corresponding to a PubChem Compound record are combined. Some contributed names may be considered erroneous and filtered out. The link on each synonym shows which depositors provided that particular synonym for this structure.",
+            "DisplayControls": {
+              "ListType": "Columns",
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 50,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "7758-11-4"
+                    },
+                    {
+                      "String": "Dipotassium hydrogen phosphate"
+                    },
+                    {
+                      "String": "DIPOTASSIUM PHOSPHATE"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic"
+                    },
+                    {
+                      "String": "Dipotassium hydrogenphosphate"
+                    },
+                    {
+                      "String": "Dibasic potassium phosphate"
+                    },
+                    {
+                      "String": "Potassium phosphate, dibasic"
+                    },
+                    {
+                      "String": "Phosphoric acid, dipotassium salt"
+                    },
+                    {
+                      "String": "Potassium dibasic phosphate"
+                    },
+                    {
+                      "String": "Dipotassium monophosphate"
+                    },
+                    {
+                      "String": "Potassium monophosphate"
+                    },
+                    {
+                      "String": "Dipotassium orthophosphate"
+                    },
+                    {
+                      "String": "Dipotassium monohydrogen phosphate"
+                    },
+                    {
+                      "String": "Hydrogen dipotassium phosphate"
+                    },
+                    {
+                      "String": "Potassium phosphate (dibasic)"
+                    },
+                    {
+                      "String": "di-potassium hydrogen phosphate"
+                    },
+                    {
+                      "String": "Dipotassium hydrogenorthophosphate"
+                    },
+                    {
+                      "String": "Dipotassium acid phosphate"
+                    },
+                    {
+                      "String": "Dipotassium hydrogen orthophosphate"
+                    },
+                    {
+                      "String": "Kali phosphoricum"
+                    },
+                    {
+                      "String": "Secondary potassium phosphate"
+                    },
+                    {
+                      "String": "Phosphoric acid, potassium salt (1:2)"
+                    },
+                    {
+                      "String": "CI71S98N1Z"
+                    },
+                    {
+                      "String": "INS NO.340(II)"
+                    },
+                    {
+                      "String": "INS-340(II)"
+                    },
+                    {
+                      "String": "Dipotassium hydrogen monophosphate"
+                    },
+                    {
+                      "String": "E-340(II)"
+                    },
+                    {
+                      "String": "Potassium phosphate,dibasic"
+                    },
+                    {
+                      "String": "DTXSID8035506"
+                    },
+                    {
+                      "String": "KALI PHOSPHORICUM [HPUS]"
+                    },
+                    {
+                      "String": "CHEBI:131527"
+                    },
+                    {
+                      "String": "potassium dibasic phosphate trihydrate"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE (K2HPO4)"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [II]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [MI]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [FCC]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [JAN]"
+                    },
+                    {
+                      "String": "DIPOTASSIUM PHOSPHATE [EP IMPURITY]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [HSDB]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE,DIBASIC [VANDF]"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE [USP-RS]"
+                    },
+                    {
+                      "String": "DIPOTASSIUM PHOSPHATE [EP MONOGRAPH]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE DIBASIC [WHO-DD]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE DIBASIC ANHYDRATE"
+                    },
+                    {
+                      "String": "DIPOTASSIUM HYDROGEN PHOSPHATE (K2HPO4)"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE [USP IMPURITY]"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE [USP MONOGRAPH]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [ORANGE BOOK]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC [USP IMPURITY]"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATES COMPONENT DIBASIC POTASSIUM PHOSPHATE"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC (II)"
+                    },
+                    {
+                      "String": "DIPOTASSIUM PHOSPHATE (EP IMPURITY)"
+                    },
+                    {
+                      "String": "DIPOTASSIUM PHOSPHATE (EP MONOGRAPH)"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE (USP-RS)"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE (USP IMPURITY)"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE (USP MONOGRAPH)"
+                    },
+                    {
+                      "String": "POTASSIUM PHOSPHATE, DIBASIC (USP IMPURITY)"
+                    },
+                    {
+                      "String": "DipotassiumOphosphate"
+                    },
+                    {
+                      "String": "Kali Phos 6X"
+                    },
+                    {
+                      "String": "TONICPET 6"
+                    },
+                    {
+                      "String": "DIKALIUM PHOSPHATE"
+                    },
+                    {
+                      "String": "RefChem:867979"
+                    },
+                    {
+                      "String": "KALI PHOSPHORICUM 6X"
+                    },
+                    {
+                      "String": "Kali Phosphoricum Kit Refill"
+                    },
+                    {
+                      "String": "Potassium phosphate, (dibasic)"
+                    },
+                    {
+                      "String": "DTXCID6015506"
+                    },
+                    {
+                      "String": "DIPOTASSIUM PHOSPHATE [INCI]"
+                    },
+                    {
+                      "String": "POTASSIUM ORTHOPHOSPHATE, MONO-H"
+                    },
+                    {
+                      "String": "DIBASIC POTASSIUM PHOSPHATE COMPONENT OF POTASSIUM PHOSPHATES"
+                    },
+                    {
+                      "String": "231-834-5"
+                    },
+                    {
+                      "String": "Dipotassium monophosphateSecondary potassium phosphateDipotassium orthophosphateDibasic potassium phosphate"
+                    },
+                    {
+                      "String": "Potassium Hydrogen Phosphate"
+                    },
+                    {
+                      "String": "Potassium monohydrogen phosphate"
+                    },
+                    {
+                      "String": "K2HPO4"
+                    },
+                    {
+                      "String": "dipotassium;hydrogen phosphate"
+                    },
+                    {
+                      "String": "MFCD00011383"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic anhydrous"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, anhydrous"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, ACS reagent"
+                    },
+                    {
+                      "String": "Isolyte"
+                    },
+                    {
+                      "String": "sec.-Potassium phosphate"
+                    },
+                    {
+                      "String": "Dipotassium-O-phosphate"
+                    },
+                    {
+                      "String": "HK2O4P"
+                    },
+                    {
+                      "String": "CCRIS 6544"
+                    },
+                    {
+                      "String": "HSDB 935"
+                    },
+                    {
+                      "String": "EINECS 231-834-5"
+                    },
+                    {
+                      "String": "Mediject P (TN)"
+                    },
+                    {
+                      "String": "di potassium phosphate"
+                    },
+                    {
+                      "String": "potassiumdibasicphosphate"
+                    },
+                    {
+                      "String": "PotassiumHydrogenPhosphate"
+                    },
+                    {
+                      "String": "potassium hydrogenphosphate"
+                    },
+                    {
+                      "String": "SCHEMBL3947"
+                    },
+                    {
+                      "String": "dipotasium hydrogen phosphate"
+                    },
+                    {
+                      "String": "UNII-CI71S98N1Z"
+                    },
+                    {
+                      "String": "potassium monohydrogenphosphate"
+                    },
+                    {
+                      "String": "potassium hydrogen monophosphate"
+                    },
+                    {
+                      "String": "orb1909123"
+                    },
+                    {
+                      "String": "CHEMBL1200459"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic anhdyrous"
+                    },
+                    {
+                      "String": "dipotassium monohydrogen orthophosphate"
+                    },
+                    {
+                      "String": "AKOS015915872"
+                    },
+                    {
+                      "String": "AKOS016371887"
+                    },
+                    {
+                      "String": "DB09414"
+                    },
+                    {
+                      "String": "FP29767"
+                    },
+                    {
+                      "String": "FP45683"
+                    },
+                    {
+                      "String": "Potassium hydrogen phosphate, anhydrous"
+                    },
+                    {
+                      "String": "Potassium Phosphate, Dibasic, Anhydrous"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, USP reagent"
+                    },
+                    {
+                      "String": "Potassium phosphate, dibasic (JAN/USP)"
+                    },
+                    {
+                      "String": "Potassium phosphate, dibasic [USP:JAN]"
+                    },
+                    {
+                      "String": "7558-11-4"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, LR, >=98%"
+                    },
+                    {
+                      "String": "SY010082"
+                    },
+                    {
+                      "String": "DB-230259"
+                    },
+                    {
+                      "String": "NS00081371"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, Biochemical grade"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, puriss., >=99%"
+                    },
+                    {
+                      "String": "D02403"
+                    },
+                    {
+                      "String": "EC 231-834-5"
+                    },
+                    {
+                      "String": "F094672"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, ACS reagent, >=98%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, USP, 98.0-100.5%"
+                    },
+                    {
+                      "String": "Q403721"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, AR, anhydrous, >=99%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, reagent grade, >=98.0%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, 99.95% trace metals basis"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, SAJ first grade, >=98.0%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, Trace metals grade 99.95%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, JIS special grade, >=99.0%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, Vetec(TM) reagent grade, 98%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic , anhydrous - for HPLC, >99.0%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, meets USP testing specifications"
+                    },
+                    {
+                      "String": "Dibasic potassium phosphate, United States Pharmacopeia (USP) Reference Standard"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, anhydrous, free-flowing, Redi-Dri(TM), ACS reagent, >=98%"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, puriss. p.a., ACS reagent, anhydrous, >=99.0% (T)"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, anhydrous, for luminescence, for molecular biology, BioUltra, >=99.0% (T)"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, USP, Fine granular, Low heavy metals (As: <= 1 ppm, Cd: <= 1 ppm, Pb: <= 1 ppm & Hg: <= 0.1 ppm)"
+                    },
+                    {
+                      "String": "Potassium phosphate dibasic, USP, Powder, Low heavy metals (As: <= 1 ppm, Cd: <= 1 ppm, Pb: <= 1 ppm & Hg: <= 0.1 ppm)"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Formula",
+            "Description": "A chemical formula is a way of expressing information about the proportions of atoms that constitute a particular chemical compound, using a single line of chemical element symbols and numbers. PubChem uses the Hill system, whereby the number of carbon atoms in a molecule is indicated first, the number of hydrogen atoms second, and then the number of all other chemical elements in alphabetical order. When the formula contains no carbon, all the elements, including hydrogen, are listed alphabetically. Sources other than PubChem may include a variant of the formula that is more structural or natural to chemists, for example, H2SO4 for sulfuric acid, rather than the Hill version H2O4S.",
+            "URL": "https://pubs.acs.org/doi/abs/10.1021/ja02046a005",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "K2HPO4"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 50,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "HK2O4P"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Molecular Weight",
+            "Description": "Molecular weight or molecular mass refers to the mass of a molecule. It is calculated as the sum of the mass of each constituent atom multiplied by the number of atoms of that element in the molecular formula.  The molecular weight is also called the relative molar mass, because molecular weights are reported in daltons, which is defined relative to the mass of the isotope 12C (carbon 12).",
+            "URL": "https://www.degruyter.com/document/doi/10.1515/pac-2017-1002/html?lang=en",
+            "DisplayControls": {
+              "HideThisSection": true,
+              "MoveToTop": true
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 50,
+                "Reference": [
+                  "Computed by PubChem 2.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "174.176"
+                    }
+                  ],
+                  "Unit": "g/mol"
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChI",
+            "Description": "The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard.",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 50,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "InChI=1S/2K.H3O4P/c;;1-5(2,3)4/h;;(H3,1,2,3,4)/q2*+1;/p-2"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "InChIKey",
+            "Description": "An InChIKey is a 27-character hash code derived from an InChI.  The International Chemical Identifier (InChI) is a computed, non-proprietary identifier for a chemical structure.  The InChI is an International Union of Pure and Applied Chemistry (IUPAC) standard. ",
+            "URL": "https://iupac.org/who-we-are/divisions/division-details/inchi/",
+            "Information": [
+              {
+                "ReferenceNumber": 50,
+                "Reference": [
+                  "Computed by InChI 1.07.2 (PubChem release 2025.04.14)"
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "ZPWVASYFFYYZEW-UHFFFAOYSA-L"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Physical Description",
+            "Description": "The appearance or features of this compound, including color, odor, state, taste and more in general.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 14,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Pellets or Large Crystals; Liquid, Other Solid; Dry Powder; Liquid"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 19,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colourless or white granular powder, crystals or masses; deliquescent substance, hygroscopic"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 26,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White partially hygroscopic solid; [Merck Index] Colorless or white odorless solid; Hygroscopic; [CHEMINFO] White odorless granules; [MSDSonline]"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Chemical Classes",
+            "Description": "Chemical classes are groupings that relate chemicals by similar features. Chemicals can be classified by their structure (e.g., hydrocarbons), uses (e.g., pesticides), physical properties, radiological properties, or other factors.",
+            "DisplayControls": {
+              "ShowAtMost": 4
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 26,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Metals -> Phosphates, Metallic Salts"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Chemical and Physical Properties",
+        "Description": "Various chemical and physical properties that are experimentally determined for this compound.  See also the Safety and Hazard Properties section (if available), which has additional properties pertinent to chemical safety and hazards.",
+        "Section": [
+          {
+            "TOCHeading": "Melting Point",
+            "Description": "This section provides the melting point and/or freezing point. The melting point is the temperature at which a substance changes state from solid to liquid at atmospheric pressure. When considered as the temperature of the reverse change (from liquid to solid), it is referred to as the freezing point.",
+            "URL": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_Lab_Techniques_(Nichols)/06%3A_Miscellaneous_Techniques/6.01%3A_Melting_Point",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-78"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-78",
+                    "Matched": {
+                      "PCLID": 906294706,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics.  79th ed. Boca Raton, FL: CRC Press Inc., 1998-1999., p. 4-78"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Decomp"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Solubility",
+            "Description": "The solubility of a substance is the amount of that substance that will dissolve in a given amount of solvent. The default solvent is water, if not indicated.",
+            "URL": "https://chem.libretexts.org/Courses/Purdue/Purdue%3A_Chem_26505%3A_Organic_Chemistry_I_(Lipton)/Chapter_4._Intermolecular_Forces_and_Physical_Properties/4.4_Solubility",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 19,
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Freely soluble in water. Insoluble in ethanol",
+                      "Markup": [
+                        {
+                          "Start": 18,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 38,
+                          "Length": 7,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/ethanol",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-702"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1317"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1317",
+                    "Matched": {
+                      "PCLID": 906296900,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1317"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Very sol in water; 100 g dissolves rapidly & completely in 67 g cold water",
+                      "Markup": [
+                        {
+                          "Start": 12,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        },
+                        {
+                          "Start": 69,
+                          "Length": 5,
+                          "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/water",
+                          "Type": "PubChem Internal Link",
+                          "Extra": "CID-962"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1317"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1317",
+                    "Matched": {
+                      "PCLID": 906296900,
+                      "Citation": "Budavari, S. (ed.). The Merck Index - An Encyclopedia of Chemicals, Drugs, and Biologicals. Whitehouse Station, NJ: Merck and Co., Inc., 1996., p. 1317"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Slightly sol in alcohol"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Color/Form",
+            "Description": "Color is the aspect of any object that may be described in terms of hue, lightness, and saturation.",
+            "URL": "https://www.britannica.com/science/color",
+            "Information": [
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 4-78"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 4-78",
+                    "Matched": {
+                      "PCLID": 906276724,
+                      "Citation": "Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 76th ed. Boca Raton, FL: CRC Press Inc., 1995-1996., p. 4-78"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "White crystals"
+                    }
+                  ]
+                }
+              },
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 744"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 744",
+                    "Matched": {
+                      "PCLID": 900123487,
+                      "Citation": "Osol, A. and J.E. Hoover, et al. (eds.). Remington's Pharmaceutical Sciences. 15th ed. Easton, Pennsylvania: Mack Publishing Co., 1975., p. 744"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Colorless or white granules or powder"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Toxicity and Health",
+        "Description": "This section provides the toxicity of this compound in humans and other animals (mostly lab animals such as rats, mice, guinea pigs, and rabbits).",
+        "Section": [
+          {
+            "TOCHeading": "Toxicity",
+            "Description": "Toxicity information related to this compound, including routes of exposure, related symptoms, acute and chronic effects, and numerical measures of toxicity.",
+            "Section": [
+              {
+                "TOCHeading": "Toxicity Summary",
+                "Description": "Summary of the toxicity of this compound, provided by the Hazardous Substances Data Bank (HSDB) and other sources.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "Cosmetic Ingredient Review Conclusion",
+                    "Reference": [
+                      "International Journal of Toxicology 40(S1):34-85",
+                      "2021"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Journal of Toxicology 40(S1):34-85",
+                        "Matched": {
+                          "PCLID": 906421644,
+                          "Citation": "International Journal of Toxicology 40(S1):34-85"
+                        }
+                      },
+                      {
+                        "Citation": "2021",
+                        "Matched": {
+                          "PCLID": 906421705,
+                          "Citation": "2021"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "The CIR Expert Panel concluded that the following 31 ingredients are safe in the present practices of use and concentration in cosmetics as described in this safety assessment, when formulated to be non-irritating...Dipotassium Phosphate...",
+                          "Markup": [
+                            {
+                              "Start": 216,
+                              "Length": 21,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dipotassium%20Phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24450"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 7,
+                    "Name": "Cosmetic Ingredient Review Finding(s)",
+                    "Reference": [
+                      "International Journal of Toxicology 40(S1):34-85",
+                      "2021"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "International Journal of Toxicology 40(S1):34-85",
+                        "Matched": {
+                          "PCLID": 906421644,
+                          "Citation": "International Journal of Toxicology 40(S1):34-85"
+                        }
+                      },
+                      {
+                        "Citation": "2021",
+                        "Matched": {
+                          "PCLID": 906421705,
+                          "Citation": "2021"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Safe for use in cosmetics, with qualifications"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Absorption, Distribution and Excretion",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Name": "Absorption",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potassium salts are well absorbed from gastro intestinal tract.  Net phosphorus absorption may occur in the small intestine in some species but is primarily a function of the colon in horses.",
+                          "Markup": [
+                            {
+                              "Start": 69,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 9,
+                    "Name": "Route of Elimination",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Potassium is excreted primarily by kidney.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 9,
+                    "Name": "Volume of Distribution",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Distribution is largely intracellular, but it is the intravascular concentration that is primarily  responsible for toxicity."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 9,
+                    "Name": "Clearance",
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Phosphates are rapidly cleared by dialysis."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "McEvoy, G.K. (ed.). AHFS Drug Information 90. Bethesda, MD: American Society of Hospital Pharmacists, Inc., 1990 (Plus Supplements 1990)., p. 1425"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "McEvoy, G.K. (ed.). AHFS Drug Information 90. Bethesda, MD: American Society of Hospital Pharmacists, Inc., 1990 (Plus Supplements 1990)., p. 1425",
+                        "Matched": {
+                          "PCLID": 900013966,
+                          "Citation": "McEvoy, G.K. (ed.). AHFS Drug Information 90. Bethesda, MD: American Society of Hospital Pharmacists, Inc., 1990 (Plus Supplements 1990)., p. 1425"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "POTASSIUM SALTS ARE WELL ABSORBED FROM THE GASTROINTESTINAL TRACT. ... POTASSIUM IS EXCRETED PRIMARILY BY THE KIDNEY. /POTASSIUM SALTS/",
+                          "Markup": [
+                            {
+                              "Start": 71,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Booth, N.H., L.E. McDonald (eds.). Veterinary Pharmacology and Therapeutics. 5th ed. Ames, Iowa: Iowa State University Press, 1982., p. 640"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Booth, N.H., L.E. McDonald (eds.). Veterinary Pharmacology and Therapeutics. 5th ed. Ames, Iowa: Iowa State University Press, 1982., p. 640",
+                        "Matched": {
+                          "PCLID": 906273802,
+                          "Citation": "Booth, N.H., L.E. McDonald (eds.). Veterinary Pharmacology and Therapeutics. 5th ed. Ames, Iowa: Iowa State University Press, 1982., p. 640"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Net phosphorus absorption may occur in the small intestine in some species but is primarily a function of the colon in horses. /SRP: Phosphates/",
+                          "Markup": [
+                            {
+                              "Start": 4,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Hardman, J.G., L.E. Limbird, P.B. Molinoff, R.W. Ruddon, A.G. Goodman (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 9th ed. New York, NY: McGraw-Hill, 1996., p. 1524"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Hardman, J.G., L.E. Limbird, P.B. Molinoff, R.W. Ruddon, A.G. Goodman (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 9th ed. New York, NY: McGraw-Hill, 1996., p. 1524",
+                        "Matched": {
+                          "PCLID": 900134970,
+                          "Citation": "Hardman, J.G., L.E. Limbird, P.B. Molinoff, R.W. Ruddon, A.G. Goodman (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 9th ed. New York, NY: McGraw-Hill, 1996., p. 1524"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "/Ortho/ phosphate is absorbed from, and to a limited extent secreted into, the gastrointestinal tract. Transport of phosphate from the gut lumen is an active, energy-dependent process that is modified by several factors. ... Vitamin D stimulates phosphate absorption, an effect reported to precede its action on calcium ion transport. In adults, about two thirds of the ingested phosphate is absorbed, and that which is absorbed is almost entirely excreted into the urine. In growing children, phosphate balance is positive. Concentrations of phosphate in plasma are higher in children than in adults. This \"hyperphosphatemia\" decreases the affinity of hemoglobin for oxygen and is hypothesized to explain the physiological \"anemia\" of childhood. /Phosphates/",
+                          "Markup": [
+                            {
+                              "Start": 8,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 116,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 246,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 312,
+                              "Length": 11,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/calcium%20ion",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-271"
+                            },
+                            {
+                              "Start": 379,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 494,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 543,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 668,
+                              "Length": 6,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Oxygen",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Oxygen"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Metabolism/Metabolites",
+                "Description": "Metabolites are substances made or used when the body breaks down food, drugs or chemicals, or its own tissue (for example, fat or muscle tissue). This process is called metabolism and makes energy and the materials needed for growth, reproduction, and maintaining health. Metabolism also helps get rid of toxic substances.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Phosphate is a major intracellular anion which participates in providing energy for metabolism of substances and contributes to important metabolic and enzymatic reactions in almost all organs and tissues.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Biological Half-Life",
+                "Description": "The time required for a biological system (e.g., human body) to eliminate, by natural processes, half of the amount of a chemical (e.g., alcohol, medication, or radioactive material) that has entered it.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "In healthy children with phosphate overdose, half-life  was 4.8 to 10.6 hours, and was prolonged to 17 hours in  a child with renal insufficiency.",
+                          "Markup": [
+                            {
+                              "Start": 25,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Mechanism of Action",
+                "Description": "In medicine, the term \"mechanism of action\" (also called MOA) is used to describe how a drug or other substance produces an effect in the body. For example, a drug's mechanism of action could be how it affects a specific target in a cell, such as an enzyme, or a cell function, such as cell growth. Knowing the mechanism of action of a drug may help provide information about the safety of the drug and how it affects the body. It may also help identify the right dose of a drug and which patients are most likely to respond to treatment.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 9,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Once phosphate gains access to the body fluids and tissues, it exerts little pharmacological effect. If the ion is introduced into the intestine, the absorbed phosphate is rapidly excreted. If large amounts are given by this route, much of it may escape absorption. Because this property leads to a cathartic action, phosphate salts are employed as mild laxatives.",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 159,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Hardman, J.G., L.E. Limbird, P.B. Molinoff, R.W. Ruddon, A.G. Goodman (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 9th ed. New York, NY: McGraw-Hill, 1996., p. 1525"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Hardman, J.G., L.E. Limbird, P.B. Molinoff, R.W. Ruddon, A.G. Goodman (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 9th ed. New York, NY: McGraw-Hill, 1996., p. 1525",
+                        "Matched": {
+                          "PCLID": 900123098,
+                          "Citation": "Hardman, J.G., L.E. Limbird, P.B. Molinoff, R.W. Ruddon, A.G. Goodman (eds.). Goodman and Gilman's The Pharmacological Basis of Therapeutics. 9th ed. New York, NY: McGraw-Hill, 1996., p. 1525"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Once phosphate gains access to the body fluids and tissues, it exerts little pharmacological effect. If the ion is introduced into the intestine, the absorbed phosphate is rapidly excreted. If large amounts are given by this route, much of it may escape absorption. Because this property leads to a cathartic action, phosphate salts are employed as mild laxatives. Inorganic phosphate poisoning following ingestion of laxatives that contain phosphate salts has been reported in adults and children. Ingestion of large amounts of sodium dihydrogen phosphate lowers urinary pH. If excessive phosphate salts are introduced intravenously or orally, they may prove toxic by reducing the concentration of Ca 2+ in the circulation and from the precipitation of calcium phosphate in soft tissues. /Phosphates/",
+                          "Markup": [
+                            {
+                              "Start": 5,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 159,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-1061"
+                            },
+                            {
+                              "Start": 529,
+                              "Length": 27,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/sodium%20dihydrogen%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24204"
+                            },
+                            {
+                              "Start": 754,
+                              "Length": 17,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/calcium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21226083"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "TOCHeading": "Health",
+            "Description": "Information on health effects and symptoms of exposure to this chemical, including exposure routes and symptoms, carcinogenicity, target organs, explosion and fire hazards and others.",
+            "Section": [
+              {
+                "TOCHeading": "Hazards Summary",
+                "Description": "This section provides an overview of the key hazards information of this compound.",
+                "DisplayControls": {
+                  "ShowAtMost": 2
+                },
+                "Information": [
+                  {
+                    "ReferenceNumber": 26,
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Emergency treatment: Potassium; Potassium salts are usually not toxic after ingestion in patients with normal renal function. [HSDB] A probable irritant; [CHEMINFO] May cause irritation; [MSDSonline]",
+                          "Markup": [
+                            {
+                              "Start": 21,
+                              "Length": 9,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Potassium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Potassium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Exposure and Personal Protection",
+        "Description": "This section provides information on exposure limits of this chemical and personal protection information.",
+        "Section": [
+          {
+            "TOCHeading": "Exposure",
+            "Description": "Exposure from EPA Chemical Information and Testing Branch",
+            "Section": [
+              {
+                "TOCHeading": "Acceptable Daily Intakes",
+                "Description": "An estimate of the amount of a chemical in food or drinking water that can be consumed daily over a lifetime without presenting an appreciable risk to health. It is usually expressed as milligrams of the substance per kilogram of body weight per day and applies to chemicals such as food additives, pesticide residues and veterinary drugs.",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641",
+                        "Matched": {
+                          "PCLID": 900011586,
+                          "Citation": "Furia, T.E. (ed.). CRC Handbook of Food Additives. 2nd ed. Cleveland: The Chemical Rubber Co., 1972., p. 641"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "FAO/WHO EXPERT COMMITTEE ON FOOD ADDITIVES...RECOMMENDED.../LEVELS/ FOR TOTAL DIETARY PHOSPHORUS...UNCONDITIONAL ACCEPTANCE LEVEL /OF LESS THAN 30 MG/KG BODY WT/ IS CONSIDERED SAFE IN ANY TYPE OF DIET...CONDITIONAL ACCEPTANCE LEVEL /OF 30-70 MG/KG BODY WT/ IS ACCEPTABLE ONLY WHEN DIETARY CALCIUM LEVEL IS HIGH /PHOSPHATES/",
+                          "Markup": [
+                            {
+                              "Start": 86,
+                              "Length": 10,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Phosphorus",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Phosphorus"
+                            },
+                            {
+                              "Start": 289,
+                              "Length": 7,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/element/Calcium",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "Element-Calcium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "TOCHeading": "Allowable Tolerances",
+                "Description": "The tolerances of a chemical (usually a pesticide) are the maximum amount of chemical residues allowed to remain in or on fruits, vegetables, grains, and other foods, as part of the process of regulating pesticides. In some countries tolerances are called maximum residue limits (MRLs).",
+                "URL": "https://www.epa.gov/pesticide-tolerances",
+                "Information": [
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.1001(d) (7/1/97)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.1001(d) (7/1/97)",
+                        "Matched": {
+                          "PCLID": 900084474,
+                          "Citation": "40 CFR 180.1001(d) (7/1/97)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Dipotassium hydrogen phosphate is exempted from the requirement of a tolerance when used as a buffering agent in accordance with good agricultural practice as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops only.",
+                          "Markup": [
+                            {
+                              "Start": 0,
+                              "Length": 30,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Dipotassium%20hydrogen%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-24450"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "ReferenceNumber": 27,
+                    "Description": "PEER REVIEWED",
+                    "Reference": [
+                      "40 CFR 180.1001(c) (7/1/97)"
+                    ],
+                    "ExtendedReference": [
+                      {
+                        "Citation": "40 CFR 180.1001(c) (7/1/97)",
+                        "Matched": {
+                          "PCLID": 900086219,
+                          "Citation": "40 CFR 180.1001(c) (7/1/97)"
+                        }
+                      }
+                    ],
+                    "Value": {
+                      "StringWithMarkup": [
+                        {
+                          "String": "Residues of potassium phosphate are exempted from the requirement of a tolerance when used as a buffer in accordance with good agricultural practices as inert (or occasionally active) ingredients in pesticide formulations applied to growing crops or to raw agricultural commodities after harvest. /Potassium phosphate/",
+                          "Markup": [
+                            {
+                              "Start": 12,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/potassium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21226062"
+                            },
+                            {
+                              "Start": 298,
+                              "Length": 19,
+                              "URL": "https://pubchem.ncbi.nlm.nih.gov/compound/Potassium%20phosphate",
+                              "Type": "PubChem Internal Link",
+                              "Extra": "CID-21226062"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Storage and Handling",
+        "Description": "General guidelines for the storage and handling of chemicals along with recommendations for the use of personal protective equipment and clothing. For guidance on the selection and use of ventilators, consult OSHA regulation 29 CFR Part 1910.134.",
+        "URL": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.134",
+        "Section": [
+          {
+            "TOCHeading": "Storage Conditions",
+            "Description": "Conditions for safe storage of this compound, including any incompatible chemicals and specific storage requirements (e.g., ventilation requirements).",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Reference": [
+                  "Trissel, L.A. Handbook on Injectable Drugs. 9th ed. Bethesda, MD. American Society of Health-System Pharmacists' Product Development. 1996., p. 917"
+                ],
+                "ExtendedReference": [
+                  {
+                    "Citation": "Trissel, L.A. Handbook on Injectable Drugs. 9th ed. Bethesda, MD. American Society of Health-System Pharmacists' Product Development. 1996., p. 917",
+                    "Matched": {
+                      "PCLID": 900061205,
+                      "Citation": "Trissel, L.A. Handbook on Injectable Drugs. 9th ed. Bethesda, MD. American Society of Health-System Pharmacists' Product Development. 1996., p. 917"
+                    }
+                  }
+                ],
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "Potassium phosphates injection should be stored at controlled room temperature. /Potassium phosphates/"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "TOCHeading": "Cleanup and Disposal",
+        "Description": "Information on the cleanup and disposal of hazardous wastes containing this chemical.",
+        "Section": [
+          {
+            "TOCHeading": "Disposal Methods",
+            "Description": "Disposal methods or procedures for this chemical or hazardous waste containing it.",
+            "DisplayControls": {
+              "ShowAtMost": 2
+            },
+            "Information": [
+              {
+                "ReferenceNumber": 27,
+                "Description": "PEER REVIEWED",
+                "Value": {
+                  "StringWithMarkup": [
+                    {
+                      "String": "SRP: At the time of review, criteria for land treatment or burial (sanitary landfill) disposal practices are subject to significant revision. Prior to implementing land disposal of waste residue (including waste sludge), consult with environmental regulatory agencies for guidance on acceptable disposal practices."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Reference": [
+      {
+        "ReferenceNumber": 1,
+        "SourceName": "Australian Industrial Chemicals Introduction Scheme (AICIS)",
+        "SourceID": "as_11292",
+        "Name": "Phosphoric acid, dipotassium salt",
+        "Description": "The Australian Industrial Chemicals Introduction Scheme (AICIS) helps protect the environment by finding out the risks of industrial chemicals and recommending ways to promote their safer use. They regulate chemicals (including polymers) that are manufactured or imported into Australia for an industrial use, such as in inks, paints, adhesives, solvents, cosmetics and personal care products, cleaning products, as well as in manufacturing, construction and mining applications.",
+        "URL": "https://services.industrialchemicals.gov.au/search-assessments/",
+        "LicenseURL": "https://www.industrialchemicals.gov.au/copyright",
+        "ANID": 39356171
+      },
+      {
+        "ReferenceNumber": 5,
+        "SourceName": "ChemIDplus",
+        "SourceID": "0007758114",
+        "Name": "Potassium phosphate, dibasic [USP:JAN]",
+        "Description": "ChemIDplus is a free, web search system that provides access to the structure and nomenclature authority files used for the identification of chemical substances cited in National Library of Medicine (NLM) databases, including the TOXNET system.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/substance/?source=chemidplus&sourceid=0007758114",
+        "LicenseURL": "https://www.nlm.nih.gov/copyright.html",
+        "IsToxnet": true,
+        "ANID": 823526
+      },
+      {
+        "ReferenceNumber": 9,
+        "SourceName": "DrugBank",
+        "SourceID": "DB09414",
+        "Name": "Dipotassium phosphate",
+        "Description": "The DrugBank database is a unique bioinformatics and cheminformatics resource that combines detailed drug (i.e. chemical, pharmacological and pharmaceutical) data with comprehensive drug target (i.e. sequence, structure, and pathway) information.",
+        "URL": "https://www.drugbank.ca/drugs/DB09414",
+        "LicenseNote": "Creative Common's Attribution-NonCommercial 4.0 International License (http://creativecommons.org/licenses/by-nc/4.0/legalcode)",
+        "LicenseURL": "https://www.drugbank.ca/legal/terms_of_use",
+        "ANID": 3626374
+      },
+      {
+        "ReferenceNumber": 12,
+        "SourceName": "EFSA OpenFoodTox",
+        "SourceID": "e5761210879243c2abf07799e48644f1",
+        "Name": "Dipotassium phosphate",
+        "Description": "The European Food Safety Authority EFSA's chemical hazards database, the OpenFoodTox, is a compilation of chemical and toxicological information on chemicals assessed by EFSA since its creation and included in already published scientific opinions.",
+        "LicenseURL": "https://www.efsa.europa.eu/en/legalnotice",
+        "ANID": 49734642
+      },
+      {
+        "ReferenceNumber": 14,
+        "SourceName": "EPA Chemical Data Reporting (CDR)",
+        "SourceID": "19de1177071ac76d100e4665bc009ed9",
+        "Name": "Phosphoric acid, potassium salt (1:2)",
+        "Description": "The non-confidential content of the EPA Chemical Data Reporting.",
+        "URL": "https://www.epa.gov/chemical-data-reporting",
+        "LicenseNote": "The U.S. Government retains a nonexclusive, royalty-free license to publish or reproduce these documents, or allow others to do so, for U.S. Government purposes. These documents may be freely distributed and used for non-commercial, scientific and educational purposes.",
+        "LicenseURL": "https://www.epa.gov/web-policies-and-procedures/epa-disclaimers#copyright",
+        "ANID": 38381700
+      },
+      {
+        "ReferenceNumber": 15,
+        "SourceName": "EPA Chemicals under the TSCA",
+        "SourceID": "aeac604fecb44feda29521a11ed6e815",
+        "Name": "Phosphoric acid, potassium salt (1:2)",
+        "Description": "EPA Chemicals under the Toxic Substances Control Act (TSCA) collection contains information on chemicals and their regulations under TSCA.",
+        "URL": "https://www.epa.gov/chemicals-under-tsca",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 38401925
+      },
+      {
+        "ReferenceNumber": 16,
+        "SourceName": "EPA DSSTox",
+        "SourceID": "DTXSID8035506",
+        "Name": "Dipotassium phosphate",
+        "Description": "DSSTox provides a high quality public chemistry resource for supporting improved predictive toxicology.",
+        "URL": "https://comptox.epa.gov/dashboard/DTXSID8035506",
+        "LicenseURL": "https://www.epa.gov/privacy/privacy-act-laws-policies-and-resources",
+        "ANID": 1156645
+      },
+      {
+        "ReferenceNumber": 21,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "231-834-5",
+        "Name": "Dipotassium hydrogenorthophosphate",
+        "Description": "The European Chemicals Agency (ECHA) is an agency of the European Union which is the driving force among regulatory authorities in implementing the EU's groundbreaking chemicals legislation for the benefit of human health and the environment as well as for innovation and competitiveness.",
+        "URL": "https://chem.echa.europa.eu/100.028.940",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1981377
+      },
+      {
+        "ReferenceNumber": 22,
+        "SourceName": "FDA Global Substance Registration System (GSRS)",
+        "SourceID": "CI71S98N1Z",
+        "Name": "DIBASIC POTASSIUM PHOSPHATE",
+        "Description": "The FDA Global Substance Registration System (GSRS) enables the efficient and accurate exchange of information on what substances are in regulated products. Instead of relying on names, which vary across regulatory domains, countries, and regions, the GSRS knowledge base makes it possible for substances to be defined by standardized, scientific descriptions.",
+        "URL": "https://gsrs.ncats.nih.gov/ginas/app/beta/substances/CI71S98N1Z",
+        "LicenseNote": "Unless otherwise noted, the contents of the FDA website (www.fda.gov), both text and graphics, are not copyrighted. They are in the public domain and may be republished, reprinted and otherwise used freely by anyone without the need to obtain permission from FDA. Credit to the U.S. Food and Drug Administration as the source is appreciated but not required.",
+        "LicenseURL": "https://www.fda.gov/about-fda/about-website/website-policies#linking",
+        "ANID": 5837417
+      },
+      {
+        "ReferenceNumber": 27,
+        "SourceName": "Hazardous Substances Data Bank (HSDB)",
+        "SourceID": "935",
+        "Name": "DIPOTASSIUM PHOSPHATE",
+        "Description": "The Hazardous Substances Data Bank (HSDB) is a toxicology database that focuses on the toxicology of potentially hazardous chemicals. It provides information on human exposure, industrial hygiene, emergency handling procedures, environmental fate, regulatory requirements, nanomaterials, and related areas. The information in HSDB has been assessed by a Scientific Review Panel.",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/935",
+        "LicenseURL": "https://www.nlm.nih.gov/web_policies.html",
+        "IsToxnet": true,
+        "ANID": 848
+      },
+      {
+        "ReferenceNumber": 37,
+        "SourceName": "New Zealand Environmental Protection Authority (EPA)",
+        "SourceID": "9bf8b82c36f1a2915317cb2139d01f3f",
+        "Name": "Dipotassium phosphate",
+        "Description": "The New Zealand Environmental Protection Authority is a government agency for regulating activities that affect Aotearoa New Zealand's environment.",
+        "URL": "https://www.epa.govt.nz/industry-areas/hazardous-substances/guidance-for-importers-and-manufacturers/hazardous-substances-databases/",
+        "LicenseNote": "This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International licence.",
+        "LicenseURL": "https://www.epa.govt.nz/about-this-site/general-copyright-statement/",
+        "ANID": 37138185
+      },
+      {
+        "ReferenceNumber": 41,
+        "SourceName": "Risk Assessment Information System (RAIS)",
+        "SourceID": "rais_Dipotassium phosphate",
+        "Name": "Dipotassium phosphate",
+        "Description": "The Risk Assessment Information System (RAIS) disseminates risk tools and supplies information for risk assessment activities. Taking advantage of searchable and executable databases, menu-driven queries, and data downloads using the latest Web technologies, the RAIS offers essential tools and information for the risk assessment process.",
+        "URL": "https://rais.ornl.gov/cgi-bin/tools/TOX_search",
+        "LicenseNote": "This work has been sponsored by the U.S. Department of Energy (DOE), Office of Environmental Management, Oak Ridge Operations (ORO) Office through a joint collaboration between United Cleanup Oak Ridge LLC (UCOR), Oak Ridge National Laboratory (ORNL), and The University of Tennessee, Ecology and Evolutionary Biology, The Institute for Environmental Modeling (TIEM). All rights reserved.",
+        "LicenseURL": "https://rais.ornl.gov/",
+        "ANID": 45400890
+      },
+      {
+        "ReferenceNumber": 7,
+        "SourceName": "Cosmetic Ingredient Review (CIR)",
+        "SourceID": "ca21cd81-9ab2-490e-9d70-0beab1650687",
+        "Name": "Dipotassium Phosphate",
+        "Description": "The Cosmetic Ingredient Review (CIR) studies individual chemical compounds as they are used in cosmetic products. CIR relies heavily on the International Nomenclature of Cosmetic Ingredients (INCI) when identifying the ingredients to be assessed. The Expert Panel for Cosmetic Ingredient Safety (Panel) assess the safety of ingredients for use in cosmetics. The function of an ingredient in cosmetics is noted. The Panel reviews the data relevant to the safety of an ingredient and concludes whether an ingredient is safe in cosmetics in the present practices of use and concentration described in a safety assessment.",
+        "URL": "https://cir-reports.cir-safety.org/cir-ingredient-status-report/?id=ca21cd81-9ab2-490e-9d70-0beab1650687",
+        "LicenseURL": "https://cir-safety.org/terms-use",
+        "ANID": 38998197
+      },
+      {
+        "ReferenceNumber": 19,
+        "SourceName": "EU Food Improvement Agents",
+        "SourceID": "E 340 (ii) DIPOTASSIUM PHOSPHATE",
+        "Name": "DIPOTASSIUM PHOSPHATE",
+        "Description": "Commission Regulation (EU) No 231/2012 of 9 March 2012 laying down specifications for food additives listed in Annexes II and III to Regulation (EC) No 1333/2008 of the European Parliament and of the Council Text with EEA relevance",
+        "URL": "https://eur-lex.europa.eu/eli/reg/2012/231/oj",
+        "ANID": 5177053
+      },
+      {
+        "ReferenceNumber": 26,
+        "SourceName": "Haz-Map, Information on Hazardous Chemicals and Occupational Diseases",
+        "SourceID": "hz5007",
+        "Name": "Potassium phosphate, dibasic",
+        "Description": "Haz-Map® is an occupational health database designed for health and safety professionals and for consumers seeking information about the adverse effects of workplace exposures to chemical and biological agents.",
+        "URL": "https://haz-map.com/Agents/5007",
+        "LicenseNote": "Copyright (c) 2022 Haz-Map(R). All rights reserved.\u000AUnless otherwise indicated, all materials from Haz-Map are copyrighted by Haz-Map(R). No part of these materials, either text or image may be used for any purpose other than for personal use. Therefore, reproduction, modification, storage in a retrieval system or retransmission, in any form or by any means, electronic, mechanical or otherwise, for reasons other than personal use, is strictly prohibited without prior written permission.",
+        "LicenseURL": "https://haz-map.com/About",
+        "ANID": 17279340
+      },
+      {
+        "ReferenceNumber": 20,
+        "SourceName": "European Chemicals Agency (ECHA)",
+        "SourceID": "133569",
+        "Name": "Dipotassium hydrogenorthophosphate (EC: 231-834-5)",
+        "Description": "The information provided here is aggregated from the \"Notified classification and labelling\" from ECHA's C&L Inventory. Read more: https://echa.europa.eu/information-on-chemicals/cl-inventory-database",
+        "URL": "https://echa.europa.eu/information-on-chemicals/cl-inventory-database/-/discli/details/133569",
+        "LicenseNote": "Use of the information, documents and data from the ECHA website is subject to the terms and conditions of this Legal Notice, and subject to other binding limitations provided for under applicable law, the information, documents and data made available on the ECHA website may be reproduced, distributed and/or used, totally or in part, for non-commercial purposes provided that ECHA is acknowledged as the source: \"Source: European Chemicals Agency, http://echa.europa.eu/\". Such acknowledgement must be included in each copy of the material. ECHA permits and encourages organisations and individuals to create links to the ECHA website under the following cumulative conditions: Links can only be made to webpages that provide a link to the Legal Notice page.",
+        "LicenseURL": "https://echa.europa.eu/web/guest/legal-notice",
+        "ANID": 1890315,
+        "SortOrder": 4203
+      },
+      {
+        "ReferenceNumber": 50,
+        "SourceName": "PubChem",
+        "SourceID": "PubChem",
+        "Description": "Data deposited in or computed by PubChem",
+        "URL": "https://pubchem.ncbi.nlm.nih.gov"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "cid": 14801,
+  "hazard_key": "MnO2",
+  "display_name": "Mangandioxid",
+  "captured_at": "2026-01-31T16:57:08.942347+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/14801",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/14801/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 79,
+      "file": "data/pubchem_payloads/raw/14801/linkout.json",
+      "sha256": "e3415c9878e5e679de58e8ab2bb1fb71caafab9582a964b7d9a04c176f2060ae"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14801/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 108009,
+      "file": "data/pubchem_payloads/raw/14801/lcss.json",
+      "sha256": "fce858784d1de98b22fcc5a64d5bd1f5ec7c42f4c0965c79036840296bbe2966"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/14801/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 73693,
+      "file": "data/pubchem_payloads/raw/14801/safety.json",
+      "sha256": "1d4e478ca0eefb269bb638ebcbb5ea6f2100ec3216ddb8f137dc2a957b379b99"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/14801.png"
+}

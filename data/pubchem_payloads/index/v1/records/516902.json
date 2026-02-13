@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "cid": 516902,
+  "captured_at": "2026-01-31T16:58:10.494000+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/516902",
+    "lcss_sha256": "04476f962df2953288ae93478a7b52de53efb7b2fc86ab99741434b721af5a46",
+    "linkout_sha256": "e1b958069c0cfc660beb442b3f3d38bbf5653e0ef8b53950bc6d076acee9f94d",
+    "meta_sha256": "8b6086678c7cab7f1279f38df69e7c90b0a4b61265ce13b5cd1a1e93f1741300"
+  },
+  "clp": {
+    "hazard_codes": [
+      "H271",
+      "H272",
+      "H301",
+      "H302",
+      "H332",
+      "H411"
+    ],
+    "hazard_statements_sv": {
+      "H271": "Kan orsaka brand eller explosion. Starkt oxiderande.",
+      "H272": "Kan intensifiera brand. Oxiderande.",
+      "H301": "Giftigt vid förtäring. 2 : 5",
+      "H302": "Skadligt vid förtäring.",
+      "H332": "Skadligt vid inandning.",
+      "H411": "Giftigt för vattenlevande organismer med långtidseffekter."
+    },
+    "precautionary_codes": [
+      "P210",
+      "P220",
+      "P261",
+      "P264",
+      "P270",
+      "P271",
+      "P273",
+      "P280",
+      "P283",
+      "P301+P316",
+      "P301+P317",
+      "P304+P340",
+      "P306+P360",
+      "P317",
+      "P321",
+      "P330",
+      "P370+P378",
+      "P371+P380+P375",
+      "P391",
+      "P405",
+      "P420",
+      "P501"
+    ],
+    "precautionary_statements_sv": {
+      "P210": "Får inte utsättas för värme, heta ytor, gnistor, öppna lågor och andra antändningskällor. Rökning förbjuden. [OBS. Se fotnot1]",
+      "P220": "Hålls åtskilt från kläder och andra brännbara material.",
+      "P261": "* Undvik inandas damm/rök/gaser/dimma/ångor/sprej.",
+      "P264": "* Tvätta … grundligt efter användning.",
+      "P270": "Ät inte, drick inte och rök inte när du använder produkten.",
+      "P271": "Används endast utomhus eller i väl ventilerade utrymmen.",
+      "P273": "Undvik utsläpp till miljön.",
+      "P280": "* Använd skyddshandskar/skyddskläder/ögonskydd/ansiktsskydd.",
+      "P283": "Använd brandsäkra eller flamhämmande kläder.",
+      "P301+P316": "VID FÖRTÄRING: Sök omedelbar läkarhjälp.",
+      "P301+P317": "VID FÖRTÄRING: Sök läkarhjälp.",
+      "P304+P340": "VID INANDNING: Flytta personen till frisk luft och se till att andningen underlättas.",
+      "P306+P360": "VID KONTAKT MED KLÄDERNA: Skölj genast nedstänkta kläder och hud med mycket vatten innan du tar av dig kläderna.",
+      "P317": "Sök läkarhjälp.",
+      "P321": "* Särskild behandling (se … på etiketten).",
+      "P330": "Skölj munnen.",
+      "P370+P378": "* Vid brand: Släck med … 4 : 6",
+      "P371+P380+P375": "Vid större brand och stora mängder: Utrym området. Bekämpa branden på avstånd på grund av explosionsrisken.",
+      "P391": "Samla upp spill.",
+      "P405": "Förvaras inlåst.",
+      "P420": "Förvaras separat.",
+      "P501": "* Innehållet/behållaren lämnas till…"
+    },
+    "signal_word": "danger",
+    "signal_word_sv": "Fara",
+    "pictograms": [
+      "GHS03",
+      "GHS06",
+      "GHS07",
+      "GHS09"
+    ]
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2009-title49-vol2/pdf/CFR-2009-title49-vol2-part171.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.govinfo.gov/content/pkg/CFR-2020-title49-vol2/pdf/CFR-2020-title49-vol2-part172.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/eoh/rtkweb/documents/fs/1688.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.nj.gov/health/workplacehealthandsafety/documents/right-to-know/rtkact.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.124555+00:00"
+}

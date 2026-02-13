@@ -1,0 +1,34 @@
+{
+  "cid": 23994,
+  "hazard_key": "Zn",
+  "display_name": "Zink (Zn)",
+  "captured_at": "2026-01-31T18:47:40.439938+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/23994",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/23994/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 1232,
+      "file": "data/pubchem_payloads/raw/23994/linkout.json",
+      "sha256": "86f4ccdc48a9b2414c242d64a139cc63fe752710c1e7fccc955db393797acdc0"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23994/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 386256,
+      "file": "data/pubchem_payloads/raw/23994/lcss.json",
+      "sha256": "10ba1be780d2f844033aeccbe810443d6281ca8396d1bab0449198d175449fe2"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/23994/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 392892,
+      "file": "data/pubchem_payloads/raw/23994/safety.json",
+      "sha256": "c28e93786aa8a1f7a97e31cd67393eca9fd3cacd41d7b57afd57f78c8da545b9"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/23994.png"
+}

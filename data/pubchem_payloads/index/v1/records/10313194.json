@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "cid": 10313194,
+  "captured_at": "2026-01-31T16:43:16.511501+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/10313194",
+    "lcss_sha256": "3b677dba1b0ca28197d155c55be72eb65b95bcd0452fded637674f68b2e8adce",
+    "linkout_sha256": "16874842026832d64325ccbaba4394b012b46d70bc80b490660b079f84942c10",
+    "meta_sha256": "9c8b29d09b1a3edb78f193272e7d0b2f046b018e55c896dd4475f02dd3888811"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [
+    {
+      "url": "https://n.b5z.net/i/u/10091461/f/SDS/Cuprous_Oxide__Cu2O__SDS.pdf",
+      "source": "manual-playwright",
+      "verified": true,
+      "notes": "Cuprous Oxide SDS"
+    }
+  ],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": false
+  },
+  "sds_candidates": [],
+  "generated_at": "2026-01-31T23:44:13.289118+00:00"
+}

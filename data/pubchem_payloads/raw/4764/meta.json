@@ -1,0 +1,34 @@
+{
+  "cid": 4764,
+  "hazard_key": "C20H14O4",
+  "display_name": "Fenolftalein",
+  "captured_at": "2026-01-31T14:34:04.969225+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/4764",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/4764/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 78,
+      "file": "data/pubchem_payloads/raw/4764/linkout.json",
+      "sha256": "799ad258850691c8f9b04bcd8f73ea1d137a4b46e2c6502dcceca39bc25afad6"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/4764/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 225484,
+      "file": "data/pubchem_payloads/raw/4764/lcss.json",
+      "sha256": "0a0d00bddb6e6f2ca2accc32b1c029e681483493bd8b542eb3b5eecd66e8af2f"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/4764/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 135021,
+      "file": "data/pubchem_payloads/raw/4764/safety.json",
+      "sha256": "8c1e05678750e21829fd455f924b1cd2398dc9a23665d08d3e3508ae5ccec0ba"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/4764.png"
+}

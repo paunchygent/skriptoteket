@@ -1,0 +1,34 @@
+{
+  "cid": 9989226,
+  "hazard_key": "Al2O3",
+  "display_name": "Aluminiumoxid",
+  "captured_at": "2026-01-31T14:14:20.492222+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/9989226",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/9989226/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 81,
+      "file": "data/pubchem_payloads/raw/9989226/linkout.json",
+      "sha256": "1865fabe9d6371e1da30ade44f2fa09cfdc75b11a847416a905ee7e28b334d0e"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/9989226/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 254853,
+      "file": "data/pubchem_payloads/raw/9989226/lcss.json",
+      "sha256": "09bff63da0992d95ed07c701cc837f6da0188e4b5d7127e7b5b7f79b3a979bff"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/9989226/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 151724,
+      "file": "data/pubchem_payloads/raw/9989226/safety.json",
+      "sha256": "4b6301efcf0714eb7b32d1366d7969c5092ec83344eabeff7f800b4b277a775f"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/9989226.png"
+}

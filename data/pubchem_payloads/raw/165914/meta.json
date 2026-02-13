@@ -1,0 +1,34 @@
+{
+  "cid": 165914,
+  "hazard_key": "CuS",
+  "display_name": "Kopparindigo",
+  "captured_at": "2026-01-31T14:09:44.774305+00:00",
+  "compound_url": "https://pubchem.ncbi.nlm.nih.gov/compound/165914",
+  "payloads": {
+    "linkout": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/linkout/compound/165914/JSON",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 80,
+      "file": "data/pubchem_payloads/raw/165914/linkout.json",
+      "sha256": "3eab05e4d5afd8812a85d7c22cc6b0ce98f60d9bd61e3a1e168a64eabc607fbb"
+    },
+    "lcss": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/165914/JSON?toc=LCSS%20TOC",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 77861,
+      "file": "data/pubchem_payloads/raw/165914/lcss.json",
+      "sha256": "257332f80bb2dd74f08350d48080e83acdbc4c0d7b87f5ed8da8638c53284ff1"
+    },
+    "safety": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/165914/JSON?heading=Safety%20and%20Hazards",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 40654,
+      "file": "data/pubchem_payloads/raw/165914/safety.json",
+      "sha256": "1c9498b873174cc1a3d21dee7b5dcf98b653be7bcc25930467377a1da05dcf71"
+    }
+  },
+  "screenshot": ".artifacts/pubchem-payload-capture/165914.png"
+}

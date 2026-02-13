@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "cid": 61482,
+  "captured_at": "2026-01-31T16:43:27.948031+00:00",
+  "source": {
+    "pubchem_url": "https://pubchem.ncbi.nlm.nih.gov/compound/61482",
+    "lcss_sha256": "5ca256ffbcfc5ccaf7a9fd1dab79c4d69c86ec80fd71861cacf38832b228e7c5",
+    "linkout_sha256": "b48a31db42625ef84c68475b6974c8d10613b6b7e9fb8c7e911f28bb87c2b20e",
+    "meta_sha256": "5ec997f2bc3ac0300ed87b6f0ccce4672294460209b70f360647c3350f3ce818"
+  },
+  "clp": {
+    "hazard_codes": [],
+    "hazard_statements_sv": {},
+    "precautionary_codes": [],
+    "precautionary_statements_sv": {},
+    "signal_word": null,
+    "signal_word_sv": null,
+    "pictograms": []
+  },
+  "sds_linkout": [],
+  "missing": {
+    "hazard_statements_sv": [],
+    "precautionary_statements_sv": [],
+    "signal_word_sv": null,
+    "sds_linkout": true
+  },
+  "sds_candidates": [
+    {
+      "url": "https://www.cas.org/sites/default/files/documents/chemical-safety-library-terms.pdf",
+      "source": "safety",
+      "likely_sds": false
+    },
+    {
+      "url": "https://www.osha.gov/sites/default/files/publications/OSHA3514.pdf",
+      "source": "safety",
+      "likely_sds": false
+    }
+  ],
+  "generated_at": "2026-01-31T23:07:03.077925+00:00"
+}
