@@ -347,9 +347,9 @@ onMounted(() => {
 
       <ReagentPrepChefStepReagent
         v-if="step === 'reagent'"
+        v-model:form="form"
         v-model:selected-chemical-key="selectedChemicalKey"
         v-model:chemical-query="chemicalQuery"
-        :form="form"
         :chemicals="chemicals"
         :chemical-search-is-active="chemicalSearchIsActive"
         :chemical-search-results="chemicalSearchResults"
@@ -359,7 +359,7 @@ onMounted(() => {
 
       <ReagentPrepChefStepClass
         v-else-if="step === 'class'"
-        :form="form"
+        v-model:form="form"
         :derived-groups="derivedGroups"
         :derived-total-volume-ml="derivedTotalVolumeMl"
         @back="goTo('reagent')"
@@ -368,7 +368,7 @@ onMounted(() => {
 
       <ReagentPrepChefStepSource
         v-else-if="step === 'source'"
-        :form="form"
+        v-model:form="form"
         :is-calculating="isCalculating"
         :is-exporting="isExporting"
         :can-calculate="canCalculate"
@@ -398,11 +398,11 @@ onMounted(() => {
 
       <ReagentPrepChefStepRisk
         v-else-if="step === 'risk'"
+        v-model:risk-context="riskContext"
+        v-model:risk-overrides="riskOverrides"
+        v-model:risk-measures-draft="riskMeasuresDraft"
         :risk-draft="riskDraft"
         :risk-warnings="riskWarnings"
-        :risk-context="riskContext"
-        :risk-overrides="riskOverrides"
-        :risk-measures-draft="riskMeasuresDraft"
         :is-risk-loading="isRiskLoading"
         :is-risk-saving="isRiskSaving"
         :is-risk-exporting="isRiskExporting"

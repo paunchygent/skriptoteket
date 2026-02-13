@@ -7,13 +7,13 @@ import type {
 } from "./types";
 
 type Props = {
-  form: ReagentPrepChefFormState;
   chemicals: ReagentPrepChefChemicalOption[];
   chemicalSearchIsActive: boolean;
   chemicalSearchResults: ReagentPrepChefChemicalOption[];
 };
 
 const props = defineProps<Props>();
+const form = defineModel<ReagentPrepChefFormState>("form", { required: true });
 const selectedChemicalKey = defineModel<string>("selectedChemicalKey", { required: true });
 const chemicalQuery = defineModel<string>("chemicalQuery", { required: true });
 
@@ -107,7 +107,7 @@ const emit = defineEmits<{
           >Kemisk formel</label>
           <input
             id="rpc-formula"
-            v-model="props.form.chemicalFormula"
+            v-model="form.chemicalFormula"
             type="text"
             placeholder="CuSO4·5H2O"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
@@ -122,7 +122,7 @@ const emit = defineEmits<{
         <button
           type="button"
           class="btn-primary"
-          :disabled="!props.form.chemicalFormula.trim()"
+          :disabled="!form.chemicalFormula.trim()"
           @click="emit('next')"
         >
           Fortsätt →

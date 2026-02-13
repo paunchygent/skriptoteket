@@ -1,3 +1,10 @@
+"""Shared Postgres test fixtures for integration repositories and CLI tests.
+
+This module provides a testcontainers-backed Postgres lifecycle and SQLAlchemy session fixtures
+used by integration tests under ``tests/integration``. It also applies migrations from this
+repository and exposes per-test cleanup to preserve isolation across integration modules.
+"""
+
 from __future__ import annotations
 
 import os
@@ -8,6 +15,8 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from docker import DockerClient
+from docker.errors import DockerException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -20,6 +29,24 @@ from testcontainers.postgres import PostgresContainer
 from tests.fixtures.orm_models import load_all_models
 
 load_all_models()
+
+
+def _ensure_docker_daemon_available() -> None:
+    """Skip DB integration fixtures when the local Docker daemon is unavailable.
+
+    The integration repository tests rely on testcontainers, which shells out through the Docker
+    Python SDK. Local dev environments without a running daemon should skip these fixtures instead
+    of failing pre-commit/unit-focused checks.
+    """
+    client: DockerClient | None = None
+    try:
+        client = DockerClient.from_env()
+        client.ping()
+    except DockerException:
+        pytest.skip("Docker daemon is unavailable; skipping integration DB fixtures.")
+    finally:
+        if client is not None:
+            client.close()
 
 
 def _to_async_database_url(url: str) -> str:
@@ -39,6 +66,7 @@ def _to_async_database_url(url: str) -> str:
 @pytest.fixture(scope="module")
 def postgres_container() -> Iterator[PostgresContainer]:
     """Starts a Postgres container for the test module."""
+    _ensure_docker_daemon_available()
     with PostgresContainer("postgres:16") as postgres:
         yield postgres
 

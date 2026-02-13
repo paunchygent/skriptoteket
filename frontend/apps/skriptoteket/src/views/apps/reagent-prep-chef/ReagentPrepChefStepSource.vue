@@ -2,7 +2,6 @@
 import type { ReagentPrepChefFormState } from "./types";
 
 type Props = {
-  form: ReagentPrepChefFormState;
   isCalculating: boolean;
   isExporting: boolean;
   canCalculate: boolean;
@@ -10,6 +9,7 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+const form = defineModel<ReagentPrepChefFormState>("form", { required: true });
 
 const emit = defineEmits<{
   (event: "back"): void;
@@ -36,7 +36,7 @@ const emit = defineEmits<{
           >Målmolaritet (M)</label>
           <input
             id="rpc-target"
-            v-model="props.form.targetMolarity"
+            v-model="form.targetMolarity"
             inputmode="decimal"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
           >
@@ -49,7 +49,7 @@ const emit = defineEmits<{
           >Källa</label>
           <select
             id="rpc-source"
-            v-model="props.form.sourceType"
+            v-model="form.sourceType"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
           >
             <option value="solid">Fast ämne</option>
@@ -58,7 +58,7 @@ const emit = defineEmits<{
         </div>
 
         <div
-          v-if="props.form.sourceType === 'liquid_stock'"
+          v-if="form.sourceType === 'liquid_stock'"
           class="space-y-2"
         >
           <label
@@ -67,7 +67,7 @@ const emit = defineEmits<{
           >Stockmolaritet (M)</label>
           <input
             id="rpc-stock"
-            v-model="props.form.stockMolarity"
+            v-model="form.stockMolarity"
             inputmode="decimal"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
           >
@@ -80,7 +80,7 @@ const emit = defineEmits<{
           >Renhet (0–1)</label>
           <input
             id="rpc-purity"
-            v-model="props.form.solutePurity"
+            v-model="form.solutePurity"
             inputmode="decimal"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
           >

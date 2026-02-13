@@ -2,12 +2,12 @@
 import type { ReagentPrepChefFormState } from "./types";
 
 type Props = {
-  form: ReagentPrepChefFormState;
   derivedGroups: number | null;
   derivedTotalVolumeMl: number | null;
 };
 
 const props = defineProps<Props>();
+const form = defineModel<ReagentPrepChefFormState>("form", { required: true });
 
 const emit = defineEmits<{
   (event: "back"): void;
@@ -33,7 +33,7 @@ const emit = defineEmits<{
           >Antal elever</label>
           <input
             id="rpc-students"
-            v-model.number="props.form.studentCount"
+            v-model.number="form.studentCount"
             type="number"
             min="1"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
@@ -47,7 +47,7 @@ const emit = defineEmits<{
           >Elever per grupp</label>
           <input
             id="rpc-per-group"
-            v-model.number="props.form.studentsPerGroup"
+            v-model.number="form.studentsPerGroup"
             type="number"
             min="1"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
@@ -61,7 +61,7 @@ const emit = defineEmits<{
           >Volym per grupp (ml)</label>
           <input
             id="rpc-vol-group"
-            v-model="props.form.volPerGroupMl"
+            v-model="form.volPerGroupMl"
             inputmode="decimal"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
           >
@@ -74,7 +74,7 @@ const emit = defineEmits<{
           >Marginal (0–0,5)</label>
           <input
             id="rpc-safety-factor"
-            v-model="props.form.safetyFactor"
+            v-model="form.safetyFactor"
             inputmode="decimal"
             class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
           >

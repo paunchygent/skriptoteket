@@ -8,9 +8,6 @@ import type {
 type Props = {
   riskDraft: ReagentPrepChefRiskAssessmentResult["draft"] | null;
   riskWarnings: string[];
-  riskContext: ReagentPrepChefRiskContext;
-  riskOverrides: Record<string, RiskOverrideDraft>;
-  riskMeasuresDraft: Record<string, string>;
   isRiskLoading: boolean;
   isRiskSaving: boolean;
   isRiskExporting: boolean;
@@ -22,6 +19,13 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+const riskContext = defineModel<ReagentPrepChefRiskContext>("riskContext", { required: true });
+const riskOverrides = defineModel<Record<string, RiskOverrideDraft>>("riskOverrides", {
+  required: true,
+});
+const riskMeasuresDraft = defineModel<Record<string, string>>("riskMeasuresDraft", {
+  required: true,
+});
 
 const emit = defineEmits<{
   (event: "refresh"): void;
@@ -109,7 +113,7 @@ const emit = defineEmits<{
               <div class="space-y-1">
                 <label class="text-xs font-semibold text-navy">Omfattning</label>
                 <textarea
-                  v-model="props.riskContext.scope"
+                  v-model="riskContext.scope"
                   rows="3"
                   class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                 />
@@ -117,7 +121,7 @@ const emit = defineEmits<{
               <div class="space-y-1">
                 <label class="text-xs font-semibold text-navy">Plats</label>
                 <input
-                  v-model="props.riskContext.location"
+                  v-model="riskContext.location"
                   type="text"
                   class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                 >
@@ -126,7 +130,7 @@ const emit = defineEmits<{
                 <div class="space-y-1">
                   <label class="text-xs font-semibold text-navy">Deltagare</label>
                   <input
-                    v-model="props.riskContext.participants"
+                    v-model="riskContext.participants"
                     type="text"
                     class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                   >
@@ -134,7 +138,7 @@ const emit = defineEmits<{
                 <div class="space-y-1">
                   <label class="text-xs font-semibold text-navy">Ansvarig/Approver</label>
                   <input
-                    v-model="props.riskContext.approver"
+                    v-model="riskContext.approver"
                     type="text"
                     class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                   >
@@ -144,7 +148,7 @@ const emit = defineEmits<{
                 <div class="space-y-1">
                   <label class="text-xs font-semibold text-navy">Datum</label>
                   <input
-                    v-model="props.riskContext.assessment_date"
+                    v-model="riskContext.assessment_date"
                     type="date"
                     class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                   >
@@ -152,7 +156,7 @@ const emit = defineEmits<{
                 <div class="space-y-1">
                   <label class="text-xs font-semibold text-navy">Nästa översyn</label>
                   <input
-                    v-model="props.riskContext.next_review_date"
+                    v-model="riskContext.next_review_date"
                     type="date"
                     class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                   >
@@ -161,7 +165,7 @@ const emit = defineEmits<{
               <div class="space-y-1">
                 <label class="text-xs font-semibold text-navy">Lokala rutiner</label>
                 <textarea
-                  v-model="props.riskContext.local_routines"
+                  v-model="riskContext.local_routines"
                   rows="2"
                   class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
                 />
@@ -231,7 +235,7 @@ const emit = defineEmits<{
               <div class="space-y-1">
                 <label class="text-xs font-semibold text-navy">Allvar (1–5)</label>
                 <select
-                  v-model.number="props.riskOverrides[risk.id].severity"
+                  v-model.number="riskOverrides[risk.id].severity"
                   class="w-full border border-navy bg-white px-2 py-1 text-navy"
                 >
                   <option
@@ -246,7 +250,7 @@ const emit = defineEmits<{
               <div class="space-y-1">
                 <label class="text-xs font-semibold text-navy">Sannolikhet (1–5)</label>
                 <select
-                  v-model.number="props.riskOverrides[risk.id].likelihood"
+                  v-model.number="riskOverrides[risk.id].likelihood"
                   class="w-full border border-navy bg-white px-2 py-1 text-navy"
                 >
                   <option
@@ -263,7 +267,7 @@ const emit = defineEmits<{
                 <p>Nivå: <span class="font-mono">{{ risk.final.level }}</span></p>
                 <label class="flex items-center gap-2 pt-1">
                   <input
-                    v-model="props.riskOverrides[risk.id].confirmed"
+                    v-model="riskOverrides[risk.id].confirmed"
                     type="checkbox"
                     class="h-4 w-4 border border-navy"
                   >
@@ -275,7 +279,7 @@ const emit = defineEmits<{
             <div class="space-y-1">
               <label class="text-xs font-semibold text-navy">Åtgärder (en per rad)</label>
               <textarea
-                v-model="props.riskMeasuresDraft[risk.id]"
+                v-model="riskMeasuresDraft[risk.id]"
                 rows="3"
                 class="w-full border border-navy bg-white px-2 py-2 text-navy"
                 @input="emit('updateMeasures', risk.id)"
