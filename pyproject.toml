@@ -361,6 +361,7 @@ db-upgrade = "alembic upgrade head"
 # Admin bootstrap
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
+send-feedback-emails = { cmd = "python -m skriptoteket.cli send-feedback-emails", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
 cleanup-session-files = { cmd = "python -m skriptoteket.cli cleanup-session-files", env = { PYTHONPATH = "src" } }
 cleanup-sandbox-snapshots = { cmd = "python -m skriptoteket.cli cleanup-sandbox-snapshots", env = { PYTHONPATH = "src" } }

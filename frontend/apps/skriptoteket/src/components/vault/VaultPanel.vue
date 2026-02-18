@@ -456,9 +456,9 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <div class="flex flex-col gap-2 md:flex-row md:items-end md:gap-3">
-          <div class="w-full md:w-auto md:min-w-[var(--huleedu-max-width-sm)] md:max-w-[var(--huleedu-max-width-md)]">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3 lg:flex-nowrap">
+          <div class="w-full sm:min-w-0 sm:flex-1 lg:flex-none lg:min-w-[var(--huleedu-max-width-sm)] lg:max-w-[var(--huleedu-max-width-md)]">
             <UiSearchBar
               v-model="searchDraft"
               label="Sök"
@@ -495,7 +495,7 @@ onUnmounted(() => {
 
         <div
           v-if="showBulkActions"
-          class="flex flex-wrap items-center justify-end gap-2"
+          class="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end"
         >
           <button
             type="button"

@@ -6,7 +6,7 @@ from dishka import Provider, Scope, provide
 
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.clock import UTCClock
-from skriptoteket.infrastructure.email.smtp_sender import SmtpEmailSender
+from skriptoteket.infrastructure.email.sender_factory import create_email_sender
 from skriptoteket.infrastructure.email.template_renderer import Jinja2EmailTemplateRenderer
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
@@ -45,7 +45,7 @@ class InfrastructureServicesProvider(Provider):
 
     @provide(scope=Scope.APP)
     def email_sender(self, settings: Settings) -> EmailSenderProtocol:
-        return SmtpEmailSender(settings)
+        return create_email_sender(settings)
 
     @provide(scope=Scope.APP)
     def email_template_renderer(self) -> EmailTemplateRendererProtocol:

@@ -14,6 +14,7 @@ from skriptoteket.cli.commands.prune_artifacts import prune_artifacts
 from skriptoteket.cli.commands.run_execution_worker import run_execution_worker
 from skriptoteket.cli.commands.seed_script_bank import seed_script_bank
 from skriptoteket.cli.commands.seed_sds_cache import seed_sds_cache
+from skriptoteket.cli.commands.send_feedback_emails import send_feedback_emails
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -29,3 +30,4 @@ app.command()(seed_script_bank)
 app.command()(seed_sds_cache)
 app.command()(run_execution_worker)
 app.command()(healthcheck_execution_worker)
+app.command()(send_feedback_emails)

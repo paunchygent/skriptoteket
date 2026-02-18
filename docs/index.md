@@ -26,6 +26,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
 - Hemma critical paths + ops inventory: `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
+- Feedback email CLI runbook: `docs/runbooks/runbook-feedback-email-cli.md`
 - Active sprint: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`
 - Release notes: `docs/releases/`
 - ADRs: `docs/adr/`
@@ -219,6 +220,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0057-browse-cta-removal-and-toolrunview-density-transition-polish.md`
 - `docs/backlog/prs/pr-0058-kodredigerare-verktygsval-och-sok.md`
 - `docs/backlog/prs/pr-0059-curated-app-reagent-prep-chef.md`
+- `docs/backlog/prs/pr-0060-curated-app-reagent-prep-chef-risk-assessment.md`
+- `docs/backlog/prs/pr-0061-story-003c-thin-adapter-parity-and-scientific-pdf-workload-validation.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -439,7 +442,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-19-04-runner-request-factory-seam.md`
 - `docs/backlog/stories/story-19-05-runner-result-parser-seam.md`
 - `docs/backlog/stories/story-19-06-runner-contract-selection-seam.md`
+- `docs/backlog/stories/story-19-07-story-003c-thin-adapter-consumer-adoption-and-scientific-pdf-workload.md`
 - `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md`
+- `docs/backlog/stories/story-20-02-curated-app-reagent-prep-chef-risk-assessment.md`
 
 ### Reference
 
@@ -498,6 +503,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Runbooks
 
 - `docs/runbooks/runbook-editor-ai-pipeline.md`
+- `docs/runbooks/runbook-feedback-email-cli.md`
 - `docs/runbooks/runbook-gpu-ai-workloads.md`
 - `docs/runbooks/runbook-home-server.md`
 - `docs/runbooks/runbook-huleedu-integration.md`

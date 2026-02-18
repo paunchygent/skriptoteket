@@ -12,11 +12,30 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-02-01
+- Date: 2026-02-18
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agent/readme-first.md`
+
+## Current Session (2026-02-13)
+
+- Added parallel Story 003c provider-side planning story for Skriptoteket docs-as-code workflow:
+  - `docs/backlog/stories/story-19-07-story-003c-thin-adapter-consumer-adoption-and-scientific-pdf-workload.md`
+- Added PR-sized execution doc linked to ST-19-07:
+  - `docs/backlog/prs/pr-0061-story-003c-thin-adapter-parity-and-scientific-pdf-workload-validation.md`
+- Updated docs index entries:
+  - `docs/index.md` (added ST-19-07, PR-0061, and missing `story-20-02` + `pr-0060` listings)
+
+## Current Session (2026-02-18)
+
+- Fixed `Mina filer` medium-width overflow in `VaultPanel` responsive toolbar:
+  - `frontend/apps/skriptoteket/src/components/vault/VaultPanel.vue`
+  - Kept toolbar stacked/wrapping through medium widths and delayed full horizontal split to `lg`.
+  - Allowed search block to shrink before `lg` and made bulk actions full-width on narrow/medium layouts.
+- Live functional check completed on `/vault` using Playwright against local `dev-local` services; screenshots + metrics:
+  - `.artifacts/vault-responsive-check-20260218T084906/report.json`
+  - `.artifacts/vault-responsive-check-20260218T084906/vault-*.png`
 
 ## Current Session (2026-02-01)
 
@@ -95,6 +114,14 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- 2026-02-13: `pdm run docs-validate`
+- 2026-02-18: `docker compose up -d db`, `pdm run db-upgrade`,
+  `pdm run bootstrap-superuser --email "$BOOTSTRAP_SUPERUSER_EMAIL" --password "$BOOTSTRAP_SUPERUSER_PASSWORD"`,
+  `pdm run dev-local`
+- 2026-02-18: Playwright live `/vault` responsive check via `pdm run python - <<'PY' ...` (requests login + viewport probe at 1366/1240/1120/1024 widths)
+  → no overflow/clipping (`docOverflow=False`, `toolbarClipped=False`, `bulkClipped=False`), report:
+  `.artifacts/vault-responsive-check-20260218T084906/report.json`
+- 2026-02-18: `pdm run fe-test` (pass, 46 files / 247 tests)
 - 2026-01-31: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
   `pdm run fe-test`, `pdm run docs-validate`, `pdm run fe-dev-logs`,
   `curl -sSf http://127.0.0.1:5173/`

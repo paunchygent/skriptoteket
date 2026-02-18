@@ -7,6 +7,16 @@ from typing import Protocol
 from pydantic import BaseModel, ConfigDict
 
 
+class EmailAttachment(BaseModel):
+    """Attachment payload for an email."""
+
+    model_config = ConfigDict(frozen=True)
+
+    filename: str
+    data: bytes
+    content_type: str = "application/octet-stream"
+
+
 class EmailMessage(BaseModel):
     """Email message to be sent."""
 
@@ -16,6 +26,7 @@ class EmailMessage(BaseModel):
     subject: str
     html_body: str
     text_body: str | None = None
+    attachments: tuple[EmailAttachment, ...] = ()
 
 
 class EmailSenderProtocol(Protocol):
