@@ -1,3 +1,13 @@
+"""PubChem PUG-View extraction helpers for Reagent Prep Chef SDS derivation.
+
+This module extracts small, typed signals from PubChem JSON payloads used by the
+Reagent Prep Chef SDS pipeline (GHS snapshot + density + URL discovery).
+
+Related:
+  - `sds_fetcher.py` (orchestrates PubChem + PDF derivation)
+  - `sds_parsers/text_extractors.py` (PDF text heuristics)
+"""
+
 from __future__ import annotations
 
 import re
@@ -11,7 +21,10 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers
 )
 
 _DENSITY_UNIT_RE = re.compile(
-    r"(?P<value>\d+(?:[.,]\d+)?)\s*(?P<unit>g/cm3|g/cm\^3|g/ml|g/mL|kg/m3|kg/m\^3|g/l|g/L)",
+    r"(?P<value>\d+(?:[.,]\d+)?)\s*(?P<unit>"
+    r"g\s*/\s*(?:cm3|cm\^3|cm³|cu\s*cm|cc|ml|mL|l|L)"
+    r"|kg\s*/\s*(?:m3|m\^3|m³)"
+    r")",
     re.IGNORECASE,
 )
 _SPECIFIC_GRAVITY_RE = re.compile(r"\b(specific gravity|relative density)\b", re.IGNORECASE)
@@ -115,8 +128,9 @@ def extract_density_g_ml(pug_view: dict) -> Decimal | None:
             value = _decimal_from_text(unit_match.group("value"))
             if value is None:
                 continue
-            unit = unit_match.group("unit").lower()
-            if unit in {"g/cm3", "g/cm^3", "g/ml"}:
+            unit = re.sub(r"\s+", "", unit_match.group("unit")).lower()
+            unit = unit.replace("³", "3")
+            if unit in {"g/cm3", "g/cm^3", "g/cucm", "g/cc", "g/ml"}:
                 return value
             if unit in {"kg/m3", "kg/m^3"}:
                 return (value / Decimal("1000")).quantize(Decimal("0.000001"))

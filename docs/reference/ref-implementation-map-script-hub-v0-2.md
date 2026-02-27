@@ -53,7 +53,7 @@ Always run:
 
 Session rule reminder:
 
-- Any session that changes UI/routes MUST include a live functional check and a `.agent/handoff.md` note describing how
+- Any session that changes UI/routes MUST include a live functional check and a `.agents/handoff.md` note describing how
   it was verified.
 
 ## Roadmap overview (by sprint)
@@ -162,7 +162,7 @@ Session rule reminder:
   3. Keep `html_sandboxed` sandboxed without scripts.
 - Checkpoints (success criteria):
   - Live functional check on an interactive tool page renders without SPA.
-  - `.agent/handoff.md` records how the page was verified.
+  - `.agents/handoff.md` records how the page was verified.
 
 ### Sprint SPR-2026-02-03 (SPA toolchain + editor island)
 
@@ -187,7 +187,7 @@ Session rule reminder:
   3. Add frontend unit tests for the editor store/actions.
 - Checkpoints (success criteria):
   - Live functional check: editor loads, edits, saves; no layout collapse.
-  - `.agent/handoff.md` records verification.
+  - `.agents/handoff.md` records verification.
 
 ### Sprint SPR-2026-02-17 (runtime island MVP)
 
@@ -201,7 +201,7 @@ Session rule reminder:
   3. Handle stale `expected_state_rev` with a refresh UX.
 - Checkpoints (success criteria):
   - Live functional check: run → action → new run renders; reload preserves state.
-  - `.agent/handoff.md` records verification.
+  - `.agents/handoff.md` records verification.
 
 ---
 

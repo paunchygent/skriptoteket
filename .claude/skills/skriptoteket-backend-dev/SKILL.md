@@ -36,14 +36,14 @@ Tip: generate a fresh tree with `find src/skriptoteket -maxdepth 2 -type d`.
 
 ## Critical invariants (non-negotiable)
 
-- Follow `.agent/rules/000-rule-index.md` (layer boundaries, protocol-first DI, docs workflow).
+- Follow `.agents/rules/000-rule-index.md` (layer boundaries, protocol-first DI, docs workflow).
 - Keep domain pure: no web/db/framework imports in `src/skriptoteket/domain/**`.
 - Keep web/api thin: validate + call handlers; never put business logic in routers.
 - Raise `DomainError` (no HTTP) and map to HTTP in `src/skriptoteket/web/*`.
 - Unit of Work owns commit/rollback; repositories never commit (see `src/skriptoteket/infrastructure/db/uow.py`).
 - Avoid OpenAPI breakage: do NOT use `from __future__ import annotations` in router modules (rule 040).
-- For editor AI / LLM changes: follow `.agent/rules/047-ai-llm-guardrails.md` + `docs/runbooks/runbook-openai-responses-api.md`.
-- For execution queue/worker changes: follow `.agent/rules/062-execution-queue-worker-loop.md` + ADR-0062.
+- For editor AI / LLM changes: follow `.agents/rules/047-ai-llm-guardrails.md` + `docs/runbooks/runbook-openai-responses-api.md`.
+- For execution queue/worker changes: follow `.agents/rules/062-execution-queue-worker-loop.md` + ADR-0062.
 
 ## Key ADRs + “goal state” watchlist
 
@@ -64,11 +64,11 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 ## Stories + planning workflow (when implementing backlog work)
 
 - Planning workflow: `docs/reference/ref-sprint-planning-workflow.md`
-- Review gate (required for proposed EPICs/ADRs): `.agent/rules/096-review-workflow.md`
+- Review gate (required for proposed EPICs/ADRs): `.agents/rules/096-review-workflow.md`
 
 ## DB + migrations
 
-- Migrations live in `migrations/versions/`; workflow rules in `.agent/rules/054-alembic-migrations.md`.
+- Migrations live in `migrations/versions/`; workflow rules in `.agents/rules/054-alembic-migrations.md`.
 - Upgrade dev DB: `pdm run db-upgrade`
 - If you add a migration, add/run the docker idempotency integration test (rule 054).
 
@@ -114,6 +114,6 @@ Notes:
 
 ## Testing protocol (backend)
 
-- Follow `.agent/rules/070-testing-standards.md` and `docs/runbooks/runbook-testing.md`.
+- Follow `.agents/rules/070-testing-standards.md` and `docs/runbooks/runbook-testing.md`.
 - Default: `pdm run test` (unit tests mock protocols; integration uses Docker/testcontainers).
 - Also run: `pdm run lint` and `pdm run typecheck` for backend changes.

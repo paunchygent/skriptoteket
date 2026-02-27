@@ -16,7 +16,7 @@ acceptance_criteria:
   - "Behavior is unchanged: working-copy head persistence, checkpoint behavior, restore flows, and warning/toast semantics remain identical."
   - "useEditorWorkingCopy.ts is reduced below the repo size budget (<500 LOC) by extracting cohesive modules."
   - "Unit tests pass (at minimum: pdm run fe-test, pdm run fe-type-check)."
-  - "A basic editor live check is done (start Vite + open editor view) and recorded in .agent/handoff.md."
+  - "A basic editor live check is done (start Vite + open editor view) and recorded in .agents/handoff.md."
 ---
 
 ## Problem

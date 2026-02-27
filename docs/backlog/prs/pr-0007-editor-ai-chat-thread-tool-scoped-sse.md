@@ -93,7 +93,7 @@ semantics and budgeting behavior.
   - `pdm run dev`
   - Authenticated `curl -N` to `POST /api/v1/editor/tools/{tool_id}/chat`
   - `DELETE /api/v1/editor/tools/{tool_id}/chat`
-  - Record verification in `.agent/handoff.md`.
+  - Record verification in `.agents/handoff.md`.
 
 ## Rollback plan
 

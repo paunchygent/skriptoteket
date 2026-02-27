@@ -51,7 +51,7 @@ You are working in the `skriptoteket` repo.
 - `docs/index.md`
 - `docs/prd/prd-script-hub-v0.1.md`
 - ADRs: `docs/adr/` (notably `adr-0004-clean-architecture-ddd-di.md`, `adr-0009-auth-local-sessions-admin-provisioned.md`, `adr-0011-huleedu-identity-federation.md`)
-- Rules: `.agent/rules/000-rule-index.md`
+- Rules: `.agents/rules/000-rule-index.md`
 
 ## Current code layout
 
@@ -85,14 +85,14 @@ Entry points:
 - Infra: add migrations + SQLAlchemy models/repos; keep UoW-owned commit/rollback (repos never commit).
 - Web: add minimal admin UI to open a suggestion and submit accept/modify/deny (role-gated).
 - Tests: protocol-mocked unit tests for handlers + REQUIRED Testcontainers migration idempotency test.
-- Session rule: run the app and verify the pages render/flow works; write exact steps in `.agent/handoff.md`.
-- End of session: update docs + `.agent/handoff.md`, then produce a new “next session” instruction for your successor.
+- Session rule: run the app and verify the pages render/flow works; write exact steps in `.agents/handoff.md`.
+- End of session: update docs + `.agents/handoff.md`, then produce a new “next session” instruction for your successor.
 
 ---
 
 Start by reading:
 
-1) `.agent/readme-first.md`
+1) `.agents/readme-first.md`
 2) `docs/index.md`
-3) `.agent/rules/000-rule-index.md`
+3) `.agents/rules/000-rule-index.md`
 4) `AGENTS.md`

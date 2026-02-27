@@ -24,9 +24,9 @@ The scope of this session is: **EPIC-05 HuleEdu Design System Harmonization** �
 From repo root, read:
 
 1. **AGENTS.md** — Monorepo conventions, DI patterns, test structure
-2. **.agent/rules/000-rule-index.md** — Index of all rules
-3. **.agent/rules/045-huleedu-design-system.md** — **PRIMARY REFERENCE**: design tokens, button hierarchy, component classes
-4. **.agent/rules/040-fastapi-blueprint.md** — Web layer patterns, HTMX endpoint conventions
+2. **.agents/rules/000-rule-index.md** — Index of all rules
+3. **.agents/rules/045-huleedu-design-system.md** — **PRIMARY REFERENCE**: design tokens, button hierarchy, component classes
+4. **.agents/rules/040-fastapi-blueprint.md** — Web layer patterns, HTMX endpoint conventions
 5. **docs/adr/adr-0017-huleedu-design-system-adoption.md** — Design decision rationale
 6. **docs/backlog/epics/epic-05-huleedu-design-harmonization.md** — Full story breakdown with acceptance criteria
 7. **docs/reference/reports/ref-htmx-ux-enhancement-plan.md** — Implementation guide (updated for HuleEdu)
@@ -206,7 +206,7 @@ return templates.TemplateResponse("full_page.html", context)
 At each story completion, you MUST:
 
 1. **Update story status** in `docs/backlog/epics/epic-05-huleedu-design-harmonization.md`
-2. **Update handoff** in `.agent/handoff.md` with:
+2. **Update handoff** in `.agents/handoff.md` with:
    - What was implemented
    - Any decisions made
    - Remaining work

@@ -10,7 +10,7 @@ outcome: "Automated tests provide high confidence in critical flows; overall cov
 
 ## Scope
 
-- Raise automated test coverage to meet the targets in `.agent/rules/070-testing-standards.md`.
+- Raise automated test coverage to meet the targets in `.agents/rules/070-testing-standards.md`.
 - Add focused **integration tests** for repository behavior (CRUD, ordering, not-found paths).
 - Add **web middleware** tests for HTML vs JSON error responses.
 - Add **behavior tests** for seeded script-bank tools to prevent regressions.

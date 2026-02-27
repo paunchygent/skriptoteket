@@ -4,7 +4,7 @@ Serves SPA index.html for all paths not handled by API routes or static files.
 Must be registered LAST in the router to avoid intercepting API responses.
 
 NOTE: Do NOT use `from __future__ import annotations` in router modules.
-See .agent/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
+See .agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 """
 
 from pathlib import Path

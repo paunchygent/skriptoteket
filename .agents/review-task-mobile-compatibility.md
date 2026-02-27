@@ -107,4 +107,4 @@ The original analysis identified these root causes:
 
 1. Begin implementation with ST-05-09 (smallest, immediate impact)
 2. Live-test each story on device emulator at 320px, 375px, 768px, 1024px
-3. Record verification in `.agent/handoff.md` per session rule
+3. Record verification in `.agents/handoff.md` per session rule

@@ -1,3 +1,13 @@
+"""Application-layer request/response models for the Reagent Prep Chef curated app.
+
+These Pydantic models form the app-specific HTTP contract used by the SPA and curated-app endpoints.
+
+Related:
+  - Domain vocabulary: `src/skriptoteket/domain/curated_apps/reagent_prep_chef/`
+  - Handlers: `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_*.py`
+  - Routes: `src/skriptoteket/web/api/v1/apps_reagent_prep_chef.py`
+"""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -280,17 +290,48 @@ class ReagentPrepChefRiskItem(BaseModel):
     confirmed: bool
 
 
+ReagentPrepChefRiskMissingFlag = Literal[
+    "sds_ref_missing",
+    "sds_pdf_missing",
+    "sds_density_missing",
+    "sds_clp_bands_missing",
+    "sds_heuristics_missing",
+    "clp_unavailable_for_target",
+    "heuristics_unavailable",
+]
+
+
+class ReagentPrepChefSdsSnapshot(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    sds_ref: str | None = None
+    pdf_available: bool
+    missing_flags: list[ReagentPrepChefRiskMissingFlag] = Field(default_factory=list)
+    sources: list[str] = Field(default_factory=list)
+
+
+class ReagentPrepChefRiskExportGate(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    ready: bool
+    missing_confirmations: list[str] = Field(default_factory=list)
+    missing_context_fields: list[str] = Field(default_factory=list)
+    missing_data_flags: list[ReagentPrepChefRiskMissingFlag] = Field(default_factory=list)
+
+
 class ReagentPrepChefRiskAssessmentDraft(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     sheet: ReagentPrepChefPrepSheet
-    sds_ref: str | None = None
+    sds: ReagentPrepChefSdsSnapshot
     context: ReagentPrepChefRiskContext | None = None
     clp: ReagentPrepChefClpClassification
     heuristics: ReagentPrepChefChemistryHeuristics
     risks: list[ReagentPrepChefRiskItem]
     requires_confirmation: bool
     missing_confirmations: list[str] = Field(default_factory=list)
+    missing_flags: list[ReagentPrepChefRiskMissingFlag] = Field(default_factory=list)
+    export_gate: ReagentPrepChefRiskExportGate
 
 
 class ReagentPrepChefRiskAssessmentResult(BaseModel):

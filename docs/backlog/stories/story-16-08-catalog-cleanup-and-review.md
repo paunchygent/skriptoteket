@@ -61,13 +61,13 @@ story removes legacy affordances, adds a master filter for curated apps, and fin
 ### Final EPIC-16 review
 
 - Validate ST-16-01..07 acceptance criteria across API + UI.
-- Record results and follow-ups in `.agent/handoff.md` and any relevant story docs.
+- Record results and follow-ups in `.agents/handoff.md` and any relevant story docs.
 
 ## Files to modify
 
 - `frontend/apps/skriptoteket/src/views/BrowseFlatView.vue`
 - `frontend/apps/skriptoteket/src/composables/useCatalogFilters.ts`
-- `.agent/handoff.md` (review results)
+- `.agents/handoff.md` (review results)
 
 ## Dependencies
 

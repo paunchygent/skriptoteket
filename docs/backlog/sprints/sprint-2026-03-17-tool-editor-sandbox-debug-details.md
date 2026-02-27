@@ -71,4 +71,4 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 - `pdm run lint`
 - `pdm run test`
 - `pdm run fe-gen-api-types`
-- Live functional check (backend + SPA dev); record steps in `.agent/handoff.md`.
+- Live functional check (backend + SPA dev); record steps in `.agents/handoff.md`.

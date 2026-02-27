@@ -8,15 +8,15 @@ Keep this file updated so the next session can pick up work quickly.
 - Use short bullets; include key file paths (e.g., `src/...`, `docs/...`) and exact commands.
 - Do not paste large code blocks; link to files instead.
 - Never include secrets/tokens/passwords or personal data.
-- Keep this file under 200 lines; move history to `.agent/readme-first.md` + `docs/`.
+- Keep this file under 200 lines; move history to `.agents/readme-first.md` + `docs/`.
 
 ## Snapshot
 
-- Date: 2026-02-18
+- Date: 2026-02-19
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
-- Completed: history in `.agent/readme-first.md`
+- Completed: history in `.agents/readme-first.md`
 
 ## Current Session (2026-02-13)
 
@@ -29,13 +29,32 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-02-18)
 
-- Fixed `Mina filer` medium-width overflow in `VaultPanel` responsive toolbar:
-  - `frontend/apps/skriptoteket/src/components/vault/VaultPanel.vue`
-  - Kept toolbar stacked/wrapping through medium widths and delayed full horizontal split to `lg`.
-  - Allowed search block to shrink before `lg` and made bulk actions full-width on narrow/medium layouts.
-- Live functional check completed on `/vault` using Playwright against local `dev-local` services; screenshots + metrics:
-  - `.artifacts/vault-responsive-check-20260218T084906/report.json`
-  - `.artifacts/vault-responsive-check-20260218T084906/vault-*.png`
+- Fixed `Mina filer` medium-width overflow in `VaultPanel` responsive toolbar: `frontend/apps/skriptoteket/src/components/vault/VaultPanel.vue`
+- Live check: Playwright `/vault` responsive probe (dev-local) → `.artifacts/vault-responsive-check-20260218T084906/report.json` (+ screenshots)
+- Started PR-0062 (Riskbedömning best-effort contract) with an infra “small slice” targeting the dominant SDS failure
+  modes (heuristics/density/clp):
+  - Backlog doc: `docs/backlog/prs/pr-0062-curated-app-reagent-prep-chef-risk-assessment-best-effort-contract.md`
+  - Best-effort SDS caching semantics:
+    `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_index_store.py`,
+    `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_fetcher.py`,
+    `src/skriptoteket/domain/curated_apps/reagent_prep_chef/models.py`,
+    `src/skriptoteket/protocols/reagent_prep_chef.py`
+  - Assumption validation CLI: `src/skriptoteket/cli/commands/validate_sds_assumptions.py`
+  - Unit tests: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_index_store.py`
+  - Validation artifacts:
+    `.artifacts/sds-cache/assumption-validation-heuristics.json` and cached PDFs under
+    `.artifacts/sds-cache-assumptions/files/`
+- PR-0062 backend slice: risk draft now runs best-effort (`require_complete=False`) and returns explicit
+  `missing_flags` + `export_gate` derived from SDS cache completeness:
+  - Contract: `src/skriptoteket/application/curated_apps/reagent_prep_chef.py`
+  - Handler: `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_risk_assessment.py`
+  - Route: `src/skriptoteket/web/api/v1/apps_reagent_prep_chef.py`
+  - Tests: `tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py`
+- PR-0062 frontend slice: export/save gated by `draft.export_gate.ready`; SDS button gated by `draft.sds.pdf_available`:
+  - `frontend/apps/skriptoteket/src/composables/reagentPrepChef/useReagentPrepChefRisk.ts`,
+    `frontend/apps/skriptoteket/src/views/apps/reagent-prep-chef/ReagentPrepChefStepRisk.vue`,
+    `frontend/apps/skriptoteket/src/api/openapi.d.ts`
+- PR-0062 SDS baseline + Slice 6: `.artifacts/sds-cache/full-report-best-effort.json` (`ok=10 partial=151 fail=3`, log `.artifacts/sds-cache/seed-best-effort.log`); Slice 6 truthy sample v1 + commands in PR doc; Slice 6.1 density unit parse fix tests: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pubchem_extractors_density.py`; Slice 6.2 reject false-positive “SDS” PDFs (OSHA/CFR/NJ fact sheets) + root-cause metadata in seed report/logs: `.artifacts/sds-cache/slice-6-sample-report-v3.json`, `.artifacts/sds-cache/slice-6-sample-seed-v3.log`; Slice 6.3 PDF density fallback tests: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pdf_density_extractor.py` + report: `.artifacts/sds-cache/slice-6-density-from-pdf-report.json`; Slice 6.4 curated SDS linkouts for `KOH`/`H2SO4`/`H2O2` (`data/sds_linkouts/curated.json`) + “Right to Know” SDS false-negative fix; report: `.artifacts/sds-cache/slice-6-4-report.json` (log: `.artifacts/sds-cache/slice-6-4-seed.log`); Slice 6.4.1 SDS detector validation CLI + report: `.artifacts/sds-cache/slice-6-4-doc-detector-report.json`; Slice 6.5 CLP parser now scans Section 2 + 3 and can extract SCL bands for `H2SO4` (test: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_clp_bands_parser.py`; report: `.artifacts/sds-cache/slice-6-5-report.json`, log: `.artifacts/sds-cache/slice-6-5-seed.log`); Slice 6.6 curated truthy SDS for `KOH`/`H2O2` (KOH ok; H2O2 still missing `clp_bands` due SCL line breaks): report `.artifacts/sds-cache/slice-6-6-report.json` (log `.artifacts/sds-cache/slice-6-6-seed.log`), snippet `.artifacts/sds-cache/slice-6-6-h2o2-scl-snippet.json`.
 
 ## Current Session (2026-02-01)
 
@@ -110,7 +129,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 - Auth UX hardening: timeout auth fetches to avoid stuck "Loggar in…": `frontend/apps/skriptoteket/src/stores/auth.ts`
 
-- Older history: see `.agent/readme-first.md` + `docs/`.
+- Older history: see `.agents/readme-first.md` + `docs/`.
 
 ## Verification
 
@@ -121,7 +140,14 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-02-18: Playwright live `/vault` responsive check via `pdm run python - <<'PY' ...` (requests login + viewport probe at 1366/1240/1120/1024 widths)
   → no overflow/clipping (`docOverflow=False`, `toolbarClipped=False`, `bulkClipped=False`), report:
   `.artifacts/vault-responsive-check-20260218T084906/report.json`
-- 2026-02-18: `pdm run fe-test` (pass, 46 files / 247 tests)
+- 2026-02-18: `pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_index_store.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_document_detection.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pubchem_extractors_density.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pdf_density_extractor.py`
+- 2026-02-18: `PYTHONPATH=src pdm run python -m skriptoteket.cli validate-sds-assumptions --report .artifacts/sds-cache/full-report.json --out .artifacts/sds-cache/assumption-validation-heuristics.json --sample-ok 0 --sample-fail 6 --sample-seed 123`
+- 2026-02-18: `pdm run docs-validate`
+- 2026-02-18: Live API check (backend already running on `:8000`): login + POST
+  `/api/v1/apps/chemistry.reagent_prep_chef/risk-assessment` returns 200 and includes `draft.missing_flags` and
+  `draft.export_gate` (NaCl sample: `export_gate.ready=false`).
+- 2026-02-18: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --only-missing --best-effort --no-fail-fast --concurrency 4 --report .artifacts/sds-cache/full-report-best-effort.json` (summary: `ok=10 partial=151 fail=3`; log: `.artifacts/sds-cache/seed-best-effort.log`); density check (fresh cache root, `CaCl2` + `K2Cr2O7`): `.artifacts/sds-cache/slice-6-density-check-report.json`; Slice 6 sample v3: `.artifacts/sds-cache/slice-6-sample-report-v3.json` (log: `.artifacts/sds-cache/slice-6-sample-seed-v3.log`); Slice 6.4 curated linkouts seed: `ARTIFACTS_ROOT=/tmp/skriptoteket/slice-6-4 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only KOH --only H2SO4 --only H2O2 --report .artifacts/sds-cache/slice-6-4-report.json` (log: `.artifacts/sds-cache/slice-6-4-seed.log`); SDS detector validation: `PYTHONPATH=src pdm run python -m skriptoteket.cli validate-sds-document-detector --out .artifacts/sds-cache/slice-6-4-doc-detector-report.json` (log: `.artifacts/sds-cache/slice-6-4-doc-detector.log`); Slice 6.5 seed: `ARTIFACTS_ROOT=/tmp/skriptoteket/slice-6-5 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only KOH --only H2SO4 --only H2O2 --report .artifacts/sds-cache/slice-6-5-report.json` (log: `.artifacts/sds-cache/slice-6-5-seed.log`); Slice 6.6 seed: `ARTIFACTS_ROOT=.artifacts/sds-cache/slice-6-6-cache-root PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only KOH --only H2O2 --report .artifacts/sds-cache/slice-6-6-report.json` (log: `.artifacts/sds-cache/slice-6-6-seed.log`)
+- 2026-02-18: `pdm run fe-gen-api-types`, `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-test` (pass, 46 files / 247 tests); Playwright risk-tab render + “Öppna SDS” visible → `.artifacts/pr-0062-risk-ui-check-20260218T204939/risk-step.png`
 - 2026-01-31: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
   `pdm run fe-test`, `pdm run docs-validate`, `pdm run fe-dev-logs`,
   `curl -sSf http://127.0.0.1:5173/`
@@ -171,4 +197,4 @@ pdm run fe-test
 
 ## Next Steps
 
-- Consider reducing system prompt weight or adding explicit local context metadata to improve completion relevance.
+- PR-0062 Slice 6: iterate parsing improvements (density/clp/heuristics) using the truthy sample set v1 (now including curated SDS PDFs for `KOH`/`H2SO4`/`H2O2`) and validate via `seed-sds-cache --best-effort` with a fresh `ARTIFACTS_ROOT` per run (see PR doc).

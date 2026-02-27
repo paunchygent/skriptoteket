@@ -52,18 +52,12 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
 
   const riskContextIsComplete = computed(() => {
     if (!riskDraft.value) return false;
-    if (!riskContext.scope?.trim()) return false;
-    if (!riskContext.participants?.trim()) return false;
-    if (!riskContext.approver?.trim()) return false;
-    if (!riskContext.assessment_date) return false;
-    if (!riskContext.next_review_date) return false;
-    return true;
+    return (riskDraft.value.export_gate?.missing_context_fields?.length ?? 0) === 0;
   });
 
   const canExportRisk = computed(() => {
     if (!riskDraft.value) return false;
-    if (riskDraft.value.requires_confirmation) return false;
-    return riskContextIsComplete.value;
+    return Boolean(riskDraft.value.export_gate?.ready);
   });
 
   function resetRiskState(): void {
@@ -326,8 +320,12 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
   }
 
   function openSds(): void {
-    if (!riskDraft.value?.sds_ref) return;
-    const url = `${options.apiPrefix.value}/sds/${encodeURIComponent(riskDraft.value.sds_ref)}`;
+    const sds = riskDraft.value?.sds;
+    if (!sds?.pdf_available || !sds.sds_ref) {
+      toast.failure("SDS saknas offline.");
+      return;
+    }
+    const url = `${options.apiPrefix.value}/sds/${encodeURIComponent(sds.sds_ref)}`;
     window.open(url, "_blank", "noopener");
   }
 

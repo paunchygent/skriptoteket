@@ -39,7 +39,7 @@ Activate when user:
 
 | Task | Read |
 |------|------|
-| Token + Tailwind mapping rules | `.agent/rules/045-huleedu-design-system.md` |
+| Token + Tailwind mapping rules | `.agents/rules/045-huleedu-design-system.md` |
 | Tailwind v4 token bridge ADR | `docs/adr/adr-0032-tailwind-4-theme-tokens.md` |
 | Canonical tokens | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` |
 | SPA token bridge | `frontend/apps/skriptoteket/src/styles/tokens.css` + `frontend/apps/skriptoteket/src/styles/tailwind-theme.css` |

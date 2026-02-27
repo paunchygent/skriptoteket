@@ -9,7 +9,7 @@ REDACTED = "[REDACTED]"
 
 _KEY_SPLIT_RE = re.compile(r"[^a-z0-9]+", re.IGNORECASE)
 
-# Base set aligned with `.agent/rules/091-structured-logging.md`,
+# Base set aligned with `.agents/rules/091-structured-logging.md`,
 # normalized to lowercase + underscores.
 _SENSITIVE_EXACT_KEYS = frozenset(
     {

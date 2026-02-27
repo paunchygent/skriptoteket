@@ -1,3 +1,13 @@
+"""Domain models for the Reagent Prep Chef curated app.
+
+These dataclasses are the app's stable domain vocabulary (pure, framework-agnostic) and are
+used across the application and infrastructure layers.
+
+Related:
+  - `src/skriptoteket/application/curated_apps/reagent_prep_chef.py` (API view models)
+  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/` (SDS + hazards providers)
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -69,6 +79,7 @@ class HazardSdsData:
     hazard_codes: tuple[str, ...]
     pictograms: tuple[str, ...]
     signal_word: Literal["danger", "warning"] | None = None
+    density_g_ml: Decimal | None = None
     clp_bands: tuple[ClpBand, ...] = ()
     incompatibilities: tuple[str, ...] = ()
     exothermicity: ExothermicityLevel | None = None

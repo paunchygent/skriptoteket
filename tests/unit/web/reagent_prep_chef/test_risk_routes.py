@@ -17,10 +17,12 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskAssessmentRequest,
     ReagentPrepChefRiskAssessmentResult,
     ReagentPrepChefRiskContext,
+    ReagentPrepChefRiskExportGate,
     ReagentPrepChefRiskItem,
     ReagentPrepChefRiskRating,
     ReagentPrepChefSafety,
     ReagentPrepChefSavePdfResult,
+    ReagentPrepChefSdsSnapshot,
 )
 from skriptoteket.application.scripting.vault import VaultFileInfo
 from skriptoteket.config import Settings
@@ -71,7 +73,12 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
     rating = ReagentPrepChefRiskRating(severity=2, likelihood=2, score=4, level="low")
     draft = ReagentPrepChefRiskAssessmentDraft(
         sheet=sheet,
-        sds_ref="NaCl",
+        sds=ReagentPrepChefSdsSnapshot(
+            sds_ref="NaCl",
+            pdf_available=True,
+            missing_flags=[],
+            sources=[],
+        ),
         context=ReagentPrepChefRiskContext(
             scope="Demo",
             location="Labbet",
@@ -106,6 +113,13 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
         ],
         requires_confirmation=False,
         missing_confirmations=[],
+        missing_flags=[],
+        export_gate=ReagentPrepChefRiskExportGate(
+            ready=True,
+            missing_confirmations=[],
+            missing_context_fields=[],
+            missing_data_flags=[],
+        ),
     )
     return ReagentPrepChefRiskAssessmentResult(draft=draft, warnings=[], state_rev=1)
 
@@ -190,7 +204,8 @@ async def test_risk_assessment_returns_draft(
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["draft"]["sds_ref"] == "NaCl"
+    assert payload["draft"]["sds"]["sds_ref"] == "NaCl"
+    assert payload["draft"]["sds"]["pdf_available"] is True
     assert payload["state_rev"] == 1
     assert risk_assessment_handler.calls
 

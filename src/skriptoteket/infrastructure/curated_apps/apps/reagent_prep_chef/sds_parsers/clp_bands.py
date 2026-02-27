@@ -64,26 +64,26 @@ def parse_sds_clp_bands_from_text(
 ) -> list[ClpBand]:
     """Parse concentration-dependent CLP bands from SDS text."""
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    section_text = extract_section(lines, section_number="2")
-    if not section_text:
-        section_text = extract_section(lines, section_number="3")
-    if not section_text:
-        return []
-    target_lines = [line.strip() for line in section_text.splitlines() if line.strip()]
-
     bands: list[ClpBand] = []
-    for line in target_lines:
-        hazard_codes = HAZARD_CODE_RE.findall(line)
-        if not hazard_codes:
+    for section_number in ("2", "3"):
+        section_text = extract_section(lines, section_number=section_number)
+        if not section_text:
             continue
-        band = _parse_concentration_band(
-            line=line,
-            hazard_codes=hazard_codes,
-            molar_mass_g_mol=molar_mass_g_mol,
-            density_g_ml=density_g_ml,
-        )
-        if band is not None:
-            bands.append(band)
+        default_percent_basis = _infer_default_percent_basis(section_text=section_text)
+        target_lines = [line.strip() for line in section_text.splitlines() if line.strip()]
+        for line in target_lines:
+            hazard_codes = HAZARD_CODE_RE.findall(line)
+            if not hazard_codes:
+                continue
+            band = _parse_concentration_band(
+                line=line,
+                hazard_codes=hazard_codes,
+                molar_mass_g_mol=molar_mass_g_mol,
+                density_g_ml=density_g_ml,
+                default_percent_basis=default_percent_basis,
+            )
+            if band is not None:
+                bands.append(band)
 
     return _dedupe_bands(bands)
 
@@ -94,6 +94,7 @@ def _parse_concentration_band(
     hazard_codes: list[str],
     molar_mass_g_mol: Decimal,
     density_g_ml: Decimal,
+    default_percent_basis: str | None,
 ) -> ClpBand | None:
     unique_codes = tuple(sorted({code.upper() for code in hazard_codes}))
     if not unique_codes:
@@ -101,9 +102,12 @@ def _parse_concentration_band(
 
     percent_bounds = _extract_percent_bounds(line)
     if percent_bounds is not None:
-        basis = _extract_percent_basis(line)
+        basis = _extract_percent_basis(line) or default_percent_basis
+        notes: tuple[str, ...] = ()
         if basis is None:
             return None
+        if _extract_percent_basis(line) is None and default_percent_basis is not None:
+            notes = ("Tolkar % som w/w (SCL).",)
         min_molarity = _percent_to_molarity(
             percent_bounds[0],
             molar_mass_g_mol=molar_mass_g_mol,
@@ -124,7 +128,7 @@ def _parse_concentration_band(
             hazard_codes=unique_codes,
             pictograms=(),
             signal_word=None,
-            notes=(),
+            notes=notes,
         )
 
     molar_bounds = _extract_molar_bounds(line)
@@ -216,6 +220,16 @@ def _extract_percent_basis(line: str) -> str | None:
         return "w/v"
     if "v/v" in lowered:
         return "v/v"
+    return None
+
+
+def _infer_default_percent_basis(*, section_text: str) -> str | None:
+    lowered = section_text.lower()
+    explicit = _extract_percent_basis(lowered)
+    if explicit is not None:
+        return explicit
+    if "specific conc. limits" in lowered or "specific concentration limits" in lowered:
+        return "w/w"
     return None
 
 

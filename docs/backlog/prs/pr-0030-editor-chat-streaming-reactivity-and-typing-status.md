@@ -14,7 +14,7 @@ acceptance_criteria:
   - "Inline status uses 'Tänker...' until the first visible batch is rendered, then 'Skriver...'."
   - "Chat composer status uses the same thinking/writing semantics (no 'AI skriver...')."
   - "Typing reveal is driven by a composable-level controller (steady pace + subtle fade per chunk)."
-  - "Verification is recorded in `.agent/handoff.md` including Playwright artifacts under `.artifacts/`."
+  - "Verification is recorded in `.agents/handoff.md` including Playwright artifacts under `.artifacts/`."
 ---
 
 ## Problem

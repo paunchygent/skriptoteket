@@ -17,7 +17,7 @@ acceptance_criteria:
   - "`src/skriptoteket/infrastructure/editor/unified_diff_applier.py` is reduced below 500 LOC via SRP refactor (split normalization/parsing/apply), preserving behavior."
   - "No user-facing behavior changes beyond improved performance/maintainability (same routes, same responses, same UI semantics)."
   - "Minimal verification passes: `pdm run fe-type-check`, `pdm run fe-test`, `pdm run test`."
-  - "If any UI/route behavior changes, a live functional check is recorded in `.agent/handoff.md`."
+  - "If any UI/route behavior changes, a live functional check is recorded in `.agents/handoff.md`."
 ---
 
 ## Problem
@@ -53,7 +53,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 - [x] **LOC budget:** HelpPanel 142, HomeView 423, ScriptEditorView 7, docker_runner 8, edit_ops_handler 429, unified_diff_applier 45.
 - [x] **SRP refactor quality:** no “helper-only” slicing; responsibilities are separated into cohesive modules with clear naming and ownership.
 - [x] **API stability:** public exports and DI wiring remain stable (or call-site changes are explicitly listed and justified).
-- [x] **Verification recorded:** exact commands and manual checks are recorded in `.agent/handoff.md`.
+- [x] **Verification recorded:** exact commands and manual checks are recorded in `.agents/handoff.md`.
 - [x] **Perf confirmation:** `pdm run fe-build` output shows separate `HelpPanel-*` + `HelpTopic*` chunks (not bundled into `index-*`).
 
 ### 1) Frontend: Help UI (P0) — lazy-load + SRP split

@@ -100,4 +100,4 @@ Use the sandbox settings resolve/save endpoints from ST-14-08
   - Open editor sandbox, set `theme_color`, save settings, run sandbox.
   - Assert output includes `theme_color=<value>` and persists on reload.
 - Manual: open editor sandbox for a draft with settings_schema and confirm the toggle/panel + save flow.
-- Live functional check (REQUIRED): run backend + SPA dev, verify in browser, and record steps in `.agent/handoff.md`.
+- Live functional check (REQUIRED): run backend + SPA dev, verify in browser, and record steps in `.agents/handoff.md`.

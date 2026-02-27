@@ -35,6 +35,20 @@ const emit = defineEmits<{
   (event: "export"): void;
   (event: "save"): void;
 }>();
+
+const MISSING_FLAG_LABELS: Record<string, string> = {
+  sds_ref_missing: "SDS-referens saknas.",
+  sds_pdf_missing: "SDS saknas offline.",
+  sds_density_missing: "Densitet saknas i SDS.",
+  sds_clp_bands_missing: "CLP-data saknas i SDS.",
+  sds_heuristics_missing: "Kemiska heuristiker saknas i SDS.",
+  clp_unavailable_for_target: "CLP-klassning saknas för vald koncentration.",
+  heuristics_unavailable: "Kemiska heuristiker saknas.",
+};
+
+function formatMissingFlag(flag: string): string {
+  return MISSING_FLAG_LABELS[flag] ?? flag;
+}
 </script>
 
 <template>
@@ -96,14 +110,14 @@ const emit = defineEmits<{
 
         <div class="flex flex-wrap items-center gap-2 text-xs text-navy/70">
           <button
-            v-if="props.riskDraft.sds_ref"
+            v-if="props.riskDraft.sds.pdf_available"
             type="button"
             class="btn-ghost"
             @click="emit('openSds')"
           >
             Öppna SDS
           </button>
-          <span v-else>Ingen SDS kopplad.</span>
+          <span v-else>SDS saknas offline.</span>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-2">
@@ -312,6 +326,21 @@ const emit = defineEmits<{
           >
             {{ props.isSavingRiskPdfToVault ? "Sparar…" : "Spara i Mina filer" }}
           </button>
+        </div>
+
+        <div
+          v-if="(props.riskDraft.export_gate?.missing_data_flags ?? []).length > 0"
+          class="p-3 border border-burgundy bg-canvas shadow-none space-y-1"
+        >
+          <p class="font-semibold text-burgundy text-xs">Kan inte exportera ännu</p>
+          <ul class="list-disc pl-5 space-y-1 text-burgundy text-xs">
+            <li
+              v-for="flag in props.riskDraft.export_gate?.missing_data_flags ?? []"
+              :key="flag"
+            >
+              {{ formatMissingFlag(flag) }}
+            </li>
+          </ul>
         </div>
 
         <p

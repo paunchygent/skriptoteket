@@ -2826,12 +2826,8 @@ export interface components {
         };
         /** ReagentPrepChefChemistryHeuristics */
         ReagentPrepChefChemistryHeuristics: {
-            /**
-             * Exothermicity
-             * @default none
-             * @enum {string}
-             */
-            exothermicity: "none" | "low" | "medium" | "high";
+            /** Exothermicity */
+            exothermicity?: ("none" | "low" | "medium" | "high") | null;
             /** Incompatibilities */
             incompatibilities?: string[];
             /** Reaction Notes */
@@ -2964,15 +2960,17 @@ export interface components {
         ReagentPrepChefRiskAssessmentDraft: {
             clp: components["schemas"]["ReagentPrepChefClpClassification"];
             context?: components["schemas"]["ReagentPrepChefRiskContext"] | null;
+            export_gate: components["schemas"]["ReagentPrepChefRiskExportGate"];
             heuristics: components["schemas"]["ReagentPrepChefChemistryHeuristics"];
             /** Missing Confirmations */
             missing_confirmations?: string[];
+            /** Missing Flags */
+            missing_flags?: ("sds_ref_missing" | "sds_pdf_missing" | "sds_density_missing" | "sds_clp_bands_missing" | "sds_heuristics_missing" | "clp_unavailable_for_target" | "heuristics_unavailable")[];
             /** Requires Confirmation */
             requires_confirmation: boolean;
             /** Risks */
             risks: components["schemas"]["ReagentPrepChefRiskItem"][];
-            /** Sds Ref */
-            sds_ref?: string | null;
+            sds: components["schemas"]["ReagentPrepChefSdsSnapshot"];
             sheet: components["schemas"]["ReagentPrepChefPrepSheet"];
         };
         /** ReagentPrepChefRiskAssessmentInputs */
@@ -3020,6 +3018,17 @@ export interface components {
             participants?: string | null;
             /** Scope */
             scope?: string | null;
+        };
+        /** ReagentPrepChefRiskExportGate */
+        ReagentPrepChefRiskExportGate: {
+            /** Missing Confirmations */
+            missing_confirmations?: string[];
+            /** Missing Context Fields */
+            missing_context_fields?: string[];
+            /** Missing Data Flags */
+            missing_data_flags?: ("sds_ref_missing" | "sds_pdf_missing" | "sds_density_missing" | "sds_clp_bands_missing" | "sds_heuristics_missing" | "clp_unavailable_for_target" | "heuristics_unavailable")[];
+            /** Ready */
+            ready: boolean;
         };
         /** ReagentPrepChefRiskItem */
         ReagentPrepChefRiskItem: {
@@ -3103,6 +3112,17 @@ export interface components {
         /** ReagentPrepChefSavePdfResult */
         ReagentPrepChefSavePdfResult: {
             file: components["schemas"]["VaultFileInfo"];
+        };
+        /** ReagentPrepChefSdsSnapshot */
+        ReagentPrepChefSdsSnapshot: {
+            /** Missing Flags */
+            missing_flags?: ("sds_ref_missing" | "sds_pdf_missing" | "sds_density_missing" | "sds_clp_bands_missing" | "sds_heuristics_missing" | "clp_unavailable_for_target" | "heuristics_unavailable")[];
+            /** Pdf Available */
+            pdf_available: boolean;
+            /** Sds Ref */
+            sds_ref?: string | null;
+            /** Sources */
+            sources?: string[];
         };
         /** ReagentPrepChefUpdateDefaultsRequest */
         ReagentPrepChefUpdateDefaultsRequest: {

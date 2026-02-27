@@ -5,7 +5,7 @@ title: "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)"
 status: in_progress
 owners: "agents"
 created: 2026-01-28
-updated: 2026-02-01
+updated: 2026-02-18
 stories:
   - "ST-20-02"
 tags: ["curated-apps", "backend", "frontend"]
@@ -36,7 +36,7 @@ Add a first-class **Riskbedömning** workflow to the existing curated app:
 - Concentration-dependent CLP classification engine.
 - Automatic risk scoring + teacher must explicitly confirm or modify seriousness/rating.
 
-## Implementation status (as of 2026-02-01)
+## Implementation status (as of 2026-02-18)
 
 Delivered so far:
 
@@ -49,7 +49,7 @@ Delivered so far:
 
 Remaining to close for acceptance:
 
-- **Full dataset prefetch validation**: ran `seed-sds-cache` on 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`). All misses must be resolved.
+- **Full dataset prefetch validation**: ran `seed-sds-cache` on 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`). This makes strict draft gating impractical; **PR-0062** introduces a best-effort contract (`missing_flags` + `export_gate`) so we can validate/iterate on real data while closing SDS gaps incrementally.
 - Populate curated SDS linkouts + curated meta (density + CLP bands) for every hazard; no gaps.
 - Confirm the remaining CLP/heuristics outputs match acceptance criteria across the full hazard list.
 
@@ -118,6 +118,9 @@ Frontend
 - Backend:
   - Unit tests for SDS parsing, chemistry heuristics, concentration-dependent CLP classification, and automatic risk scoring.
   - Integration tests for the endpoints.
+- Assumption validation (data-first):
+  - Build a small “sample truthy” hazard set from `.artifacts/sds-cache/full-report.json` spanning ok/fail/partial cases.
+  - Validate contract shapes and UI gating against that data before implementing larger refactors (avoid overfitting to toy examples).
 - Frontend:
   - Vitest tests for gating logic + required-field gating for export.
 - Manual:

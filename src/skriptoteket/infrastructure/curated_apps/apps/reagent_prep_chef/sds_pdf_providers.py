@@ -312,11 +312,39 @@ def _is_http_url(url: str) -> bool:
 
 def is_possible_pdf_url(url: str) -> bool:
     """Cheap filter for PDF-like URLs before downloading."""
+    if _is_known_false_positive_sds_url(url):
+        return False
     lowered = url.lower()
     if lowered.endswith(".pdf"):
         return True
     if "sds" in lowered or "msds" in lowered or "safety-data-sheet" in lowered:
         return True
+    return False
+
+
+def _is_known_false_positive_sds_url(url: str) -> bool:
+    """Return True if the URL is a known non-SDS document that frequently pollutes candidates.
+
+    We prefer to fail-closed (no SDS PDF) rather than cache and present misleading documents
+    as SDS in the UI.
+    """
+    lowered = url.strip().lower()
+    if not lowered:
+        return False
+
+    # OSHA hazard communication brief about the SDS format (not substance-specific).
+    if lowered == "https://www.osha.gov/sites/default/files/publications/osha3514.pdf":
+        return True
+
+    # CFR regulations PDFs (not SDS documents).
+    if "govinfo.gov/content/pkg/cfr-" in lowered and "title49" in lowered:
+        if "part171.pdf" in lowered or "part172.pdf" in lowered:
+            return True
+
+    # NJ “Right to Know” hazardous substance fact sheets (not SDS documents).
+    if "nj.gov/health/eoh/rtkweb/documents/fs/" in lowered:
+        return True
+
     return False
 
 

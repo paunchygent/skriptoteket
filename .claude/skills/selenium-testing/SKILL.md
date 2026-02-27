@@ -14,7 +14,7 @@ description: Browser automation with Selenium WebDriver for Python. (project)
 
 For Skriptoteket-specific login/env conventions, follow:
 
-- `.agent/rules/075-browser-automation.md`
+- `.agents/rules/075-browser-automation.md`
 
 ## Run
 

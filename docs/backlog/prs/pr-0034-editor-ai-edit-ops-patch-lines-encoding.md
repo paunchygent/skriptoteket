@@ -68,7 +68,7 @@ Files touched:
 
 - Backend: `pdm run test`
 - Frontend: `pdm run fe-type-check` and `pdm run fe-test`
-- Manual: request edit-ops → preview → apply in the tool editor and confirm no `parse_failed` (record in `.agent/handoff.md`).
+- Manual: request edit-ops → preview → apply in the tool editor and confirm no `parse_failed` (record in `.agents/handoff.md`).
 
 ## Rollback plan
 

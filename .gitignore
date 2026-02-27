@@ -61,8 +61,8 @@ frontend/apps/skriptoteket/openapi.json
 .vault/
 
 # Sensitive operational docs (credentials, server details)
-.agent/rules/080-home-server-deployment.md
-.agent/handoff.md
+.agents/rules/080-home-server-deployment.md
+.agents/handoff.md
 .claude/skills/skriptoteket-devops/SKILL.md
 .claude/skills/skriptoteket-devops/branches/cli.md
 .claude/skills/skriptoteket-devops/branches/database.md

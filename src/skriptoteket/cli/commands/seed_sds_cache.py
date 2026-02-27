@@ -1,17 +1,35 @@
+"""Seed and report SDS cache coverage for Reagent Prep Chef.
+
+This CLI command populates the on-disk SDS cache (PDF + derived signals) for the curated hazard
+list.
+
+PR-0062 adds a best-effort workflow where we distinguish:
+- `ok`: PDF cached and all required derived signals are present (density + CLP bands + heuristics),
+- `partial`: PDF cached but at least one derived signal is missing,
+- `fail`: no usable PDF candidate found / fetch failed.
+
+Related:
+  - `validate_sds_assumptions.py` (samples failures and builds a deeper failure taxonomy)
+  - `sds_index_store.py` / `sds_fetcher.py` (fetch + parse + cache implementation)
+"""
+
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
 import random
+from contextvars import ContextVar
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Literal
 
 import typer
 
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.reagent_prep_chef.models import HazardEntry
+from skriptoteket.domain.curated_apps.reagent_prep_chef.models import HazardEntry, HazardSdsData
+from skriptoteket.domain.errors import DomainError
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.hazards_store import (
     InMemoryReagentPrepChefHazardStore,
 )
@@ -36,6 +54,10 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_pdf_pro
     build_sds_pdf_provider_registry,
 )
 from skriptoteket.observability.logging import configure_logging
+
+SeedStatus = Literal["ok", "partial", "fail"]
+
+_PROGRESS_HAZARD_KEY: ContextVar[str | None] = ContextVar("seed_sds_cache_hazard_key", default=None)
 
 
 def seed_sds_cache(
@@ -87,6 +109,14 @@ def seed_sds_cache(
         "--report",
         help="Write a JSON report summary to this path.",
     ),
+    require_complete: bool = typer.Option(
+        True,
+        "--require-complete/--best-effort",
+        help=(
+            "Require all derived SDS signals (density + CLP bands + heuristics). "
+            "Use --best-effort to cache PDFs + partial derived signals and report ok/partial/fail."
+        ),
+    ),
 ) -> None:
     """Fetch and cache SDS data for curated Reagent Prep Chef hazards."""
     asyncio.run(
@@ -100,6 +130,7 @@ def seed_sds_cache(
             require_cid=require_cid,
             fail_fast=fail_fast,
             report_path=report_path,
+            require_complete=require_complete,
         )
     )
 
@@ -115,6 +146,7 @@ async def _seed_sds_cache_async(
     require_cid: bool,
     fail_fast: bool,
     report_path: Path | None,
+    require_complete: bool,
 ) -> None:
     settings = Settings()
     configure_logging(
@@ -191,30 +223,37 @@ async def _seed_sds_cache_async(
 
     failures = 0
     semaphore = asyncio.Semaphore(max_concurrency)
-    tasks: list[asyncio.Task[tuple[HazardEntry, Exception | None]]] = []
+    tasks: list[asyncio.Task[tuple[HazardEntry, SeedStatus, list[str], Exception | None]]] = []
     first_failure: Exception | None = None
     results: list[dict[str, object]] = []
 
     _emit_selection_summary(hazards)
 
-    async def _process(hazard: HazardEntry) -> tuple[HazardEntry, Exception | None]:
+    async def _process(
+        hazard: HazardEntry,
+    ) -> tuple[HazardEntry, SeedStatus, list[str], Exception | None]:
         async with semaphore:
+            token = _PROGRESS_HAZARD_KEY.set(hazard.key)
             try:
-                await index.ensure(hazard=hazard)
-                typer.echo(f"OK {hazard.key} → cached")
-                return (hazard, None)
+                sds = await index.ensure(hazard=hazard, require_complete=require_complete)
+                status, missing = _classify_sds(sds=sds, require_complete=require_complete)
+                missing_suffix = f" missing={missing}" if missing else ""
+                typer.echo(f"{status.upper()} {hazard.key} → cached{missing_suffix}")
+                return (hazard, status, missing, None)
             except Exception as exc:  # noqa: BLE001
                 typer.echo(f"FAIL {hazard.key}: {_format_exception(exc)}")
-                return (hazard, exc)
+                return (hazard, "fail", [], exc)
+            finally:
+                _PROGRESS_HAZARD_KEY.reset(token)
 
     for hazard in hazards:
         tasks.append(asyncio.create_task(_process(hazard)))
 
     try:
         for task in asyncio.as_completed(tasks):
-            hazard, exc = await task
-            results.append(_build_result(hazard=hazard, exc=exc))
-            if exc is None:
+            hazard, status, missing, exc = await task
+            results.append(_build_result(hazard=hazard, status=status, missing=missing, exc=exc))
+            if status != "fail":
                 continue
             failures += 1
             if fail_fast and first_failure is None:
@@ -262,26 +301,37 @@ def _emit_selection_summary(hazards: list[HazardEntry]) -> None:
 def _build_result(
     *,
     hazard: HazardEntry,
+    status: SeedStatus,
+    missing: list[str],
     exc: Exception | None,
 ) -> dict[str, object]:
     reason = None if exc is None else _format_exception(exc)
+    error_code = None
+    error_details = None
+    if isinstance(exc, DomainError):
+        error_code = str(exc.code)
+        error_details = exc.details
     return {
         "key": hazard.key,
         "display_name": hazard.display_name,
-        "status": "ok" if exc is None else "fail",
+        "status": status,
+        "missing": missing,
         "reason": reason,
+        "error_code": error_code,
+        "error_details": error_details,
     }
 
 
 def _emit_summary(results: list[dict[str, object]], *, report_path: Path | None) -> None:
     total = len(results)
-    ok_count = sum(1 for item in results if item["status"] == "ok")
-    fail_count = total - ok_count
-    typer.echo(f"Summary: ok={ok_count} fail={fail_count} total={total}")
+    ok_count = sum(1 for item in results if item.get("status") == "ok")
+    partial_count = sum(1 for item in results if item.get("status") == "partial")
+    fail_count = sum(1 for item in results if item.get("status") == "fail")
+    typer.echo(f"Summary: ok={ok_count} partial={partial_count} fail={fail_count} total={total}")
 
     failures: dict[str, int] = {}
     for item in results:
-        if item["status"] != "fail":
+        if item.get("status") != "fail":
             continue
         reason = str(item.get("reason") or "Unknown")
         failures[reason] = failures.get(reason, 0) + 1
@@ -295,6 +345,7 @@ def _emit_summary(results: list[dict[str, object]], *, report_path: Path | None)
         "generated_at": datetime.now(tz=timezone.utc).isoformat(),
         "summary": {
             "ok": ok_count,
+            "partial": partial_count,
             "fail": fail_count,
             "total": total,
         },
@@ -307,9 +358,11 @@ def _emit_summary(results: list[dict[str, object]], *, report_path: Path | None)
 
 
 def _progress_reporter(stage: str, payload: dict[str, object]) -> None:
+    hazard_key = _PROGRESS_HAZARD_KEY.get()
+    hazard_prefix = f"hazard={hazard_key} " if hazard_key else ""
     parts = [f"{key}={_format_progress_value(value)}" for key, value in payload.items()]
     message = " ".join(part for part in parts if part)
-    typer.echo(f"[{stage}] {message}".strip())
+    typer.echo(f"[{stage}] {hazard_prefix}{message}".strip())
 
 
 def _format_progress_value(value: object) -> str:
@@ -326,3 +379,18 @@ def _format_exception(exc: Exception) -> str:
     if message:
         return message
     return type(exc).__name__
+
+
+def _classify_sds(*, sds: HazardSdsData, require_complete: bool) -> tuple[SeedStatus, list[str]]:
+    if require_complete:
+        return ("ok", [])
+
+    missing: list[str] = []
+    if not sds.clp_bands:
+        missing.append("clp_bands")
+    if sds.density_g_ml is None:
+        missing.append("density_g_ml")
+    if not sds.incompatibilities and not sds.reaction_notes and sds.exothermicity is None:
+        missing.append("heuristics")
+
+    return ("ok", []) if not missing else ("partial", missing)

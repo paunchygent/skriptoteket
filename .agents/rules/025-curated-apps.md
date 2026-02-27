@@ -39,7 +39,7 @@ wrappers around generic tool/run UI contracts.
 
 - **REQUIRED**: Curated apps MUST present a cohesive, app-specific UX that does not look like the generic tool
   pipeline.
-- **REQUIRED**: Curated apps MUST follow the HuleEdu design system rules in `.agent/rules/045-huleedu-design-system.md`
+- **REQUIRED**: Curated apps MUST follow the HuleEdu design system rules in `.agents/rules/045-huleedu-design-system.md`
   (tokens-first styling + SPA primitives).
 - **FORBIDDEN**: Leaking platform internals (run IDs/status pills, generic “artifacts panels”, UI contract field labels)
   into the primary UX for `ui_mode=bespoke_required`, unless explicitly required by product design for that app.

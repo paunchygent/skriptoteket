@@ -185,6 +185,7 @@ def build_risk_export_html(
         ("H-koder", ", ".join(clp.hazard_codes) if clp.hazard_codes else "—"),
         ("Piktogram", ", ".join(clp.pictograms) if clp.pictograms else "—"),
         ("Signalord", clp.signal_word or "—"),
+        ("Noteringar", ", ".join(clp.notes) if clp.notes else "—"),
     ]
     clp_table = (
         "<table class='kv'>"

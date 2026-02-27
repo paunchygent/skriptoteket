@@ -17,8 +17,8 @@ def _count_lines(*, path: Path) -> int:
 
 def main() -> int:
     budgets = [
-        Budget(path=Path(".agent/readme-first.md"), max_lines=300),
-        Budget(path=Path(".agent/handoff.md"), max_lines=200),
+        Budget(path=Path(".agents/readme-first.md"), max_lines=300),
+        Budget(path=Path(".agents/handoff.md"), max_lines=200),
     ]
 
     failures: list[str] = []
@@ -43,8 +43,8 @@ def main() -> int:
     for failure in failures:
         print(f"- {failure}")
     print(
-        "\nHint: `.agent/handoff.md` should only keep last critical backend+frontend session + current/next session; "
-        "move completed stories to `.agent/readme-first.md` as links only.",
+        "\nHint: `.agents/handoff.md` should only keep last critical backend+frontend session + current/next session; "
+        "move completed stories to `.agents/readme-first.md` as links only.",
     )
     return 1
 

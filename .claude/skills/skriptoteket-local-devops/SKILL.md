@@ -7,7 +7,7 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
 
 ## Hard rules
 
-- Prefer repo scripts over ad-hoc Docker commands; use `pdm run dev-start` / `pdm run dev-stop` per `.agent/rules/060-docker-and-compose.md`.
+- Prefer repo scripts over ad-hoc Docker commands; use `pdm run dev-start` / `pdm run dev-stop` per `.agents/rules/060-docker-and-compose.md`.
 - For DB-only workflows, `docker compose up -d db` is acceptable.
 - Prefer the full docker hot-reload stack (`pdm run dev-start`) when you need parity with worker/runner/frontend.
 - Host-only backend (`pdm run dev`) is fine for quick iteration, but keep the DB in Docker (see `.env.example` host port mapping).

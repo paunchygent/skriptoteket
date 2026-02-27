@@ -1,3 +1,15 @@
+"""Protocols for the Reagent Prep Chef curated app.
+
+These protocols define the DI seams between layers:
+- application handlers (prep, defaults, risk assessment, exports)
+- SDS fetching/caching and risk template retrieval
+- PDF rendering and storage
+
+Related:
+  - `src/skriptoteket/application/curated_apps/reagent_prep_chef.py` (request/response models)
+  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/` (implementations)
+"""
+
 from __future__ import annotations
 
 from typing import Protocol
@@ -145,7 +157,13 @@ class ReagentPrepChefSdsStoreProtocol(Protocol):
 
 
 class ReagentPrepChefSdsIndexStoreProtocol(Protocol):
-    async def ensure(self, *, hazard: HazardEntry, allow_fetch: bool = True) -> HazardSdsData: ...
+    async def ensure(
+        self,
+        *,
+        hazard: HazardEntry,
+        allow_fetch: bool = True,
+        require_complete: bool = True,
+    ) -> HazardSdsData: ...
 
     def get_cached(self, *, sds_ref: str) -> tuple[str, bytes, str]: ...
 

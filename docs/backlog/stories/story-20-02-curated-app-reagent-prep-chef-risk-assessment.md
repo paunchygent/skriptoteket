@@ -5,7 +5,7 @@ title: "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)"
 status: in_progress
 owners: "agents"
 created: 2026-01-28
-updated: 2026-02-01
+updated: 2026-02-18
 epic: "EPIC-20"
 dependencies: ["ADR-0022", "ADR-0023", "ADR-0024", "REF-curated-app-reagent-prep-chef"]
 acceptance_criteria:
@@ -120,6 +120,7 @@ The PDF must include AFS-aligned documentation fields:
   - Automatic risk scoring and teacher confirmation state.
 - Backend integration tests: endpoints and auth.
 - Frontend unit tests (Vitest): required fields gating export, error handling, confirmation flow.
+- Assumption validation (data-first): pick a small “sample truthy” set from `.artifacts/sds-cache/full-report.json` spanning ok/fail/partial cases and validate missingness/gating against real shapes before building larger code paths.
 - Manual: compute prep sheet — open risk tab — review prefilled CLP/heuristics/scores — confirm/override — export PDF — save to Vault — reopen app and confirm draft restore.
 
 ## Notes
@@ -127,7 +128,7 @@ The PDF must include AFS-aligned documentation fields:
 - Build on ST-20-01 output model and export patterns.
 - Follow the curated-app rule: bespoke UX + app-specific APIs; tool/runner infrastructure is internal-only.
 
-## Implementation status (as of 2026-02-01)
+## Implementation status (as of 2026-02-18)
 
 Progress:
 
@@ -139,5 +140,5 @@ Progress:
 
 Outstanding gaps vs acceptance criteria:
 
-- Full prefetch validation ran 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`); remaining misses must be resolved.
+- Full prefetch validation ran 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`). To get out of the “strict completeness blocks everything” state, **PR-0062** defines a best-effort draft contract with explicit `missing_flags` and server-driven `export_gate` (draft tolerant, export fail-closed/offline).
 - Curated SDS linkouts/meta coverage still incomplete for the full list (manual curation required).

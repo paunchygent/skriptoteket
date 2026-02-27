@@ -14,7 +14,7 @@ acceptance_criteria:
   - "Chat-ops retries once on eligible failures and returns a single coherent response."
   - "Fallback to OpenAI requires explicit opt-in and never leaks prompts off-box without it."
   - "Circuit breaker + sticky routing prevents repeated slow timeouts and reduces provider flapping."
-  - "Backend + SPA tests cover routing + opt-in behavior, and live verification is recorded in `.agent/handoff.md`."
+  - "Backend + SPA tests cover routing + opt-in behavior, and live verification is recorded in `.agents/handoff.md`."
 ---
 
 ## Problem
@@ -50,7 +50,7 @@ is down or overloaded, users get timeouts or errors and the streaming UX suffers
 - `pdm run pytest tests/unit -q`
 - `pdm run fe-test`
 - `pdm run fe-gen-api-types`
-- Live check: `pdm run dev-local` (record manual verification in `.agent/handoff.md`)
+- Live check: `pdm run dev-local` (record manual verification in `.agents/handoff.md`)
 
 ### Live OpenAI verification (manual; no secrets)
 

@@ -26,6 +26,8 @@ from .text_extractors import (
 __all__ = [
     "extract_candidate_urls",
     "extract_density_g_ml",
+    "extract_density_g_ml_from_pdf_bytes",
+    "extract_density_g_ml_from_sds_text",
     "extract_hazard_codes_from_text",
     "extract_pdf_text",
     "extract_pictograms_from_text",
@@ -41,3 +43,7 @@ __all__ = [
     "parse_sds_heuristics_from_section_text",
     "parse_sds_heuristics_from_text",
 ]
+from .density import (
+    extract_density_g_ml_from_pdf_bytes,
+    extract_density_g_ml_from_sds_text,
+)

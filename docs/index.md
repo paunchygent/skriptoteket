@@ -222,6 +222,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0059-curated-app-reagent-prep-chef.md`
 - `docs/backlog/prs/pr-0060-curated-app-reagent-prep-chef-risk-assessment.md`
 - `docs/backlog/prs/pr-0061-story-003c-thin-adapter-parity-and-scientific-pdf-workload-validation.md`
+- `docs/backlog/prs/pr-0062-curated-app-reagent-prep-chef-risk-assessment-best-effort-contract.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -544,6 +545,6 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 ## Agent support
 
-- Start-here: `.agent/readme-first.md`
-- Session handoff: `.agent/handoff.md`
-- Next-session prompt template: `.agent/next-session-instruction-prompt-template.md`
+- Start-here: `.agents/readme-first.md`
+- Session handoff: `.agents/handoff.md`
+- Next-session prompt template: `.agents/next-session-instruction-prompt-template.md`

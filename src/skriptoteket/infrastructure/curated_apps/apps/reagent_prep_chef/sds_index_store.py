@@ -1,3 +1,17 @@
+"""File-based SDS cache/index for Reagent Prep Chef.
+
+Persists SDS PDFs and their derived signals (GHS snapshot, density, chemistry heuristics,
+concentration-dependent CLP bands) under a cache root.
+
+The store supports both strict and best-effort callers via `require_complete`:
+- `True`: require CLP bands + density + heuristics, otherwise raise a `DomainError`.
+- `False`: return cached partial data when available.
+
+Related:
+  - `sds_fetcher.py` (fetch + derive signals from PubChem/SDS PDFs)
+  - `reagent_prep_chef_risk_assessment.py` (consumes `HazardSdsData` for drafts/exports)
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -78,17 +92,40 @@ class FileSystemReagentPrepChefSdsIndexStore(ReagentPrepChefSdsIndexStoreProtoco
         self._lock = asyncio.Lock()
         self._index = self._load_index()
 
-    async def ensure(self, *, hazard: HazardEntry, allow_fetch: bool = True) -> HazardSdsData:
+    async def ensure(
+        self,
+        *,
+        hazard: HazardEntry,
+        allow_fetch: bool = True,
+        require_complete: bool = True,
+    ) -> HazardSdsData:
         async with self._lock:
             entry = self._index.entries.get(hazard.key)
-            if entry and self._file_exists(entry) and _entry_is_complete(entry):
-                return _entry_to_data(entry)
+            if entry is not None and self._file_exists(entry):
+                if not require_complete or _entry_is_complete(entry):
+                    return _entry_to_data(entry)
+                if not allow_fetch:
+                    raise validation_error(
+                        f"SDS saknas: ingen komplett SDS-data för {hazard.key}.",
+                        details={
+                            "formula": hazard.key,
+                            "missing": _missing_reasons(entry),
+                        },
+                    )
 
         if not allow_fetch:
             raise not_found("SDS", hazard.key)
 
         fetched = await self._fetcher.fetch(hazard=hazard)
         entry = self._store_fetch(hazard=hazard, fetched=fetched)
+        if require_complete and not _entry_is_complete(entry):
+            raise validation_error(
+                f"SDS saknas: ingen komplett SDS-data för {hazard.key}.",
+                details={
+                    "formula": hazard.key,
+                    "missing": _missing_reasons(entry),
+                },
+            )
         return _entry_to_data(entry)
 
     def is_cached_complete(self, *, hazard: HazardEntry) -> bool:
@@ -191,6 +228,7 @@ def _entry_to_data(entry: _SdsIndexEntry) -> HazardSdsData:
         hazard_codes=tuple(entry.hazard_codes),
         pictograms=tuple(entry.pictograms),
         signal_word=_normalize_signal_word(entry.signal_word),
+        density_g_ml=None if entry.density_g_ml is None else Decimal(str(entry.density_g_ml)),
         clp_bands=tuple(_model_to_band(item) for item in entry.clp_bands),
         incompatibilities=tuple(entry.incompatibilities),
         exothermicity=entry.exothermicity,
@@ -242,6 +280,17 @@ def _entry_is_complete(entry: _SdsIndexEntry) -> bool:
     if not entry.incompatibilities and not entry.reaction_notes and entry.exothermicity is None:
         return False
     return True
+
+
+def _missing_reasons(entry: _SdsIndexEntry) -> list[str]:
+    missing: list[str] = []
+    if not entry.clp_bands:
+        missing.append("clp_bands")
+    if entry.density_g_ml is None:
+        missing.append("density_g_ml")
+    if not entry.incompatibilities and not entry.reaction_notes and entry.exothermicity is None:
+        missing.append("heuristics")
+    return missing
 
 
 def _extension_for_media_type(media_type: str) -> str:

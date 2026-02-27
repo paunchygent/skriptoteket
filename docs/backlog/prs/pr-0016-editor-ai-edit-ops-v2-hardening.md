@@ -156,7 +156,7 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
 - [ ] Manual: request edit without explicit location → proposal preview renders → apply works → undo works.
 - [ ] Manual: trigger expected failure(s) (patch mismatch / anchor ambiguity / 409 conflict) → clear error + regenerate path.
 - [ ] Manual: fuzz scenario triggers warning + extra confirm click (and is visible to the user).
-- [x] Record exact commands + steps in `.agent/handoff.md`.
+- [x] Record exact commands + steps in `.agents/handoff.md`.
 
 ## Test plan
 

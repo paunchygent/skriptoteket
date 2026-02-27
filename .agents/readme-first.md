@@ -5,13 +5,13 @@ Use this file as the starting point when you begin a new session.
 ## Behavioral Rules (must follow)
 
 - **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims.
-- **Preserve template structure**: when editing `.agent/handoff.md` or the next-session prompt template, keep headings and section order unchanged; only fill in content.
-- **No secrets**: never include API keys/tokens, passwords, or personal data in `.agent/` or `docs/`.
-- **Use the prompt template for new agents/devs**: if the user asks for a “message to a new developer/agent”, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”).
+- **Preserve template structure**: when editing `.agents/handoff.md` or the next-session prompt template, keep headings and section order unchanged; only fill in content.
+- **No secrets**: never include API keys/tokens, passwords, or personal data in `.agents/` or `docs/`.
+- **Use the prompt template for new agents/devs**: if the user asks for a “message to a new developer/agent”, generate it by filling `.agents/next-session-instruction-prompt-template.md` (address the recipient as “you”).
 - **Pre-commit required**: run `pdm run precommit-install` once, then `pdm run precommit-run` before pushing.
 - **Admin editor features**: extract logic into `frontend/apps/skriptoteket/src/composables/editor/`
   (views stay UI-only).
-- **Agent-doc size budgets**: keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
+- **Agent-doc size budgets**: keep `.agents/readme-first.md` ≤ 300 lines and `.agents/handoff.md` ≤ 200 lines (enforced by pre-commit).
 
 ## Pre-commit & quality gates (required)
 
@@ -43,7 +43,7 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 ## Read order (mandatory)
 
 1. `docs/index.md` (PRD/ADRs/backlog entrypoint)
-2. `.agent/rules/000-rule-index.md` (engineering rules and patterns)
+2. `.agents/rules/000-rule-index.md` (engineering rules and patterns)
 3. `AGENTS.md` (repo contributor guide)
 4. `doc_structure_requirements.md` (docs-contract governance)
 5. `docs/prd/prd-spa-frontend-v0.1.md` (SPA migration PRD)
@@ -84,7 +84,7 @@ and assembled in `frontend/apps/skriptoteket/src/composables/editor/skriptoteket
   `frontend/apps/skriptoteket/src/composables/editor/skriptoteketLintPanel.ts`.
 - References: `docs/reference/ref-linter-architecture.md`, `docs/reference/ref-codemirror-integration.md`,
   `docs/adr/adr-0048-linter-context-and-data-flow.md`.
-- Playwright + CodeMirror patterns: `.agent/rules/075-browser-automation.md`.
+- Playwright + CodeMirror patterns: `.agents/rules/075-browser-automation.md`.
 
 ### Runner Input Contract
 Scripts receive inputs via environment variables (not CLI args):
@@ -100,9 +100,9 @@ Scripts receive inputs via environment variables (not CLI args):
 
 ## Session handoff
 
-Before ending a session, update `.agent/handoff.md` with what changed, decisions, and next steps.
+Before ending a session, update `.agents/handoff.md` with what changed, decisions, and next steps.
 
-Completed stories belong in story docs + link index here (not in `.agent/handoff.md`):
+Completed stories belong in story docs + link index here (not in `.agents/handoff.md`):
 
 ### EPIC-11 (SPA Migration) - Complete
 All stories ST-11-01..23 done. Cutover deployed 2025-12-23. See `docs/backlog/epics/epic-11-full-vue-spa-migration.md`.
@@ -120,7 +120,7 @@ Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-
 - EPIC-14 admin tool authoring: `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 - EPIC-08 AI editor features: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
 - AI infra runbooks: `docs/runbooks/runbook-gpu-ai-workloads.md`, `docs/runbooks/runbook-tabby-codemirror.md`
-- LLM ops note: `llama-server-hip` disabled; `llama-server-vulkan` enabled for A/B testing (see `.agent/handoff.md`).
+- LLM ops note: `llama-server-hip` disabled; `llama-server-vulkan` enabled for A/B testing (see `.agents/handoff.md`).
 - Ops runbooks: `docs/runbooks/runbook-home-server.md`, `docs/runbooks/runbook-observability.md`
 - Execution queue planning: ADR-0062 (proposed) + EPIC-18 + ST-18-01 + PR-0039.
 

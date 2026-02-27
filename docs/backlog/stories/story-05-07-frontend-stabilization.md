@@ -138,7 +138,7 @@ Stödjer: Safari 15+, Chrome 90+, Firefox 90+
 Nästa session ska:
 
 1. Implementera editor-stabilisering (inre layout + scroll + CodeMirror refresh)
-2. Live-check: verifiera editor-sidan efter ändringar (session rule) och logga i `.agent/handoff.md`
+2. Live-check: verifiera editor-sidan efter ändringar (session rule) och logga i `.agents/handoff.md`
 
 ## Exakta patch-förslag (för nästa session)
 

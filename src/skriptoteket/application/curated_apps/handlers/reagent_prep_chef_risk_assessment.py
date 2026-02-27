@@ -1,3 +1,15 @@
+"""Riskbedömning draft handler for the Reagent Prep Chef curated app.
+
+Builds a deterministic, restorable risk assessment draft from:
+- the computed prep sheet (via the prep handler),
+- curated hazards + SDS-derived signals (CLP bands, density, heuristics),
+- repo-owned risk templates and teacher overrides stored in tool_sessions.
+
+PR-0062: draft generation is best-effort w.r.t. SDS completeness. Missing SDS-derived
+inputs are surfaced via explicit `missing_flags` + server-driven `export_gate`, while
+export remains strict/offline.
+"""
+
 from __future__ import annotations
 
 import hashlib
@@ -13,8 +25,11 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskAssessmentInputs,
     ReagentPrepChefRiskAssessmentRequest,
     ReagentPrepChefRiskAssessmentResult,
+    ReagentPrepChefRiskExportGate,
     ReagentPrepChefRiskItem,
+    ReagentPrepChefRiskMissingFlag,
     ReagentPrepChefRiskRating,
+    ReagentPrepChefSdsSnapshot,
 )
 from skriptoteket.domain.curated_apps.models import curated_app_tool_id
 from skriptoteket.domain.curated_apps.reagent_prep_chef.errors import (
@@ -53,6 +68,25 @@ APP_ID = "chemistry.reagent_prep_chef"
 RISK_CONTEXT = "curated-app-risk-assessment:v1"
 RISK_KEY = "risk_inputs"
 PREP_FINGERPRINT_KEY = "prep_fingerprint"
+
+MISSING_FLAGS_ORDER: list[ReagentPrepChefRiskMissingFlag] = [
+    "sds_ref_missing",
+    "sds_pdf_missing",
+    "sds_density_missing",
+    "sds_clp_bands_missing",
+    "sds_heuristics_missing",
+    "clp_unavailable_for_target",
+    "heuristics_unavailable",
+]
+
+EXPORT_BLOCKING_FLAGS: set[ReagentPrepChefRiskMissingFlag] = {
+    "sds_pdf_missing",
+    "sds_density_missing",
+    "sds_clp_bands_missing",
+    "sds_heuristics_missing",
+    "clp_unavailable_for_target",
+    "heuristics_unavailable",
+}
 
 
 def _parse_inputs(value: object) -> ReagentPrepChefRiskAssessmentInputs | None:
@@ -170,6 +204,47 @@ def _merge_sds(*, hazard: HazardEntry, sds: HazardSdsData) -> HazardEntry:
     )
 
 
+def _missing_context_fields(*, context: object) -> list[str]:
+    if context is None:
+        return ["scope", "participants", "approver", "assessment_date", "next_review_date"]
+
+    missing = []
+    scope = getattr(context, "scope", None)
+    participants = getattr(context, "participants", None)
+    approver = getattr(context, "approver", None)
+    assessment_date = getattr(context, "assessment_date", None)
+    next_review_date = getattr(context, "next_review_date", None)
+
+    if not (scope or "").strip():
+        missing.append("scope")
+    if not (participants or "").strip():
+        missing.append("participants")
+    if not (approver or "").strip():
+        missing.append("approver")
+    if assessment_date is None:
+        missing.append("assessment_date")
+    if next_review_date is None:
+        missing.append("next_review_date")
+    return missing
+
+
+def _has_heuristics(
+    *,
+    incompatibilities: tuple[str, ...],
+    reaction_notes: tuple[str, ...],
+    exothermicity: object,
+) -> bool:
+    return bool(incompatibilities) or bool(reaction_notes) or exothermicity is not None
+
+
+def _ordered_missing_flags(
+    missing_flags: set[ReagentPrepChefRiskMissingFlag],
+) -> list[ReagentPrepChefRiskMissingFlag]:
+    ordered = [flag for flag in MISSING_FLAGS_ORDER if flag in missing_flags]
+    remaining = sorted(flag for flag in missing_flags if flag not in MISSING_FLAGS_ORDER)
+    return [*ordered, *remaining]
+
+
 class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerProtocol):
     def __init__(
         self,
@@ -250,36 +325,33 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         sds_data: HazardSdsData | None = None
 
         if hazard_entry is None:
-            warnings.append("Okänt ämne: riskklassning kan inte beräknas. Öppna SDS.")
+            raise rpc_validation_error(
+                app_code=ReagentPrepChefErrorCode.RISK_CHEMICAL_MISSING,
+                message="Okänt ämne: saknar kuraterad SDS-post.",
+                details={"formula": prep_result.sheet.chemistry.formula_clean},
+            )
+
+        try:
+            sds_data = await self._sds_index.ensure(
+                hazard=hazard_entry,
+                allow_fetch=allow_fetch,
+                require_complete=require_complete,
+            )
+        except Exception as exc:  # noqa: BLE001
             if require_complete:
                 raise rpc_validation_error(
-                    app_code=ReagentPrepChefErrorCode.RISK_CHEMICAL_MISSING,
-                    message="Okänt ämne: saknar kuraterad SDS-post.",
-                    details={"formula": prep_result.sheet.chemistry.formula_clean},
-                )
-        else:
-            try:
-                sds_data = await self._sds_index.ensure(
-                    hazard=hazard_entry,
-                    allow_fetch=allow_fetch,
-                )
-            except Exception as exc:  # noqa: BLE001
-                if require_complete:
-                    raise rpc_validation_error(
-                        app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
-                        message="SDS saknas eller kunde inte laddas.",
-                        details={"formula": hazard_entry.key},
-                    ) from exc
-                warnings.append("SDS saknas: riskklassning kan inte beräknas. Öppna SDS.")
-                sds_data = None
+                    app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
+                    message="SDS saknas eller kunde inte laddas.",
+                    details={"formula": hazard_entry.key},
+                ) from exc
+            warnings.append("SDS saknas: riskklassning kan inte beräknas. Öppna SDS.")
+            sds_data = None
 
-        if sds_data is not None and hazard_entry is not None:
+        if sds_data is not None:
             hazard_entry = _merge_sds(hazard=hazard_entry, sds=sds_data)
-        else:
-            hazard_entry = None
 
         band = None
-        if hazard_entry is not None and hazard_entry.clp_bands:
+        if hazard_entry.clp_bands:
             band = select_clp_band(
                 bands=hazard_entry.clp_bands,
                 molarity=command.prep.target_molarity,
@@ -292,7 +364,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
                         details={"formula": hazard_entry.key},
                     )
                 warnings.append("CLP-klassning kan inte beräknas för vald koncentration.")
-        elif hazard_entry is not None:
+        else:
             if require_complete:
                 raise rpc_validation_error(
                     app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
@@ -347,15 +419,62 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         missing_confirmations = [item.id for item in risks if not item.confirmed]
         requires_confirmation = len(missing_confirmations) > 0
 
+        missing_flags: set[ReagentPrepChefRiskMissingFlag] = set()
+        if sds_data is None:
+            missing_flags.add("sds_pdf_missing")
+        else:
+            if sds_data.density_g_ml is None:
+                missing_flags.add("sds_density_missing")
+            if not sds_data.clp_bands:
+                missing_flags.add("sds_clp_bands_missing")
+            if not _has_heuristics(
+                incompatibilities=sds_data.incompatibilities,
+                reaction_notes=sds_data.reaction_notes,
+                exothermicity=sds_data.exothermicity,
+            ):
+                missing_flags.add("sds_heuristics_missing")
+
+        if hazard_entry.clp_bands and band is None:
+            missing_flags.add("clp_unavailable_for_target")
+        if not _has_heuristics(
+            incompatibilities=hazard_entry.incompatibilities,
+            reaction_notes=hazard_entry.reaction_notes,
+            exothermicity=hazard_entry.exothermicity,
+        ):
+            missing_flags.add("heuristics_unavailable")
+
+        ordered_missing_flags = _ordered_missing_flags(missing_flags)
+        missing_context_fields = _missing_context_fields(context=inputs.context if inputs else None)
+        missing_data_flags = [
+            flag for flag in ordered_missing_flags if flag in EXPORT_BLOCKING_FLAGS
+        ]
+        export_gate = ReagentPrepChefRiskExportGate(
+            ready=not requires_confirmation
+            and not missing_context_fields
+            and not missing_data_flags,
+            missing_confirmations=missing_confirmations,
+            missing_context_fields=missing_context_fields,
+            missing_data_flags=missing_data_flags,
+        )
+
+        sds_snapshot = ReagentPrepChefSdsSnapshot(
+            sds_ref=sds_data.sds_ref if sds_data is not None else None,
+            pdf_available=sds_data is not None,
+            missing_flags=[flag for flag in ordered_missing_flags if flag.startswith("sds_")],
+            sources=list(sds_data.sources) if sds_data is not None else [],
+        )
+
         draft = ReagentPrepChefRiskAssessmentDraft(
             sheet=prep_result.sheet,
-            sds_ref=hazard_entry.sds_ref if hazard_entry is not None else None,
+            sds=sds_snapshot,
             context=inputs.context if inputs else None,
             clp=clp,
             heuristics=heuristics,
             risks=risks,
             requires_confirmation=requires_confirmation,
             missing_confirmations=missing_confirmations,
+            missing_flags=ordered_missing_flags,
+            export_gate=export_gate,
         )
 
         return ReagentPrepChefRiskAssessmentResult(

@@ -32,7 +32,7 @@ Overall, the domain model and persistence layout are sound and aligned with ADR-
 
 3. **Repository update behavior**: `ToolRunRepository.update()` and `ToolVersionRepository.update()` return the input object if the DB row is missing, which can mask data integrity issues. For use-cases that "must exist" (e.g., finishing a run that was just created), prefer raising `DomainError(NOT_FOUND)` to surface unexpected drift.
 
-4. **Web router rule compliance**: `.agent/rules/040-fastapi-blueprint.md` forbids `from __future__ import annotations` in router modules; `src/skriptoteket/web/router.py` currently includes it and should be corrected when you touch routing for EPIC-04.
+4. **Web router rule compliance**: `.agents/rules/040-fastapi-blueprint.md` forbids `from __future__ import annotations` in router modules; `src/skriptoteket/web/router.py` currently includes it and should be corrected when you touch routing for EPIC-04.
 
 ---
 

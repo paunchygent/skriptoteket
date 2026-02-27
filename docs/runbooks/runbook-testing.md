@@ -83,4 +83,4 @@ pdm run ui-runtime-smoke
 
 Reference:
 
-- `.agent/rules/075-browser-automation.md`
+- `.agents/rules/075-browser-automation.md`

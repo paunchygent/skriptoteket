@@ -47,10 +47,10 @@ The scope of this session is: **HTMX UX enhancement across all web templates** -
 From repo root, read:
 
 1. **AGENTS.md** - Monorepo conventions, DI patterns, test structure
-2. **.agent/rules/000-rule-index.md** - Index of all rules
-3. **.agent/rules/040-fastapi-blueprint.md** - Web layer patterns, HTMX endpoint patterns
-4. **.agent/rules/050-python-standards.md** - Code style requirements
-5. **.agent/rules/070-testing-standards.md** - Testing approach
+2. **.agents/rules/000-rule-index.md** - Index of all rules
+3. **.agents/rules/040-fastapi-blueprint.md** - Web layer patterns, HTMX endpoint patterns
+4. **.agents/rules/050-python-standards.md** - Code style requirements
+5. **.agents/rules/070-testing-standards.md** - Testing approach
 
 ### Critical Files to Understand
 
@@ -438,10 +438,10 @@ When done, you MUST:
 
 1. **Update documentation**:
    - Update `ref-vue-spa-migration-assessment.md` to note HTMX implementation status
-   - Add new patterns to `.agent/rules/040-fastapi-blueprint.md` if significant
+   - Add new patterns to `.agents/rules/040-fastapi-blueprint.md` if significant
 
 2. **Update handoff**:
-   - Update `.agent/handoff.md` with what was implemented, decisions made, remaining work
+   - Update `.agents/handoff.md` with what was implemented, decisions made, remaining work
 
 3. **Create instruction for next developer**:
    - If work continues, create similar scoped instruction with remaining tasks

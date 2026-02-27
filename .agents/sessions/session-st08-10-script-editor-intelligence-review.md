@@ -30,7 +30,7 @@ The scope of this session is **reviewing the ST-08-10/11/12 script editor intell
 
 ```
 CLAUDE.md                                    # Project overview, commands, patterns
-.agent/rules/000-rule-index.md               # Index of all rules
+.agents/rules/000-rule-index.md               # Index of all rules
 ```
 
 ### Rules relevant to this session:
@@ -278,7 +278,7 @@ When you are done with the review, you **MUST**:
    - `docs/backlog/stories/story-08-12-script-editor-intelligence-phase3.md`
 
 2. **Update handoff** with review findings:
-   - `.agent/handoff.md` — Add summary of review decisions
+   - `.agents/handoff.md` — Add summary of review decisions
 
 3. **Validate documentation**:
    ```bash

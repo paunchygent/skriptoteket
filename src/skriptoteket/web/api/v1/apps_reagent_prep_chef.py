@@ -86,7 +86,7 @@ async def risk_assessment(
         actor=user,
         command=command,
         allow_fetch=True,
-        require_complete=True,
+        require_complete=False,
     )
 
 

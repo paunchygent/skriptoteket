@@ -16,7 +16,7 @@ acceptance_criteria:
 ## Context
 
 Coverage reports show several web page routers are still below the router coverage target (>70%) in
-`.agent/rules/070-testing-standards.md`:
+`.agents/rules/070-testing-standards.md`:
 
 - `src/skriptoteket/web/pages/admin_tools.py`
 - `src/skriptoteket/web/pages/admin_scripting_runs.py`

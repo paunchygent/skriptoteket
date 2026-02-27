@@ -14,15 +14,15 @@ Target Python is **3.13–3.14**.
 
 - ALWAYS do `sandbox_permissions=require_escalated` for all commands that need elevated permissions (i.e., targets outside the project directory)
 - **No legacy support / workarounds**: do the full refactor; delete old paths instead of shims
-- **No vibe-coding**: follow established patterns and rules in `.agent/rules/000-rule-index.md`
+- **No vibe-coding**: follow established patterns and rules in `.agents/rules/000-rule-index.md`
 - **No unapproved reverts**: do not revert/restore changes you did not personally make without explicit user guidance (assume they may be user-added)
-- **Session rule (REQUIRED)**: for any UI/route change, do a live functional check (run the backend and/or Vite as appropriate; verify it renders) and record how you verified it in `.agent/handoff.md`
+- **Session rule (REQUIRED)**: for any UI/route change, do a live functional check (run the backend and/or Vite as appropriate; verify it renders) and record how you verified it in `.agents/handoff.md`
 - **Protocol-first DI**: depend on `typing.Protocol`, not concrete implementations
 - **Layer boundaries**: domain is pure; web/api are thin; infrastructure implements protocols
 - **Transactions**: Unit of Work owns commit/rollback; repositories never commit
 - **Errors**: raise `DomainError` (no HTTP); map to HTTP in the web layer
 - **Testing**: mock protocols; avoid `@patch` or implementation details - use DI and focus on behavior; keep test files <400–500 LOC
-- **New agent/dev message**: when asked for a handoff message to a new developer/agent, generate it by filling `.agent/next-session-instruction-prompt-template.md` (address the recipient as “you”)
+- **New agent/dev message**: when asked for a handoff message to a new developer/agent, generate it by filling `.agents/next-session-instruction-prompt-template.md` (address the recipient as “you”)
 
 ## Project Structure
 
@@ -36,13 +36,13 @@ Target Python is **3.13–3.14**.
 - **Epic update workflow (REQUIRED)**: when you mark a story `done`, update its epic in `docs/backlog/epics/`:
   - bump the epic frontmatter `updated` date
   - add/refresh a short “Implementation Summary (as of YYYY-MM-DD)” noting what shipped (at minimum the story ID)
-- **Handoff workflow (REQUIRED)**: when you change any story/epic/sprint status (or scope/dependencies), update `.agent/handoff.md`:
+- **Handoff workflow (REQUIRED)**: when you change any story/epic/sprint status (or scope/dependencies), update `.agents/handoff.md`:
   - Keep `## Snapshot` fields current (Date, Branch, Current sprint, Production, Completed).
   - Do **not** include commit SHAs in Snapshot (avoid churn); use `Branch: <name> + local changes`.
   - Add the relevant verification commands/manual checks under `## Verification`.
-- **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agent/rules/096-review-workflow.md`
+- **Review workflow (REQUIRED)**: all proposed EPICs/ADRs must be reviewed before implementation — see `docs/reference/ref-review-workflow.md` and `.agents/rules/096-review-workflow.md`
 - `frontend/`: pnpm workspace (Vue/Vite) — `apps/skriptoteket` (SPA), `packages/huleedu-ui` (component library)
-- `.agent/`: agent workflow helpers (`.agent/readme-first.md`, `.agent/handoff.md`, prompt template) + coding rules (`.agent/rules/`)
+- `.agents/`: agent workflow helpers (`.agents/readme-first.md`, `.agents/handoff.md`, prompt template) + coding rules (`.agents/rules/`)
 - `.claude/skills/`: repo-local agent skills (workflow playbooks + helpers)
 - `scripts/`: repo tooling (e.g., `scripts/validate_docs.py`)
 
@@ -100,14 +100,14 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 
 ## Coding & Testing Rules
 
-- Follow `.agent/rules/000-rule-index.md` (protocol-first DI, UoW-owned transactions, no business logic in web layer)
+- Follow `.agents/rules/000-rule-index.md` (protocol-first DI, UoW-owned transactions, no business logic in web layer)
 - Keep files small (<400–500 LOC); Ruff format + lint (100 chars)
 - Use Pydantic for cross-boundary models; `dataclasses` only inside a single domain
 - Frontend unit/integration tests use Vitest: `frontend/apps/skriptoteket/vitest.config.ts`, tests in `frontend/apps/skriptoteket/src/**/*.spec.ts`
 
 ### Browser Automation
 
-Playwright is the default for new browser automation (see `.agent/rules/075-browser-automation.md`).
+Playwright is the default for new browser automation (see `.agents/rules/075-browser-automation.md`).
 Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`, or ad-hoc scripts via
 `pdm run python -m scripts.<module>`.
 HMR probe (Playwright; may need escalation on macOS): `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`).
@@ -117,7 +117,7 @@ Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
   (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
 - **Do not create ad hoc demo tools/scripts for Playwright**: if a browser automation script needs a specific tool by
   slug, add it to the repo script bank (`src/skriptoteket/script_bank/`) and run `pdm run seed-script-bank --slug <slug>`
-  (optionally `--sync-code`) before running Playwright. This avoids polluting the dev DB (see `.agent/rules/075-browser-automation.md`).
+  (optionally `--sync-code`) before running Playwright. This avoids polluting the dev DB (see `.agents/rules/075-browser-automation.md`).
 - **Prod smoke tests (recommended)**: keep `BOOTSTRAP_SUPERUSER_*` for provisioning/local dev; store prod UI smoke
   credentials in a gitignored `.env.prod-smoke` (`BASE_URL`, `PLAYWRIGHT_EMAIL`, `PLAYWRIGHT_PASSWORD`) and run
   `pdm run ui-smoke --dotenv .env.prod-smoke` (same for `ui-editor-smoke` / `ui-runtime-smoke`).
@@ -132,9 +132,9 @@ Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
 
 ## Agent docs size budgets (enforced)
 
-- Keep `.agent/readme-first.md` ≤ 300 lines and `.agent/handoff.md` ≤ 200 lines (enforced by pre-commit).
-- `.agent/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
-  `.agent/readme-first.md` (links only) + `docs/`.
+- Keep `.agents/readme-first.md` ≤ 300 lines and `.agents/handoff.md` ≤ 200 lines (enforced by pre-commit).
+- `.agents/handoff.md` should only keep current sprint-critical backend/frontend info; move completed story detail to
+  `.agents/readme-first.md` (links only) + `docs/`.
 
 ## Observability Stack
 

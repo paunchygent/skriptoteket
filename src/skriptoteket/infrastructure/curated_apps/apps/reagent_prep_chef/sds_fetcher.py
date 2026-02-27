@@ -1,3 +1,13 @@
+"""PubChem-backed SDS fetch pipeline for Reagent Prep Chef.
+
+Fetches an SDS PDF candidate (via provider registry) and derives structured signals:
+GHS snapshot, chemistry heuristics, density, and concentration-dependent CLP bands.
+
+PR-0062: supports best-effort outcomes by returning the best partial candidate when no
+fully complete derivation is available. Strict callers must enforce completeness in the
+SDS index store (e.g. export paths).
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -11,6 +21,7 @@ import structlog
 
 from skriptoteket.domain.curated_apps.reagent_prep_chef.formulas import molar_mass_g_mol
 from skriptoteket.domain.curated_apps.reagent_prep_chef.models import (
+    ClpBand,
     HazardEntry,
     SdsFetchResult,
 )
@@ -28,6 +39,7 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_fetcher
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers import (
     extract_density_g_ml,
+    extract_density_g_ml_from_sds_text,
     extract_pubchem_ghs,
     extract_pubchem_nonhazardous,
 )
@@ -53,6 +65,72 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_result_
 )
 
 logger = structlog.get_logger(__name__)
+
+PARTIAL_SDS_BEST_EFFORT_REASON = "SDS saknas: ingen komplett SDS-data för {formula}."
+
+
+def _has_heuristics(
+    *, incompatibilities: list[str], exothermicity: object, reaction_notes: list[str]
+) -> bool:
+    return bool(incompatibilities) or bool(reaction_notes) or exothermicity is not None
+
+
+def _is_complete_result(result: SdsFetchResult) -> bool:
+    return (
+        bool(result.clp_bands)
+        and result.density_g_ml is not None
+        and _has_heuristics(
+            incompatibilities=list(result.incompatibilities),
+            exothermicity=result.exothermicity,
+            reaction_notes=list(result.reaction_notes),
+        )
+    )
+
+
+def _candidate_score(result: SdsFetchResult) -> int:
+    """Score best-effort results; higher means preferred."""
+    score = 0
+    if result.clp_bands:
+        score += 4
+    if result.density_g_ml is not None:
+        score += 2
+    if _has_heuristics(
+        incompatibilities=list(result.incompatibilities),
+        exothermicity=result.exothermicity,
+        reaction_notes=list(result.reaction_notes),
+    ):
+        score += 1
+    return score
+
+
+def _best_effort_failure_details(
+    *,
+    formula: str,
+    attempted_cids: list[int],
+    best_partial: SdsFetchResult | None,
+) -> dict[str, object]:
+    details: dict[str, object] = {
+        "formula": formula,
+        "attempted_cids": attempted_cids,
+    }
+    if best_partial is None:
+        return details
+
+    missing: list[str] = []
+    if not best_partial.clp_bands:
+        missing.append("clp_bands")
+    if best_partial.density_g_ml is None:
+        missing.append("density_g_ml")
+    if not _has_heuristics(
+        incompatibilities=list(best_partial.incompatibilities),
+        exothermicity=best_partial.exothermicity,
+        reaction_notes=list(best_partial.reaction_notes),
+    ):
+        missing.append("heuristics")
+
+    details["best_partial_missing"] = missing
+    details["best_partial_source_url"] = best_partial.source_url
+    return details
 
 
 class PubChemSdsFetcher:
@@ -105,16 +183,41 @@ class PubChemSdsFetcher:
             self._emit(log, "resolve_cid_missing")
             raise validation_error(f"SDS saknas: kunde inte hitta PubChem CID för {hazard.key}.")
 
+        best_partial: SdsFetchResult | None = None
+        best_partial_score = -1
         last_attempted: list[int] = []
+
+        def _consider(result: SdsFetchResult) -> SdsFetchResult | None:
+            nonlocal best_partial, best_partial_score
+            if _is_complete_result(result):
+                return result
+            score = _candidate_score(result)
+            if score > best_partial_score:
+                best_partial = result
+                best_partial_score = score
+            return None
+
         for cid in candidates:
             last_attempted.append(cid)
             result = await self._fetch_for_cid(hazard=hazard, cid=cid, log=log)
-            if result is not None:
-                return result
+            if result is None:
+                continue
+            complete = _consider(result)
+            if complete is not None:
+                return complete
 
         if not allow_fallback:
             self._emit(log, "fetch_failed_fixed_cid", cid=hazard.pubchem_cid)
-            raise validation_error(f"SDS saknas: ingen komplett SDS-data för {hazard.key}.")
+            if best_partial is not None:
+                return best_partial
+            raise validation_error(
+                PARTIAL_SDS_BEST_EFFORT_REASON.format(formula=hazard.key),
+                details=_best_effort_failure_details(
+                    formula=hazard.key,
+                    attempted_cids=last_attempted,
+                    best_partial=best_partial,
+                ),
+            )
 
         if len(candidates) >= self._settings.cid_candidate_limit:
             self._emit(log, "resolve_cid_expand", attempted=len(last_attempted))
@@ -127,8 +230,11 @@ class PubChemSdsFetcher:
             for cid in expanded_candidates:
                 last_attempted.append(cid)
                 result = await self._fetch_for_cid(hazard=hazard, cid=cid, log=log)
-                if result is not None:
-                    return result
+                if result is None:
+                    continue
+                complete = _consider(result)
+                if complete is not None:
+                    return complete
 
         fallback_candidates = await self._resolve_cid_candidates(
             hazard,
@@ -140,11 +246,23 @@ class PubChemSdsFetcher:
         for cid in fallback_candidates:
             last_attempted.append(cid)
             result = await self._fetch_for_cid(hazard=hazard, cid=cid, log=log)
-            if result is not None:
-                return result
+            if result is None:
+                continue
+            complete = _consider(result)
+            if complete is not None:
+                return complete
 
         self._emit(log, "fetch_failed_no_hazard_codes", cids=last_attempted)
-        raise validation_error(f"SDS saknas: ingen komplett SDS-data för {hazard.key}.")
+        if best_partial is not None:
+            return best_partial
+        raise validation_error(
+            PARTIAL_SDS_BEST_EFFORT_REASON.format(formula=hazard.key),
+            details=_best_effort_failure_details(
+                formula=hazard.key,
+                attempted_cids=last_attempted,
+                best_partial=best_partial,
+            ),
+        )
 
     async def _resolve_cid_candidates(
         self,
@@ -236,9 +354,12 @@ class PubChemSdsFetcher:
         incompatibilities, exothermicity, reaction_notes = merge_heuristics(
             pdf_text=pdf_document.text,
         )
-        if not incompatibilities and not reaction_notes and exothermicity is None:
+        if not _has_heuristics(
+            incompatibilities=incompatibilities,
+            exothermicity=exothermicity,
+            reaction_notes=reaction_notes,
+        ):
             self._emit(log, "candidate_missing_heuristics", cid=cid)
-            return None
 
         used_curated_meta = False
         density_g_ml = None
@@ -249,15 +370,18 @@ class PubChemSdsFetcher:
         else:
             density_g_ml = await self._fetch_density(cid=cid, log=log)
         if density_g_ml is None:
-            self._emit(log, "candidate_missing_density", cid=cid)
-            return None
+            density_g_ml = extract_density_g_ml_from_sds_text(pdf_document.text)
+            if density_g_ml is not None:
+                self._emit(log, "density_from_pdf", cid=cid)
+            else:
+                self._emit(log, "candidate_missing_density", cid=cid)
 
-        clp_bands = None
+        clp_bands: tuple[ClpBand, ...] = ()
         if curated_meta is not None and curated_meta.clp_bands:
             clp_bands = curated_meta.clp_bands
             used_curated_meta = True
             self._emit(log, "clp_bands_from_curated", cid=cid)
-        else:
+        elif density_g_ml is not None:
             clp_bands = build_clp_bands(
                 pdf_text=pdf_document.text,
                 molar_mass=molar_mass_g_mol(formula_clean=hazard.key),
@@ -266,7 +390,7 @@ class PubChemSdsFetcher:
                 emit=lambda stage: self._emit(log, stage),
             )
             if clp_bands is None:
-                return None
+                clp_bands = ()
 
         sources = [*ghs.sources, pdf_document.source_url, "PubChem"]
         if used_curated_meta and curated_meta is not None and curated_meta.sources:

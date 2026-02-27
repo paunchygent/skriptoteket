@@ -123,5 +123,5 @@ Use Context7 when you need exact API details or version-specific behavior:
 - OpenAPI + TS generation: `docs/adr/adr-0030-openapi-and-frontend-types.md`
 - Tailwind v4 tokens bridge: `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
 - Testing runbook: `docs/runbooks/runbook-testing.md`
-- SPA design system rules: `.agent/rules/045-huleedu-design-system.md`
-- Testing standards: `.agent/rules/070-testing-standards.md`
+- SPA design system rules: `.agents/rules/045-huleedu-design-system.md`
+- Testing standards: `.agents/rules/070-testing-standards.md`

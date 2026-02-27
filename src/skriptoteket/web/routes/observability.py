@@ -3,7 +3,7 @@
 Public endpoints (no authentication required) for monitoring infrastructure.
 
 NOTE: Do NOT use `from __future__ import annotations` in router modules.
-See .agent/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
+See .agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 """
 
 import asyncio

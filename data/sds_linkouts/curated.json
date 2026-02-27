@@ -1,7 +1,31 @@
 {
   "version": 1,
-  "as_of": "2026-02-01",
+  "as_of": "2026-02-19",
   "entries": {
+    "784": [
+      {
+        "url": "https://www.pentachemicals.eu/data/Bezpecnostni_listy/en/Hydrogen%20peroxide%2030_1897_5.0.pdf",
+        "source": "manual-slice-6.6",
+        "verified": true,
+        "notes": "Hydrogen peroxide 30% SDS (Penta; EU REACH/CLP-style; includes SCL lines)"
+      }
+    ],
+    "1118": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-9789-DE-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wzMjc1NDF8YXBwbGljYXRpb24vcGRmfGFEVXpMMmd4TWk4NU1qTXpNRGcyTWpFNE1qY3dMMU5FUWw4NU56ZzVYMFJGWDBWT0xuQmtaZ3wxMjZkODk0ZjE1MmU4ZTkyMjRiOGViZmZhZDI2OWE5M2U2Mjg5NmZjOTZmZWExYzQ2NjE5YWYwMzFlODA4YjI2",
+        "source": "manual-slice-6.4",
+        "verified": true,
+        "notes": "Sulphuric acid 96% SDS (Carl Roth; EU REACH/CLP-style)"
+      }
+    ],
+    "14797": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-6751-DE-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wzMDAzNTR8YXBwbGljYXRpb24vcGRmfGFEYzRMMmc0TVM4NU1qQTJOelUxTnpnMk56Z3lMMU5FUWw4Mk56VXhYMFJGWDBWT0xuQmtaZ3wwMmRlYzVlMTYzYTRjMTBjZWZiNzM2MGNhM2ZlZDFlZjk4ZmI2Mjk5ZmJkNTY4NGE0OTZjYjJkYjYyMjlkYzE3",
+        "source": "manual-slice-6.6",
+        "verified": true,
+        "notes": "Potassium hydroxide SDS (Carl Roth; EU REACH/CLP-style; includes SCL lines)"
+      }
+    ],
     "10313194": [
       {
         "url": "https://n.b5z.net/i/u/10091461/f/SDS/Cuprous_Oxide__Cu2O__SDS.pdf",

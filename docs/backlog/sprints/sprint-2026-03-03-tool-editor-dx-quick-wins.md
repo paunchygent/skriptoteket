@@ -71,7 +71,7 @@ to ST-14-14.
 - `pdm run lint`
 - `pdm run test`
 - `pdm run fe-gen-api-types` (only if API types change)
-- Live functional check (backend + SPA dev); record steps in `.agent/handoff.md` if UI behavior changes.
+- Live functional check (backend + SPA dev); record steps in `.agents/handoff.md` if UI behavior changes.
 
 ## Notes / follow-ups
 
