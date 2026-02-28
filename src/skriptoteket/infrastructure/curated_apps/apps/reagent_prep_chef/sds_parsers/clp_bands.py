@@ -1,3 +1,18 @@
+"""Parse concentration-dependent CLP bands (SCL) from extracted SDS PDF text.
+
+This module contains the regex-based CLP band parser used by the Reagent Prep Chef SDS pipeline.
+Input is the plain text produced by our PDF extraction (`extract_pdf_text`).
+
+Related:
+- `sds_result_builder.build_clp_bands` (SDS → structured CLP bands)
+- `sds_fetcher.PubChemSdsFetcher` (best-effort SDS derivation pipeline)
+
+Implementation note:
+SDS PDFs often wrap SCL tables across multiple lines during text extraction (e.g. `50 % ≤ C <`
+followed by `70 %` on the next line). We stitch only obvious continuation lines before parsing
+to avoid false positives and keep a fail-closed posture.
+"""
+
 from __future__ import annotations
 
 import re
@@ -55,6 +70,11 @@ _MASS_MAX_RE = re.compile(
     re.IGNORECASE,
 )
 
+_SCL_CONTINUATION_VALUE_RE = re.compile(r"^\d+(?:[.,]\d+)?\s*%?$")
+_SCL_PERCENT_ONLY_RE = re.compile(r"^%$")
+_SCL_TRAILING_NUMBER_RE = re.compile(r"\d+(?:[.,]\d+)?\s*$")
+_SCL_INCOMPLETE_RANGE_TAIL_RE = re.compile(r"(?:≤|<=|<)\s*$", re.IGNORECASE)
+
 
 def parse_sds_clp_bands_from_text(
     text: str,
@@ -71,6 +91,7 @@ def parse_sds_clp_bands_from_text(
             continue
         default_percent_basis = _infer_default_percent_basis(section_text=section_text)
         target_lines = [line.strip() for line in section_text.splitlines() if line.strip()]
+        target_lines = _normalize_wrapped_scl_lines(target_lines)
         for line in target_lines:
             hazard_codes = HAZARD_CODE_RE.findall(line)
             if not hazard_codes:
@@ -86,6 +107,46 @@ def parse_sds_clp_bands_from_text(
                 bands.append(band)
 
     return _dedupe_bands(bands)
+
+
+def _normalize_wrapped_scl_lines(lines: list[str]) -> list[str]:
+    """Stitch obvious line-wrapped concentration values in SCL tables.
+
+    Examples (real PDFs often look like this after text extraction):
+
+    - `Skin Corr. 1B, H314: 50 % ≤ C <`
+    - `70 %`
+
+    - `Eye Dam. 1, H318: 8 % ≤ C < 50`
+    - `%`
+    """
+    merged: list[str] = []
+    for line in lines:
+        if not merged:
+            merged.append(line)
+            continue
+
+        prev = merged[-1]
+        if not HAZARD_CODE_RE.search(prev):
+            merged.append(line)
+            continue
+
+        current = line.strip()
+        prev_stripped = prev.rstrip()
+
+        if _SCL_PERCENT_ONLY_RE.fullmatch(current):
+            if _SCL_TRAILING_NUMBER_RE.search(prev_stripped) and not prev_stripped.endswith("%"):
+                merged[-1] = f"{prev_stripped} %"
+                continue
+
+        if _SCL_CONTINUATION_VALUE_RE.fullmatch(current):
+            if _SCL_INCOMPLETE_RANGE_TAIL_RE.search(prev_stripped):
+                merged[-1] = f"{prev_stripped} {current}".strip()
+                continue
+
+        merged.append(line)
+
+    return merged
 
 
 def _parse_concentration_band(
@@ -228,7 +289,12 @@ def _infer_default_percent_basis(*, section_text: str) -> str | None:
     explicit = _extract_percent_basis(lowered)
     if explicit is not None:
         return explicit
-    if "specific conc. limits" in lowered or "specific concentration limits" in lowered:
+    if (
+        "specific conc. limit" in lowered
+        or "specific conc. limits" in lowered
+        or "specific concentration limit" in lowered
+        or "specific concentration limits" in lowered
+    ):
         return "w/w"
     return None
 

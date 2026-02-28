@@ -5,7 +5,7 @@ title: "Curated app: Reagent Prep Chef — Riskbedömning best effort contract (
 status: in_progress
 owners: "agents"
 created: 2026-02-18
-updated: 2026-02-19
+updated: 2026-02-28
 stories:
   - "ST-20-02"
 tags: ["curated-apps", "backend", "frontend"]
@@ -549,6 +549,346 @@ PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
 - Pinned parser root cause (real extracted Section 3 lines): `.artifacts/sds-cache/slice-6-6-h2o2-scl-snippet.json`
   - The SDS **does** contain SCL lines, but PDF text extraction splits some ranges across lines (missing max/% on the
     same line), so the current line-based parser fails to match them.
+
+#### Slice 6.7 (DONE): CLP SCL line-wrapping normalization (H2O2 partial → ok)
+
+Root cause pinned (Slice 6.6):
+
+- The H2O2 SDS contains SCL lines, but some concentration ranges are split across lines and some trailing `%` symbols
+  appear on their own line after PDF text extraction.
+
+Implementation:
+
+- Add a small “continuation line” stitcher for SCL tables (only merges obvious cases; fail-closed):
+  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_parsers/clp_bands.py`
+- Treat “Specific concentration limit:” (singular) as an SCL section hint for default percent basis inference:
+  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_parsers/clp_bands.py`
+- Pin the failure mode with a unit test derived from the real extracted line shape:
+  - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_clp_bands_parser.py`
+
+Evidence (unit):
+
+```bash
+PYTHONPATH=src pdm run pytest -q \\
+  tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_clp_bands_parser.py
+```
+
+Evidence (real data, fresh cache root; extended truthy sample set):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-7-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 1 \\
+  --only 'KOH' --only 'H2SO4' --only 'H2O2' \\
+  --report .artifacts/sds-cache/slice-6-7-report.json
+```
+
+- Report: `.artifacts/sds-cache/slice-6-7-report.json`
+- Log: `.artifacts/sds-cache/slice-6-7-seed.log`
+- Result: `ok=3 partial=0 fail=0` (H2O2 moved `partial → ok`).
+- Pinned extracted SCL lines + parsed hazard codes: `.artifacts/sds-cache/slice-6-7-h2o2-scl-snippet.json`
+
+#### Slice 6.8 (DONE): Seed “truthy sample set v1” with fresh cache root + pin root causes (no CLP parser work yet)
+
+Goal: validate the PR-0062 “truthy sample set v1” (from the 2026-02-18 baseline report) against a **fresh**
+`ARTIFACTS_ROOT`, then pin why each `fail` / `partial` happened.
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-8-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 2 \\
+  --only 'Na2CO3' --only 'Ca(OH)2' --only 'C7H6O3' \\
+  --only 'HF' --only 'H2SO4' --only 'H2O2' --only 'C2H6O' --only 'C7H6O2' \\
+  --only 'CaCl2' --only 'CaC2' --only 'Cu2O' --only 'CuO' --only 'SrCl2' \\
+  --only 'K2Cr2O7' --only 'KOH' --only 'NH4NO3' --only 'NH4Cl' --only 'S' \\
+  --only 'C3H6O' --only 'AlCl3' --only 'Al2O3' \\
+  --report .artifacts/sds-cache/slice-6-8-report.json | tee .artifacts/sds-cache/slice-6-8-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-8-report.json` (summary: `ok=6 partial=4 fail=11 total=21`)
+- Log: `.artifacts/sds-cache/slice-6-8-seed.log`
+- FAIL root causes (structured from log; candidates tried + rejected as non-SDS): `.artifacts/sds-cache/slice-6-8-fail-attempts.json`
+- PARTIAL CLP root causes (SCL scan): `.artifacts/sds-cache/slice-6-8-snippets/*-scl-snippet.json`
+  - All `partial` keys with `missing=['clp_bands']` had **no SCL content** in Section 2/3 (`scl_hint_lines=[]`,
+    `scl_row_candidate_lines=[]`), i.e. not a parser failure-mode.
+
+#### Slice 6.8.1 (DONE): Curate SCL-bearing SDS PDFs for NaOH/HCl/HF (make fresh-cache seeding deterministic)
+
+Root cause (Slice 6.8):
+
+- For `NaOH` / `HCl` / `HF`, PubChem “Safety and Hazards” candidate URLs were dominated by non-SDS PDFs
+  (CAS “terms”, NJ RTK Act, EPA fact sheets). With a fresh cache root, this causes `fail` and blocks CLP parsing work.
+
+Implementation:
+
+- Add curated SDS linkouts (truthy PDFs) for:
+  - `NaOH` (CID `14798`)
+  - `HCl` (CID `313`)
+  - `HF` (CID `14917`)
+  - File: `data/sds_linkouts/curated.json`
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-8-scl-v1-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 1 \\
+  --only 'NaOH' --only 'HCl' --only 'HF' --only 'KOH' --only 'H2SO4' --only 'H2O2' \\
+  --report .artifacts/sds-cache/slice-6-8-scl-v1-report.json | tee .artifacts/sds-cache/slice-6-8-scl-v1-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-8-scl-v1-report.json` (summary: `ok=5 partial=1 fail=0`)
+- Snippets (SCL rows + parsed hazard codes): `.artifacts/sds-cache/slice-6-8-scl-v1-snippets/*-scl-snippet.json`
+
+#### Slice 6.8.2 (DONE): Prefer SDS PDF density when present (fix gas-phase PubChem density for HCl/HF)
+
+Root cause pinned (real data):
+
+- For `HCl`/`HF`, PubChem density can be present but represent gas-phase density (e.g. `g/L`), which is wrong for
+  aqueous stock solutions described by the SDS PDFs.
+- On the curated Roth SDS PDFs, Section 9 density is parseable (`extract_density_g_ml_from_sds_text`) and yields the
+  expected liquid density (e.g. `HCl ~1.19 g/mL`, `HF ~1.18 g/mL`).
+
+Implementation:
+
+- Fetcher now prefers `density_from_pdf` over PubChem density when the PDF contains a density line:
+  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_fetcher.py`
+- Unit tests pin the selection behavior:
+  - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_fetcher_density_selection.py`
+
+Evidence (unit):
+
+```bash
+PYTHONPATH=src pdm run pytest -q \\
+  tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_fetcher_density_selection.py
+```
+
+Evidence (real data; fresh cache root; verifies index density values):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-8-scl-v2-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 1 \\
+  --only 'NaOH' --only 'HCl' --only 'HF' --only 'KOH' --only 'H2SO4' --only 'H2O2' \\
+  --report .artifacts/sds-cache/slice-6-8-scl-v2-report.json | tee .artifacts/sds-cache/slice-6-8-scl-v2-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-8-scl-v2-report.json` (summary: `ok=5 partial=1 fail=0`)
+- Snippets (density + SCL rows): `.artifacts/sds-cache/slice-6-8-scl-v2-snippets/*-scl-snippet.json`
+  - `HCl` density now `1.19` (was `0.001639` in v1 run)
+  - `HF` density now `1.18` (was `0.29` in v1 run)
+
+#### Slice 6.9 (DONE): Curate SDS linkouts for top fresh-cache FAILs (CaCl2/Na2CO3/NH4Cl)
+
+Root cause pinned (Slice 6.8):
+
+- For these keys, PubChem candidates are either missing entirely (`candidates_missing=true`) or dominated by non-SDS PDFs
+  (CAS terms / NJ RTK Act). With a fresh `ARTIFACTS_ROOT`, the pipeline fail-closes before any parsing work can start.
+- Evidence: `.artifacts/sds-cache/slice-6-8-fail-attempts.json` (see `fail_keys` + per-key candidate lists).
+
+Implementation:
+
+- Add curated SDS linkouts (truthy PDFs) for:
+  - `CaCl2` (CID `5284359`)
+  - `Na2CO3` (CID `10340`)
+  - `NH4Cl` (CID `25517`)
+  - File: `data/sds_linkouts/curated.json`
+- Validate via the seed loop on a fresh cache root and require `fail → partial|ok` (SDS bytes present; PDF passes
+  `is_sds_document`).
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-9-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 1 \\
+  --only 'CaCl2' --only 'Na2CO3' --only 'NH4Cl' \\
+  --report .artifacts/sds-cache/slice-6-9-report.json | tee .artifacts/sds-cache/slice-6-9-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-9-report.json` (summary: `ok=0 partial=3 fail=0 total=3`)
+- Log: `.artifacts/sds-cache/slice-6-9-seed.log`
+
+Root causes pinned (best-effort missing `clp_bands`):
+
+- SCL scan snippets (Section 2/3): `.artifacts/sds-cache/slice-6-9-scl-snippets/*-scl-snippet.json`
+  - All 3 entries have `parsed_band_count=0` with no `scl_row_candidate_lines` (i.e. not a CLP parser bug).
+  - `NH4Cl` includes Section 3 “Specific Conc. Limits” **headings** but no actual `C ...` SCL rows.
+
+#### Slice 6.10 (DONE): Re-run “truthy sample set v1” with fresh cache root (measure fail-count delta)
+
+Goal: measure how much fresh-cache `fail` decreases after Slice 6.8.1–6.9 curated several high-impact CIDs.
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-10-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 2 \\
+  --only 'Na2CO3' --only 'Ca(OH)2' --only 'C7H6O3' \\
+  --only 'HF' --only 'H2SO4' --only 'H2O2' --only 'C2H6O' --only 'C7H6O2' \\
+  --only 'CaCl2' --only 'CaC2' --only 'Cu2O' --only 'CuO' --only 'SrCl2' \\
+  --only 'K2Cr2O7' --only 'KOH' --only 'NH4NO3' --only 'NH4Cl' --only 'S' \\
+  --only 'C3H6O' --only 'AlCl3' --only 'Al2O3' \\
+  --report .artifacts/sds-cache/slice-6-10-report.json | tee .artifacts/sds-cache/slice-6-10-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-10-report.json` (summary: `ok=6 partial=8 fail=7 total=21`)
+- Log: `.artifacts/sds-cache/slice-6-10-seed.log`
+- Delta vs Slice 6.8 (fresh-cache): `fail 11 → 7` (the curated keys `HF`/`CaCl2`/`Na2CO3`/`NH4Cl` moved `fail → partial`).
+
+Remaining fresh-cache `fail` keys (after Slice 6.9): `NH4NO3`, `C2H6O`, `C7H6O2`, `Ca(OH)2`, `K2Cr2O7`,
+`C7H6O3`, `S`.
+
+#### Slice 6.11 (DONE): Curate Roth SDS linkouts for 3 remaining FAIL keys (C2H6O/C7H6O2/K2Cr2O7)
+
+Root cause pinned (Slice 6.8):
+
+- PubChem “Safety and Hazards” candidates can be missing or dominated by non-SDS PDFs (CAS terms / NJ RTK Act),
+  causing fresh-cache `fail` due to `is_sds_document` fail-closed behavior.
+- Evidence: `.artifacts/sds-cache/slice-6-8-fail-attempts.json`
+
+Implementation:
+
+- Add curated SDS linkouts (truthy PDFs) for:
+  - `C2H6O` (CID `702`) — Ethanol (Roth MT-EN)
+  - `C7H6O2` (CID `243`) — Benzoic acid (Roth MT-EN)
+  - `K2Cr2O7` (CID `24502`) — Potassium dichromate (Roth MT-EN)
+  - File: `data/sds_linkouts/curated.json`
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-11-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 1 \\
+  --only 'C2H6O' --only 'C7H6O2' --only 'K2Cr2O7' \\
+  --report .artifacts/sds-cache/slice-6-11-report.json | tee .artifacts/sds-cache/slice-6-11-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-11-report.json` (summary: `ok=1 partial=2 fail=0 total=3`)
+- Log: `.artifacts/sds-cache/slice-6-11-seed.log`
+
+Root causes pinned (best-effort missing `clp_bands`):
+
+- SCL scan snippets (Sections 2/3): `.artifacts/sds-cache/slice-6-11-scl-snippets/*-scl-snippet.json`
+  - `C2H6O` and `C7H6O2` have no SCL hint lines or SCL row candidates in Sections 2/3 (`parsed_band_count=0`),
+    i.e. not a CLP parser bug.
+  - `K2Cr2O7` contains an SCL row and parses `parsed_band_count=1` (now `ok`).
+
+#### Slice 6.12 (DONE): Re-run “truthy sample set v1” after Slice 6.11 (measure new fail-count)
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-12-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 2 \\
+  --only 'Na2CO3' --only 'Ca(OH)2' --only 'C7H6O3' \\
+  --only 'HF' --only 'H2SO4' --only 'H2O2' --only 'C2H6O' --only 'C7H6O2' \\
+  --only 'CaCl2' --only 'CaC2' --only 'Cu2O' --only 'CuO' --only 'SrCl2' \\
+  --only 'K2Cr2O7' --only 'KOH' --only 'NH4NO3' --only 'NH4Cl' --only 'S' \\
+  --only 'C3H6O' --only 'AlCl3' --only 'Al2O3' \\
+  --report .artifacts/sds-cache/slice-6-12-report.json | tee .artifacts/sds-cache/slice-6-12-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-12-report.json` (summary: `ok=7 partial=10 fail=4 total=21`)
+- Log: `.artifacts/sds-cache/slice-6-12-seed.log`
+- Delta vs Slice 6.10: `fail 7 → 4` (`C2H6O`/`C7H6O2` moved `fail → partial`; `K2Cr2O7` moved `fail → ok`).
+
+Remaining fresh-cache `fail` keys (after Slice 6.11): `NH4NO3`, `Ca(OH)2`, `C7H6O3`, `S`.
+
+#### Slice 6.13 (DONE): Option B — allow best-effort export when SCL/CLP bands are missing
+
+Goal: stop blocking export on SDS PDFs that are “truthy” but do not contain SCL rows (or do not cover the selected
+target concentration). Instead, fall back to SDS-level GHS/CLP signals (`hazard_codes` + `pictograms` +
+`signal_word`) with explicit notes + warnings.
+
+Decision:
+
+- Keep `missing_flags` explicit (`sds_clp_bands_missing`, `clp_unavailable_for_target`) so the UI/PDF can surface
+  “best effort” semantics.
+- Remove `sds_clp_bands_missing` and `clp_unavailable_for_target` from the export-blocking set.
+- When we cannot select a concentration band, populate `draft.clp` from the SDS snapshot and add a pinned note:
+  - `SCL saknas i SDS; visar SDS-koder (best effort).`
+  - `SCL saknas för vald koncentration; visar SDS-koder (best effort).`
+
+Implementation:
+
+- Best-effort CLP fallback + export gating update:
+  - `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_risk_assessment.py`
+- Unit tests pin the new contract:
+  - `tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py`
+
+Evidence (unit):
+
+```bash
+PYTHONPATH=src pdm run pytest -q \\
+  tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py
+```
+
+#### Slice 6.14 (DONE): Curate SDS linkouts for remaining fresh-cache FAIL keys (NH4NO3/Ca(OH)2/C7H6O3/S)
+
+Root cause (Slice 6.12 → Slice 6.8 fail-attempts taxonomy):
+
+- Remaining FAIL keys were dominated by non-SDS PDFs (CAS “terms”, NJ RTK Act) or had no PubChem “Safety and Hazards”
+  candidates at all (`candidates_missing=true`).
+- Evidence: `.artifacts/sds-cache/slice-6-8-fail-attempts.json` (per-key candidate lists for `NH4NO3`, `Ca(OH)2`,
+  `C7H6O3`, `S`).
+
+Implementation:
+
+- Add curated SDS linkouts (truthy PDFs) for:
+  - `NH4NO3` (CID `22985`)
+  - `Ca(OH)2` (CID `6093208`)
+  - `C7H6O3` (CID `338`)
+  - `S` (CID `5362487`)
+- File: `data/sds_linkouts/curated.json`
+
+Evidence (real data; fresh cache root; verify `fail → partial` for all 4 keys):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-14-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 1 \\
+  --only 'NH4NO3' --only 'Ca(OH)2' --only 'C7H6O3' --only 'S' \\
+  --report .artifacts/sds-cache/slice-6-14-report.json | tee .artifacts/sds-cache/slice-6-14-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-14-report.json` (summary: `ok=0 partial=4 fail=0 total=4`)
+- Log: `.artifacts/sds-cache/slice-6-14-seed.log`
+
+Root causes pinned (best-effort missing `clp_bands`):
+
+- SCL scan snippets (Sections 2/3): `.artifacts/sds-cache/slice-6-14-scl-snippets/*-scl-snippet.json`
+  - All 4 entries have `parsed_band_count=0` with no `section_2_scl_row_candidate_lines` or
+    `section_3_scl_row_candidate_lines` (i.e. not a CLP parser bug).
+
+#### Slice 6.15 (DONE): Re-run “truthy sample set v1” after Slice 6.14 (measure new fail-count)
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-15-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 2 \\
+  --only 'Na2CO3' --only 'Ca(OH)2' --only 'C7H6O3' \\
+  --only 'HF' --only 'H2SO4' --only 'H2O2' --only 'C2H6O' --only 'C7H6O2' \\
+  --only 'CaCl2' --only 'CaC2' --only 'Cu2O' --only 'CuO' --only 'SrCl2' \\
+  --only 'K2Cr2O7' --only 'KOH' --only 'NH4NO3' --only 'NH4Cl' --only 'S' \\
+  --only 'C3H6O' --only 'AlCl3' --only 'Al2O3' \\
+  --report .artifacts/sds-cache/slice-6-15-report.json | tee .artifacts/sds-cache/slice-6-15-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-15-report.json` (summary: `ok=7 partial=14 fail=0 total=21`)
+- Log: `.artifacts/sds-cache/slice-6-15-seed.log`
+- Delta vs Slice 6.12: `fail 4 → 0` (all 4 remaining FAIL keys moved `fail → partial` after curation).
+
+Remaining PARTIAL keys (truthy PDFs, but missing `clp_bands`):
+
+- All PARTIAL keys are `missing=['clp_bands']` except `SrCl2` which is `missing=['clp_bands', 'density_g_ml']`.
 
 #### Repeatable validation loop (avoid stale cache masking parser changes)
 

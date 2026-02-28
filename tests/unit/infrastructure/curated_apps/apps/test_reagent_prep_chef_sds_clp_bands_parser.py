@@ -52,3 +52,44 @@ def test_parse_sds_clp_bands_falls_back_to_section_3_when_section_2_has_no_bands
     }
     assert any(band.min_molarity is not None for band in bands)
     assert any(band.max_molarity is not None for band in bands)
+
+
+def test_parse_sds_clp_bands_stitches_wrapped_scl_rows_and_percent_signs() -> None:
+    # This mirrors the Penta H2O2 SDS shape (extracted text):
+    # - "Specific concentration limit:" is present (singular).
+    # - Some ranges are split across lines (max value on next line).
+    # - Some trailing percent signs appear on their own line.
+    text = "\n".join(
+        [
+            "Safety data sheet",
+            "Section 3: Composition/information on ingredients",
+            "Specific concentration limit:",
+            "Skin Corr. 1A, H314: C ≥ 70 %",
+            "Skin Corr. 1B, H314: 50 % ≤ C <",
+            "70 %",
+            "Skin Irrit. 2, H315: 35 % ≤ C <",
+            "50 %",
+            "Eye Irrit. 2, H319: 5 % ≤ C < 8",
+            "%",
+            "Eye Dam. 1, H318: 8 % ≤ C < 50",
+            "%",
+            "Ox. Liq. 2, H272: 50 % ≤ C < 70",
+            "%",
+            "Section 4: First aid measures",
+        ]
+    )
+
+    bands = parse_sds_clp_bands_from_text(
+        text,
+        molar_mass_g_mol=Decimal("34.0147"),
+        density_g_ml=Decimal("1.0"),
+    )
+
+    assert {code for band in bands for code in band.hazard_codes} >= {
+        "H314",
+        "H315",
+        "H318",
+        "H319",
+        "H272",
+    }
+    assert any(band.min_molarity is not None and band.max_molarity is not None for band in bands)

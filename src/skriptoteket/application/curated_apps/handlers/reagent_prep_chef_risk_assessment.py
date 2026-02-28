@@ -82,9 +82,7 @@ MISSING_FLAGS_ORDER: list[ReagentPrepChefRiskMissingFlag] = [
 EXPORT_BLOCKING_FLAGS: set[ReagentPrepChefRiskMissingFlag] = {
     "sds_pdf_missing",
     "sds_density_missing",
-    "sds_clp_bands_missing",
     "sds_heuristics_missing",
-    "clp_unavailable_for_target",
     "heuristics_unavailable",
 }
 
@@ -114,9 +112,18 @@ def _prep_fingerprint(command: ReagentPrepChefRiskAssessmentRequest) -> str:
 def _build_clp_classification(
     *,
     band: ClpBand | None,
+    sds: HazardSdsData | None,
+    fallback_notes: list[str],
 ) -> ReagentPrepChefClpClassification:
     if band is None:
-        return ReagentPrepChefClpClassification()
+        if sds is None:
+            return ReagentPrepChefClpClassification()
+        return ReagentPrepChefClpClassification(
+            hazard_codes=list(sds.hazard_codes),
+            pictograms=list(sds.pictograms),
+            signal_word=sds.signal_word,
+            notes=fallback_notes,
+        )
 
     return ReagentPrepChefClpClassification(
         hazard_codes=list(band.hazard_codes),
@@ -351,6 +358,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
             hazard_entry = _merge_sds(hazard=hazard_entry, sds=sds_data)
 
         band = None
+        clp_fallback_notes: list[str] = []
         if hazard_entry.clp_bands:
             band = select_clp_band(
                 bands=hazard_entry.clp_bands,
@@ -363,7 +371,15 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
                         message="CLP-klassning saknas för vald koncentration.",
                         details={"formula": hazard_entry.key},
                     )
-                warnings.append("CLP-klassning kan inte beräknas för vald koncentration.")
+                if sds_data is not None:
+                    warnings.append(
+                        "SCL saknas för vald koncentration: CLP-koder visas som best effort."
+                    )
+                    clp_fallback_notes.append(
+                        "SCL saknas för vald koncentration; visar SDS-koder (best effort)."
+                    )
+                else:
+                    warnings.append("CLP-klassning kan inte beräknas för vald koncentration.")
         else:
             if require_complete:
                 raise rpc_validation_error(
@@ -371,9 +387,15 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
                     message="CLP-klassning saknas i SDS.",
                     details={"formula": hazard_entry.key},
                 )
-            warnings.append("CLP-klassning saknas i SDS.")
+            if sds_data is not None:
+                warnings.append("SCL saknas i SDS: CLP-koder visas som best effort.")
+                clp_fallback_notes.append("SCL saknas i SDS; visar SDS-koder (best effort).")
 
-        clp = _build_clp_classification(band=band)
+        clp = _build_clp_classification(
+            band=band,
+            sds=sds_data,
+            fallback_notes=clp_fallback_notes,
+        )
         heuristics = _build_heuristics(hazard_entry=hazard_entry)
 
         templates = self._risk_templates.get()

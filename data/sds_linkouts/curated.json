@@ -1,13 +1,45 @@
 {
   "version": 1,
-  "as_of": "2026-02-19",
+  "as_of": "2026-02-28",
   "entries": {
+    "243": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-5781-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyNzk4NjR8YXBwbGljYXRpb24vcGRmfGFEYzVMMmd4TWk4NU1qSXpOek0wT0RnMk5ETXdMMU5FUWw4MU56Z3hYMDFVWDBWT0xuQmtaZ3w5ZjE4OWEwMWU5NDk2NzA1ZDkyODRjM2RkZTMyNTc1YTQzMjRhMzY4MDU2MDgyMjBhM2Y1NWRiZTllMWVlOGJm",
+        "source": "manual-slice-6.11",
+        "verified": true,
+        "notes": "Benzoic acid SDS (Carl Roth; MT-EN)"
+      }
+    ],
+    "313": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-9787-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wzMjQ5ODZ8YXBwbGljYXRpb24vcGRmfGFEVXhMMmcwTkM4NU1UYzNOREl5TWpNek5qTXdMMU5FUWw4NU56ZzNYMDFVWDBWT0xuQmtaZ3w2Y2ZmMGJkNDFlNmE4ZGY5NDZlNmQ3ZjUwMTU4MmJlNGFjNmQ2NTY4Y2FjYjJlMzhlODhkZGQ2NmJmM2VmNDA3",
+        "source": "manual-slice-6.8",
+        "verified": true,
+        "notes": "Hydrochloric acid 37% fuming SDS (Carl Roth; EU REACH/CLP-style; includes SCL lines; MT-EN)"
+      }
+    ],
+    "338": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-8626-DE-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyODgwNDJ8YXBwbGljYXRpb24vcGRmfGFERTBMMmhsTlM4NU1qSXpNVFUxTkRneU5qVTBMMU5FUWw4NE5qSTJYMFJGWDBWT0xuQmtaZ3xmYTE1NGU2ZjIxM2JhYWMyNjEyNTE0YmZmMTcxYmViYjY5Y2RjODA3N2I0YzdkMzQ3MTlhYjA0OWFmYzc4ZDdl",
+        "source": "manual-slice-6.14",
+        "verified": true,
+        "notes": "Salicylic acid SDS (Carl Roth; DE-EN)"
+      }
+    ],
+    "702": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-9065-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyNzk0MTR8YXBwbGljYXRpb24vcGRmfGFEUTBMMmd5T1M4NU1UYzROREl5TVRFMk16Z3lMMU5FUWw4NU1EWTFYMDFVWDBWT0xuQmtaZ3wzMWRmYzgzNWE4YmE5NjRhMjBjNTA3YTQ0YTY5MjBmMWNhZDE3MjdhYzA0YjdiZWE2ODQwODQ2ZTExODRiZTQ3",
+        "source": "manual-slice-6.11",
+        "verified": true,
+        "notes": "Ethanol SDS (Carl Roth; MT-EN)"
+      }
+    ],
     "784": [
       {
-        "url": "https://www.pentachemicals.eu/data/Bezpecnostni_listy/en/Hydrogen%20peroxide%2030_1897_5.0.pdf",
-        "source": "manual-slice-6.6",
+        "url": "https://www.pentachemicals.eu/data/Bezpecnostni_listy/en/Hydrogen%20peroxide%2030_1897_6.0.pdf",
+        "source": "manual-slice-6.7",
         "verified": true,
-        "notes": "Hydrogen peroxide 30% SDS (Penta; EU REACH/CLP-style; includes SCL lines)"
+        "notes": "Hydrogen peroxide 30% SDS (Penta; EU REACH/CLP-style; includes SCL lines; v6.0)"
       }
     ],
     "1118": [
@@ -18,12 +50,84 @@
         "notes": "Sulphuric acid 96% SDS (Carl Roth; EU REACH/CLP-style)"
       }
     ],
+    "22985": [
+      {
+        "url": "https://dept.harpercollege.edu/chemistry/sds/Ammonium%20Nitrate.pdf",
+        "source": "manual-slice-6.14",
+        "verified": true,
+        "notes": "Ammonium nitrate SDS (Sigma-Aldrich; mirrored by Harper College SDS index)"
+      }
+    ],
+    "10340": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-A135-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyNTE3MDl8YXBwbGljYXRpb24vcGRmfGFEWmpMMmcyWVM4NU1UYzNORE00TkRJeE1ESXlMMU5FUWw5Qk1UTTFYMDFVWDBWT0xuQmtaZ3w3YjY1NmMyZGE5MzVjYjJlMGMzNjg0NDExNGI4ODkyYTY0MjYxMDFjZjQyNjlhYmE1YWE4ZGYxMmY5OGRjYjk0",
+        "source": "manual-slice-6.9",
+        "verified": true,
+        "notes": "Sodium carbonate SDS (Carl Roth; MT-EN)"
+      }
+    ],
+    "25517": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-5470-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyNTQ0NTZ8YXBwbGljYXRpb24vcGRmfGFESXpMMmcyT1M4NU1UZ3hNekF3TlRJek1ETTRMMU5FUWw4MU5EY3dYMDFVWDBWT0xuQmtaZ3xiZDVkNDAzZWI4MDBmODA2NzU2ZjEwNzY0NjQ1NWZiOTBhZmIxZjY2OTFjMjE5NjY1OTBkNzMzN2I2YjgwZTYw",
+        "source": "manual-slice-6.9",
+        "verified": true,
+        "notes": "Ammonium chloride SDS (Carl Roth; MT-EN)"
+      }
+    ],
+    "5284359": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-CN92-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyNTIxMDl8YXBwbGljYXRpb24vcGRmfGFETTFMMmcwWmk4NU1UYzJPVEkzT1RJNE16VXdMMU5FUWw5RFRqa3lYMDFVWDBWT0xuQmtaZ3w0ZDNlZWQ3ZGM4MGRhZmY1Mjc3N2RmM2ZmNzEyMWE5MDBmY2E0YWYyNmNlMzBjZTM2YmM0NTUxMzgyNjBlOGQ1",
+        "source": "manual-slice-6.9",
+        "verified": true,
+        "notes": "Calcium chloride SDS (Carl Roth; MT-EN)"
+      }
+    ],
+    "5362487": [
+      {
+        "url": "https://dept.harpercollege.edu/chemistry/sds/Sulfur.pdf",
+        "source": "manual-slice-6.14",
+        "verified": true,
+        "notes": "Sulfur SDS (Sigma-Aldrich; mirrored by Harper College SDS index)"
+      }
+    ],
+    "6093208": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-3529-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyNjEwOTR8YXBwbGljYXRpb24vcGRmfGFEWmhMMmhsT1M4NU1UZ3lNalUwT0RJMU5UQXlMMU5FUWw4ek5USTVYMDFVWDBWT0xuQmtaZ3xkYTI2MzM3MTkzNmMwMzY1NjcyN2JjMmUyZTNlMDViZWU1NzU4NzNkMDQ5NDdiNTA3ZWVmNmNiMGE3ZDIzZjRk",
+        "source": "manual-slice-6.14",
+        "verified": true,
+        "notes": "Calcium hydroxide SDS (Carl Roth; MT-EN)"
+      }
+    ],
     "14797": [
       {
         "url": "https://www.carlroth.com/medias/SDB-6751-DE-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wzMDAzNTR8YXBwbGljYXRpb24vcGRmfGFEYzRMMmc0TVM4NU1qQTJOelUxTnpnMk56Z3lMMU5FUWw4Mk56VXhYMFJGWDBWT0xuQmtaZ3wwMmRlYzVlMTYzYTRjMTBjZWZiNzM2MGNhM2ZlZDFlZjk4ZmI2Mjk5ZmJkNTY4NGE0OTZjYjJkYjYyMjlkYzE3",
         "source": "manual-slice-6.6",
         "verified": true,
         "notes": "Potassium hydroxide SDS (Carl Roth; EU REACH/CLP-style; includes SCL lines)"
+      }
+    ],
+    "14798": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-P031-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wyOTU0NTl8YXBwbGljYXRpb24vcGRmfGFESmpMMmc0T1M4NU1UYzJORGMzTmpNd05EazBMMU5FUWw5UU1ETXhYMDFVWDBWT0xuQmtaZ3xiOWYwOGE3MjEzMjQ5NWUxODVhOTI1MzAyZWE4YjIxM2NhZmY2Y2E0ZDY0YjA5NTQ5MDkwMmQ5ZDkyNzRmNTg1",
+        "source": "manual-slice-6.8",
+        "verified": true,
+        "notes": "Sodium hydroxide SDS (Carl Roth; EU REACH/CLP-style; includes SCL lines; MT-EN)"
+      }
+    ],
+    "14917": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-HN64-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wzOTgyODd8YXBwbGljYXRpb24vcGRmfGFHUTVMMmhsTVM4NU1qSXpOelUzTkRrMk16VXdMMU5FUWw5SVRqWTBYMDFVWDBWT0xuQmtaZ3wyMmIzOGI0OWMyYTE2YmRmZWU3OWViNTg0Y2VhN2UxZGM0ZDE0ZTY1MTc1ZmI4NzYyNjczMGJlMzM0OTBmOWY4",
+        "source": "manual-slice-6.8",
+        "verified": true,
+        "notes": "Hydrofluoric acid SDS (Carl Roth; EU REACH/CLP-style; no SCL lines detected in Section 3 on text extraction; MT-EN)"
+      }
+    ],
+    "24502": [
+      {
+        "url": "https://www.carlroth.com/medias/SDB-7953-MT-EN.pdf?context=bWFzdGVyfHNlY3VyaXR5RGF0YXNoZWV0c3wzOTY3NjZ8YXBwbGljYXRpb24vcGRmfGFHRTFMMmcwWVM4NU1qTXpNRGd5TXpnME5ERTBMMU5FUWw4M09UVXpYMDFVWDBWT0xuQmtaZ3xhMWNmYTU0MmVjNTU3ODY3MGE5MTBiOThlZWMyZjI0NjExMDAxZGMxY2ZmOTc4OTcxNTc4OGZmYjlhZjEwNDhi",
+        "source": "manual-slice-6.11",
+        "verified": true,
+        "notes": "Potassium dichromate SDS (Carl Roth; MT-EN)"
       }
     ],
     "10313194": [

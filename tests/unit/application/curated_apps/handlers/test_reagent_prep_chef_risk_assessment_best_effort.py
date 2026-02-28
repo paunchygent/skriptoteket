@@ -312,6 +312,9 @@ async def test_risk_draft_best_effort_sets_missing_flags_and_export_gate_for_par
         "sds_clp_bands_missing",
         "sds_heuristics_missing",
     ]
+    assert result.draft.clp.hazard_codes == ["H302"]
+    assert result.draft.clp.signal_word == "warning"
+    assert result.draft.clp.notes == ["SCL saknas i SDS; visar SDS-koder (best effort)."]
     assert result.draft.missing_flags == [
         "sds_density_missing",
         "sds_clp_bands_missing",
@@ -321,7 +324,11 @@ async def test_risk_draft_best_effort_sets_missing_flags_and_export_gate_for_par
     assert result.draft.export_gate.ready is False
     assert result.draft.export_gate.missing_confirmations == []
     assert result.draft.export_gate.missing_context_fields == []
-    assert result.draft.export_gate.missing_data_flags == result.draft.missing_flags
+    assert result.draft.export_gate.missing_data_flags == [
+        "sds_density_missing",
+        "sds_heuristics_missing",
+        "heuristics_unavailable",
+    ]
 
 
 @pytest.mark.asyncio
@@ -424,5 +431,64 @@ async def test_risk_draft_sets_clp_unavailable_for_target_when_bands_do_not_matc
     )
 
     assert result.draft.missing_flags == ["clp_unavailable_for_target"]
-    assert result.draft.export_gate.ready is False
-    assert result.draft.export_gate.missing_data_flags == ["clp_unavailable_for_target"]
+    assert result.draft.clp.hazard_codes == ["H302"]
+    assert result.draft.clp.signal_word == "warning"
+    assert result.draft.clp.notes == [
+        "SCL saknas för vald koncentration; visar SDS-koder (best effort)."
+    ]
+    assert result.draft.export_gate.ready is True
+    assert result.draft.export_gate.missing_data_flags == []
+
+
+@pytest.mark.asyncio
+async def test_risk_draft_allows_export_when_sds_has_hazard_codes_but_no_bands() -> None:
+    actor = make_user()
+    prep_result = _prep_result(formula_clean="NaCl")
+    hazard_entry = HazardEntry(key="NaCl", display_name="Salt")
+    templates = _risk_templates()
+    sds_data = HazardSdsData(
+        sds_ref="NaCl",
+        hazard_codes=("H302",),
+        pictograms=("GHS07",),
+        signal_word="warning",
+        density_g_ml=Decimal("1.0"),
+        clp_bands=(),
+        incompatibilities=("Acids",),
+        exothermicity=None,
+        reaction_notes=(),
+        sources=(),
+    )
+    handler = ReagentPrepChefRiskAssessmentHandler(
+        prep=StubPrepHandler(result=prep_result),
+        hazards=StubHazardStore(hazard=hazard_entry),
+        risk_templates=StubRiskTemplatesStore(templates=templates),
+        sds_index=StubSdsIndexStore(sds_data=sds_data),
+        sessions=StubToolSessions(),
+        uow=NoopUow(),
+        id_generator=StubIdGenerator(),
+    )
+
+    context = ReagentPrepChefRiskContext(
+        scope="Demo",
+        location=None,
+        participants="9A",
+        approver="Teacher",
+        assessment_date=date(2026, 2, 18),
+        next_review_date=date(2026, 6, 18),
+        local_routines=None,
+    )
+    result = await handler.handle(
+        actor=actor,
+        command=_risk_command(formula="NaCl", context=context),
+        allow_fetch=True,
+        require_complete=False,
+    )
+
+    assert result.draft.sds.pdf_available is True
+    assert result.draft.sds.missing_flags == ["sds_clp_bands_missing"]
+    assert result.draft.clp.hazard_codes == ["H302"]
+    assert result.draft.clp.pictograms == ["GHS07"]
+    assert result.draft.clp.signal_word == "warning"
+    assert result.draft.clp.notes == ["SCL saknas i SDS; visar SDS-koder (best effort)."]
+    assert result.draft.export_gate.ready is True
+    assert result.draft.export_gate.missing_data_flags == []

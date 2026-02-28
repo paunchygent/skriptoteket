@@ -12,7 +12,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-02-19
+- Date: 2026-02-28
 - Branch: `main` + local changes
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
@@ -54,7 +54,27 @@ Keep this file updated so the next session can pick up work quickly.
   - `frontend/apps/skriptoteket/src/composables/reagentPrepChef/useReagentPrepChefRisk.ts`,
     `frontend/apps/skriptoteket/src/views/apps/reagent-prep-chef/ReagentPrepChefStepRisk.vue`,
     `frontend/apps/skriptoteket/src/api/openapi.d.ts`
-- PR-0062 SDS baseline + Slice 6: `.artifacts/sds-cache/full-report-best-effort.json` (`ok=10 partial=151 fail=3`, log `.artifacts/sds-cache/seed-best-effort.log`); Slice 6 truthy sample v1 + commands in PR doc; Slice 6.1 density unit parse fix tests: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pubchem_extractors_density.py`; Slice 6.2 reject false-positive “SDS” PDFs (OSHA/CFR/NJ fact sheets) + root-cause metadata in seed report/logs: `.artifacts/sds-cache/slice-6-sample-report-v3.json`, `.artifacts/sds-cache/slice-6-sample-seed-v3.log`; Slice 6.3 PDF density fallback tests: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pdf_density_extractor.py` + report: `.artifacts/sds-cache/slice-6-density-from-pdf-report.json`; Slice 6.4 curated SDS linkouts for `KOH`/`H2SO4`/`H2O2` (`data/sds_linkouts/curated.json`) + “Right to Know” SDS false-negative fix; report: `.artifacts/sds-cache/slice-6-4-report.json` (log: `.artifacts/sds-cache/slice-6-4-seed.log`); Slice 6.4.1 SDS detector validation CLI + report: `.artifacts/sds-cache/slice-6-4-doc-detector-report.json`; Slice 6.5 CLP parser now scans Section 2 + 3 and can extract SCL bands for `H2SO4` (test: `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_clp_bands_parser.py`; report: `.artifacts/sds-cache/slice-6-5-report.json`, log: `.artifacts/sds-cache/slice-6-5-seed.log`); Slice 6.6 curated truthy SDS for `KOH`/`H2O2` (KOH ok; H2O2 still missing `clp_bands` due SCL line breaks): report `.artifacts/sds-cache/slice-6-6-report.json` (log `.artifacts/sds-cache/slice-6-6-seed.log`), snippet `.artifacts/sds-cache/slice-6-6-h2o2-scl-snippet.json`.
+- PR-0062 SDS pipeline slice history + evidence is kept in:
+  - `docs/backlog/prs/pr-0062-curated-app-reagent-prep-chef-risk-assessment-best-effort-contract.md`
+
+## Current Session (2026-02-28)
+
+- PR-0062 Slice 6.10: reran truthy sample v1 with fresh cache root → `.artifacts/sds-cache/slice-6-10-report.json` (`ok=6 partial=8 fail=7`).
+- PR-0062 Slice 6.11: curated Roth SDS linkouts for `C2H6O`/`C7H6O2`/`K2Cr2O7` (CIDs `702`/`243`/`24502`) → `data/sds_linkouts/curated.json`.
+  - Evidence: `.artifacts/sds-cache/slice-6-11-report.json` (`ok=1 partial=2 fail=0`) + `.artifacts/sds-cache/slice-6-11-scl-snippets/`.
+- PR-0062 Slice 6.12: reran full truthy sample v1 with fresh cache root → `.artifacts/sds-cache/slice-6-12-report.json` (`ok=7 partial=10 fail=4`).
+  - Remaining fresh-cache fails: `NH4NO3`, `Ca(OH)2`, `C7H6O3`, `S`.
+- PR-0062 Slice 6.13 (Option B): allow best-effort export when SCL/CLP bands are missing by falling back to SDS-level
+  hazard signals (`hazard_codes`/`pictograms`/`signal_word`) with explicit notes; keep missing flags but remove
+  `sds_clp_bands_missing` and `clp_unavailable_for_target` from export-blocking:
+  - `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_risk_assessment.py`
+  - `tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py`
+- PR-0062 Slice 6.14: curated SDS linkouts for the remaining FAIL keys (`NH4NO3`, `Ca(OH)2`, `C7H6O3`, `S`) so they
+  now seed as truthy PDFs (`fail → partial`):
+  - `data/sds_linkouts/curated.json`
+  - Evidence: `.artifacts/sds-cache/slice-6-14-report.json` (`ok=0 partial=4 fail=0`) + `.artifacts/sds-cache/slice-6-14-scl-snippets/`
+- PR-0062 Slice 6.15: reran full truthy sample v1 with fresh cache root → `.artifacts/sds-cache/slice-6-15-report.json`
+  (`ok=7 partial=14 fail=0`).
 
 ## Current Session (2026-02-01)
 
@@ -128,51 +148,17 @@ Keep this file updated so the next session can pick up work quickly.
   - E2E: `scripts/playwright_st_14_36_vault_ui_e2e.py`
 
 - Auth UX hardening: timeout auth fetches to avoid stuck "Loggar in…": `frontend/apps/skriptoteket/src/stores/auth.ts`
-
 - Older history: see `.agents/readme-first.md` + `docs/`.
 
 ## Verification
 
-- 2026-02-13: `pdm run docs-validate`
-- 2026-02-18: `docker compose up -d db`, `pdm run db-upgrade`,
-  `pdm run bootstrap-superuser --email "$BOOTSTRAP_SUPERUSER_EMAIL" --password "$BOOTSTRAP_SUPERUSER_PASSWORD"`,
-  `pdm run dev-local`
-- 2026-02-18: Playwright live `/vault` responsive check via `pdm run python - <<'PY' ...` (requests login + viewport probe at 1366/1240/1120/1024 widths)
-  → no overflow/clipping (`docOverflow=False`, `toolbarClipped=False`, `bulkClipped=False`), report:
-  `.artifacts/vault-responsive-check-20260218T084906/report.json`
-- 2026-02-18: `pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_index_store.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_document_detection.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pubchem_extractors_density.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_pdf_density_extractor.py`
-- 2026-02-18: `PYTHONPATH=src pdm run python -m skriptoteket.cli validate-sds-assumptions --report .artifacts/sds-cache/full-report.json --out .artifacts/sds-cache/assumption-validation-heuristics.json --sample-ok 0 --sample-fail 6 --sample-seed 123`
-- 2026-02-18: `pdm run docs-validate`
-- 2026-02-18: Live API check (backend already running on `:8000`): login + POST
-  `/api/v1/apps/chemistry.reagent_prep_chef/risk-assessment` returns 200 and includes `draft.missing_flags` and
-  `draft.export_gate` (NaCl sample: `export_gate.ready=false`).
-- 2026-02-18: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --only-missing --best-effort --no-fail-fast --concurrency 4 --report .artifacts/sds-cache/full-report-best-effort.json` (summary: `ok=10 partial=151 fail=3`; log: `.artifacts/sds-cache/seed-best-effort.log`); density check (fresh cache root, `CaCl2` + `K2Cr2O7`): `.artifacts/sds-cache/slice-6-density-check-report.json`; Slice 6 sample v3: `.artifacts/sds-cache/slice-6-sample-report-v3.json` (log: `.artifacts/sds-cache/slice-6-sample-seed-v3.log`); Slice 6.4 curated linkouts seed: `ARTIFACTS_ROOT=/tmp/skriptoteket/slice-6-4 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only KOH --only H2SO4 --only H2O2 --report .artifacts/sds-cache/slice-6-4-report.json` (log: `.artifacts/sds-cache/slice-6-4-seed.log`); SDS detector validation: `PYTHONPATH=src pdm run python -m skriptoteket.cli validate-sds-document-detector --out .artifacts/sds-cache/slice-6-4-doc-detector-report.json` (log: `.artifacts/sds-cache/slice-6-4-doc-detector.log`); Slice 6.5 seed: `ARTIFACTS_ROOT=/tmp/skriptoteket/slice-6-5 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only KOH --only H2SO4 --only H2O2 --report .artifacts/sds-cache/slice-6-5-report.json` (log: `.artifacts/sds-cache/slice-6-5-seed.log`); Slice 6.6 seed: `ARTIFACTS_ROOT=.artifacts/sds-cache/slice-6-6-cache-root PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only KOH --only H2O2 --report .artifacts/sds-cache/slice-6-6-report.json` (log: `.artifacts/sds-cache/slice-6-6-seed.log`)
-- 2026-02-18: `pdm run fe-gen-api-types`, `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-test` (pass, 46 files / 247 tests); Playwright risk-tab render + “Öppna SDS” visible → `.artifacts/pr-0062-risk-ui-check-20260218T204939/risk-step.png`
-- 2026-01-31: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
-  `pdm run fe-test`, `pdm run docs-validate`, `pdm run fe-dev-logs`,
-  `curl -sSf http://127.0.0.1:5173/`
-- 2026-02-01: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
-  `pdm run fe-test`,
-  `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts LOG_LEVEL=INFO SDS_FETCH_TIMEOUT_SECONDS=10 SDS_FETCH_LISTKEY_MAX_SECONDS=10 SDS_FETCH_LISTKEY_POLL_SECONDS=0.5 SDS_FETCH_AUTOCOMPLETE_LIMIT=10 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --no-fail-fast --report .artifacts/sds-cache/sample-report.json --concurrency 5 --only C3H6O --only Al --only AlCl3 --only "AlCl3·6H2O" --only Al2O3`
-  `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts LOG_LEVEL=INFO SDS_FETCH_TIMEOUT_SECONDS=10 SDS_FETCH_LISTKEY_MAX_SECONDS=10 SDS_FETCH_LISTKEY_POLL_SECONDS=0.5 SDS_FETCH_AUTOCOMPLETE_LIMIT=10 PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --no-fail-fast --report .artifacts/sds-cache/full-report.json --concurrency 5`
-- 2026-01-30: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`,
-  `pdm run fe-gen-api-types`, `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-test`
-- Backend (host): `pdm run dev-logs` (background) + `curl -sSf http://127.0.0.1:8000/healthz`
-- Frontend (Vite): `pdm run fe-dev-logs` (background) + `curl -sSf http://127.0.0.1:5173/`
-- Dev-local (backend + SPA): `pdm run dev-local` (backend `:8000`, Vite `:5173`).
-- Playwright (macOS may need escalation): `pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://127.0.0.1:5173`
-  → artifacts: `.artifacts/st-11-09-curated-app-e2e/` (demo.counter + Reagensberedning).
-- Playwright (vault flow): `pdm run python -m scripts.playwright_st_14_36_vault_ui_e2e --base-url http://127.0.0.1:5173`
-  → artifacts: `.artifacts/st-14-36-vault-ui-e2e/`
-- Playwright smoke (includes `/vault`): `BASE_URL=http://127.0.0.1:5173 pdm run ui-smoke`
-- Quality gates:
-  - `pdm run format`
-  - `pdm run lint`
-  - `pdm run typecheck`
-  - `pdm run test`
-  - `pdm run fe-gen-api-types`
-  - `pdm run fe-type-check`
-  - `pdm run fe-lint`
+- 2026-02-28: `pdm run docs-validate`
+- 2026-02-28: `PYTHONPATH=src pdm run pytest -q tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_fetcher_density_selection.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_sds_clp_bands_parser.py`
+- 2026-02-28: `PYTHONPATH=src pdm run pytest -q tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py`
+- 2026-02-28: Slice 6.11 seed (fresh cache root): `ARTIFACTS_ROOT=.artifacts/sds-cache/slice-6-11-cache-root PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache --best-effort --no-fail-fast --concurrency 1 --only 'C2H6O' --only 'C7H6O2' --only 'K2Cr2O7' --report .artifacts/sds-cache/slice-6-11-report.json`
+- 2026-02-28: Slice 6.12 seed command + `--only` list is in the PR doc; outputs: `.artifacts/sds-cache/slice-6-12-report.json`, `.artifacts/sds-cache/slice-6-12-seed.log`
+- 2026-02-28: Slice 6.14 seed (fresh cache root; remaining FAIL keys): outputs `.artifacts/sds-cache/slice-6-14-report.json`, `.artifacts/sds-cache/slice-6-14-seed.log`
+- 2026-02-28: Slice 6.15 seed command + `--only` list is in the PR doc; outputs: `.artifacts/sds-cache/slice-6-15-report.json`, `.artifacts/sds-cache/slice-6-15-seed.log`
 
 ## How to Run
 
@@ -197,4 +183,7 @@ pdm run fe-test
 
 ## Next Steps
 
-- PR-0062 Slice 6: iterate parsing improvements (density/clp/heuristics) using the truthy sample set v1 (now including curated SDS PDFs for `KOH`/`H2SO4`/`H2O2`) and validate via `seed-sds-cache --best-effort` with a fresh `ARTIFACTS_ROOT` per run (see PR doc).
+- PR-0062 Slice 6: broaden the seed run beyond the truthy sample (fresh `ARTIFACTS_ROOT`) to find the next dominant
+  FAIL cluster and repeat curate → seed → pin root cause (prefer artifacts under `.artifacts/sds-cache/`).
+- Decide whether `clp_bands` should remain tracked as “partial” in seed reports now that Option B makes export
+  best-effort w.r.t. SCL, or if we should split “export-blocking missing” vs “nice-to-have missing” in the seed report.

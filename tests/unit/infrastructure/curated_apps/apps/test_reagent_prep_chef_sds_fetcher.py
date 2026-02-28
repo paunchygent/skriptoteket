@@ -92,8 +92,18 @@ def test_normalize_formula_variants_expands_hydrate_multiplier() -> None:
 @pytest.mark.asyncio
 async def test_fetcher_tries_multiple_cids_until_ghs_found() -> None:
     pdf_bytes = _build_pdf_with_text(
-        "Section 1 Identification\nSafety Data Sheet\nSection 2\nH302: C >= 10% w/w\n"
-        "Section 10 Stability and Reactivity\nIncompatible materials: Acids"
+        "Safety Data Sheet\n"
+        "Section 1 Identification\n"
+        "Section 2 Hazards identification\n"
+        "H302: C >= 10% w/w\n"
+        "Section 3 Composition/information on ingredients\n"
+        "Section 4 First aid measures\n"
+        "Section 5 Fire-fighting measures\n"
+        "Section 6 Accidental release measures\n"
+        "Section 7 Handling and storage\n"
+        "Section 8 Exposure controls/personal protection\n"
+        "Section 10 Stability and Reactivity\n"
+        "Incompatible materials: Acids"
     )
     pdf_url = "https://example.test/sds.pdf"
 
@@ -202,8 +212,18 @@ async def test_fetcher_tries_multiple_cids_until_ghs_found() -> None:
 @pytest.mark.asyncio
 async def test_fetcher_expands_candidates_when_limit_reached() -> None:
     pdf_bytes = _build_pdf_with_text(
-        "Section 1 Identification\nSafety Data Sheet\nSection 2\nH302: C >= 10% w/w\n"
-        "Section 10 Stability and Reactivity\nIncompatible materials: Acids"
+        "Safety Data Sheet\n"
+        "Section 1 Identification\n"
+        "Section 2 Hazards identification\n"
+        "H302: C >= 10% w/w\n"
+        "Section 3 Composition/information on ingredients\n"
+        "Section 4 First aid measures\n"
+        "Section 5 Fire-fighting measures\n"
+        "Section 6 Accidental release measures\n"
+        "Section 7 Handling and storage\n"
+        "Section 8 Exposure controls/personal protection\n"
+        "Section 10 Stability and Reactivity\n"
+        "Incompatible materials: Acids"
     )
     pdf_url = "https://example.test/sds.pdf"
 

@@ -394,7 +394,7 @@ def _select_sample(
 
 
 def _candidate_stage_counts(events: list[dict[str, Any]]) -> dict[str, int]:
-    counts = Counter()
+    counts: Counter[str] = Counter()
     for event in events:
         stage = str(event.get("stage") or "")
         if stage.startswith("candidate_"):

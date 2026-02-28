@@ -133,6 +133,18 @@ def _best_effort_failure_details(
     return details
 
 
+def _select_density_g_ml(
+    *,
+    pubchem_density_g_ml: Decimal | None,
+    pdf_density_g_ml: Decimal | None,
+) -> tuple[Decimal | None, str]:
+    if pdf_density_g_ml is not None:
+        return (pdf_density_g_ml, "pdf")
+    if pubchem_density_g_ml is not None:
+        return (pubchem_density_g_ml, "pubchem")
+    return (None, "missing")
+
+
 class PubChemSdsFetcher:
     def __init__(
         self,
@@ -362,18 +374,30 @@ class PubChemSdsFetcher:
             self._emit(log, "candidate_missing_heuristics", cid=cid)
 
         used_curated_meta = False
-        density_g_ml = None
+        density_g_ml: Decimal | None = None
         if curated_meta is not None and curated_meta.density_g_ml is not None:
             density_g_ml = curated_meta.density_g_ml
             used_curated_meta = True
             self._emit(log, "density_from_curated", cid=cid)
         else:
-            density_g_ml = await self._fetch_density(cid=cid, log=log)
-        if density_g_ml is None:
-            density_g_ml = extract_density_g_ml_from_sds_text(pdf_document.text)
-            if density_g_ml is not None:
+            pubchem_density_g_ml = await self._fetch_density(cid=cid, log=log)
+            pdf_density_g_ml = extract_density_g_ml_from_sds_text(pdf_document.text)
+            density_g_ml, density_source = _select_density_g_ml(
+                pubchem_density_g_ml=pubchem_density_g_ml,
+                pdf_density_g_ml=pdf_density_g_ml,
+            )
+            if density_source == "pdf":
                 self._emit(log, "density_from_pdf", cid=cid)
-            else:
+                if pubchem_density_g_ml is not None and pdf_density_g_ml is not None:
+                    if pubchem_density_g_ml != pdf_density_g_ml:
+                        self._emit(
+                            log,
+                            "density_overrode_pubchem",
+                            cid=cid,
+                            pubchem_density_g_ml=str(pubchem_density_g_ml),
+                            pdf_density_g_ml=str(pdf_density_g_ml),
+                        )
+            elif density_source == "missing":
                 self._emit(log, "candidate_missing_density", cid=cid)
 
         clp_bands: tuple[ClpBand, ...] = ()
@@ -382,15 +406,15 @@ class PubChemSdsFetcher:
             used_curated_meta = True
             self._emit(log, "clp_bands_from_curated", cid=cid)
         elif density_g_ml is not None:
-            clp_bands = build_clp_bands(
+            parsed_bands = build_clp_bands(
                 pdf_text=pdf_document.text,
                 molar_mass=molar_mass_g_mol(formula_clean=hazard.key),
                 density_g_ml=density_g_ml,
                 snapshot=ghs,
                 emit=lambda stage: self._emit(log, stage),
             )
-            if clp_bands is None:
-                clp_bands = ()
+            if parsed_bands is not None:
+                clp_bands = parsed_bands
 
         sources = [*ghs.sources, pdf_document.source_url, "PubChem"]
         if used_curated_meta and curated_meta is not None and curated_meta.sources:
