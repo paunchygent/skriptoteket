@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-02-28
-- Branch: `main` + local changes
+- Branch: `main`
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agents/readme-first.md`
@@ -75,6 +75,10 @@ Keep this file updated so the next session can pick up work quickly.
   - Evidence: `.artifacts/sds-cache/slice-6-14-report.json` (`ok=0 partial=4 fail=0`) + `.artifacts/sds-cache/slice-6-14-scl-snippets/`
 - PR-0062 Slice 6.15: reran full truthy sample v1 with fresh cache root → `.artifacts/sds-cache/slice-6-15-report.json`
   (`ok=7 partial=14 fail=0`).
+- PR-0062 Slice 6.16: full seed run (164 hazards) with fresh cache root → `.artifacts/sds-cache/slice-6-16-report.json`
+  (`ok=11 partial=14 fail=139 total=164`).
+  - FAIL taxonomy (pinned from seed log): `.artifacts/sds-cache/slice-6-16-fail-attempts.json` (`no_candidates=79`,
+    `non_sds_candidates=59` dominated by NJ “RTK Act” + CAS terms, `pdf_no_hazard_codes=1`).
 
 ## Current Session (2026-02-01)
 
@@ -183,7 +187,7 @@ pdm run fe-test
 
 ## Next Steps
 
-- PR-0062 Slice 6: broaden the seed run beyond the truthy sample (fresh `ARTIFACTS_ROOT`) to find the next dominant
-  FAIL cluster and repeat curate → seed → pin root cause (prefer artifacts under `.artifacts/sds-cache/`).
+- PR-0062 Slice 6: use the Slice 6.16 taxonomy to decide whether to (a) expand SDS provider coverage, or (b) treat SDS
+  prefetch as opportunistic and prioritize best-effort risk draft/export UX while curating only high-value SDS PDFs.
 - Decide whether `clp_bands` should remain tracked as “partial” in seed reports now that Option B makes export
   best-effort w.r.t. SCL, or if we should split “export-blocking missing” vs “nice-to-have missing” in the seed report.

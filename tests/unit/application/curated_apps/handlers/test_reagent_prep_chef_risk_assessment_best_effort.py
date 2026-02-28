@@ -321,14 +321,10 @@ async def test_risk_draft_best_effort_sets_missing_flags_and_export_gate_for_par
         "sds_heuristics_missing",
         "heuristics_unavailable",
     ]
-    assert result.draft.export_gate.ready is False
+    assert result.draft.export_gate.ready is True
     assert result.draft.export_gate.missing_confirmations == []
     assert result.draft.export_gate.missing_context_fields == []
-    assert result.draft.export_gate.missing_data_flags == [
-        "sds_density_missing",
-        "sds_heuristics_missing",
-        "heuristics_unavailable",
-    ]
+    assert result.draft.export_gate.missing_data_flags == []
 
 
 @pytest.mark.asyncio
@@ -368,13 +364,10 @@ async def test_risk_draft_best_effort_sets_pdf_missing_when_sds_unavailable() ->
     assert result.draft.sds.sds_ref is None
     assert result.draft.sds.missing_flags == ["sds_pdf_missing"]
     assert result.draft.missing_flags == ["sds_pdf_missing", "heuristics_unavailable"]
-    assert result.draft.export_gate.ready is False
+    assert result.draft.export_gate.ready is True
     assert result.draft.export_gate.missing_context_fields == []
     assert result.draft.export_gate.missing_confirmations == []
-    assert result.draft.export_gate.missing_data_flags == [
-        "sds_pdf_missing",
-        "heuristics_unavailable",
-    ]
+    assert result.draft.export_gate.missing_data_flags == []
 
 
 @pytest.mark.asyncio

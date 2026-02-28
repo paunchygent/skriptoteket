@@ -6,8 +6,8 @@ Builds a deterministic, restorable risk assessment draft from:
 - repo-owned risk templates and teacher overrides stored in tool_sessions.
 
 PR-0062: draft generation is best-effort w.r.t. SDS completeness. Missing SDS-derived
-inputs are surfaced via explicit `missing_flags` + server-driven `export_gate`, while
-export remains strict/offline.
+inputs are surfaced via explicit `missing_flags` + server-driven `export_gate`. Export
+is offline (no fetch) and best-effort; the SDS open button is gated by `pdf_available`.
 """
 
 from __future__ import annotations
@@ -79,12 +79,9 @@ MISSING_FLAGS_ORDER: list[ReagentPrepChefRiskMissingFlag] = [
     "heuristics_unavailable",
 ]
 
-EXPORT_BLOCKING_FLAGS: set[ReagentPrepChefRiskMissingFlag] = {
-    "sds_pdf_missing",
-    "sds_density_missing",
-    "sds_heuristics_missing",
-    "heuristics_unavailable",
-}
+# PR-0062: best-effort export. Missing SDS-derived signals should be visible in the draft,
+# but should not block exporting a risk PDF (confirmation + context fields are still strict).
+EXPORT_BLOCKING_FLAGS: set[ReagentPrepChefRiskMissingFlag] = set()
 
 
 def _parse_inputs(value: object) -> ReagentPrepChefRiskAssessmentInputs | None:

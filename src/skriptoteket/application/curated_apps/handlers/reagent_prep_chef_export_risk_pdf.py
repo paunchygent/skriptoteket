@@ -1,3 +1,12 @@
+"""Risk-PDF export for the Reagent Prep Chef curated app.
+
+Builds a risk assessment draft via the risk handler, renders it as a PDF, and records the
+result as a curated-app run with an output archive.
+
+PR-0062: export is offline (no SDS fetch) and best-effort. Missing SDS-derived inputs are
+surfaced as warnings/notes in the draft rather than hard-blocking export.
+"""
+
 from __future__ import annotations
 
 import io
@@ -157,7 +166,7 @@ class ReagentPrepChefExportRiskPdfHandler(ReagentPrepChefExportRiskPdfHandlerPro
             actor=actor,
             command=command,
             allow_fetch=False,
-            require_complete=True,
+            require_complete=False,
         )
         draft = result.draft
 

@@ -890,6 +890,41 @@ Remaining PARTIAL keys (truthy PDFs, but missing `clp_bands`):
 
 - All PARTIAL keys are `missing=['clp_bands']` except `SrCl2` which is `missing=['clp_bands', 'density_g_ml']`.
 
+#### Slice 6.16 (DONE): Full seed run (164 hazards) with fresh cache root (baseline + failure taxonomy)
+
+Goal: re-run the full hazard set with a **fresh** `ARTIFACTS_ROOT` to quantify how much of the data problem is:
+
+- “we fetched an SDS but our parsers/heuristics are incomplete” vs
+- “we never get a usable SDS PDF candidate at all”.
+
+Evidence (real data; fresh cache root):
+
+```bash
+ARTIFACTS_ROOT=/Users/olofs_mba/Documents/Repos/CascadeProjects/windsurf-project/.artifacts/sds-cache/slice-6-16-cache-root \\
+PYTHONPATH=src pdm run python -m skriptoteket.cli seed-sds-cache \\
+  --best-effort --no-fail-fast --concurrency 2 \\
+  --report .artifacts/sds-cache/slice-6-16-report.json | tee .artifacts/sds-cache/slice-6-16-seed.log
+```
+
+- Report: `.artifacts/sds-cache/slice-6-16-report.json` (summary: `ok=11 partial=14 fail=139 total=164`)
+- Log: `.artifacts/sds-cache/slice-6-16-seed.log`
+- FAIL root causes (structured from log; per-key candidate lists + verdict): `.artifacts/sds-cache/slice-6-16-fail-attempts.json`
+  - Taxonomy (from `summary.mode_counts`):
+    - `no_candidates=79` (provider registry returned no PDF candidates)
+    - `non_sds_candidates=59` (candidates fetched but rejected by `is_sds_document`)
+    - `pdf_no_hazard_codes=1` (candidate fetched, but hazard codes could not be extracted)
+  - Non-SDS dominance (from `summary.top_non_sds_urls`): NJ “RTK Act” PDF + CAS “chemical safety library terms”.
+
+Interpretation:
+
+- This output **does not** mean PR-0062 is “blocked” or “not working”; it means our *current* SDS PDF candidate
+  discovery (curated linkouts + PubChem linkout/safety/LCSS URLs) cannot produce a usable SDS PDF for most hazards.
+- The dominant problem in the full set is therefore **upstream coverage**, not CLP-band parsing. Parser work only moves
+  the needle for the subset where we actually get an SDS PDF and extract hazard signals from it.
+- PR-0062’s path out of the historical “ok=10 fail=154” prefetch state is the **best-effort draft contract**
+  (`missing_flags` + server-driven `export_gate`) so the app remains usable while SDS coverage is improved
+  incrementally where it matters most.
+
 #### Repeatable validation loop (avoid stale cache masking parser changes)
 
 Important: in best-effort mode, the SDS index store returns cached partial entries (`require_complete=false`). To
@@ -918,7 +953,7 @@ larger set.
 - Unit tests for missing-flag derivation (SDS missing / density missing / CLP bands missing / heuristics missing).
 - Handler tests for:
   - draft endpoint returns 200 with best-effort payload when SDS is incomplete
-  - export-risk-pdf remains strict + offline and fails closed with clear validation errors
+  - export-risk-pdf is offline (no fetch) and best-effort when confirmations + context are complete
 - SPA tests (Vitest):
   - buttons are gated by `export_gate.ready` and `sds.pdf_available`
   - missing blockers render in UI
@@ -926,4 +961,4 @@ larger set.
 ## Rollback plan
 
 - Revert contract additions and restore strict draft gating (`require_complete=true`).
-- Keep export behavior unchanged (strict/offline) throughout.
+- Restore strict export behavior (offline + fail-closed) if we decide best-effort export is too permissive.
