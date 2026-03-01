@@ -4,8 +4,8 @@ These tests validate `extract_density_g_ml` against real-world unit variants see
 PubChem PUG-View "Density" sections (unicode superscripts, g/cu cm, kg/m³, g/L).
 
 Related:
-  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_parsers/pubchem_extractors.py`
-  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_fetcher.py`
+  - `infrastructure/curated_apps/apps/reagent_prep_chef/sds_parsers/pubchem_extractors.py`
+  - `infrastructure/curated_apps/apps/reagent_prep_chef/sds_fetcher.py`
 """
 
 from __future__ import annotations

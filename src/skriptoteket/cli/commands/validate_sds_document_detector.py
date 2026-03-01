@@ -27,24 +27,26 @@ import httpx
 import typer
 
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers import (
+    text_extractors as sds_text_extractors,
+)
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers.patterns import (
     SDS_TITLE_RE,
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers.pdf_text import (
     extract_pdf_text,
 )
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_parsers.text_extractors import (
-    _NON_SDS_CFR_RE,
-    _NON_SDS_FACT_SHEET_RE,
-    _NON_SDS_GUIDE_RE,
-    _SDS_NUMERIC_SECTION_RE,
-    _SDS_SECTION_RE,
-    _SDS_SECTION_TITLE_TOKENS,
-    is_sds_document,
-)
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_pdf_fetcher import (
     looks_like_pdf,
 )
+
+_NON_SDS_CFR_RE = sds_text_extractors._NON_SDS_CFR_RE
+_NON_SDS_FACT_SHEET_RE = sds_text_extractors._NON_SDS_FACT_SHEET_RE
+_NON_SDS_GUIDE_RE = sds_text_extractors._NON_SDS_GUIDE_RE
+_SDS_NUMERIC_SECTION_RE = sds_text_extractors._SDS_NUMERIC_SECTION_RE
+_SDS_SECTION_RE = sds_text_extractors._SDS_SECTION_RE
+_SDS_SECTION_TITLE_TOKENS = sds_text_extractors._SDS_SECTION_TITLE_TOKENS
+is_sds_document = sds_text_extractors.is_sds_document
 
 
 @dataclass(frozen=True, slots=True)

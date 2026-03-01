@@ -6,8 +6,8 @@ fact sheets). The pipeline must fail-closed (no SDS PDF) rather than cache misle
 documents and surface them as SDS in the UI.
 
 Related:
-  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_parsers/text_extractors.py`
-  - `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_pdf_providers.py`
+  - `infrastructure/curated_apps/apps/reagent_prep_chef/sds_parsers/text_extractors.py`
+  - `infrastructure/curated_apps/apps/reagent_prep_chef/sds_pdf_providers.py`
 """
 
 from __future__ import annotations
