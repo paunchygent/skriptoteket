@@ -129,22 +129,20 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
-    async def sir_convert_a_lot_http_client_v2(
+    async def sir_convert_a_lot_client_v2(
         self, settings: SirConvertClientSettingsV2
-    ) -> AsyncIterator[httpx.AsyncClient]:
-        client = httpx.AsyncClient(base_url=settings.base_url, timeout=settings.timeout_seconds)
+    ) -> AsyncIterator[SirConvertALotClientV2Protocol]:
+        # Do not expose a bare `httpx.AsyncClient` in DI here: the app has other
+        # async clients (for example OpenAI) and collisions would break relative
+        # URL requests to Sir Convert-a-Lot v2.
+        http_client = httpx.AsyncClient(
+            base_url=settings.base_url,
+            timeout=settings.timeout_seconds,
+        )
         try:
-            yield client
+            yield SirConvertALotClientV2(settings=settings, client=http_client)
         finally:
-            await client.aclose()
-
-    @provide(scope=Scope.APP)
-    def sir_convert_a_lot_client_v2(
-        self,
-        settings: SirConvertClientSettingsV2,
-        client: httpx.AsyncClient,
-    ) -> SirConvertALotClientV2Protocol:
-        return SirConvertALotClientV2(settings=settings, client=client)
+            await http_client.aclose()
 
     @provide(scope=Scope.APP)
     def reagent_prep_chef_hazards(self) -> ReagentPrepChefHazardStoreProtocol:
