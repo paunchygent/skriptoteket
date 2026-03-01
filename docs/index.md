@@ -102,6 +102,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0063-runner-request-envelope-v1.md`
 - `docs/adr/adr-0064-file-references-and-resolver.md`
 - `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`
+- `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -139,6 +140,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`
 - `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`
 - `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`
+- `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`
 
 ### Backlog Reviews
 
@@ -159,6 +161,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-18-execution-queue.md`
 - `docs/backlog/reviews/review-epic-19-runner-io-and-file-references-foundations.md`
 - `docs/backlog/reviews/review-epic-20-curated-app-reagent-prep-chef.md`
+- `docs/backlog/reviews/review-epic-21-curated-app-conversion-hub.md`
 
 ### Backlog Sprints
 
@@ -223,6 +226,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0060-curated-app-reagent-prep-chef-risk-assessment.md`
 - `docs/backlog/prs/pr-0061-story-003c-thin-adapter-parity-and-scientific-pdf-workload-validation.md`
 - `docs/backlog/prs/pr-0062-curated-app-reagent-prep-chef-risk-assessment-best-effort-contract.md`
+- `docs/backlog/prs/pr-0063-adr-0066-epic-21-conversion-hub-planning.md`
+- `docs/backlog/prs/pr-0064-conversion-hub-backend-sir-convert-a-lot-v2-client-and-api.md`
+- `docs/backlog/prs/pr-0065-conversion-hub-spa-ui-batch-and-preview.md`
+- `docs/backlog/prs/pr-0066-migrate-e2e-tests-disable-html-to-pdf-preview-seeding.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -446,6 +453,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-19-07-story-003c-thin-adapter-consumer-adoption-and-scientific-pdf-workload.md`
 - `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md`
 - `docs/backlog/stories/story-20-02-curated-app-reagent-prep-chef-risk-assessment.md`
+- `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md`
+- `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md`
 
 ### Reference
 

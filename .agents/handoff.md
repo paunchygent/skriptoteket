@@ -12,11 +12,16 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-02-28
+- Date: 2026-03-01
 - Branch: `main`
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: history in `.agents/readme-first.md`
+
+## Current Session (2026-03-01)
+
+- Planned EPIC-21 conversion hub (Sir Convert-a-Lot v2) docs scaffolding: ADR-0066 + EPIC-21 + ST-21-01/02 +
+  REV-EPIC-21 + PR-0063..PR-0066; verified `pdm run docs-validate`.
 
 ## Current Session (2026-02-13)
 

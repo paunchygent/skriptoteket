@@ -31,6 +31,7 @@ Auth is **local accounts + server-side sessions in PostgreSQL** (v0.1). Future H
 - Active: EPIC-14 admin tool authoring — `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 - Active: EPIC-08 contextual help + AI editor — `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
 - Active: EPIC-16 catalog discovery — ST-16-08 pending
+- Planned: EPIC-21 conversion hub (Sir Convert-a-Lot v2) — `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`
 - Done: EPIC-11 (SPA migration)
 
 ## Current EPIC-04 decisions (dynamic scripts)
