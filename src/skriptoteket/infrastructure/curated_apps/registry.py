@@ -44,6 +44,22 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
                 ],
             ),
+            CuratedAppDefinition(
+                app_id="documents.conversion_hub",
+                tool_id=curated_app_tool_id(app_id="documents.conversion_hub"),
+                app_version=app_version,
+                ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED,
+                title="Konvertera dokument",
+                summary=(
+                    "Konvertera PDF/HTML/Markdown/DOCX via Sir Convert-a-Lot v2 "
+                    "(batch + forhandsvisning)."
+                ),
+                min_role=Role.USER,
+                placements=[
+                    CuratedAppPlacement(profession_slug="gemensamt", category_slug="ovrigt"),
+                    CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
+                ],
+            ),
         ]
 
         self._apps = apps

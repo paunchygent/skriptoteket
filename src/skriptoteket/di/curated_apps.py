@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from pathlib import Path
 
+import httpx
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
@@ -39,6 +40,10 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_risk_
     ReagentPrepChefSaveRiskPdfHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
+    SirConvertALotClientV2,
+    SirConvertClientSettingsV2,
+)
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef import (
     hazards_store as reagent_prep_chef_hazards_store,
 )
@@ -102,6 +107,7 @@ from skriptoteket.protocols.reagent_prep_chef import (
 )
 from skriptoteket.protocols.runner import ArtifactManagerProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertALotClientV2Protocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
@@ -112,6 +118,34 @@ from skriptoteket.protocols.vault import (
 
 
 class CuratedAppsProvider(Provider):
+    @provide(scope=Scope.APP)
+    def sir_convert_a_lot_client_settings_v2(
+        self, settings: Settings
+    ) -> SirConvertClientSettingsV2:
+        return SirConvertClientSettingsV2(
+            base_url=settings.SIR_CONVERT_A_LOT_V2_BASE_URL,
+            api_key=settings.SIR_CONVERT_A_LOT_V2_API_KEY,
+            timeout_seconds=settings.SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS,
+        )
+
+    @provide(scope=Scope.APP)
+    async def sir_convert_a_lot_http_client_v2(
+        self, settings: SirConvertClientSettingsV2
+    ) -> AsyncIterator[httpx.AsyncClient]:
+        client = httpx.AsyncClient(base_url=settings.base_url, timeout=settings.timeout_seconds)
+        try:
+            yield client
+        finally:
+            await client.aclose()
+
+    @provide(scope=Scope.APP)
+    def sir_convert_a_lot_client_v2(
+        self,
+        settings: SirConvertClientSettingsV2,
+        client: httpx.AsyncClient,
+    ) -> SirConvertALotClientV2Protocol:
+        return SirConvertALotClientV2(settings=settings, client=client)
+
     @provide(scope=Scope.APP)
     def reagent_prep_chef_hazards(self) -> ReagentPrepChefHazardStoreProtocol:
         hazards_path = Path(reagent_prep_chef_hazards_store.__file__).with_name("hazards.json")

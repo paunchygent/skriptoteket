@@ -33,7 +33,7 @@ Sir Convert-a-Lot v2.
 ## PR Tasks (ordered)
 
 - [ ] 1. PR-0063: ADR + EPIC/Story scaffolding (docs-as-code; review-ready)
-- [ ] 2. PR-0064: Backend Sir Convert-a-Lot v2 client + curated app API surface (submit/poll/download)
+- [x] 2. PR-0064: Backend Sir Convert-a-Lot v2 client + curated app API surface (submit/poll/download)
 - [ ] 3. PR-0065: SPA Conversion Hub bespoke UI (batch + preview + pdf_layout controls)
 
 ## Notes

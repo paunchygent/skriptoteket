@@ -2,7 +2,7 @@
 type: pr
 id: PR-0064
 title: "Conversion Hub: backend Sir Convert-a-Lot v2 client + curated app API surface"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-01
 updated: 2026-03-01
@@ -34,22 +34,22 @@ Implement the backend portion of the Conversion Hub curated app:
 
 ## Implementation plan
 
-- [ ] Add app registry entry in `src/skriptoteket/infrastructure/curated_apps/registry.py` (bespoke-required).
-- [ ] Add app contract models under `src/skriptoteket/application/curated_apps/` (request/response payloads).
-- [ ] Add protocol(s) under `src/skriptoteket/protocols/` for the v2 client and app handler.
-- [ ] Add infra httpx client that implements the protocol:
+- [x] Add app registry entry in `src/skriptoteket/infrastructure/curated_apps/registry.py` (bespoke-required).
+- [x] Add app contract models under `src/skriptoteket/application/curated_apps/` (request/response payloads).
+- [x] Add protocol(s) under `src/skriptoteket/protocols/` for the v2 client and app handler.
+- [x] Add infra httpx client that implements the protocol:
   - timeouts (connect/read/overall),
   - deterministic error mapping (including correlation id passthrough),
-  - idempotency support at the v2 API boundary (if available).
-- [ ] Add API routes under `src/skriptoteket/web/api/v1/apps_<app>.py`:
-  - submit conversion (single + batch form),
-  - poll job status / result,
-  - download artifact (proxy or signed URL strategy, depending on v2).
-- [ ] Wire DI in `src/skriptoteket/di/curated_apps.py` and mount router in `src/skriptoteket/web/router.py`.
-- [ ] Add unit tests for:
-  - client request building (including `conversion.pdf_layout` mapping),
-  - failure mapping (422 vs 5xx vs timeouts),
-  - batch orchestration result shape.
+  - idempotency support via per-submit generated keys (new key per job).
+- [x] Add API routes under `src/skriptoteket/web/api/v1/apps_conversion_hub.py`:
+  - list supported routes,
+  - submit conversion jobs (multipart; supports batch),
+  - poll job status,
+  - download artifact (proxy).
+- [x] Wire DI in `src/skriptoteket/di/curated_apps.py` and mount router in `src/skriptoteket/web/router.py`.
+- [x] Add unit tests for:
+  - client request shaping + error mapping,
+  - v2 job spec mapping (including `conversion.pdf_layout` and required PDF-source defaults).
 
 ## Test plan
 
@@ -60,3 +60,10 @@ Implement the backend portion of the Conversion Hub curated app:
 ## Rollback plan
 
 - Remove the new registry entry and routes; keep config keys unused if needed until PR-0065 lands.
+
+## Validation evidence (2026-03-01)
+
+- `pdm run lint`: pass
+- `pdm run typecheck`: pass
+- `pdm run test`: pass
+- OpenAPI contract: `pdm run pytest -q tests/test_openapi_contracts.py::test_openapi_schema_builds`: pass

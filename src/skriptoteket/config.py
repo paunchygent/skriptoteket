@@ -77,6 +77,11 @@ class Settings(BaseSettings):
     PUBCHEM_THROTTLE_YELLOW_DELAY_SECONDS: float = 0.5
     PUBCHEM_THROTTLE_RED_DELAY_SECONDS: float = 1.5
 
+    # Sir Convert-a-Lot v2 (external conversion engine; EPIC-21 / ADR-0066)
+    SIR_CONVERT_A_LOT_V2_BASE_URL: str = "http://127.0.0.1:9010"
+    SIR_CONVERT_A_LOT_V2_API_KEY: str = ""
+    SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: float = 60.0
+
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000
     VAULT_MAX_TOTAL_BYTES: int = 200_000_000
