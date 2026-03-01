@@ -2,7 +2,7 @@
 type: pr
 id: PR-0063
 title: "Conversion Hub: ADR-0066 + EPIC-21 planning scaffold"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-01
 updated: 2026-03-01
@@ -32,16 +32,20 @@ production tool script.
 
 ## Implementation plan
 
-- [ ] Add `docs/adr/adr-0066-...`
-- [ ] Add `docs/backlog/epics/epic-21-...`
-- [ ] Add stories `ST-21-01` and `ST-21-02` with PR task checklists
-- [ ] Add review `REV-EPIC-21`
-- [ ] Update `docs/index.md` to include all new docs
-- [ ] Run `pdm run docs-validate`
+- [x] Add `docs/adr/adr-0066-...`
+- [x] Add `docs/backlog/epics/epic-21-...`
+- [x] Add stories `ST-21-01` and `ST-21-02` with PR task checklists
+- [x] Add review `REV-EPIC-21`
+- [x] Update `docs/index.md` to include all new docs
+- [x] Run `pdm run docs-validate`
 
 ## Test plan
 
 - `pdm run docs-validate`
+
+## Validation evidence (2026-03-01)
+
+- `pdm run docs-validate`: pass
 
 ## Rollback plan
 

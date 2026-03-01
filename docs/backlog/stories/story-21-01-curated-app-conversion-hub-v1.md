@@ -2,7 +2,7 @@
 type: story
 id: ST-21-01
 title: "Curated app: Conversion Hub (v1)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-01
 epic: "EPIC-21"
@@ -32,7 +32,7 @@ Sir Convert-a-Lot v2.
 
 ## PR Tasks (ordered)
 
-- [ ] 1. PR-0063: ADR + EPIC/Story scaffolding (docs-as-code; review-ready)
+- [x] 1. PR-0063: ADR + EPIC/Story scaffolding (docs-as-code; review-ready)
 - [x] 2. PR-0064: Backend Sir Convert-a-Lot v2 client + curated app API surface (submit/poll/download)
 - [ ] 3. PR-0065: SPA Conversion Hub bespoke UI (batch + preview + pdf_layout controls)
 

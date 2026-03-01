@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-21
 title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
-status: proposed
+status: active
 owners: "agents"
 created: 2026-03-01
 outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview) that routes all supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
@@ -46,4 +46,7 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
 
 ## Implementation Summary (as of 2026-03-01)
 
-- Planned (no implementation yet).
+- PR-0063 (docs planning scaffold): done
+- PR-0064 (backend v2 client + curated app API surface): done
+- PR-0065 (SPA bespoke UI): next
+- PR-0066 (migrate tests + retire html-to-pdf-preview): pending
