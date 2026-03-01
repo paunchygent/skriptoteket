@@ -20,8 +20,9 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Current Session (2026-03-01)
 
-- Planned EPIC-21 conversion hub (Sir Convert-a-Lot v2) docs scaffolding: ADR-0066 + EPIC-21 + ST-21-01/02 +
-  REV-EPIC-21 + PR-0063..PR-0066; verified `pdm run docs-validate`.
+- EPIC-21 conversion hub (Sir Convert-a-Lot v2): PR-0063 planning + PR-0064 backend integration landed (registry
+  `documents.conversion_hub`, v2 client + API routes in `src/skriptoteket/web/api/v1/apps_conversion_hub.py`);
+  verified `pdm run docs-validate`, `pdm run lint`, `pdm run typecheck`, `pdm run test`.
 
 ## Current Session (2026-02-13)
 
