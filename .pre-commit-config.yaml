@@ -45,6 +45,13 @@ repos:
         files: ^docs/
         pass_filenames: false
 
+      - id: reagent-hazard-shortcard-guard
+        name: Reagent hazard↔shortcard guard
+        entry: pdm run sds-check-hazard-alignment
+        language: system
+        files: ^(src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/hazards\.json|data/reagent_prep_chef/sds/shortcards\.json|scripts/(align_reagent_prep_chef_hazard_codes_from_shortcards|check_reagent_prep_chef_hazard_shortcard_alignment)\.py|tests/unit/(scripts/test_(align|check)_reagent_prep_chef_hazard.*|infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store\.py))
+        pass_filenames: false
+
       - id: agent-doc-budgets
         name: Agent docs line budgets (.agents/*)
         entry: pdm run python -m scripts.check_agent_doc_budgets

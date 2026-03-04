@@ -46,6 +46,7 @@ draft becomes generic or misleading (even when SDS markdown clearly contains the
 - `pdm run test`
 - `pdm run lint && pdm run typecheck`
 - Manual: verify that an affected chemical now shows the correct risk codes in the risk draft.
+- `pdm run sds-check-hazard-alignment`
 
 ## Implementation notes (2026-03-04)
 
@@ -67,6 +68,11 @@ draft becomes generic or misleading (even when SDS markdown clearly contains the
 5. Added invariant test so hazards cannot drift behind shortcards:
    - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store.py`
    - Rule asserted: if shortcard has H-codes for an `sds_ref`, hazards entry for same `key` must not be empty.
+
+6. Added blocking CI/pre-commit guard + policy doc:
+   - Guard script: `scripts/check_reagent_prep_chef_hazard_shortcard_alignment.py`
+   - Quality wiring: `pyproject.toml` (`lint`) + `.pre-commit-config.yaml`
+   - Policy reference: `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 
 ## Rollback plan
 

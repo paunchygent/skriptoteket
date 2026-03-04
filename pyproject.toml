@@ -338,6 +338,7 @@ lint = { composite = [
     "ruff check --force-exclude .",
     "python -m scripts.check_agent_doc_budgets",
     "python -m scripts.validate_docs",
+    "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment",
 ] }
 lint-fix = "ruff check --fix --force-exclude ."
 typecheck = "mypy --config-file pyproject.toml src tests"
@@ -351,6 +352,8 @@ test-sequential = "pytest -n 0"
 docs-validate = "python -m scripts.validate_docs"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
+sds-check-hazard-alignment = "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment"
+textbook-corpus-baseline = "python -m scripts.build_textbook_corpus_baseline"
 
 # Agent skills (repo-local)
 skills-prompt = "python -m scripts.skills_prompt"

@@ -22,6 +22,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
 - Riskunderlag praxis (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
+- Hazards↔shortcards policy (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`
 - Llama kodassistent eval v2: `docs/reference/ref-llama-kodassistent-eval-v2.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
@@ -489,6 +490,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
 - `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - `docs/reference/ref-linter-architecture.md`
+- `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - `docs/reference/ref-review-workflow.md`
 - `docs/reference/ref-scripting-api-contracts.md`

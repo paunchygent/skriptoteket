@@ -60,6 +60,16 @@ Keep this file updated so the next session can pick up work quickly.
     - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store.py`
   - Alignment report artifact:
     `.artifacts/reagent_prep_chef/hazard-sds-alignment-report.json`
+- PR-0072 follow-up slice delivered (drift guard policy):
+  - New guard script:
+    `scripts/check_reagent_prep_chef_hazard_shortcard_alignment.py`
+  - New tests:
+    `tests/unit/scripts/test_check_reagent_prep_chef_hazard_shortcard_alignment.py`
+  - Guard wired into:
+    - `pyproject.toml` (`lint` composite + `sds-check-hazard-alignment`)
+    - `.pre-commit-config.yaml` (`reagent-hazard-shortcard-guard`)
+  - Policy reference doc:
+    `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - Older history: see `.agents/readme-first.md` + `docs/` (PR-0062 is canceled).
 
 ## Verification
@@ -94,6 +104,11 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run pytest -q tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py tests/unit/web/reagent_prep_chef/test_risk_routes.py`
   - `pdm run lint`
   - `pdm run typecheck`
+- 2026-03-04: PR-0072 guard-policy validation:
+  - `pdm run pytest -q tests/unit/scripts/test_check_reagent_prep_chef_hazard_shortcard_alignment.py`
+  - `pdm run sds-check-hazard-alignment`
+  - `pdm run lint`
+  - `pdm run docs-validate`
 
 ## How to Run
 
@@ -118,4 +133,4 @@ pdm run fe-test
 
 ## Next Steps
 
-- PR-0072: Resolve any remaining manual curation mismatches (if future shortcards produce non-empty vs non-empty drift) and decide policy for P-codes in hazards contract.
+- PR-0072: If/when hazards contract adds `p_codes`, extend guard rules so P-code drift is blocking in CI as well.
