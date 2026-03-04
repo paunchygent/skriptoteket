@@ -2,7 +2,7 @@
 type: pr
 id: PR-0072
 title: "Reagent Prep Chef — Risk texts derived from hazards (SDS-aligned data)"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-04
 updated: 2026-03-04

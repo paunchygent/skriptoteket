@@ -86,5 +86,5 @@ pdm run fe-test
 
 ## Next Steps
 
-- Run full quality gates, then commit + push tracked changes.
-- Redeploy on `hemma`: `ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml up -d --build"`.
+- PR-0071: Research Skolverket/AFS praxis and align Riskbedömning form + validations (frontend + backend) to the minimum required teacher workflow.
+- PR-0072: Finish hazards↔SDS alignment so risk drafts never fall back to generic/missing H/P codes; keep shortcards as a deterministic input.

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0069
 title: "Reagent Prep Chef — Fix SDS index missing in Docker (Riskbedömning)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-04
 updated: 2026-03-04

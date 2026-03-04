@@ -13,6 +13,7 @@ acceptance_criteria:
   - "Riskbedömning form fields and required validation are backed by named authoritative sources (Skolverket and/or Arbetsmiljöverket + applicable AFS)."
   - "The form avoids unnecessary documentation and matches common school workflows for teachers."
   - "Frontend required-field gating and backend export validation match the same field set."
+  - "UI + exported PDF use the correct document naming (Riskbedömning vs Underlag) based on the researched sources."
 ---
 
 ## Problem
@@ -32,11 +33,23 @@ very sensitive to unnecessary documentation.
 
 ## Implementation plan
 
-1. Produce a reference note under `docs/reference/` that lists authoritative sources and extracts the minimum required
-   documentation fields for chemical risk assessments in school settings.
-2. Update the SPA form fields and helper copy based on that reference.
-3. Update backend required-field validation for export/save to match.
-4. Add a small UI/handler test surface to prevent drift.
+1. Research + source capture:
+   - Produce a reference note under `docs/reference/` with **named sources** and the extracted *minimum required* fields
+     for chemical risk documentation in Swedish schools (Skolverket + Arbetsmiljöverket + relevant AFS).
+   - Include a mapping table: `current_field` → `required_by_source` → `keep/merge/drop` → `why`.
+2. Decision checkpoint (must be explicit in the reference note):
+   - Confirm whether the app should produce a **full “Riskbedömning”** or an **“Underlag till riskbedömning”** export.
+   - Update all UI copy + PDF titles accordingly (teachers should not be forced into “extra paperwork” wording).
+3. Contract + validation alignment:
+   - Define the final field set in the backend request model (single source of truth for required/optional).
+   - Ensure frontend required-field gating matches the backend export/save validation (no drift).
+   - Update `ST-20-02` acceptance criteria if the final field set changes.
+4. Implement UX + PDF:
+   - Update the SPA form fields, defaults, and helper copy to match the researched minimum.
+   - Ensure the exported PDF mirrors the same field set (and does not introduce extra required fields).
+5. Tests:
+   - Frontend: required-field gating (unit tests).
+   - Backend: export/save validation for the same required fields (unit tests).
 
 ## Test plan
 

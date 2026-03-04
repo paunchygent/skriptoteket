@@ -2,7 +2,7 @@
 type: pr
 id: PR-0070
 title: "Reagent Prep Chef — SDS PDF render from markdown (cache + branding)"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-04
 updated: 2026-03-04

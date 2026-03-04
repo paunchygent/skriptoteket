@@ -2,7 +2,7 @@
 type: pr
 id: PR-0067
 title: "Curated app: Reagent Prep Chef — SDS corpus gap fill + commit (ADR-0067)"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-04
 updated: 2026-03-04

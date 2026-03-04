@@ -29,7 +29,7 @@ from skriptoteket.protocols.reagent_prep_chef import (
 
 logger = structlog.get_logger(__name__)
 
-SDS_PDF_TEMPLATE_VERSION = 1
+SDS_PDF_TEMPLATE_VERSION = 2
 SDS_PDF_MEDIA_TYPE = "application/pdf"
 SDS_PDF_LOGO_SVG_PATH = Path("src/skriptoteket/web/static/spa/logo-horizontal.svg")
 
