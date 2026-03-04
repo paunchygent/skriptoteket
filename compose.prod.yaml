@@ -100,7 +100,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts
       - vault_data:/var/lib/skriptoteket/vault
-      - /srv/storage/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
+      - /home/paunchygent/models/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
     networks:
       - hule-network
     healthcheck:
@@ -133,7 +133,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts
       - vault_data:/var/lib/skriptoteket/vault
-      - /srv/storage/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
+      - /home/paunchygent/models/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
     networks:
       - hule-network
     healthcheck:

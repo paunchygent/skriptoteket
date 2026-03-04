@@ -37,7 +37,7 @@ Keep this file updated so the next session can pick up work quickly.
   - Store: `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/sds_store.py`
   - Cache dir: `Settings.REAGENT_PREP_CHEF_SDS_PDF_CACHE_DIR` (`src/skriptoteket/config.py`)
   - Dev mount: `compose.dev.yaml` → `./.artifacts/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs`
-  - Prod mount (hemma): `compose.prod.yaml` → `/srv/storage/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs`
+  - Prod mount (hemma): `compose.prod.yaml` → `/home/paunchygent/models/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs`
 - Cleanup: removed legacy PubChem/SDS fetch pipeline (infrastructure + CLI + tests) per ADR-0067.
 - UI: Riskbedömning shows curated safety + SDS modal (markdown):
   - `frontend/apps/skriptoteket/src/views/apps/reagent-prep-chef/ReagentPrepChefStepRisk.vue`
