@@ -14,6 +14,8 @@ acceptance_criteria:
   - "Riskbedömning risk draft uses complete, subject-specific hazard codes (H/P) for each curated chemical (no generic fallbacks caused by missing codes)."
   - "The hazards dataset is validated/backfilled offline against the SDS markdown corpus (no runtime parsing)."
   - "A gap report is produced for hazards entries that still cannot be validated against SDS markdown."
+  - "A school-MVP SDS shortcard dataset is built offline from repo-owned markdown and committed for deterministic portal autofill."
+  - "Invariant: parser output is never treated as ground truth; when parser/structure issues arise, all SDS markdown files require manual validation."
 ---
 
 ## Problem
@@ -44,6 +46,18 @@ draft becomes generic or misleading (even when SDS markdown clearly contains the
 - `pdm run test`
 - `pdm run lint && pdm run typecheck`
 - Manual: verify that an affected chemical now shows the correct risk codes in the risk draft.
+
+## Implementation notes (2026-03-04)
+
+1. Added offline shortcard builder:
+   - `scripts/build_reagent_prep_chef_sds_shortcards.py`
+   - Extracts school-MVP fields (identity, CLP, PPE hints, spill/incompatibility/waste notes).
+2. Added parser trust invariant enforcement:
+   - `parser_ground_truth=false` in output.
+   - If any parser/structure issue appears, report marks manual validation scope as `all_files`.
+   - Manual checklist for all SDS markdown files is emitted under `.artifacts/`.
+3. Added tests for extraction + invariant behavior:
+   - `tests/unit/scripts/test_build_reagent_prep_chef_sds_shortcards.py`
 
 ## Rollback plan
 

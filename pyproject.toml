@@ -350,6 +350,7 @@ test-sequential = "pytest -n 0"
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
+sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
 
 # Agent skills (repo-local)
 skills-prompt = "python -m scripts.skills_prompt"

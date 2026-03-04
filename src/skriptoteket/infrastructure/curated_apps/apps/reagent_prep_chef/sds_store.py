@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import json
 import tempfile
+from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
 
@@ -32,25 +33,40 @@ SDS_PDF_TEMPLATE_VERSION = 1
 SDS_PDF_MEDIA_TYPE = "application/pdf"
 SDS_PDF_LOGO_SVG_PATH = Path("src/skriptoteket/web/static/spa/logo-horizontal.svg")
 
-SDS_PDF_CSS = """
-@page { size: A4; margin: 18mm 14mm; }
+SDS_PDF_CSS_TEMPLATE = """
+@page {
+  size: A4;
+  margin: 24mm 14mm 18mm 14mm;
+  @top-left {
+    content: element(sds_page_logo);
+    padding: 4mm 0 4mm 0;
+    border-bottom: 2px solid #111;
+    vertical-align: middle;
+  }
+  @top-center {
+    content: "";
+    padding: 4mm 0 4mm 0;
+    border-bottom: 2px solid #111;
+  }
+  @top-right {
+    content: "Skapad: __CREATED_ON__";
+    padding: 4mm 0 4mm 0;
+    border-bottom: 2px solid #111;
+    vertical-align: middle;
+    text-align: right;
+    font-size: 10px;
+    color: #333;
+  }
+}
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 11px;
   line-height: 1.35;
   color: #111;
 }
-.header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 0 12px 0;
-  padding: 0 0 8px 0;
-  border-bottom: 2px solid #111;
-}
-.header__logo { height: 22px; }
-.header__title { font-size: 16px; font-weight: 700; margin: 0; }
-.header__meta { font-size: 10px; color: #333; margin-top: 2px; }
+.sds-page-logo { position: running(sds_page_logo); height: 18px; }
+.doc-title { font-size: 16px; font-weight: 700; margin: 0 0 2px 0; }
+.doc-meta { font-size: 10px; color: #333; margin: 0 0 12px 0; }
 h1,h2,h3,h4 { break-after: avoid; }
 h2 { font-size: 14px; margin: 16px 0 6px; }
 h3 { font-size: 12px; margin: 14px 0 6px; }
@@ -205,6 +221,9 @@ class FileSystemReagentPrepChefSdsStore(ReagentPrepChefSdsStoreProtocol):
             output_format="html",
         )
 
+        created_on = datetime.now(UTC).date().isoformat()
+        css = SDS_PDF_CSS_TEMPLATE.replace("__CREATED_ON__", created_on)
+
         title = "Säkerhetsdatablad (SDS)"
         meta_parts: list[str] = [f"SDS-ref: {entry.sds_ref}"]
         if entry.provider:
@@ -215,7 +234,7 @@ class FileSystemReagentPrepChefSdsStore(ReagentPrepChefSdsStoreProtocol):
         logo_html = ""
         if self._logo_data_uri:
             logo_html = (
-                "<img class='header__logo' alt='Skriptoteket' "
+                "<img class='sds-page-logo' alt='Skriptoteket' "
                 f"src='{escape(self._logo_data_uri, quote=True)}'/>"
             )
 
@@ -228,17 +247,13 @@ class FileSystemReagentPrepChefSdsStore(ReagentPrepChefSdsStoreProtocol):
             "<meta name='viewport' content='width=device-width, initial-scale=1'/>"
             f"<title>{escape(title)}</title>"
             "<style>"
-            f"{SDS_PDF_CSS}"
+            f"{css}"
             "</style>"
             "</head>"
             "<body>"
-            "<div class='header'>"
             f"{logo_html}"
-            "<div>"
-            f"<div class='header__title'>{escape(title)}</div>"
-            f"<div class='header__meta'>{meta_html}</div>"
-            "</div>"
-            "</div>"
+            f"<div class='doc-title'>{escape(title)}</div>"
+            f"<div class='doc-meta'>{meta_html}</div>"
             f"{body}"
             "</body>"
             "</html>"
