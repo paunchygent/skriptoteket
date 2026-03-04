@@ -14,7 +14,7 @@ type Props = {
   isSavingRiskPdfToVault: boolean;
   lastSavedRiskPdfVaultRef: string | null;
   riskErrorMessage: string | null;
-  riskContextIsComplete: boolean;
+  missingRiskContextMessage: string | null;
   canExportRisk: boolean;
 };
 
@@ -258,7 +258,7 @@ const emit = defineEmits<{
             :disabled="props.isRiskExporting || !props.canExportRisk"
             @click="emit('export')"
           >
-            {{ props.isRiskExporting ? "Exporterar…" : "Exportera risk-PDF" }}
+            {{ props.isRiskExporting ? "Exporterar…" : "Exportera underlag (PDF)" }}
           </button>
           <button
             type="button"
@@ -271,10 +271,10 @@ const emit = defineEmits<{
         </div>
 
         <p
-          v-if="!props.riskContextIsComplete"
+          v-if="props.missingRiskContextMessage"
           class="text-xs text-burgundy"
         >
-          Fyll i omfattning, deltagare, ansvarig, datum och nästa översyn innan export.
+          {{ props.missingRiskContextMessage }}
         </p>
 
         <p

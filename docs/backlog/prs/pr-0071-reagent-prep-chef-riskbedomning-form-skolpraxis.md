@@ -2,7 +2,7 @@
 type: pr
 id: PR-0071
 title: "Reagent Prep Chef — Riskbedömning form aligned with Swedish school praxis"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-04
 updated: 2026-03-04
@@ -60,3 +60,18 @@ very sensitive to unnecessary documentation.
 ## Rollback plan
 
 - Revert to the previous form and validations; keep the reference doc for later iteration.
+
+## Implementation notes (2026-03-04)
+
+1. Source-backed reference and decision checkpoint added:
+   - `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
+   - Named sources captured (Skolverket + Arbetsmiljöverket AFS 2023:1 / AFS 2023:10).
+   - Explicit decision: exported artifact is named **Underlag till riskbedömning**.
+2. Backend single source of truth for required risk-context fields:
+   - `src/skriptoteket/application/curated_apps/reagent_prep_chef_risk_contract.py`
+   - Both draft gating and export validation now use the same `missing_risk_context_fields(...)` contract.
+3. Frontend gating copy now follows backend `draft.export_gate.missing_context_fields`:
+   - `frontend/apps/skriptoteket/src/composables/reagentPrepChef/riskExportGate.ts`
+   - Removed hardcoded “saknas”-text in `ReagentPrepChefStepRisk.vue`.
+4. Naming alignment (UI + export/save):
+   - Export filename/content-disposition/save filename changed to `underlag-riskbedomning*.pdf`.

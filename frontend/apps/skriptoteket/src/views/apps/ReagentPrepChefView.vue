@@ -120,7 +120,7 @@ const {
   riskContext,
   riskOverrides,
   riskMeasuresDraft,
-  riskContextIsComplete,
+  missingRiskContextMessage,
   canExportRisk,
   loadRiskDraft,
   updateRiskMeasures,
@@ -425,7 +425,7 @@ onMounted(() => {
         :is-saving-risk-pdf-to-vault="isSavingRiskPdfToVault"
         :last-saved-risk-pdf-vault-ref="lastSavedRiskPdfVaultRef"
         :risk-error-message="riskErrorMessage"
-        :risk-context-is-complete="riskContextIsComplete"
+        :missing-risk-context-message="missingRiskContextMessage"
         :can-export-risk="canExportRisk"
         @refresh="loadRiskDraft"
         @open-sds="openSds"

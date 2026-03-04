@@ -1,3 +1,9 @@
+"""HTTP routes for the Reagent Prep Chef curated app APIs.
+
+This module exposes app-specific endpoints (prep, defaults, risk draft/export/save, SDS)
+and enforces app access + CSRF at the web boundary.
+"""
+
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
@@ -16,6 +22,9 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefSavePdfResult,
     ReagentPrepChefSdsMarkdownResult,
     ReagentPrepChefUpdateDefaultsRequest,
+)
+from skriptoteket.application.curated_apps.reagent_prep_chef_risk_contract import (
+    RISK_SUPPORT_PDF_FILENAME,
 )
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import User
@@ -118,7 +127,7 @@ async def export_risk_pdf(
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": 'attachment; filename="riskbedomning.pdf"'},
+        headers={"Content-Disposition": f'attachment; filename="{RISK_SUPPORT_PDF_FILENAME}"'},
     )
 
 

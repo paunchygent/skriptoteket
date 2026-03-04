@@ -18,6 +18,10 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_helpers im
 from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskAssessmentRequest,
 )
+from skriptoteket.application.curated_apps.reagent_prep_chef_risk_contract import (
+    RISK_SUPPORT_PDF_FILENAME,
+    missing_risk_context_fields,
+)
 from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.curated_apps.reagent_prep_chef.errors import (
     ReagentPrepChefErrorCode,
@@ -64,25 +68,7 @@ def _default_output_filename(*, app: CuratedAppDefinition, filename_hint: str | 
     if filename_hint:
         return sanitize_input_filename(input_filename=filename_hint)
 
-    return "riskbedomning.pdf"
-
-
-def _missing_context_fields(*, context) -> list[str]:
-    if context is None:
-        return ["scope", "participants", "approver", "assessment_date", "next_review_date"]
-
-    missing = []
-    if not (context.scope or "").strip():
-        missing.append("scope")
-    if not (context.participants or "").strip():
-        missing.append("participants")
-    if not (context.approver or "").strip():
-        missing.append("approver")
-    if context.assessment_date is None:
-        missing.append("assessment_date")
-    if context.next_review_date is None:
-        missing.append("next_review_date")
-    return missing
+    return RISK_SUPPORT_PDF_FILENAME
 
 
 class ReagentPrepChefExportRiskPdfHandler(ReagentPrepChefExportRiskPdfHandlerProtocol):
@@ -175,7 +161,7 @@ class ReagentPrepChefExportRiskPdfHandler(ReagentPrepChefExportRiskPdfHandlerPro
                 details={"missing_confirmations": draft.missing_confirmations},
             )
 
-        missing_context = _missing_context_fields(context=draft.context)
+        missing_context = missing_risk_context_fields(context=draft.context)
         if missing_context:
             raise rpc_validation_error(
                 app_code=ReagentPrepChefErrorCode.RISK_CONTEXT_INCOMPLETE,
@@ -195,7 +181,7 @@ class ReagentPrepChefExportRiskPdfHandler(ReagentPrepChefExportRiskPdfHandlerPro
 
         output_filename = _default_output_filename(
             app=app,
-            filename_hint="riskbedomning.pdf",
+            filename_hint=RISK_SUPPORT_PDF_FILENAME,
         )
         try:
             await self._record_run(

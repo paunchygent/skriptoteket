@@ -59,6 +59,15 @@ draft becomes generic or misleading (even when SDS markdown clearly contains the
 3. Added tests for extraction + invariant behavior:
    - `tests/unit/scripts/test_build_reagent_prep_chef_sds_shortcards.py`
 
+4. Added offline hazards↔shortcards alignment script and applied deterministic backfill:
+   - `scripts/align_reagent_prep_chef_hazard_codes_from_shortcards.py`
+   - Backfill scope this run: 108 entries with empty `hazard_codes` got SDS shortcard H-codes.
+   - Report artifact: `.artifacts/reagent_prep_chef/hazard-sds-alignment-report.json`
+
+5. Added invariant test so hazards cannot drift behind shortcards:
+   - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store.py`
+   - Rule asserted: if shortcard has H-codes for an `sds_ref`, hazards entry for same `key` must not be empty.
+
 ## Rollback plan
 
 - Revert hazards dataset changes and the script; keep reports as artifacts for follow-up.

@@ -43,6 +43,23 @@ Keep this file updated so the next session can pick up work quickly.
   - `frontend/apps/skriptoteket/src/views/apps/reagent-prep-chef/ReagentPrepChefStepRisk.vue`
   - `frontend/apps/skriptoteket/src/views/apps/reagent-prep-chef/ReagentPrepChefSdsModal.vue`
   - `frontend/apps/skriptoteket/src/composables/reagentPrepChef/useReagentPrepChefRisk.ts`
+- PR-0071 delivered (source-backed minimum + aligned gating/export naming):
+  - New source note + mapping/decision checkpoint: `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
+  - Backend single source of truth for required context:
+    `src/skriptoteket/application/curated_apps/reagent_prep_chef_risk_contract.py`
+  - Frontend “saknas”-copy now driven from `draft.export_gate.missing_context_fields`:
+    `frontend/apps/skriptoteket/src/composables/reagentPrepChef/riskExportGate.ts`
+  - Export/save naming updated to `underlag-riskbedomning*.pdf`:
+    `src/skriptoteket/application/curated_apps/handlers/reagent_prep_chef_export_risk_pdf.py`
+- PR-0072 slice delivered (hazards↔SDS shortcards alignment):
+  - New alignment script: `scripts/align_reagent_prep_chef_hazard_codes_from_shortcards.py`
+  - Applied backfill from shortcards to hazards (`108` entries):
+    `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/hazards.json`
+  - New invariants/tests:
+    - `tests/unit/scripts/test_align_reagent_prep_chef_hazard_codes_from_shortcards.py`
+    - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store.py`
+  - Alignment report artifact:
+    `.artifacts/reagent_prep_chef/hazard-sds-alignment-report.json`
 - Older history: see `.agents/readme-first.md` + `docs/` (PR-0062 is canceled).
 
 ## Verification
@@ -62,6 +79,21 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run dev-local`
   - `pdm run playwright install chromium`
   - `pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://127.0.0.1:5173`
+- 2026-03-04: PR-0071 validation:
+  - `pdm run pytest -q tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_contract.py tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py tests/unit/web/reagent_prep_chef/test_risk_routes.py`
+  - `pdm run fe-test -- src/composables/reagentPrepChef/riskExportGate.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-lint`
+  - `pdm run lint`
+  - `pdm run typecheck`
+  - `pdm run docs-validate`
+  - Live functional check (backend+Vite already running): `pdm run python -m scripts.playwright_st_11_09_curated_app_e2e --base-url http://127.0.0.1:5173`
+- 2026-03-04: PR-0072 slice validation:
+  - `pdm run python -m scripts.align_reagent_prep_chef_hazard_codes_from_shortcards --apply`
+  - `pdm run pytest -q tests/unit/scripts/test_align_reagent_prep_chef_hazard_codes_from_shortcards.py tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store.py`
+  - `pdm run pytest -q tests/unit/application/curated_apps/handlers/test_reagent_prep_chef_risk_assessment_best_effort.py tests/unit/web/reagent_prep_chef/test_risk_routes.py`
+  - `pdm run lint`
+  - `pdm run typecheck`
 
 ## How to Run
 
@@ -86,5 +118,4 @@ pdm run fe-test
 
 ## Next Steps
 
-- PR-0071: Research Skolverket/AFS praxis and align Riskbedömning form + validations (frontend + backend) to the minimum required teacher workflow.
-- PR-0072: Finish hazards↔SDS alignment so risk drafts never fall back to generic/missing H/P codes; keep shortcards as a deterministic input.
+- PR-0072: Resolve any remaining manual curation mismatches (if future shortcards produce non-empty vs non-empty drift) and decide policy for P-codes in hazards contract.

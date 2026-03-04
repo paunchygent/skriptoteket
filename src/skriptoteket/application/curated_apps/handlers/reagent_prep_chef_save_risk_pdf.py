@@ -1,8 +1,21 @@
+"""Save Reagent Prep Chef risk-support PDFs to Vault.
+
+This handler reuses the risk export handler, validates Vault quotas, and stores the
+result as an app-export file in the current user's Vault.
+
+Related:
+  - Export handler: `reagent_prep_chef_export_risk_pdf.py`
+  - Shared contract: `reagent_prep_chef_risk_contract.py`
+"""
+
 from __future__ import annotations
 
 from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskAssessmentRequest,
     ReagentPrepChefSavePdfResult,
+)
+from skriptoteket.application.curated_apps.reagent_prep_chef_risk_contract import (
+    RISK_SUPPORT_PDF_FILENAME,
 )
 from skriptoteket.application.scripting.handlers._vault_helpers import build_vault_file_info
 from skriptoteket.config import Settings
@@ -62,7 +75,7 @@ class ReagentPrepChefSaveRiskPdfHandler(ReagentPrepChefSaveRiskPdfHandlerProtoco
             )
 
         formula = command.prep.chemical_formula.strip()
-        name = f"riskbedomning-{formula}.pdf" if formula else "riskbedomning.pdf"
+        name = f"underlag-riskbedomning-{formula}.pdf" if formula else RISK_SUPPORT_PDF_FILENAME
         safe_name = sanitize_input_filename(input_filename=name)
 
         now = self._clock.now()

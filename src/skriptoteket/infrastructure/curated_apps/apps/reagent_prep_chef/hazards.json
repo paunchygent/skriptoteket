@@ -1,84 +1,93 @@
 [
   {
-    "key": "C3H6O",
-    "display_name": "Aceton",
-    "pubchem_cid": 180,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "(CH3)2CO"
     ],
+    "display_name": "Aceton",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H225",
+      "H319",
+      "H336"
+    ],
+    "key": "C3H6O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 180,
     "search_aliases": [
       "Acetone",
       "Propanone"
     ]
   },
   {
-    "key": "Al",
+    "aliases": [],
     "display_name": "Aluminium (Al)",
-    "pubchem_cid": 5359268,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Al",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 5359268,
     "search_aliases": [
       "Aluminum",
       "Aluminium"
     ]
   },
   {
-    "key": "AlCl3",
+    "aliases": [],
     "display_name": "Aluminiumklorid",
-    "pubchem_cid": 24012,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H314"
+    ],
+    "key": "AlCl3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24012,
     "search_aliases": [
       "Aluminum chloride",
       "Aluminium chloride"
     ]
   },
   {
-    "key": "AlCl3·6H2O",
+    "aliases": [
+      "AlCl3.6H2O"
+    ],
     "display_name": "Aluminiumklorid (hexahydrat)",
-    "pubchem_cid": 24564,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H314",
+      "H318"
+    ],
+    "key": "AlCl3·6H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "AlCl3.6H2O"
-    ],
+    "pubchem_cid": 24564,
     "search_aliases": [
       "Aluminum chloride hexahydrate",
       "Aluminium chloride hexahydrate"
     ]
   },
   {
-    "key": "Al2O3",
+    "aliases": [],
     "display_name": "Aluminiumoxid",
-    "pubchem_cid": 9989226,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Al2O3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 9989226,
     "search_aliases": [
       "Aluminum oxide",
       "Aluminium oxide",
@@ -86,2269 +95,2751 @@
     ]
   },
   {
-    "key": "Al2(SO4)3·18H2O",
-    "display_name": "Aluminiumsulfat (octadecahydrat)",
-    "pubchem_cid": 22377415,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "Al2(SO4)3.18H2O"
-    ]
-  },
-  {
-    "key": "NH3",
-    "display_name": "Ammoniak (NH3)",
-    "pubchem_cid": 222,
-    "hazard_codes": [],
+    ],
+    "display_name": "Aluminiumsulfat (octadecahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H318"
+    ],
+    "key": "Al2(SO4)3·18H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
+    "pubchem_cid": 22377415
+  },
+  {
     "aliases": [],
+    "display_name": "Ammoniak (NH3)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H314",
+      "H318",
+      "H335",
+      "H400",
+      "H410",
+      "H411"
+    ],
+    "key": "NH3",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 222,
     "search_aliases": [
       "Zinc Sulfide"
     ]
   },
   {
-    "key": "NH4C2H3O2",
-    "display_name": "Ammoniumacetat",
-    "pubchem_cid": 517165,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "CH3COONH4"
-    ]
+    ],
+    "display_name": "Ammoniumacetat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "NH4C2H3O2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 517165
   },
   {
-    "key": "(NH4)2CO3",
+    "aliases": [],
     "display_name": "Ammoniumkarbonat",
-    "pubchem_cid": 517111,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302"
+    ],
+    "key": "(NH4)2CO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 517111
   },
   {
-    "key": "NH4Cl",
+    "aliases": [],
     "display_name": "Ammoniumklorid",
-    "pubchem_cid": 25517,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H319"
+    ],
+    "key": "NH4Cl",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 25517
   },
   {
-    "key": "NH4NO3",
+    "aliases": [],
     "display_name": "Ammoniumnitrat",
-    "pubchem_cid": 22985,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H319"
+    ],
+    "key": "NH4NO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 22985
   },
   {
-    "key": "(NH4)2SO4",
+    "aliases": [],
     "display_name": "Ammoniumsulfat",
-    "pubchem_cid": 6097028,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "(NH4)2SO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 6097028
   },
   {
-    "key": "NH4HCO3",
+    "aliases": [],
     "display_name": "Ammoniumvätekarbonat",
-    "pubchem_cid": 14013,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H318"
+    ],
+    "key": "NH4HCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 14013
   },
   {
-    "key": "Ba(OH)2",
+    "aliases": [],
     "display_name": "Bariumhydroxid",
-    "pubchem_cid": 6093286,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H314",
+      "H318",
+      "H332"
+    ],
+    "key": "Ba(OH)2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 6093286
   },
   {
-    "key": "BaCl2",
+    "aliases": [],
     "display_name": "Bariumklorid",
-    "pubchem_cid": 25204,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H301",
+      "H319",
+      "H332"
+    ],
+    "key": "BaCl2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 25204
   },
   {
-    "key": "BaCl2·2H2O",
-    "display_name": "Bariumklorid (dihydrat)",
-    "pubchem_cid": 5284346,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "BaCl2.2H2O"
-    ]
+    ],
+    "display_name": "Bariumklorid (dihydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H301",
+      "H319",
+      "H332"
+    ],
+    "key": "BaCl2·2H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 5284346
   },
   {
-    "key": "Ba(NO3)2",
+    "aliases": [],
     "display_name": "Bariumnitrat",
-    "pubchem_cid": 24798,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H301",
+      "H319",
+      "H332"
+    ],
+    "key": "Ba(NO3)2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24798
   },
   {
-    "key": "BaSO4",
+    "aliases": [],
     "display_name": "Bariumsulfat",
-    "pubchem_cid": 24414,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "BaSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24414
   },
   {
-    "key": "C7H6O2",
+    "aliases": [],
     "display_name": "Bensoesyra",
-    "pubchem_cid": 243,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H318",
+      "H372"
+    ],
+    "key": "C7H6O2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 243
   },
   {
-    "key": "AlPO4",
+    "aliases": [],
     "display_name": "Berlinit",
-    "pubchem_cid": 64655,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "AlPO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 64655
   },
   {
-    "key": "Pb",
+    "aliases": [],
     "display_name": "Bly",
-    "pubchem_cid": 5352425,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H332",
+      "H351",
+      "H362",
+      "H372",
+      "H400",
+      "H410"
+    ],
+    "key": "Pb",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5352425
   },
   {
-    "key": "Pb(NO3)2",
+    "aliases": [],
     "display_name": "Bly(II)nitrat",
-    "pubchem_cid": 24924,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "hazard_codes": [
+      "H302",
+      "H318",
+      "H332",
+      "H372",
+      "H400",
+      "H410"
+    ],
+    "key": "Pb(NO3)2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24924
   },
   {
-    "key": "PbO",
+    "aliases": [],
     "display_name": "Blyoxider",
-    "pubchem_cid": 14827,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H332",
+      "H351",
+      "H362",
+      "H372",
+      "H400",
+      "H410"
+    ],
+    "key": "PbO",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 14827
   },
   {
-    "key": "Na2B4O7·10H2O",
-    "display_name": "Borax (natriumtetraborat, decahydrat)",
-    "pubchem_cid": 16211214,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "Na2B4O7.10H2O"
-    ]
+    ],
+    "display_name": "Borax (natriumtetraborat, decahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "Na2B4O7·10H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 16211214
   },
   {
-    "key": "H3BO3",
+    "aliases": [],
     "display_name": "Borsyra",
-    "pubchem_cid": 7628,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "H3BO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 7628
   },
   {
-    "key": "C27H28Br2O5S",
+    "aliases": [],
     "display_name": "Bromtymolblått",
-    "pubchem_cid": 6450,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "C27H28Br2O5S",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 6450
   },
   {
-    "key": "SrSO4",
+    "aliases": [],
     "display_name": "Celestin",
-    "pubchem_cid": 3084026,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "SrSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 3084026
   },
   {
-    "key": "C6H8O7",
+    "aliases": [],
     "display_name": "Citronsyra",
-    "pubchem_cid": 311,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319",
+      "H335"
+    ],
+    "key": "C6H8O7",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 311
   },
   {
-    "key": "K2HPO4",
+    "aliases": [],
     "display_name": "Dikaliumhydrogenfosfat",
-    "pubchem_cid": 24450,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "K2HPO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24450
   },
   {
-    "key": "Na2HPO4",
+    "aliases": [],
     "display_name": "Dinatriumhydrogenfosfat",
-    "pubchem_cid": 24203,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Na2HPO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24203
   },
   {
-    "key": "C2H6O",
-    "display_name": "Etanol",
-    "pubchem_cid": 702,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "CH3CH2OH"
-    ]
+    ],
+    "display_name": "Etanol",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H225",
+      "H319"
+    ],
+    "key": "C2H6O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 702
   },
   {
-    "key": "C20H14O4",
+    "aliases": [],
     "display_name": "Fenolftalein",
-    "pubchem_cid": 4764,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H341",
+      "H350"
+    ],
+    "key": "C20H14O4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 4764
   },
   {
-    "key": "HF",
+    "aliases": [],
     "display_name": "Fluorvätesyra",
-    "pubchem_cid": 14917,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H300",
+      "H310",
+      "H314",
+      "H318",
+      "H330"
+    ],
+    "key": "HF",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 14917
   },
   {
-    "key": "H3PO4",
+    "aliases": [],
     "display_name": "Fosforsyra (H3PO4)",
-    "pubchem_cid": 1004,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290"
+    ],
+    "key": "H3PO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 1004
   },
   {
-    "key": "C6H12O6",
+    "aliases": [],
     "display_name": "Glukos",
-    "pubchem_cid": 5793,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "C6H12O6",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5793
   },
   {
-    "key": "C3H8O",
-    "display_name": "Isopropanol",
-    "pubchem_cid": 3776,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "C3H7OH"
-    ]
+    ],
+    "display_name": "Isopropanol",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H225",
+      "H319",
+      "H336"
+    ],
+    "key": "C3H8O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 3776
   },
   {
-    "key": "I2",
+    "aliases": [],
     "display_name": "Jod (I2)",
-    "pubchem_cid": 807,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312",
+      "H315",
+      "H319",
+      "H332",
+      "H335",
+      "H372",
+      "H400"
+    ],
+    "key": "I2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 807
   },
   {
-    "key": "Fe",
+    "aliases": [],
     "display_name": "Järn (Fe)",
-    "pubchem_cid": 23925,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Fe",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 23925
   },
   {
-    "key": "FeCl2",
+    "aliases": [],
     "display_name": "Järn(II)klorid",
-    "pubchem_cid": 24458,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H302",
+      "H315",
+      "H318"
+    ],
+    "key": "FeCl2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24458
   },
   {
-    "key": "FeCl2·4H2O",
-    "display_name": "Järn(II)klorid (tetrahydrat)",
-    "pubchem_cid": 16211588,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "FeCl2.4H2O"
-    ]
-  },
-  {
-    "key": "FeSO4·7H2O",
-    "display_name": "Järn(II)sulfat (heptahydrat)",
-    "pubchem_cid": 62662,
-    "hazard_codes": [],
+    ],
+    "display_name": "Järn(II)klorid (tetrahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H302",
+      "H315",
+      "H318"
+    ],
+    "key": "FeCl2·4H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
+    "pubchem_cid": 16211588
+  },
+  {
     "aliases": [
       "FeSO4.7H2O"
-    ]
-  },
-  {
-    "key": "Fe3O4",
-    "display_name": "Järn(II,III)oxid",
-    "pubchem_cid": 16211978,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
     ],
+    "display_name": "Järn(II)sulfat (heptahydrat)",
     "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "FeCl3",
-    "display_name": "Järn(III)klorid",
-    "pubchem_cid": 24380,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H319"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
+    "key": "FeSO4·7H2O",
     "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "FeCl3·6H2O",
-    "display_name": "Järn(III)klorid (hexahydrat)",
-    "pubchem_cid": 6093258,
-    "hazard_codes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
+    "pubchem_cid": 62662
+  },
+  {
+    "aliases": [],
+    "display_name": "Järn(II,III)oxid",
     "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "Fe3O4",
     "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 16211978
+  },
+  {
+    "aliases": [],
+    "display_name": "Järn(III)klorid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H302",
+      "H315",
+      "H317",
+      "H318"
+    ],
+    "key": "FeCl3",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 24380
+  },
+  {
     "aliases": [
       "FeCl3.6H2O"
-    ]
-  },
-  {
-    "key": "Fe(NO3)3·9H2O",
-    "display_name": "Järn(III)nitrat (nonahydrat)",
-    "pubchem_cid": 16211566,
-    "hazard_codes": [],
+    ],
+    "display_name": "Järn(III)klorid (hexahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H318"
+    ],
+    "key": "FeCl3·6H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
+    "pubchem_cid": 6093258
+  },
+  {
     "aliases": [
       "Fe(NO3)3.9H2O"
-    ]
-  },
-  {
-    "key": "Fe2O3",
-    "display_name": "Järn(III)oxid",
-    "pubchem_cid": 518696,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
     ],
+    "display_name": "Järn(III)nitrat (nonahydrat)",
     "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "FeCO3",
-    "display_name": "Järnspat",
-    "pubchem_cid": 11248,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
+    "hazard_codes": [
+      "H314",
+      "H318"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
+    "key": "Fe(NO3)3·9H2O",
     "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "FeS",
-    "display_name": "Järnsulfid",
-    "pubchem_cid": 14828,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "Ca(C2H3O2)2",
-    "display_name": "Kalciumacetat",
-    "pubchem_cid": 6116,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "CaF2",
-    "display_name": "Kalciumfluorid",
-    "pubchem_cid": 84512,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "Ca3(PO4)2",
-    "display_name": "Kalciumfosfat",
-    "pubchem_cid": 24456,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "Ca(OH)2",
-    "display_name": "Kalciumhydroxid",
-    "pubchem_cid": 6093208,
-    "hazard_codes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 16211566
   },
   {
-    "key": "CaC2",
-    "display_name": "Kalciumkarbid",
-    "pubchem_cid": 6352,
+    "aliases": [],
+    "display_name": "Järn(III)oxid",
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Fe2O3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
+    "pubchem_cid": 518696
+  },
+  {
     "aliases": [],
+    "display_name": "Järnspat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "FeCO3",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 11248
+  },
+  {
+    "aliases": [],
+    "display_name": "Järnsulfid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "FeS",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 14828
+  },
+  {
+    "aliases": [],
+    "display_name": "Kalciumacetat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "Ca(C2H3O2)2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 6116
+  },
+  {
+    "aliases": [],
+    "display_name": "Kalciumfluorid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "CaF2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 84512
+  },
+  {
+    "aliases": [],
+    "display_name": "Kalciumfosfat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "Ca3(PO4)2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 24456
+  },
+  {
+    "aliases": [],
+    "display_name": "Kalciumhydroxid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H318",
+      "H335"
+    ],
+    "key": "Ca(OH)2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 6093208
+  },
+  {
+    "aliases": [],
+    "display_name": "Kalciumkarbid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H260",
+      "H315",
+      "H318",
+      "H335"
+    ],
+    "key": "CaC2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 6352,
     "search_aliases": [
       "Calcium carbide"
     ]
   },
   {
-    "key": "CaCO3",
+    "aliases": [],
     "display_name": "Kalciumkarbonat",
-    "pubchem_cid": 10112,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "CaCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 10112
   },
   {
-    "key": "CaCl2",
+    "aliases": [],
     "display_name": "Kalciumklorid",
-    "pubchem_cid": 5284359,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "CaCl2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5284359
   },
   {
-    "key": "CaCl2·2H2O",
-    "display_name": "Kalciumklorid (dihydrat)",
-    "pubchem_cid": 6093260,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "CaCl2.2H2O"
     ],
+    "display_name": "Kalciumklorid (dihydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "CaCl2·2H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 6093260,
     "search_aliases": [
       "Calcium chloride, dihydrate"
     ]
   },
   {
-    "key": "Ca(NO3)2",
+    "aliases": [],
     "display_name": "Kalciumnitrat",
-    "pubchem_cid": 24963,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H302",
+      "H318"
+    ],
+    "key": "Ca(NO3)2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24963,
     "search_aliases": [
       "Calcium nitrate"
     ]
   },
   {
-    "key": "CaO",
+    "aliases": [],
     "display_name": "Kalciumoxid",
-    "pubchem_cid": 14778,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H318",
+      "H335"
+    ],
+    "key": "CaO",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 14778,
     "search_aliases": [
       "Calcium oxide"
     ]
   },
   {
-    "key": "CaSO4·2H2O",
-    "display_name": "Kalciumsulfat (dihydrat, gips)",
-    "pubchem_cid": 24928,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "CaSO4.2H2O"
     ],
+    "display_name": "Kalciumsulfat (dihydrat, gips)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "CaSO4·2H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 24928,
     "search_aliases": [
       "Calcium Sulfate Dihydrate"
     ]
   },
   {
-    "key": "CaHPO4",
+    "aliases": [],
     "display_name": "Kalciumvätefosfat",
-    "pubchem_cid": 24441,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "CaHPO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24441,
     "search_aliases": [
       "Calcium hydrogen phosphate"
     ]
   },
   {
-    "key": "KC2H3O2",
-    "display_name": "Kaliumacetat",
-    "pubchem_cid": 517044,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "CH3COOK"
     ],
+    "display_name": "Kaliumacetat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "KC2H3O2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 517044,
     "search_aliases": [
       "Potassium Acetate"
     ]
   },
   {
-    "key": "KBr",
+    "aliases": [],
     "display_name": "Kaliumbromid",
-    "pubchem_cid": 253877,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "KBr",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 253877,
     "search_aliases": [
       "Potassium Bromide"
     ]
   },
   {
-    "key": "KH2PO4",
+    "aliases": [],
     "display_name": "Kaliumdihydrogenfosfat",
-    "pubchem_cid": 516951,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "KH2PO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516951,
     "search_aliases": [
       "Monobasic potassium phosphate"
     ]
   },
   {
-    "key": "K2Cr2O7",
+    "aliases": [],
     "display_name": "Kaliumdikromat",
-    "pubchem_cid": 24502,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H301",
+      "H312",
+      "H314",
+      "H317",
+      "H318",
+      "H330",
+      "H334",
+      "H335",
+      "H340",
+      "H350",
+      "H372",
+      "H400",
+      "H410"
+    ],
+    "key": "K2Cr2O7",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24502,
     "search_aliases": [
       "Potassium Dichromate"
     ]
   },
   {
-    "key": "KF",
+    "aliases": [],
     "display_name": "Kaliumfluorid",
-    "pubchem_cid": 522689,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H301",
+      "H311",
+      "H318",
+      "H331"
+    ],
+    "key": "KF",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 522689,
     "search_aliases": [
       "Potassium fluoride"
     ]
   },
   {
-    "key": "KOH",
+    "aliases": [],
     "display_name": "Kaliumhydroxid",
-    "pubchem_cid": 14797,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H302",
+      "H314",
+      "H318"
+    ],
+    "key": "KOH",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 14797,
     "search_aliases": [
       "Potassium Hydroxide"
     ]
   },
   {
-    "key": "KI",
+    "aliases": [],
     "display_name": "Kaliumjodid",
-    "pubchem_cid": 4875,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H372"
+    ],
+    "key": "KI",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 4875,
     "search_aliases": [
       "Potassium iodide"
     ]
   },
   {
-    "key": "K2CO3",
+    "aliases": [],
     "display_name": "Kaliumkarbonat",
-    "pubchem_cid": 11430,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H319",
+      "H335"
+    ],
+    "key": "K2CO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 11430,
     "search_aliases": [
       "Potassium Carbonate"
     ]
   },
   {
-    "key": "KClO3",
+    "aliases": [],
     "display_name": "Kaliumklorat",
-    "pubchem_cid": 6426889,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H271",
+      "H301"
+    ],
+    "key": "KClO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 6426889,
     "search_aliases": [
       "Potassium Chlorate"
     ]
   },
   {
-    "key": "KCl",
+    "aliases": [],
     "display_name": "Kaliumklorid",
-    "pubchem_cid": 4873,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "KCl",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 4873
   },
   {
-    "key": "K2CrO4",
+    "aliases": [],
     "display_name": "Kaliumkromat",
-    "pubchem_cid": 24597,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H317",
+      "H319",
+      "H335",
+      "H340",
+      "H400",
+      "H410"
+    ],
+    "key": "K2CrO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24597,
     "search_aliases": [
       "Potassium Chromate"
     ]
   },
   {
-    "key": "KNO3",
+    "aliases": [],
     "display_name": "Kaliumnitrat",
-    "pubchem_cid": 24434,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272"
+    ],
+    "key": "KNO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24434,
     "search_aliases": [
       "Potassium Nitrate"
     ]
   },
   {
-    "key": "KNO2",
+    "aliases": [],
     "display_name": "Kaliumnitrit",
-    "pubchem_cid": 516910,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "KNO2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516910,
     "search_aliases": [
       "Potassium nitrite"
     ]
   },
   {
-    "key": "K2O",
+    "aliases": [],
     "display_name": "Kaliumoxid",
-    "pubchem_cid": 9989219,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H314"
+    ],
+    "key": "K2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 9989219,
     "search_aliases": [
       "Potassium oxide"
     ]
   },
   {
-    "key": "KClO4",
+    "aliases": [],
     "display_name": "Kaliumperklorat",
-    "pubchem_cid": 516900,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "KClO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516900,
     "search_aliases": [
       "Potassium Perchlorate"
     ]
   },
   {
-    "key": "KMnO4",
+    "aliases": [],
     "display_name": "Kaliumpermanganat",
-    "pubchem_cid": 516875,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H302",
+      "H314",
+      "H318",
+      "H373",
+      "H400",
+      "H410"
+    ],
+    "key": "KMnO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516875,
     "search_aliases": [
       "Potassium Permanganate"
     ]
   },
   {
-    "key": "K2S2O8",
+    "aliases": [],
     "display_name": "Kaliumpersulfat",
-    "pubchem_cid": 24412,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H302",
+      "H315",
+      "H317",
+      "H319",
+      "H334",
+      "H335"
+    ],
+    "key": "K2S2O8",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24412,
     "search_aliases": [
       "Potassium Persulfate"
     ]
   },
   {
-    "key": "K2SO4",
+    "aliases": [],
     "display_name": "Kaliumsulfat",
-    "pubchem_cid": 24507,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "K2SO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24507,
     "search_aliases": [
       "Potassium Sulfate"
     ]
   },
   {
-    "key": "KSCN",
+    "aliases": [],
     "display_name": "Kaliumtiocyanat",
-    "pubchem_cid": 516872,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312",
+      "H332",
+      "H412"
+    ],
+    "key": "KSCN",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516872,
     "search_aliases": [
       "Potassium thiocyanate"
     ]
   },
   {
-    "key": "SnO2",
+    "aliases": [],
     "display_name": "Kassiterit",
-    "pubchem_cid": 29011,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "SnO2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 29011,
     "search_aliases": [
       "Cassiterite"
     ]
   },
   {
-    "key": "SiO2",
+    "aliases": [],
     "display_name": "Kiseldioxid",
-    "pubchem_cid": 24261,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "SiO2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24261,
     "search_aliases": [
       "Silica"
     ]
   },
   {
-    "key": "CoCl2·6H2O",
+    "aliases": [
+      "CoCl2.6H2O"
+    ],
     "display_name": "Kobolt(II)klorid (hexahydrat)",
-    "pubchem_cid": 24643,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H317",
+      "H334",
+      "H341",
+      "H400",
+      "H410"
+    ],
+    "key": "CoCl2·6H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "CoCl2.6H2O"
-    ],
+    "pubchem_cid": 24643,
     "search_aliases": [
       "Cobaltous chloride hexahydrate"
     ]
   },
   {
-    "key": "Cu",
+    "aliases": [],
     "display_name": "Koppar (Cu)",
-    "pubchem_cid": 23978,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Cu",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 23978,
     "search_aliases": [
       "Copper"
     ]
   },
   {
-    "key": "Cu2O",
+    "aliases": [],
     "display_name": "Koppar(I)oxid",
-    "pubchem_cid": 10313194,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H318",
+      "H332",
+      "H400",
+      "H410"
+    ],
+    "key": "Cu2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 10313194,
     "search_aliases": [
       "Cuprous Oxide"
     ]
   },
   {
-    "key": "CuCl2·2H2O",
+    "aliases": [
+      "CuCl2.2H2O"
+    ],
     "display_name": "Koppar(II)klorid (dihydrat)",
-    "pubchem_cid": 61482,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "hazard_codes": [
+      "H290",
+      "H302",
+      "H312",
+      "H315",
+      "H318",
+      "H400",
+      "H410"
+    ],
+    "key": "CuCl2·2H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
-    "notes": [],
-    "aliases": [
-      "CuCl2.2H2O"
-    ],
+    "pubchem_cid": 61482,
     "search_aliases": [
       "Cupric chloride dihydrate"
     ]
   },
   {
-    "key": "Cu(NO3)2·3H2O",
+    "aliases": [
+      "Cu(NO3)2.3H2O"
+    ],
     "display_name": "Koppar(II)nitrat (trihydrat)",
-    "pubchem_cid": 9837674,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "hazard_codes": [
+      "H272",
+      "H302",
+      "H315",
+      "H319",
+      "H400",
+      "H410"
+    ],
+    "key": "Cu(NO3)2·3H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
-    "notes": [],
-    "aliases": [
-      "Cu(NO3)2.3H2O"
-    ]
+    "pubchem_cid": 9837674
   },
   {
-    "key": "CuO",
-    "display_name": "Koppar(II)oxid",
-    "pubchem_cid": 14829,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "CuS",
-    "display_name": "Kopparindigo",
-    "pubchem_cid": 165914,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "CuCO3",
-    "display_name": "Kopparkarbonat",
-    "pubchem_cid": 14452,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [],
+    "display_name": "Koppar(II)oxid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H400",
+      "H410"
+    ],
+    "key": "CuO",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 14829
+  },
+  {
+    "aliases": [],
+    "display_name": "Kopparindigo",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H319",
+      "H400",
+      "H410"
+    ],
+    "key": "CuS",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 165914
+  },
+  {
+    "aliases": [],
+    "display_name": "Kopparkarbonat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H319",
+      "H332",
+      "H400",
+      "H410"
+    ],
+    "key": "CuCO3",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 14452,
     "search_aliases": [
       "Copper carbonate"
     ]
   },
   {
-    "key": "CuSO4",
+    "aliases": [],
     "display_name": "Kopparsulfat (anhydrat)",
-    "pubchem_cid": 24462,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H319",
+      "H350",
+      "H412"
+    ],
+    "key": "CuSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24462,
     "search_aliases": [
       "Copper Sulfate"
     ]
   },
   {
-    "key": "CuSO4·5H2O",
+    "aliases": [
+      "CuSO4.5H2O",
+      "CuSO4*5H2O"
+    ],
     "display_name": "Kopparsulfat (pentahydrat)",
-    "pubchem_cid": 24463,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H319",
+      "H400",
+      "H410"
+    ],
+    "key": "CuSO4·5H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
-    "notes": [],
-    "aliases": [
-      "CuSO4.5H2O",
-      "CuSO4*5H2O"
-    ]
+    "pubchem_cid": 24463
   },
   {
-    "key": "LiOH",
+    "aliases": [],
     "display_name": "Litiumhydroxid",
-    "pubchem_cid": 3939,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H314",
+      "H318"
+    ],
+    "key": "LiOH",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 3939,
     "search_aliases": [
       "Lithium Hydroxide"
     ]
   },
   {
-    "key": "Li2CO3",
+    "aliases": [],
     "display_name": "Litiumkarbonat",
-    "pubchem_cid": 11125,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H319"
+    ],
+    "key": "Li2CO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 11125,
     "search_aliases": [
       "Lithium Carbonate"
     ]
   },
   {
-    "key": "LiCl",
+    "aliases": [],
     "display_name": "Litiumklorid",
-    "pubchem_cid": 433294,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H315",
+      "H319"
+    ],
+    "key": "LiCl",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 433294
   },
   {
-    "key": "MgCO3",
+    "aliases": [],
     "display_name": "Magnesit",
-    "pubchem_cid": 11029,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "MgCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 11029,
     "search_aliases": [
       "Magnesium Carbonate"
     ]
   },
   {
-    "key": "Mg",
+    "aliases": [],
     "display_name": "Magnesium (Mg)",
-    "pubchem_cid": 5462224,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H228",
+      "H261"
+    ],
+    "key": "Mg",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5462224
   },
   {
-    "key": "Mg(OH)2",
+    "aliases": [],
     "display_name": "Magnesiumhydroxid",
-    "pubchem_cid": 73981,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Mg(OH)2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 73981,
     "search_aliases": [
       "Magnesium Hydroxide"
     ]
   },
   {
-    "key": "MgCl2",
+    "aliases": [],
     "display_name": "Magnesiumklorid",
-    "pubchem_cid": 5360315,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "MgCl2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 5360315,
     "search_aliases": [
       "Magnesium Chloride"
     ]
   },
   {
-    "key": "MgCl2·6H2O",
-    "display_name": "Magnesiumklorid (hexahydrat)",
-    "pubchem_cid": 24644,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "MgCl2.6H2O"
     ],
+    "display_name": "Magnesiumklorid (hexahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "MgCl2·6H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 24644,
     "search_aliases": [
       "Magnesium chloride hexahydrate"
     ]
   },
   {
-    "key": "MgO",
+    "aliases": [],
     "display_name": "Magnesiumoxid",
-    "pubchem_cid": 14792,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "MgO",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 14792,
     "search_aliases": [
       "Magnesium oxide"
     ]
   },
   {
-    "key": "MgSO4",
+    "aliases": [],
     "display_name": "Magnesiumsulfat (anhydrat)",
-    "pubchem_cid": 24083,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "MgSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24083,
     "search_aliases": [
       "Sulfuric acid magnesium salt (1:1)"
     ]
   },
   {
-    "key": "MgSO4·7H2O",
-    "display_name": "Magnesiumsulfat (heptahydrat)",
-    "pubchem_cid": 24843,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "MgSO4.7H2O"
     ],
+    "display_name": "Magnesiumsulfat (heptahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "MgSO4·7H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 24843,
     "search_aliases": [
       "Magnesium Sulfate Heptahydrate"
     ]
   },
   {
-    "key": "Mn",
+    "aliases": [],
     "display_name": "Mangan",
-    "pubchem_cid": 23930,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H228"
+    ],
+    "key": "Mn",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 23930
   },
   {
-    "key": "MnSO4",
+    "aliases": [],
     "display_name": "Mangan(II)sulfat",
-    "pubchem_cid": 24580,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H318",
+      "H373",
+      "H411"
+    ],
+    "key": "MnSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24580,
     "search_aliases": [
       "Manganese Sulfate"
     ]
   },
   {
-    "key": "MnO2",
+    "aliases": [],
     "display_name": "Mangandioxid",
-    "pubchem_cid": 14801,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H332",
+      "H373"
+    ],
+    "key": "MnO2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 14801,
     "search_aliases": [
       "Manganese dioxide"
     ]
   },
   {
-    "key": "CH4O",
+    "aliases": [
+      "CH3OH"
+    ],
     "display_name": "Metanol",
-    "pubchem_cid": 887,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H225",
+      "H301",
+      "H311",
+      "H331",
+      "H370"
+    ],
+    "key": "CH4O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "CH3OH"
-    ],
+    "pubchem_cid": 887,
     "search_aliases": [
       "Methanol"
     ]
   },
   {
-    "key": "NaC2H3O2",
-    "display_name": "Natriumacetat",
-    "pubchem_cid": 517045,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "CH3COONa"
     ],
+    "display_name": "Natriumacetat",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "NaC2H3O2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 517045,
     "search_aliases": [
       "Sodium Acetate"
     ]
   },
   {
-    "key": "NaBr",
+    "aliases": [],
     "display_name": "Natriumbromid",
-    "pubchem_cid": 253881,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H336",
+      "H373"
+    ],
+    "key": "NaBr",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 253881
   },
   {
-    "key": "NaH2PO4",
+    "aliases": [],
     "display_name": "Natriumdihydrogenfosfat",
-    "pubchem_cid": 23672064,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "NaH2PO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 23672064,
     "search_aliases": [
       "Monosodium phosphate"
     ]
   },
   {
-    "key": "NaF",
+    "aliases": [],
     "display_name": "Natriumfluorid",
-    "pubchem_cid": 5235,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H301",
+      "H315",
+      "H319"
+    ],
+    "key": "NaF",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5235
   },
   {
-    "key": "Na3PO4·12H2O",
-    "display_name": "Natriumfosfat (dodekahydrat)",
-    "pubchem_cid": 61473,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "Na3PO4.12H2O"
     ],
+    "display_name": "Natriumfosfat (dodekahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H319",
+      "H335"
+    ],
+    "key": "Na3PO4·12H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 61473,
     "search_aliases": [
       "Trisodium phosphate dodecahydrate"
     ]
   },
   {
-    "key": "NaOH",
+    "aliases": [],
     "display_name": "Natriumhydroxid",
-    "pubchem_cid": 14798,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H314",
+      "H318"
+    ],
+    "key": "NaOH",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 14798
   },
   {
-    "key": "NaClO",
+    "aliases": [],
     "display_name": "Natriumhypoklorit",
-    "pubchem_cid": 23665760,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H314",
+      "H318",
+      "H400",
+      "H410",
+      "H411"
+    ],
+    "key": "NaClO",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 23665760
   },
   {
-    "key": "NaI",
+    "aliases": [],
     "display_name": "Natriumjodid",
-    "pubchem_cid": 5238,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315",
+      "H319",
+      "H372",
+      "H400"
+    ],
+    "key": "NaI",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 5238,
     "search_aliases": [
       "Sodium Iodide"
     ]
   },
   {
-    "key": "Na2CO3",
+    "aliases": [],
     "display_name": "Natriumkarbonat",
-    "pubchem_cid": 10340,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "Na2CO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 10340,
     "search_aliases": [
       "Sodium Carbonate"
     ]
   },
   {
-    "key": "Na2CO3·10H2O",
+    "aliases": [
+      "Na2CO3.10H2O"
+    ],
     "display_name": "Natriumkarbonat (decahydrat)",
-    "pubchem_cid": 151402,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "Na2CO3·10H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "Na2CO3.10H2O"
-    ]
+    "pubchem_cid": 151402
   },
   {
-    "key": "NaClO3",
+    "aliases": [],
     "display_name": "Natriumklorat",
-    "pubchem_cid": 516902,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H271",
+      "H301",
+      "H310",
+      "H314",
+      "H373",
+      "H400",
+      "H410",
+      "H412"
+    ],
+    "key": "NaClO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516902,
     "search_aliases": [
       "Sodium Chlorate"
     ]
   },
   {
-    "key": "NaCl",
+    "aliases": [],
     "display_name": "Natriumklorid",
-    "pubchem_cid": 5234,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
-    "sds_ref": "NaCl",
+    "key": "NaCl",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5234,
+    "sds_ref": "NaCl"
   },
   {
-    "key": "Na2CrO4",
+    "aliases": [],
     "display_name": "Natriumkromat",
-    "pubchem_cid": 24488,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H301",
+      "H312",
+      "H314",
+      "H317",
+      "H330",
+      "H334",
+      "H340",
+      "H350",
+      "H360",
+      "H372"
+    ],
+    "key": "Na2CrO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24488,
     "search_aliases": [
       "Sodium Chromate"
     ]
   },
   {
-    "key": "NaNO3",
+    "aliases": [],
     "display_name": "Natriumnitrat",
-    "pubchem_cid": 24268,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H319"
+    ],
+    "key": "NaNO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24268,
     "search_aliases": [
       "Sodium Nitrate"
     ]
   },
   {
-    "key": "NaNO2",
+    "aliases": [],
     "display_name": "Natriumnitrit",
-    "pubchem_cid": 23668193,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H272",
+      "H301",
+      "H319",
+      "H400"
+    ],
+    "key": "NaNO2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 23668193,
     "search_aliases": [
       "Sodium Nitrite"
     ]
   },
   {
-    "key": "Na2C2O4",
+    "aliases": [],
     "display_name": "Natriumoxalat",
-    "pubchem_cid": 6125,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312"
+    ],
+    "key": "Na2C2O4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 6125,
     "search_aliases": [
       "Sodium Oxalate"
     ]
   },
   {
-    "key": "Na2O",
+    "aliases": [],
     "display_name": "Natriumoxid",
-    "pubchem_cid": 73971,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312"
+    ],
+    "key": "Na2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 73971
   },
   {
-    "key": "NaClO4",
+    "aliases": [],
     "display_name": "Natriumperklorat",
-    "pubchem_cid": 522606,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312"
+    ],
+    "key": "NaClO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 522606,
     "search_aliases": [
       "Sodium Perchlorate"
     ]
   },
   {
-    "key": "Na2S2O8",
+    "aliases": [],
     "display_name": "Natriumpersulfat",
-    "pubchem_cid": 62655,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312"
+    ],
+    "key": "Na2S2O8",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 62655,
     "search_aliases": [
       "Sodium Persulfate"
     ]
   },
   {
-    "key": "Na2S2O5",
+    "aliases": [],
     "display_name": "Natriumpyrosulfit",
-    "pubchem_cid": 656671,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H318"
+    ],
+    "key": "Na2S2O5",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 656671,
     "search_aliases": [
       "Sodium Pyrosulfite"
     ]
   },
   {
-    "key": "Na2SO4",
+    "aliases": [],
     "display_name": "Natriumsulfat",
-    "pubchem_cid": 24436,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Na2SO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24436,
     "search_aliases": [
       "Sodium Sulfate"
     ]
   },
   {
-    "key": "Na2SO4·10H2O",
-    "display_name": "Natriumsulfat (decahydrat)",
-    "pubchem_cid": 62649,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "Na2SO4.10H2O"
-    ]
-  },
-  {
-    "key": "Na2S",
-    "display_name": "Natriumsulfid",
-    "pubchem_cid": 14804,
+    ],
+    "display_name": "Natriumsulfat (decahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Na2SO4·10H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
+    "pubchem_cid": 62649
+  },
+  {
     "aliases": [],
+    "display_name": "Natriumsulfid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H301",
+      "H311",
+      "H314",
+      "H318",
+      "H400"
+    ],
+    "key": "Na2S",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 14804,
     "search_aliases": [
       "Sodium Sulfide"
     ]
   },
   {
-    "key": "Na2SO3",
+    "aliases": [],
     "display_name": "Natriumsulfit",
-    "pubchem_cid": 24437,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Na2SO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24437,
     "search_aliases": [
       "Sodium Sulfite"
     ]
   },
   {
-    "key": "NaSCN",
+    "aliases": [],
     "display_name": "Natriumtiocyanat",
-    "pubchem_cid": 516871,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312",
+      "H332",
+      "H412"
+    ],
+    "key": "NaSCN",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 516871
   },
   {
-    "key": "Na2S2O3",
+    "aliases": [],
     "display_name": "Natriumtiosulfat",
-    "pubchem_cid": 24477,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Na2S2O3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24477,
     "search_aliases": [
       "Sodium Thiosulfate"
     ]
   },
   {
-    "key": "Na2S2O3·5H2O",
-    "display_name": "Natriumtiosulfat (pentahydrat)",
-    "pubchem_cid": 61475,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [
       "Na2S2O3.5H2O"
     ],
+    "display_name": "Natriumtiosulfat (pentahydrat)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [],
+    "key": "Na2S2O3·5H2O",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 61475,
     "search_aliases": [
       "Sodium Thiosulfate Pentahydrate"
     ]
   },
   {
-    "key": "NaHCO3",
+    "aliases": [],
     "display_name": "Natriumvätekarbonat",
-    "pubchem_cid": 516892,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "NaHCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516892,
     "search_aliases": [
       "Sodium Bicarbonate"
     ]
   },
   {
-    "key": "NaHSO4",
+    "aliases": [],
     "display_name": "Natriumvätesulfat",
-    "pubchem_cid": 516919,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H318"
+    ],
+    "key": "NaHSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 516919,
     "search_aliases": [
       "Sodium Bisulfate"
     ]
   },
   {
-    "key": "NaHSO3",
+    "aliases": [],
     "display_name": "Natriumvätesulfit",
-    "pubchem_cid": 23665763,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "NaHSO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 23665763,
     "search_aliases": [
       "Sodium Bisulfite"
     ]
   },
   {
-    "key": "Ni",
+    "aliases": [],
     "display_name": "Nickel",
-    "pubchem_cid": 935,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H317",
+      "H351",
+      "H372",
+      "H412"
+    ],
+    "key": "Ni",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 935
   },
   {
-    "key": "NiCl2·6H2O",
+    "aliases": [
+      "NiCl2.6H2O"
+    ],
     "display_name": "Nickel(II)klorid (hexahydrat)",
-    "pubchem_cid": 24645,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H301",
+      "H315",
+      "H317",
+      "H331",
+      "H334",
+      "H341",
+      "H372",
+      "H400",
+      "H410"
+    ],
+    "key": "NiCl2·6H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "NiCl2.6H2O"
-    ],
+    "pubchem_cid": 24645,
     "search_aliases": [
       "Nickel chloride hexahydrate"
     ]
   },
   {
-    "key": "H2C2O4·2H2O",
+    "aliases": [
+      "H2C2O4.2H2O"
+    ],
     "display_name": "Oxalsyra (dihydrat)",
-    "pubchem_cid": 61373,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312",
+      "H318"
+    ],
+    "key": "H2C2O4·2H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "H2C2O4.2H2O"
-    ]
+    "pubchem_cid": 61373
   },
   {
-    "key": "C3H8O3",
+    "aliases": [],
     "display_name": "Propantriol",
-    "pubchem_cid": 753,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "C3H8O3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 753,
     "search_aliases": [
       "Glycerol"
     ]
   },
   {
-    "key": "MnCO3",
+    "aliases": [],
     "display_name": "Rodokrosit",
-    "pubchem_cid": 11726,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "MnCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 11726,
     "search_aliases": [
       "Manganese carbonate"
     ]
   },
   {
-    "key": "C12H22O11",
+    "aliases": [],
     "display_name": "Sackaros",
-    "pubchem_cid": 5988,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "C12H22O11",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 5988,
     "search_aliases": [
       "Sucrose"
     ]
   },
   {
-    "key": "C7H6O3",
+    "aliases": [],
     "display_name": "Salicylsyra",
-    "pubchem_cid": 338,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H318"
+    ],
+    "key": "C7H6O3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 338,
     "search_aliases": [
       "Salicylic Acid"
     ]
   },
   {
-    "key": "HNO3",
+    "aliases": [],
     "display_name": "Salpetersyra (HNO3)",
-    "pubchem_cid": 944,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H314",
+      "H318"
+    ],
+    "key": "HNO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 944,
     "search_aliases": [
       "Nitric Acid"
     ]
   },
   {
-    "key": "HCl",
+    "aliases": [],
     "display_name": "Saltsyra (HCl)",
-    "pubchem_cid": 313,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H314",
+      "H318",
+      "H335"
+    ],
+    "key": "HCl",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 313
   },
   {
-    "key": "AgNO3",
+    "aliases": [],
     "display_name": "Silvernitrat",
-    "pubchem_cid": 24470,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
+    "hazard_codes": [
+      "H272",
+      "H290",
+      "H314",
+      "H400",
+      "H410"
+    ],
+    "key": "AgNO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS (tungmetallavfall kan krävas).",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24470,
     "search_aliases": [
       "Silver Nitrate"
     ]
   },
   {
-    "key": "SrCO3",
+    "aliases": [],
     "display_name": "Strontianit",
-    "pubchem_cid": 15407,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "SrCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 15407,
     "search_aliases": [
       "Strontium carbonate"
     ]
   },
   {
-    "key": "SrCl2",
+    "aliases": [],
     "display_name": "Strontiumklorid",
-    "pubchem_cid": 61520,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H318"
+    ],
+    "key": "SrCl2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 61520,
     "search_aliases": [
       "Strontium Chloride, Anhydrous"
     ]
   },
   {
-    "key": "Sr(NO3)2",
+    "aliases": [],
     "display_name": "Strontiumnitrat",
-    "pubchem_cid": 24848,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H271",
+      "H318"
+    ],
+    "key": "Sr(NO3)2",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 24848,
     "search_aliases": [
       "Strontium nitrate"
     ]
   },
   {
-    "key": "S",
+    "aliases": [],
     "display_name": "Svavel",
-    "pubchem_cid": 5362487,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H315"
+    ],
+    "key": "S",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5362487
   },
   {
-    "key": "H2SO4",
+    "aliases": [],
     "display_name": "Svavelsyra (H2SO4)",
-    "pubchem_cid": 1118,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H290",
+      "H314",
+      "H318"
+    ],
+    "key": "H2SO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 1118,
     "search_aliases": [
       "Sulfuric Acid"
     ]
   },
   {
-    "key": "Sn",
+    "aliases": [],
     "display_name": "Tenn",
-    "pubchem_cid": 5352426,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "Sn",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 5352426
   },
   {
-    "key": "CH4N2O",
+    "aliases": [],
     "display_name": "Urea",
-    "pubchem_cid": 1176,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "CH4N2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 1176,
     "search_aliases": [
       "Urea"
     ]
   },
   {
-    "key": "C4H6O6",
+    "aliases": [],
     "display_name": "Vinsyra",
-    "pubchem_cid": 444305,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H319"
+    ],
+    "key": "C4H6O6",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 444305,
     "search_aliases": [
       "L-Tartaric acid"
     ]
   },
   {
-    "key": "HI",
-    "display_name": "Vätejodid",
-    "pubchem_cid": 24841,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "H2O2",
-    "display_name": "Väteperoxid (H2O2)",
-    "pubchem_cid": 784,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "Zn",
-    "display_name": "Zink (Zn)",
-    "pubchem_cid": 23994,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
-  },
-  {
-    "key": "ZnCl2",
-    "display_name": "Zinkklorid",
-    "pubchem_cid": 5727,
-    "hazard_codes": [],
-    "ppe": [
-      "Skyddsglasögon",
-      "Handskar"
-    ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
     "aliases": [],
+    "display_name": "Vätejodid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H312",
+      "H315",
+      "H319",
+      "H332",
+      "H335",
+      "H372",
+      "H400"
+    ],
+    "key": "HI",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 24841
+  },
+  {
+    "aliases": [],
+    "display_name": "Väteperoxid (H2O2)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H318",
+      "H332"
+    ],
+    "key": "H2O2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 784
+  },
+  {
+    "aliases": [],
+    "display_name": "Zink (Zn)",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H400",
+      "H410"
+    ],
+    "key": "Zn",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon"
+    ],
+    "pubchem_cid": 23994
+  },
+  {
+    "aliases": [],
+    "display_name": "Zinkklorid",
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H314",
+      "H335",
+      "H400",
+      "H410"
+    ],
+    "key": "ZnCl2",
+    "notes": [],
+    "ppe": [
+      "Skyddsglasögon",
+      "Handskar"
+    ],
+    "pubchem_cid": 5727,
     "search_aliases": [
       "Zinc Chloride"
     ]
   },
   {
-    "key": "ZnO",
+    "aliases": [],
     "display_name": "Zinkoxid",
-    "pubchem_cid": 14806,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H400",
+      "H410"
+    ],
+    "key": "ZnO",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 14806
   },
   {
-    "key": "ZnCO3",
+    "aliases": [],
     "display_name": "Zinkspat",
-    "pubchem_cid": 19005,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H400",
+      "H410",
+      "H411"
+    ],
+    "key": "ZnCO3",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 19005,
     "search_aliases": [
       "Zinc Carbonate"
     ]
   },
   {
-    "key": "ZnSO4",
+    "aliases": [],
     "display_name": "Zinksulfat",
-    "pubchem_cid": 24424,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H318",
+      "H400",
+      "H410"
+    ],
+    "key": "ZnSO4",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": []
+    "pubchem_cid": 24424
   },
   {
-    "key": "ZnSO4·7H2O",
+    "aliases": [
+      "ZnSO4.7H2O"
+    ],
     "display_name": "Zinksulfat (heptahydrat)",
-    "pubchem_cid": 62640,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H302",
+      "H318",
+      "H400",
+      "H410"
+    ],
+    "key": "ZnSO4·7H2O",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "ZnSO4.7H2O"
-    ]
+    "pubchem_cid": 62640
   },
   {
-    "key": "ZnS",
+    "aliases": [],
     "display_name": "Zinksulfid",
-    "pubchem_cid": 9833931,
+    "disposal": "Följ lokala rutiner och SDS.",
     "hazard_codes": [],
+    "key": "ZnS",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [],
+    "pubchem_cid": 9833931,
     "search_aliases": [
       "Zinc Sulfide"
     ]
   },
   {
-    "key": "CH3COOH",
+    "aliases": [
+      "C2H4O2"
+    ],
     "display_name": "Ättiksyra (CH3COOH)",
-    "pubchem_cid": 176,
-    "hazard_codes": [],
+    "disposal": "Följ lokala rutiner och SDS.",
+    "hazard_codes": [
+      "H226",
+      "H314",
+      "H318"
+    ],
+    "key": "CH3COOH",
+    "notes": [],
     "ppe": [
       "Skyddsglasögon",
       "Handskar"
     ],
-    "disposal": "Följ lokala rutiner och SDS.",
-    "notes": [],
-    "aliases": [
-      "C2H4O2"
-    ],
+    "pubchem_cid": 176,
     "search_aliases": [
       "Acetic Acid"
     ]

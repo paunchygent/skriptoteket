@@ -230,7 +230,7 @@ async def test_export_risk_pdf_returns_download(
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("application/pdf")
-    assert "riskbedomning.pdf" in response.headers["content-disposition"]
+    assert "underlag-riskbedomning.pdf" in response.headers["content-disposition"]
     assert response.content == b"%PDF-1.4 stub"
     assert export_risk_pdf_handler.calls
 
@@ -255,7 +255,7 @@ async def test_save_risk_pdf_returns_vault_ref(
             file=VaultFileInfo(
                 id=file_id,
                 ref=build_vault_file_ref(file_id=file_id),
-                name="riskbedomning.pdf",
+                name="underlag-riskbedomning.pdf",
                 bytes=123,
                 created_at=now,
                 deleted_at=None,
@@ -288,6 +288,6 @@ async def test_save_risk_pdf_returns_vault_ref(
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["file"]["name"] == "riskbedomning.pdf"
+    assert payload["file"]["name"] == "underlag-riskbedomning.pdf"
     assert payload["file"]["ref"].startswith("vault:")
     assert save_risk_pdf_handler.calls

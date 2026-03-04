@@ -4,6 +4,7 @@ import type { Ref } from "vue";
 
 import { apiFetchBlob, apiGet, apiPost, isApiError } from "../../api/client";
 import { useToast } from "../useToast";
+import { buildMissingRiskContextMessage } from "./riskExportGate";
 
 import type {
   ReagentPrepChefPrepSheet,
@@ -23,6 +24,8 @@ type RiskOptions = {
   prep: Ref<ReagentPrepChefPrepSheet | null>;
   currentPrepPayload: () => ReagentPrepChefPrepRequestInput;
 };
+
+const RISK_SUPPORT_PDF_FILENAME = "underlag-riskbedomning.pdf";
 
 export function useReagentPrepChefRisk(options: RiskOptions) {
   const toast = useToast();
@@ -55,10 +58,13 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
   const riskOverrides = reactive<Record<string, RiskOverrideDraft>>({});
   const riskMeasuresDraft = reactive<Record<string, string>>({});
 
-  const riskContextIsComplete = computed(() => {
-    if (!riskDraft.value) return false;
-    return (riskDraft.value.export_gate?.missing_context_fields?.length ?? 0) === 0;
-  });
+  const missingRiskContextFields = computed(
+    () => riskDraft.value?.export_gate?.missing_context_fields ?? [],
+  );
+
+  const missingRiskContextMessage = computed(() =>
+    buildMissingRiskContextMessage(missingRiskContextFields.value),
+  );
 
   const canExportRisk = computed(() => {
     if (!riskDraft.value) return false;
@@ -271,7 +277,7 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "riskbedomning.pdf";
+      link.download = RISK_SUPPORT_PDF_FILENAME;
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
@@ -307,14 +313,14 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
         },
       );
       lastSavedRiskPdfVaultRef.value = response.file.ref;
-      toast.success("Riskbedömningen sparades i Mina filer.");
+      toast.success("Underlaget sparades i Mina filer.");
     } catch (error: unknown) {
       if (isApiError(error)) {
         riskErrorMessage.value = error.message;
       } else if (error instanceof Error) {
         riskErrorMessage.value = error.message;
       } else {
-        riskErrorMessage.value = "Det gick inte att spara riskbedömningen just nu.";
+        riskErrorMessage.value = "Det gick inte att spara underlaget just nu.";
       }
     } finally {
       isSavingRiskPdfToVault.value = false;
@@ -392,7 +398,7 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
     riskContext,
     riskOverrides,
     riskMeasuresDraft,
-    riskContextIsComplete,
+    missingRiskContextMessage,
     canExportRisk,
     loadRiskDraft,
     saveRiskDraft,

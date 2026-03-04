@@ -21,6 +21,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
+- Riskunderlag praxis (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`
 - Llama kodassistent eval v2: `docs/reference/ref-llama-kodassistent-eval-v2.md`
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
@@ -142,6 +143,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`
 - `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`
 - `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`
+- `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 
 ### Backlog Reviews
 
@@ -234,6 +236,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0067-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/prs/pr-0068-reagent-prep-chef-sds-pdfs-manual-download.md`
 - `docs/backlog/prs/pr-0069-reagent-prep-chef-sds-index-available-in-docker.md`
+- `docs/backlog/prs/pr-0073-textbook-corpus-governance-immutable-snapshot-and-job-reconciliation.md`
+- `docs/backlog/prs/pr-0074-textbook-corpus-deterministic-mechanical-cleanup-and-issue-ledger.md`
+- `docs/backlog/prs/pr-0075-textbook-corpus-multi-agent-manual-restoration-and-verification.md`
+- `docs/backlog/prs/pr-0076-textbook-corpus-integrity-gates-and-pristine-build-contract.md`
+- `docs/backlog/prs/pr-0077-textbook-corpus-rag-packaging-and-postgresql-vector-ingest-contract.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -460,6 +467,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md`
 - `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md`
+- `docs/backlog/stories/story-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md`
 
 ### Reference
 
@@ -479,6 +487,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
 - `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - `docs/reference/ref-linter-architecture.md`
+- `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - `docs/reference/ref-review-workflow.md`
 - `docs/reference/ref-scripting-api-contracts.md`
 - `docs/reference/ref-scripting-governance-deferred-options.md`

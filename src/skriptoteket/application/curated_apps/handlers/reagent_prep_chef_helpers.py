@@ -1,3 +1,14 @@
+"""HTML builders for Reagent Prep Chef PDF exports.
+
+This module renders deterministic HTML payloads for:
+1) reagent prep exports, and
+2) risk-support exports used by risk export/save handlers.
+
+Related:
+  - Prep export handler: `reagent_prep_chef_export_pdf.py`
+  - Risk export handler: `reagent_prep_chef_export_risk_pdf.py`
+"""
+
 from __future__ import annotations
 
 import html
@@ -6,6 +17,9 @@ from datetime import date
 from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefPrepSheet,
     ReagentPrepChefRiskAssessmentDraft,
+)
+from skriptoteket.application.curated_apps.reagent_prep_chef_risk_contract import (
+    RISK_SUPPORT_DOCUMENT_TITLE,
 )
 
 
@@ -139,9 +153,9 @@ def build_risk_export_html(
     draft: ReagentPrepChefRiskAssessmentDraft,
     warnings: list[str],
 ) -> str:
-    title = "Riskbedömning"
+    title = RISK_SUPPORT_DOCUMENT_TITLE
     if draft.sheet.chemistry.formula_clean:
-        title = f"Riskbedömning: {draft.sheet.chemistry.formula_clean}"
+        title = f"{RISK_SUPPORT_DOCUMENT_TITLE}: {draft.sheet.chemistry.formula_clean}"
 
     def esc(value: str) -> str:
         return html.escape(value, quote=True)
@@ -182,8 +196,8 @@ def build_risk_export_html(
 
     safety = draft.sheet.safety
     safety_disclaimer = (
-        "<p>Den här riskbedömningen bygger på appens säkerhetsdata och utkastet ersätter inte SDS "
-        "eller lokala rutiner.</p>"
+        "<p>Det här underlaget bygger på appens säkerhetsdata och ersätter inte fullständig lokal "
+        "riskbedömning, SDS eller lokala rutiner.</p>"
     )
     if safety.level == "unknown":
         safety_html = (

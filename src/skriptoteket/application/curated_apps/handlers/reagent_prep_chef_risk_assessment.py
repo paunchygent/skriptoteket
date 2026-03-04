@@ -27,6 +27,9 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskItem,
     ReagentPrepChefSdsSnapshot,
 )
+from skriptoteket.application.curated_apps.reagent_prep_chef_risk_contract import (
+    missing_risk_context_fields,
+)
 from skriptoteket.domain.curated_apps.models import curated_app_tool_id
 from skriptoteket.domain.curated_apps.reagent_prep_chef.errors import (
     ReagentPrepChefErrorCode,
@@ -78,30 +81,6 @@ def _prep_fingerprint(command: ReagentPrepChefRiskAssessmentRequest) -> str:
     payload = command.prep.model_dump(mode="json")
     encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
-
-
-def _missing_context_fields(*, context: object) -> list[str]:
-    if context is None:
-        return ["scope", "participants", "approver", "assessment_date", "next_review_date"]
-
-    missing = []
-    scope = getattr(context, "scope", None)
-    participants = getattr(context, "participants", None)
-    approver = getattr(context, "approver", None)
-    assessment_date = getattr(context, "assessment_date", None)
-    next_review_date = getattr(context, "next_review_date", None)
-
-    if not (scope or "").strip():
-        missing.append("scope")
-    if not (participants or "").strip():
-        missing.append("participants")
-    if not (approver or "").strip():
-        missing.append("approver")
-    if assessment_date is None:
-        missing.append("assessment_date")
-    if next_review_date is None:
-        missing.append("next_review_date")
-    return missing
 
 
 def _apply_override(
@@ -269,7 +248,9 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         missing_confirmations = [item.id for item in risks if not item.confirmed]
         requires_confirmation = len(missing_confirmations) > 0
 
-        missing_context_fields = _missing_context_fields(context=inputs.context if inputs else None)
+        missing_context_fields = missing_risk_context_fields(
+            context=inputs.context if inputs else None
+        )
         export_gate = ReagentPrepChefRiskExportGate(
             ready=not requires_confirmation and not missing_context_fields,
             missing_confirmations=missing_confirmations,
