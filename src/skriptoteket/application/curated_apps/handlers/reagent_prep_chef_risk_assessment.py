@@ -224,7 +224,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         if hazard_entry is None:
             raise rpc_validation_error(
                 app_code=ReagentPrepChefErrorCode.RISK_CHEMICAL_MISSING,
-                message="Okänt ämne: saknar kuraterad post.",
+                message="Okänt ämne: saknar säkerhetsdata i appen.",
                 details={"formula": prep_result.sheet.chemistry.formula_clean},
             )
 
@@ -236,7 +236,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         try:
             entry = self._sds_store.get_entry(sds_ref=sds_ref)
             markdown_available = True
-            pdf_available = entry.pdf_file_name is not None
+            pdf_available = True
             provider = entry.provider
             revision = entry.revision
         except DomainError as exc:

@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     ARTIFACTS_ROOT: Path = Path("/var/lib/skriptoteket/artifacts")
     ARTIFACTS_RETENTION_DAYS: int = 7
 
+    # Reagent Prep Chef: generated SDS PDFs (rendered from markdown, ADR-0067)
+    REAGENT_PREP_CHEF_SDS_PDF_CACHE_DIR: Path = Path(
+        "/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs"
+    )
+
     # Sir Convert-a-Lot v2 (external conversion engine; EPIC-21 / ADR-0066)
     SIR_CONVERT_A_LOT_V2_BASE_URL: str = "http://127.0.0.1:9010"
     SIR_CONVERT_A_LOT_V2_API_KEY: str = ""

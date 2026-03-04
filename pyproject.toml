@@ -63,6 +63,7 @@ dependencies = [
     "mistral-common>=1.5.6",
     "pypandoc",
     "weasyprint",
+    "markdown>=3.6",
     "molmass>=2026.1.8",
 ]
 
@@ -92,6 +93,7 @@ monorepo-tools = [
     "types-openpyxl>=3.1.5.20250919",
     "types-docker>=7.1.0.20251202",
     "types-requests>=2.32.4.20250913",
+    "types-Markdown",
 ]
 
 # "Dev everything" extras that are useful locally but not required in prod images.
@@ -347,6 +349,7 @@ test-sequential = "pytest -n 0"
 
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"
+sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 
 # Agent skills (repo-local)
 skills-prompt = "python -m scripts.skills_prompt"

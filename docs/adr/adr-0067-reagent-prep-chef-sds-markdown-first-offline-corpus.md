@@ -32,11 +32,13 @@ For this product, **SDS documents themselves** (curated markdown) are the most v
   - `data/reagent_prep_chef/sds/markdown/` (committed to git).
 - The app uses the markdown content “as-is” for the UI (no hazard inference pipeline required).
 
-### 2) PDFs are optional and stored outside git
+### 2) SDS PDFs are generated from markdown (cached outside git)
 
-- If we have the original PDF, it can be stored under:
-  - `data/reagent_prep_chef/sds/files/` (gitignored).
-- The backend may serve PDFs when present, but the product must not depend on PDFs being present in git.
+- The app serves SDS markdown in the UI as the primary document view.
+- When a teacher needs a PDF, the backend generates a **Skriptoteket-branded** PDF rendered from the markdown corpus
+  and caches it on disk **outside git** (deterministic input → deterministic output).
+- Source/vendor PDFs may still exist as part of the curation workflow (PDF → markdown conversion), but they are not a
+  runtime dependency and are **not** served to teachers in the app UI.
 
 ### 3) No runtime SDS fetching from external sources
 

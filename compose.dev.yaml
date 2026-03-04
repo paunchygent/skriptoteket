@@ -11,6 +11,7 @@ services:
       - ./migrations:/app/migrations:cached
       - ./alembic.ini:/app/alembic.ini:cached
       - ./.artifacts:/var/lib/skriptoteket/artifacts:cached
+      - ./.artifacts/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs:cached
       - ./.vault:/var/lib/skriptoteket/vault:cached
       - /var/run/docker.sock:/var/run/docker.sock
     environment:

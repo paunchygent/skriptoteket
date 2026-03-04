@@ -44,7 +44,7 @@ const emit = defineEmits<{
         <div class="space-y-1">
           <h2 class="text-lg font-semibold text-navy">Riskbedömning</h2>
           <p class="text-sm text-navy/60">
-            Utkastet bygger på beräkningen och kuraterad data. Bekräfta checklistan innan export.
+            Utkastet bygger på beräkningen och appens säkerhetsdata. Bekräfta checklistan innan export.
           </p>
         </div>
         <button
@@ -174,7 +174,7 @@ const emit = defineEmits<{
           </div>
 
           <div class="space-y-3">
-            <h3 class="text-sm font-semibold text-navy">Säkerhet (kuraterad)</h3>
+            <h3 class="text-sm font-semibold text-navy">Säkerhetsdata</h3>
             <div class="p-3 border border-navy bg-canvas shadow-none space-y-1 text-xs text-navy/80">
               <p v-if="props.riskDraft.sheet.safety.level === 'unknown'">
                 {{ props.riskDraft.sheet.safety.message || "Konsultera SDS innan användning." }}

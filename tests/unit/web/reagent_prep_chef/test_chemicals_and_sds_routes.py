@@ -141,6 +141,6 @@ async def test_get_sds_markdown_returns_payload(
     assert payload["sds_ref"] == "NaCl"
     assert payload["provider"] == "carlroth"
     assert payload["revision"] == "undated"
-    assert payload["pdf_available"] is False
+    assert payload["pdf_available"] is True
     assert payload["markdown"].startswith("# Säkerhetsdatablad")
     assert sds_store.calls_markdown == ["NaCl"]

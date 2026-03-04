@@ -294,7 +294,7 @@
       "name": "UNECE GHS Rev.10 (English) – curated Swedish renderings",
       "hazard_url": "https://unece.org/sites/default/files/2023-11/GHS_Rev10_2023e_Section3.1_HazardStatements.pdf",
       "precautionary_url": "https://unece.org/sites/default/files/2023-11/GHS_Rev10_2023e_Section3.3_PrecautionaryStatements.pdf",
-      "note": "Svenska fraser är manuellt kuraterade för koder som saknas i svenska CLP‑listor."
+      "note": "Svenska fraser är manuellt sammanställda för koder som saknas i svenska CLP‑listor."
     }
   ]
 }

@@ -190,7 +190,7 @@ Skriptet returnerar en dict med tre fält:
 
 ### 3.2 Globala begränsningar för outputs
 
-| Begränsning | Standardprofil | Kuraterad profil |
+| Begränsning | Standardprofil | Utökad profil |
 |-------------|----------------|------------------|
 | Max antal outputs | 50 | 150 |
 | UI payload total | 256 KB | 512 KB |

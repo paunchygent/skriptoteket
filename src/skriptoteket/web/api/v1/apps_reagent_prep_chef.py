@@ -230,5 +230,5 @@ async def get_sds_markdown(
         provider=entry.provider,
         revision=entry.revision,
         markdown=markdown,
-        pdf_available=entry.pdf_file_name is not None,
+        pdf_available=True,
     )

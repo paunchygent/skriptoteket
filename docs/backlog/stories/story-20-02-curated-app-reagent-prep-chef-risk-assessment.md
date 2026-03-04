@@ -12,6 +12,7 @@ acceptance_criteria:
   - "Given a teacher has computed a prep sheet, when the teacher opens the Riskbedömning tab, then the UI shows a structured draft prefilled from the computed prep (formula, molarity, volumes, instructions) plus a teacher-editable local context form."
   - "Given the chemical is present in curated hazards data, when the risk draft is generated, then the UI includes curated safety guidance (PPE/avfall/H-koder when available) and an 'Öppna SDS' action."
   - "Given an SDS markdown exists for the current chemical, when the teacher clicks 'Öppna SDS', then the SPA renders the SDS markdown served by the backend with no external fetch and no direct vendor URLs."
+  - "Given an SDS markdown exists for the current chemical, when the teacher clicks 'Öppna PDF', then the backend returns an SDS PDF rendered from the markdown corpus (Skriptoteket-branded; no vendor PDF served)."
   - "Given the SDS markdown is missing, when the teacher clicks 'Öppna SDS', then the UI blocks the action with a clear 'SDS saknas' message."
   - "Given the teacher fills required local context and confirms the checklist items, when the teacher exports, then the backend generates a deterministic PDF risk assessment document (no external API calls during export) and the SPA downloads it."
   - "Given the teacher exports and chooses Save to Vault, when saving completes, then a Vault file is created with source_kind=APP_EXPORT and the user receives a Vault file reference."
@@ -77,7 +78,7 @@ New endpoints (exact routes):
   - Output: Vault file info
 
 - `GET /api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}`
-  - Output: full SDS PDF content (optional; when available).
+  - Output: SDS PDF rendered from the repo-owned markdown corpus (no vendor PDF served).
 
 - `GET /api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}/markdown`
   - Output: SDS markdown payload served from repo-owned corpus (ADR-0067).

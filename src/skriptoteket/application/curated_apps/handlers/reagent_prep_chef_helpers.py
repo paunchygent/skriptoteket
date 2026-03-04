@@ -182,7 +182,7 @@ def build_risk_export_html(
 
     safety = draft.sheet.safety
     safety_disclaimer = (
-        "<p>Den här riskbedömningen bygger på kuraterad data och utkastet ersätter inte SDS "
+        "<p>Den här riskbedömningen bygger på appens säkerhetsdata och utkastet ersätter inte SDS "
         "eller lokala rutiner.</p>"
     )
     if safety.level == "unknown":

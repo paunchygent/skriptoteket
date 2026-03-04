@@ -53,7 +53,7 @@ typed form and a structured prep sheet, while the backend stays deterministic an
 
 - `app_id`: `chemistry.reagent_prep_chef`
 - `title` (SV): `Reagensberedning: Reagent Prep Chef`
-- `summary` (SV): `Räkna ut massa/volym för lösningar med hydrat- och renhetsstöd + kuraterade skyddsråd.`
+- `summary` (SV): `Räkna ut massa/volym för lösningar med hydrat- och renhetsstöd + säkerhetsdata.`
 - `min_role`: `teacher` (or `user` if Skriptoteket users are already teachers)
 - `placements` (initial, using existing taxonomy): `profession_slug="larare"`, `category_slug="ovrigt"`
 

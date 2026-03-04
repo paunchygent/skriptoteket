@@ -282,7 +282,7 @@ async def test_risk_draft_sets_sds_snapshot_when_entry_exists() -> None:
 
     assert result.draft.sds.sds_ref == "NaCl"
     assert result.draft.sds.markdown_available is True
-    assert result.draft.sds.pdf_available is False
+    assert result.draft.sds.pdf_available is True
     assert result.draft.sds.provider == "carlroth"
     assert result.draft.sds.revision == "undated"
     assert result.warnings == []

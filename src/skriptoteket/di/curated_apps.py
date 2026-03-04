@@ -140,11 +140,14 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def reagent_prep_chef_sds_store(
         self,
+        settings: Settings,
+        pdf: ReagentPrepChefPdfRendererProtocol,
     ) -> ReagentPrepChefSdsStoreProtocol:
         return FileSystemReagentPrepChefSdsStore(
             index_path=Path("data/reagent_prep_chef/sds/index.json"),
             markdown_dir=Path("data/reagent_prep_chef/sds/markdown"),
-            pdf_dir=Path("data/reagent_prep_chef/sds/files"),
+            pdf_cache_dir=settings.REAGENT_PREP_CHEF_SDS_PDF_CACHE_DIR,
+            pdf_renderer=pdf,
         )
 
     @provide(scope=Scope.REQUEST)
