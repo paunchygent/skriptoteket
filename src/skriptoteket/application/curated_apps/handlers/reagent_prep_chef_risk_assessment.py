@@ -2,12 +2,12 @@
 
 Builds a deterministic, restorable risk assessment draft from:
 - the computed prep sheet (via the prep handler),
-- curated hazards + SDS-derived signals (CLP bands, density, heuristics),
-- repo-owned risk templates and teacher overrides stored in tool_sessions.
+- repo-owned curated hazards + repo-owned risk templates,
+- offline SDS corpus availability (ADR-0067),
+- teacher-provided context + confirmations stored in tool_sessions.
 
-PR-0062: draft generation is best-effort w.r.t. SDS completeness. Missing SDS-derived
-inputs are surfaced via explicit `missing_flags` + server-driven `export_gate`. Export
-is offline (no fetch) and best-effort; the SDS open button is gated by `pdf_available`.
+No external SDS fetching and no SDS-derived signal extraction
+(CLP bands, density, heuristics, risk scoring).
 """
 
 from __future__ import annotations
@@ -19,16 +19,12 @@ import structlog
 from pydantic import JsonValue, ValidationError
 
 from skriptoteket.application.curated_apps.reagent_prep_chef import (
-    ReagentPrepChefChemistryHeuristics,
-    ReagentPrepChefClpClassification,
     ReagentPrepChefRiskAssessmentDraft,
     ReagentPrepChefRiskAssessmentInputs,
     ReagentPrepChefRiskAssessmentRequest,
     ReagentPrepChefRiskAssessmentResult,
     ReagentPrepChefRiskExportGate,
     ReagentPrepChefRiskItem,
-    ReagentPrepChefRiskMissingFlag,
-    ReagentPrepChefRiskRating,
     ReagentPrepChefSdsSnapshot,
 )
 from skriptoteket.domain.curated_apps.models import curated_app_tool_id
@@ -36,20 +32,12 @@ from skriptoteket.domain.curated_apps.reagent_prep_chef.errors import (
     ReagentPrepChefErrorCode,
     rpc_validation_error,
 )
-from skriptoteket.domain.curated_apps.reagent_prep_chef.models import (
-    ClpBand,
-    HazardEntry,
-    HazardSdsData,
-)
+from skriptoteket.domain.curated_apps.reagent_prep_chef.models import HazardEntry
 from skriptoteket.domain.curated_apps.reagent_prep_chef.risk_assessment import (
-    DEFAULT_RISK_LEVELS,
     RiskTemplate,
-    RiskTemplates,
     filter_templates_by_hazard_codes,
-    resolve_risk_level,
-    score_risk,
-    select_clp_band,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.reagent_prep_chef import (
@@ -57,7 +45,7 @@ from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefPrepHandlerProtocol,
     ReagentPrepChefRiskAssessmentHandlerProtocol,
     ReagentPrepChefRiskTemplateStoreProtocol,
-    ReagentPrepChefSdsIndexStoreProtocol,
+    ReagentPrepChefSdsStoreProtocol,
 )
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -68,20 +56,6 @@ APP_ID = "chemistry.reagent_prep_chef"
 RISK_CONTEXT = "curated-app-risk-assessment:v1"
 RISK_KEY = "risk_inputs"
 PREP_FINGERPRINT_KEY = "prep_fingerprint"
-
-MISSING_FLAGS_ORDER: list[ReagentPrepChefRiskMissingFlag] = [
-    "sds_ref_missing",
-    "sds_pdf_missing",
-    "sds_density_missing",
-    "sds_clp_bands_missing",
-    "sds_heuristics_missing",
-    "clp_unavailable_for_target",
-    "heuristics_unavailable",
-]
-
-# PR-0062: best-effort export. Missing SDS-derived signals should be visible in the draft,
-# but should not block exporting a risk PDF (confirmation + context fields are still strict).
-EXPORT_BLOCKING_FLAGS: set[ReagentPrepChefRiskMissingFlag] = set()
 
 
 def _parse_inputs(value: object) -> ReagentPrepChefRiskAssessmentInputs | None:
@@ -104,108 +78,6 @@ def _prep_fingerprint(command: ReagentPrepChefRiskAssessmentRequest) -> str:
     payload = command.prep.model_dump(mode="json")
     encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
-
-
-def _build_clp_classification(
-    *,
-    band: ClpBand | None,
-    sds: HazardSdsData | None,
-    fallback_notes: list[str],
-) -> ReagentPrepChefClpClassification:
-    if band is None:
-        if sds is None:
-            return ReagentPrepChefClpClassification()
-        return ReagentPrepChefClpClassification(
-            hazard_codes=list(sds.hazard_codes),
-            pictograms=list(sds.pictograms),
-            signal_word=sds.signal_word,
-            notes=fallback_notes,
-        )
-
-    return ReagentPrepChefClpClassification(
-        hazard_codes=list(band.hazard_codes),
-        pictograms=list(band.pictograms),
-        signal_word=band.signal_word,
-        notes=list(band.notes),
-    )
-
-
-def _build_heuristics(*, hazard_entry: HazardEntry | None) -> ReagentPrepChefChemistryHeuristics:
-    if hazard_entry is None:
-        return ReagentPrepChefChemistryHeuristics()
-    return ReagentPrepChefChemistryHeuristics(
-        incompatibilities=list(hazard_entry.incompatibilities),
-        exothermicity=hazard_entry.exothermicity,
-        reaction_notes=list(hazard_entry.reaction_notes),
-    )
-
-
-def _build_rating(
-    *, severity: int, likelihood: int, templates: RiskTemplates
-) -> ReagentPrepChefRiskRating:
-    levels = templates.risk_levels or DEFAULT_RISK_LEVELS
-    score = score_risk(severity=severity, likelihood=likelihood)
-    level = resolve_risk_level(score=score, levels=levels)
-    return ReagentPrepChefRiskRating(
-        severity=severity,
-        likelihood=likelihood,
-        score=score,
-        level=level,
-    )
-
-
-def _apply_override(
-    *,
-    template: RiskTemplate,
-    confirmed: bool,
-    severity_override: int | None,
-    likelihood_override: int | None,
-    measures_override: list[str] | None,
-    templates: RiskTemplates,
-    hazard_codes: list[str],
-) -> ReagentPrepChefRiskItem:
-    computed = _build_rating(
-        severity=template.default_severity,
-        likelihood=template.default_likelihood,
-        templates=templates,
-    )
-    severity = severity_override if severity_override is not None else template.default_severity
-    likelihood = (
-        likelihood_override if likelihood_override is not None else template.default_likelihood
-    )
-    final = _build_rating(severity=severity, likelihood=likelihood, templates=templates)
-
-    measures = measures_override if measures_override is not None else list(template.measures)
-
-    return ReagentPrepChefRiskItem(
-        id=template.id,
-        title=template.title,
-        description=template.description,
-        hazard_codes=hazard_codes,
-        measures=measures,
-        computed=computed,
-        final=final,
-        confirmed=confirmed,
-    )
-
-
-def _merge_sds(*, hazard: HazardEntry, sds: HazardSdsData) -> HazardEntry:
-    return HazardEntry(
-        key=hazard.key,
-        display_name=hazard.display_name,
-        hazard_codes=sds.hazard_codes,
-        ppe=hazard.ppe,
-        disposal=hazard.disposal,
-        notes=hazard.notes,
-        aliases=hazard.aliases,
-        search_aliases=hazard.search_aliases,
-        pubchem_cid=hazard.pubchem_cid,
-        sds_ref=sds.sds_ref,
-        clp_bands=sds.clp_bands,
-        incompatibilities=sds.incompatibilities,
-        exothermicity=sds.exothermicity,
-        reaction_notes=sds.reaction_notes,
-    )
 
 
 def _missing_context_fields(*, context: object) -> list[str]:
@@ -232,21 +104,45 @@ def _missing_context_fields(*, context: object) -> list[str]:
     return missing
 
 
-def _has_heuristics(
+def _apply_override(
     *,
-    incompatibilities: tuple[str, ...],
-    reaction_notes: tuple[str, ...],
-    exothermicity: object,
-) -> bool:
-    return bool(incompatibilities) or bool(reaction_notes) or exothermicity is not None
+    template: RiskTemplate,
+    confirmed: bool,
+    measures_override: list[str] | None,
+    hazard_codes: list[str],
+) -> ReagentPrepChefRiskItem:
+    measures = measures_override if measures_override is not None else list(template.measures)
+    return ReagentPrepChefRiskItem(
+        id=template.id,
+        title=template.title,
+        description=template.description,
+        hazard_codes=hazard_codes,
+        measures=measures,
+        confirmed=confirmed,
+    )
 
 
-def _ordered_missing_flags(
-    missing_flags: set[ReagentPrepChefRiskMissingFlag],
-) -> list[ReagentPrepChefRiskMissingFlag]:
-    ordered = [flag for flag in MISSING_FLAGS_ORDER if flag in missing_flags]
-    remaining = sorted(flag for flag in missing_flags if flag not in MISSING_FLAGS_ORDER)
-    return [*ordered, *remaining]
+def _build_templates(
+    *,
+    hazard_entry: HazardEntry,
+    risk_templates: ReagentPrepChefRiskTemplateStoreProtocol,
+) -> list[RiskTemplate]:
+    templates = risk_templates.get()
+    hazard_codes = set(hazard_entry.hazard_codes)
+    hazard_specific = filter_templates_by_hazard_codes(
+        templates=templates.hazard_risks,
+        hazard_codes=hazard_codes,
+    )
+    combined: list[RiskTemplate] = list(templates.generic_risks) + hazard_specific
+
+    deduped: list[RiskTemplate] = []
+    seen: set[str] = set()
+    for template in combined:
+        if template.id in seen:
+            continue
+        seen.add(template.id)
+        deduped.append(template)
+    return deduped
 
 
 class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerProtocol):
@@ -256,7 +152,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         prep: ReagentPrepChefPrepHandlerProtocol,
         hazards: ReagentPrepChefHazardStoreProtocol,
         risk_templates: ReagentPrepChefRiskTemplateStoreProtocol,
-        sds_index: ReagentPrepChefSdsIndexStoreProtocol,
+        sds_store: ReagentPrepChefSdsStoreProtocol,
         sessions: ToolSessionRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         id_generator: IdGeneratorProtocol,
@@ -264,7 +160,7 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         self._prep = prep
         self._hazards = hazards
         self._risk_templates = risk_templates
-        self._sds_index = sds_index
+        self._sds_store = sds_store
         self._sessions = sessions
         self._uow = uow
         self._id_generator = id_generator
@@ -274,8 +170,6 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         *,
         actor: User,
         command: ReagentPrepChefRiskAssessmentRequest,
-        allow_fetch: bool = True,
-        require_complete: bool = False,
     ) -> ReagentPrepChefRiskAssessmentResult:
         prep_result = await self._prep.handle(actor=actor, command=command.prep)
         tool_id = curated_app_tool_id(app_id=APP_ID)
@@ -324,113 +218,50 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
 
         inputs = None if command.reset else (command.inputs or stored_inputs)
         overrides = inputs.overrides if inputs else []
+        overrides_by_id = {item.id: item for item in overrides}
 
         hazard_entry = self._hazards.lookup(formula_clean=prep_result.sheet.chemistry.formula_clean)
-        sds_data: HazardSdsData | None = None
-
         if hazard_entry is None:
             raise rpc_validation_error(
                 app_code=ReagentPrepChefErrorCode.RISK_CHEMICAL_MISSING,
-                message="Okänt ämne: saknar kuraterad SDS-post.",
+                message="Okänt ämne: saknar kuraterad post.",
                 details={"formula": prep_result.sheet.chemistry.formula_clean},
             )
 
+        sds_ref = hazard_entry.key
+        markdown_available = False
+        pdf_available = False
+        provider = None
+        revision = None
         try:
-            sds_data = await self._sds_index.ensure(
-                hazard=hazard_entry,
-                allow_fetch=allow_fetch,
-                require_complete=require_complete,
-            )
-        except Exception as exc:  # noqa: BLE001
-            if require_complete:
-                raise rpc_validation_error(
-                    app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
-                    message="SDS saknas eller kunde inte laddas.",
-                    details={"formula": hazard_entry.key},
-                ) from exc
-            warnings.append("SDS saknas: riskklassning kan inte beräknas. Öppna SDS.")
-            sds_data = None
+            entry = self._sds_store.get_entry(sds_ref=sds_ref)
+            markdown_available = True
+            pdf_available = entry.pdf_file_name is not None
+            provider = entry.provider
+            revision = entry.revision
+        except DomainError as exc:
+            if exc.code != ErrorCode.NOT_FOUND:
+                raise
+            warnings.append("SDS saknas offline för ämnet.")
 
-        if sds_data is not None:
-            hazard_entry = _merge_sds(hazard=hazard_entry, sds=sds_data)
-
-        band = None
-        clp_fallback_notes: list[str] = []
-        if hazard_entry.clp_bands:
-            band = select_clp_band(
-                bands=hazard_entry.clp_bands,
-                molarity=command.prep.target_molarity,
-            )
-            if band is None:
-                if require_complete:
-                    raise rpc_validation_error(
-                        app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
-                        message="CLP-klassning saknas för vald koncentration.",
-                        details={"formula": hazard_entry.key},
-                    )
-                if sds_data is not None:
-                    warnings.append(
-                        "SCL saknas för vald koncentration: CLP-koder visas som best effort."
-                    )
-                    clp_fallback_notes.append(
-                        "SCL saknas för vald koncentration; visar SDS-koder (best effort)."
-                    )
-                else:
-                    warnings.append("CLP-klassning kan inte beräknas för vald koncentration.")
-        else:
-            if require_complete:
-                raise rpc_validation_error(
-                    app_code=ReagentPrepChefErrorCode.RISK_SDS_MISSING,
-                    message="CLP-klassning saknas i SDS.",
-                    details={"formula": hazard_entry.key},
-                )
-            if sds_data is not None:
-                warnings.append("SCL saknas i SDS: CLP-koder visas som best effort.")
-                clp_fallback_notes.append("SCL saknas i SDS; visar SDS-koder (best effort).")
-
-        clp = _build_clp_classification(
-            band=band,
-            sds=sds_data,
-            fallback_notes=clp_fallback_notes,
-        )
-        heuristics = _build_heuristics(hazard_entry=hazard_entry)
-
-        templates = self._risk_templates.get()
-        overrides_by_id = {item.id: item for item in overrides}
-        hazard_codes_set = set(clp.hazard_codes)
-        hazard_templates = filter_templates_by_hazard_codes(
-            templates=templates.hazard_risks,
-            hazard_codes=hazard_codes_set,
-        )
-
-        combined_templates: list[RiskTemplate] = list(templates.generic_risks) + hazard_templates
-        seen: set[str] = set()
+        templates = _build_templates(hazard_entry=hazard_entry, risk_templates=self._risk_templates)
+        hazard_codes_set = set(hazard_entry.hazard_codes)
         risks: list[ReagentPrepChefRiskItem] = []
 
-        for template in combined_templates:
-            if template.id in seen:
-                continue
-            seen.add(template.id)
-
+        for template in templates:
             override = overrides_by_id.get(template.id)
             measures_override = override.measures if override else None
-            severity_override = override.severity if override else None
-            likelihood_override = override.likelihood if override else None
             confirmed = override.confirmed if override else False
             matched_codes = (
                 sorted(hazard_codes_set.intersection(template.hazard_codes_any))
                 if template.hazard_codes_any
                 else []
             )
-
             risks.append(
                 _apply_override(
                     template=template,
                     confirmed=confirmed,
-                    severity_override=severity_override,
-                    likelihood_override=likelihood_override,
                     measures_override=measures_override,
-                    templates=templates,
                     hazard_codes=matched_codes,
                 )
             )
@@ -438,61 +269,28 @@ class ReagentPrepChefRiskAssessmentHandler(ReagentPrepChefRiskAssessmentHandlerP
         missing_confirmations = [item.id for item in risks if not item.confirmed]
         requires_confirmation = len(missing_confirmations) > 0
 
-        missing_flags: set[ReagentPrepChefRiskMissingFlag] = set()
-        if sds_data is None:
-            missing_flags.add("sds_pdf_missing")
-        else:
-            if sds_data.density_g_ml is None:
-                missing_flags.add("sds_density_missing")
-            if not sds_data.clp_bands:
-                missing_flags.add("sds_clp_bands_missing")
-            if not _has_heuristics(
-                incompatibilities=sds_data.incompatibilities,
-                reaction_notes=sds_data.reaction_notes,
-                exothermicity=sds_data.exothermicity,
-            ):
-                missing_flags.add("sds_heuristics_missing")
-
-        if hazard_entry.clp_bands and band is None:
-            missing_flags.add("clp_unavailable_for_target")
-        if not _has_heuristics(
-            incompatibilities=hazard_entry.incompatibilities,
-            reaction_notes=hazard_entry.reaction_notes,
-            exothermicity=hazard_entry.exothermicity,
-        ):
-            missing_flags.add("heuristics_unavailable")
-
-        ordered_missing_flags = _ordered_missing_flags(missing_flags)
         missing_context_fields = _missing_context_fields(context=inputs.context if inputs else None)
-        missing_data_flags = [
-            flag for flag in ordered_missing_flags if flag in EXPORT_BLOCKING_FLAGS
-        ]
         export_gate = ReagentPrepChefRiskExportGate(
-            ready=not requires_confirmation
-            and not missing_context_fields
-            and not missing_data_flags,
+            ready=not requires_confirmation and not missing_context_fields,
             missing_confirmations=missing_confirmations,
             missing_context_fields=missing_context_fields,
-            missing_data_flags=missing_data_flags,
         )
 
         sds_snapshot = ReagentPrepChefSdsSnapshot(
-            sds_ref=sds_data.sds_ref if sds_data is not None else None,
-            pdf_available=sds_data is not None,
-            missing_flags=[flag for flag in ordered_missing_flags if flag.startswith("sds_")],
-            sources=list(sds_data.sources) if sds_data is not None else [],
+            sds_ref=sds_ref,
+            markdown_available=markdown_available,
+            pdf_available=pdf_available,
+            provider=provider,
+            revision=revision,
         )
 
         draft = ReagentPrepChefRiskAssessmentDraft(
             sheet=prep_result.sheet,
             sds=sds_snapshot,
             context=inputs.context if inputs else None,
-            clp=clp,
-            heuristics=heuristics,
             risks=risks,
             requires_confirmation=requires_confirmation,
             missing_confirmations=missing_confirmations,
-            missing_flags=ordered_missing_flags,
             export_gate=export_gate,
         )
 

@@ -5,14 +5,15 @@ title: "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)"
 status: in_progress
 owners: "agents"
 created: 2026-01-28
-updated: 2026-02-18
+updated: 2026-03-04
 stories:
   - "ST-20-02"
 tags: ["curated-apps", "backend", "frontend"]
+adrs: ["ADR-0067"]
 acceptance_criteria:
   - "Riskbedömning tab exists in the bespoke Reagent Prep Chef view and is only available after a successful prep calculation."
-  - "Risk assessment draft is generated deterministically from the prep sheet + offline SDS/curated inputs and includes: (a) full chemistry heuristics (reaction prediction, incompatibilities, exothermicity), (b) a concentration-dependent CLP classification engine output, and (c) automatic risk scoring where the teacher must explicitly confirm or modify seriousness/rating."
-  - "Full SDS is available for curated chemicals as backend-hosted content. Runtime SDS fetching is allowed, but the SPA must only open backend-hosted copies (cached offline after fetch) and never call external SDS URLs directly."
+  - "Risk assessment draft is generated deterministically from the prep sheet + curated repo data and is restorable via tool_sessions with optimistic concurrency (state_rev)."
+  - "SDS is available for curated chemicals as backend-hosted **markdown** (ADR-0067). The SPA renders the markdown in-app and does not open external vendor URLs."
   - "Draft state is persisted via tool_sessions with optimistic concurrency (state_rev) and can be restored on reload."
   - "Export-risk-pdf returns a downloadable PDF with stable filename and includes the AFS-aligned documentation fields (scope, risks + seriousness, measures, participants, approver, date, next review date)."
   - "Save-risk-pdf stores the PDF in Vault with source_kind=APP_EXPORT and returns a Vault file ref to the SPA."
@@ -31,27 +32,21 @@ Add a first-class **Riskbedömning** workflow to the existing curated app:
 - Teacher-owned completion of local context and confirmation/modification of seriousness/rating.
 - PDF export + Save to Vault.
 - Draft persistence via `tool_sessions`.
-- Full SDS access for curated chemicals via offline backend-hosted storage.
-- Full chemistry heuristics (reaction prediction, incompatibilities, exothermicity, etc.).
-- Concentration-dependent CLP classification engine.
-- Automatic risk scoring + teacher must explicitly confirm or modify seriousness/rating.
+- Full SDS access for curated chemicals via offline backend-hosted **markdown** (ADR-0067).
+- Keep Riskbedömning teacher-first and maintainable: no SDS-derived signal extraction pipeline.
 
-## Implementation status (as of 2026-02-18)
+## Implementation status (as of 2026-03-04)
 
 Delivered so far:
 
 - Riskbedömning endpoints wired (draft/export/save) and SPA tab uses tool_sessions with optimistic concurrency.
 - PDF export + Vault save follow existing patterns (WeasyPrint + run recording + Vault quota checks).
-- SDS fetch/cache pipeline stores and serves **PDF** SDS (backend-hosted), keeping LCSS JSON for structured GHS.
-- Multi-source SDS provider registry wired (curated linkouts + PubChem LinkOut + safety URLs + LCSS URL scan).
-- Curated SDS meta store added; curated density/CLP bands are now loaded and used when present.
-- Seed SDS cache supports parallel fetches and strict validation; sample batch (C3H6O/Al/AlCl3/AlCl3·6H2O/Al2O3) now completes cleanly with curated meta.
+- SDS pipeline is being replaced by the repo-owned SDS markdown corpus (ADR-0067).
 
 Remaining to close for acceptance:
 
-- **Full dataset prefetch validation**: ran `seed-sds-cache` on 2026-02-01 → ok=10, fail=154 (see `.artifacts/sds-cache/full-report.json` and `.artifacts/sds-cache/missing-hazards.txt`). This makes strict draft gating impractical; **PR-0062** introduces a best-effort contract (`missing_flags` + `export_gate`) so we can validate/iterate on real data while closing SDS gaps incrementally.
-- Populate curated SDS linkouts + curated meta (density + CLP bands) for every hazard; no gaps.
-- Confirm the remaining CLP/heuristics outputs match acceptance criteria across the full hazard list.
+- Wire Riskbedömning to the new SDS corpus contracts (markdown-first).
+- Remove the PubChem/SDS fetch + derived-data surface from the production path.
 
 ## API contract (app-specific)
 
@@ -86,17 +81,14 @@ Backend
   - Reuse the existing PDF renderer (`WeasyPrintPdfRenderer`).
   - Reuse the existing Vault save pattern (compare `reagent_prep_chef_save_pdf.py`).
 
-Curated data + SDS
+Curated data + SDS (ADR-0067)
 
-- SDS must be stored in backend-hosted storage; runtime may fetch from external sources, but must cache and serve from backend storage (no direct vendor URLs in the SPA).
-- Implement SDS ingestion + parsing to derive structured inputs for:
-  - chemistry heuristics (reaction prediction, incompatibilities, exothermicity)
-  - concentration-dependent CLP classification
-  - automatic risk scoring
-- Add repo-owned data under `src/skriptoteket/infrastructure/curated_apps/apps/reagent_prep_chef/`:
-  - `risk_templates.json` (used as a presentation/normalization layer on top of computed CLP + scoring)
-- Extend hazard model/data with fields needed by the new engines (e.g. `sds_ref`, extracted SDS fields, and any curated overrides).
-- Ingestion path can be a repo/tooling concern (e.g. maintainer CLI or runner job) that fetches SDS from an approved source and stores it; the app only serves stored SDS.
+- SDS is a **repo-owned markdown corpus** served offline by the backend:
+  - `data/reagent_prep_chef/sds/markdown/` (committed)
+  - `data/reagent_prep_chef/sds/index.json` (committed; generated)
+  - `data/reagent_prep_chef/sds/files/` (optional PDFs; gitignored)
+- The backend does **not** fetch SDS content over HTTP at runtime.
+- Riskbedömning uses curated hazards + risk templates; SDS is presented to the teacher as a document (no derived-signal engines).
 
 FastAPI wiring
 
@@ -116,15 +108,12 @@ Frontend
 ## Test plan
 
 - Backend:
-  - Unit tests for SDS parsing, chemistry heuristics, concentration-dependent CLP classification, and automatic risk scoring.
+  - Unit tests for SDS corpus lookup + risk draft gating.
   - Integration tests for the endpoints.
-- Assumption validation (data-first):
-  - Build a small “sample truthy” hazard set from `.artifacts/sds-cache/full-report.json` spanning ok/fail/partial cases.
-  - Validate contract shapes and UI gating against that data before implementing larger refactors (avoid overfitting to toy examples).
 - Frontend:
   - Vitest tests for gating logic + required-field gating for export.
 - Manual:
-  - Run the app, generate a prep sheet, verify computed heuristics + CLP + scoring are present, confirm/modify ratings, open SDS, export PDF, save to Vault, reload and verify draft restoration.
+  - Run the app, generate a prep sheet, open Riskbedömning, open SDS, fill context, confirm checklist, export PDF, save to Vault, reload and verify draft restoration.
 
 ## Rollback plan
 

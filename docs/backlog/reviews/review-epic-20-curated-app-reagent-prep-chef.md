@@ -11,8 +11,11 @@ adrs:
   - ADR-0022
   - ADR-0023
   - ADR-0024
+  - ADR-0067
 stories:
   - ST-20-01
+  - ST-20-02
+  - ST-20-03
 ---
 
 ## TL;DR

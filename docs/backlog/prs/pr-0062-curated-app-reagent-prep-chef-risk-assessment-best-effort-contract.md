@@ -2,10 +2,10 @@
 type: pr
 id: PR-0062
 title: "Curated app: Reagent Prep Chef — Riskbedömning best effort contract (SDS missing flags + UI gating)"
-status: in_progress
+status: canceled
 owners: "agents"
 created: 2026-02-18
-updated: 2026-02-28
+updated: 2026-03-04
 stories:
   - "ST-20-02"
 tags: ["curated-apps", "backend", "frontend"]
@@ -18,6 +18,13 @@ acceptance_criteria:
   - "Given export-risk-pdf is executed, when the request is handled, then no external fetch is attempted and export remains fail-closed if required SDS-derived inputs are missing."
   - "OpenAPI types are regenerated and the SPA compiles/type-checks against the updated schema."
 ---
+
+## Status
+
+Canceled. This PR explored “best effort” contracts for an SDS-derived signal extraction pipeline (density/CLP/heuristics)
+fed by automated SDS PDF discovery. That approach is no longer the product direction for Reagent Prep Chef.
+
+SDS is now a markdown-first offline corpus per ADR-0067, and Riskbedömning is being simplified accordingly under PR-0060.
 
 ## Problem
 

@@ -165,8 +165,6 @@ class ReagentPrepChefExportRiskPdfHandler(ReagentPrepChefExportRiskPdfHandlerPro
         result = await self._risk.handle(
             actor=actor,
             command=command,
-            allow_fetch=False,
-            require_complete=False,
         )
         draft = result.draft
 

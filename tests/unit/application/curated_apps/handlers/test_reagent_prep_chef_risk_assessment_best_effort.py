@@ -19,14 +19,14 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskItemOverride,
 )
 from skriptoteket.domain.curated_apps.reagent_prep_chef.models import (
-    ClpBand,
     HazardEntry,
-    HazardSdsData,
+    SdsCorpusEntry,
 )
 from skriptoteket.domain.curated_apps.reagent_prep_chef.risk_assessment import (
     RiskTemplate,
     RiskTemplates,
 )
+from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from tests.fixtures.identity_fixtures import make_user
 
@@ -69,7 +69,7 @@ class StubToolSessions:
     ) -> ToolSession:
         if self.session is not None:
             return self.session
-        now = datetime(2026, 2, 18, 12, 0, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 3, 4, 12, 0, 0, tzinfo=timezone.utc)
         self.session = ToolSession(
             id=session_id,
             tool_id=tool_id,
@@ -95,7 +95,7 @@ class StubToolSessions:
             raise AssertionError("Expected get_or_create() before update_state().")
         if expected_state_rev != self.session.state_rev:
             raise AssertionError("Unexpected expected_state_rev in test.")
-        now = datetime(2026, 2, 18, 12, 0, 1, tzinfo=timezone.utc)
+        now = datetime(2026, 3, 4, 12, 0, 1, tzinfo=timezone.utc)
         self.session = self.session.model_copy(
             update={
                 "state": state,
@@ -142,45 +142,26 @@ class StubRiskTemplatesStore:
         return self._templates
 
 
-class StubSdsIndexStore:
-    def __init__(
-        self, *, sds_data: HazardSdsData | None, raise_on_ensure: Exception | None = None
-    ) -> None:
-        self._sds_data = sds_data
-        self._raise = raise_on_ensure
-        self.calls: list[dict[str, object]] = []
+class StubSdsStore:
+    def __init__(self, *, entry: SdsCorpusEntry | None) -> None:
+        self._entry = entry
 
-    async def ensure(
-        self,
-        *,
-        hazard: HazardEntry,
-        allow_fetch: bool = True,
-        require_complete: bool = True,
-    ) -> HazardSdsData:
-        self.calls.append(
-            {
-                "hazard_key": hazard.key,
-                "allow_fetch": allow_fetch,
-                "require_complete": require_complete,
-            }
-        )
-        if self._raise is not None:
-            raise self._raise
-        if self._sds_data is None:
-            raise AssertionError("StubSdsIndexStore configured without sds_data but no exception.")
-        return self._sds_data
+    def get_entry(self, *, sds_ref: str) -> SdsCorpusEntry:  # noqa: ARG002
+        if self._entry is None:
+            raise not_found("SDS", sds_ref)
+        return self._entry
 
-    def get_cached(self, *, sds_ref: str) -> tuple[str, bytes, str]:  # noqa: ARG002
+    def get_markdown(self, *, sds_ref: str):  # noqa: ANN001
+        raise AssertionError("Not used by these tests.")
+
+    def get_pdf(self, *, sds_ref: str):  # noqa: ANN001
         raise AssertionError("Not used by these tests.")
 
 
-def _prep_result(*, formula_clean: str) -> ReagentPrepChefPrepResult:
+def _prep_result() -> ReagentPrepChefPrepResult:
     sheet = ReagentPrepChefPrepSheet.model_validate(
         {
-            "meta": {
-                "generated_at": "2026-02-18T12:00:00Z",
-                "app_version": "test",
-            },
+            "meta": {"generated_at": "2026-03-04T12:00:00+00:00", "app_version": "test"},
             "logistics": {
                 "total_groups": 1,
                 "total_volume_ml": "50.0",
@@ -189,13 +170,13 @@ def _prep_result(*, formula_clean: str) -> ReagentPrepChefPrepResult:
             },
             "chemistry": {
                 "source_type": "solid",
-                "formula_clean": formula_clean,
+                "formula_clean": "NaCl",
                 "molar_mass_g_mol": "58.44",
-                "moles_required": "0.1",
-                "target_molarity": "0.10",
+                "moles_required": "0.025",
+                "target_molarity": "0.50",
                 "solute_purity": "1.0",
                 "stock_molarity": None,
-                "mass_g": "1.0",
+                "mass_g": "1.46",
                 "stock_volume_ml": None,
                 "diluent_volume_ml": None,
             },
@@ -205,9 +186,9 @@ def _prep_result(*, formula_clean: str) -> ReagentPrepChefPrepResult:
                 "level": "curated",
                 "message": None,
                 "display_name": "Salt",
-                "hazard_codes": [],
-                "ppe": [],
-                "disposal": None,
+                "hazard_codes": ["H319"],
+                "ppe": ["Skyddsglasögon"],
+                "disposal": "Följ lokala rutiner och SDS.",
                 "notes": [],
             },
         }
@@ -220,15 +201,15 @@ def _risk_templates() -> RiskTemplates:
         id="glass_breakage",
         title="Glas går sönder",
         hazard_codes_any=(),
-        default_severity=2,
-        default_likelihood=2,
         measures=("Hantera glas varsamt",),
     )
-    return RiskTemplates(
-        risk_levels=(),
-        hazard_risks=(),
-        generic_risks=(generic,),
+    hazard_specific = RiskTemplate(
+        id="eye_contact",
+        title="Stänk i ögon",
+        hazard_codes_any=("H319",),
+        measures=("Skyddsglasögon",),
     )
+    return RiskTemplates(hazard_risks=(hazard_specific,), generic_risks=(generic,))
 
 
 def _risk_command(
@@ -249,9 +230,7 @@ def _risk_command(
         overrides=[
             ReagentPrepChefRiskItemOverride(
                 id="glass_breakage",
-                severity=None,
-                likelihood=None,
-                measures=None,
+                measures=["Använd borste och skyffel"],
                 confirmed=True,
             )
         ],
@@ -262,226 +241,85 @@ def _risk_command(
 
 
 @pytest.mark.asyncio
-async def test_risk_draft_best_effort_sets_missing_flags_and_export_gate_for_partial_sds() -> None:
+async def test_risk_draft_sets_sds_snapshot_when_entry_exists() -> None:
     actor = make_user()
-    prep_result = _prep_result(formula_clean="NaCl")
-    hazard_entry = HazardEntry(key="NaCl", display_name="Salt")
-    templates = _risk_templates()
-    sds_data = HazardSdsData(
-        sds_ref="NaCl",
-        hazard_codes=("H302",),
-        pictograms=(),
-        signal_word="warning",
-        density_g_ml=None,
-        clp_bands=(),
-        incompatibilities=(),
-        exothermicity=None,
-        reaction_notes=(),
-        sources=(),
+    prep = StubPrepHandler(result=_prep_result())
+    hazard = HazardEntry(key="NaCl", display_name="Salt", hazard_codes=("H319",))
+    hazards = StubHazardStore(hazard=hazard)
+    templates = StubRiskTemplatesStore(templates=_risk_templates())
+    sds_store = StubSdsStore(
+        entry=SdsCorpusEntry(
+            sds_ref="NaCl",
+            key="NaCl",
+            md_file_name="NaCl__carlroth__undated.md",
+            provider="carlroth",
+            revision="undated",
+            pdf_file_name=None,
+        )
     )
+    sessions = StubToolSessions()
     handler = ReagentPrepChefRiskAssessmentHandler(
-        prep=StubPrepHandler(result=prep_result),
-        hazards=StubHazardStore(hazard=hazard_entry),
-        risk_templates=StubRiskTemplatesStore(templates=templates),
-        sds_index=StubSdsIndexStore(sds_data=sds_data),
-        sessions=StubToolSessions(),
+        prep=prep,
+        hazards=hazards,
+        risk_templates=templates,
+        sds_store=sds_store,
+        sessions=sessions,
         uow=NoopUow(),
         id_generator=StubIdGenerator(),
     )
 
-    context = ReagentPrepChefRiskContext(
-        scope="Demo",
-        location=None,
-        participants="9A",
-        approver="Teacher",
-        assessment_date=date(2026, 2, 18),
-        next_review_date=date(2026, 6, 18),
-        local_routines=None,
-    )
-    result = await handler.handle(
-        actor=actor,
-        command=_risk_command(formula="NaCl", context=context),
-        allow_fetch=True,
-        require_complete=False,
-    )
-
-    assert result.draft.sds.pdf_available is True
-    assert result.draft.sds.sds_ref == "NaCl"
-    assert result.draft.sds.missing_flags == [
-        "sds_density_missing",
-        "sds_clp_bands_missing",
-        "sds_heuristics_missing",
-    ]
-    assert result.draft.clp.hazard_codes == ["H302"]
-    assert result.draft.clp.signal_word == "warning"
-    assert result.draft.clp.notes == ["SCL saknas i SDS; visar SDS-koder (best effort)."]
-    assert result.draft.missing_flags == [
-        "sds_density_missing",
-        "sds_clp_bands_missing",
-        "sds_heuristics_missing",
-        "heuristics_unavailable",
-    ]
-    assert result.draft.export_gate.ready is True
-    assert result.draft.export_gate.missing_confirmations == []
-    assert result.draft.export_gate.missing_context_fields == []
-    assert result.draft.export_gate.missing_data_flags == []
-
-
-@pytest.mark.asyncio
-async def test_risk_draft_best_effort_sets_pdf_missing_when_sds_unavailable() -> None:
-    actor = make_user()
-    prep_result = _prep_result(formula_clean="NaCl")
-    hazard_entry = HazardEntry(key="NaCl", display_name="Salt")
-    templates = _risk_templates()
-
-    handler = ReagentPrepChefRiskAssessmentHandler(
-        prep=StubPrepHandler(result=prep_result),
-        hazards=StubHazardStore(hazard=hazard_entry),
-        risk_templates=StubRiskTemplatesStore(templates=templates),
-        sds_index=StubSdsIndexStore(sds_data=None, raise_on_ensure=RuntimeError("no sds")),
-        sessions=StubToolSessions(),
-        uow=NoopUow(),
-        id_generator=StubIdGenerator(),
-    )
-
-    context = ReagentPrepChefRiskContext(
-        scope="Demo",
-        location=None,
-        participants="9A",
-        approver="Teacher",
-        assessment_date=date(2026, 2, 18),
-        next_review_date=date(2026, 6, 18),
-        local_routines=None,
-    )
-    result = await handler.handle(
-        actor=actor,
-        command=_risk_command(formula="NaCl", context=context),
-        allow_fetch=True,
-        require_complete=False,
-    )
-
-    assert result.draft.sds.pdf_available is False
-    assert result.draft.sds.sds_ref is None
-    assert result.draft.sds.missing_flags == ["sds_pdf_missing"]
-    assert result.draft.missing_flags == ["sds_pdf_missing", "heuristics_unavailable"]
-    assert result.draft.export_gate.ready is True
-    assert result.draft.export_gate.missing_context_fields == []
-    assert result.draft.export_gate.missing_confirmations == []
-    assert result.draft.export_gate.missing_data_flags == []
-
-
-@pytest.mark.asyncio
-async def test_risk_draft_sets_clp_unavailable_for_target_when_bands_do_not_match_target() -> None:
-    actor = make_user()
-    prep_result = _prep_result(formula_clean="NaCl")
-    hazard_entry = HazardEntry(key="NaCl", display_name="Salt")
-    templates = _risk_templates()
-    sds_data = HazardSdsData(
-        sds_ref="NaCl",
-        hazard_codes=("H302",),
-        pictograms=(),
-        signal_word="warning",
-        density_g_ml=Decimal("1.0"),
-        clp_bands=(
-            ClpBand(
-                min_molarity=Decimal("0.01"),
-                max_molarity=Decimal("0.10"),
-                hazard_codes=("H302",),
-                pictograms=(),
-                signal_word="warning",
-                notes=(),
-            ),
+    command = _risk_command(
+        formula="NaCl",
+        context=ReagentPrepChefRiskContext(
+            scope="Demo",
+            participants="9A",
+            approver="Lärare",
+            assessment_date=date(2026, 3, 4),
+            next_review_date=date(2026, 6, 1),
         ),
-        incompatibilities=("Acids",),
-        exothermicity=None,
-        reaction_notes=(),
-        sources=(),
     )
-    handler = ReagentPrepChefRiskAssessmentHandler(
-        prep=StubPrepHandler(result=prep_result),
-        hazards=StubHazardStore(hazard=hazard_entry),
-        risk_templates=StubRiskTemplatesStore(templates=templates),
-        sds_index=StubSdsIndexStore(sds_data=sds_data),
-        sessions=StubToolSessions(),
-        uow=NoopUow(),
-        id_generator=StubIdGenerator(),
-    )
+    result = await handler.handle(actor=actor, command=command)
 
-    context = ReagentPrepChefRiskContext(
-        scope="Demo",
-        location=None,
-        participants="9A",
-        approver="Teacher",
-        assessment_date=date(2026, 2, 18),
-        next_review_date=date(2026, 6, 18),
-        local_routines=None,
-    )
-    result = await handler.handle(
-        actor=actor,
-        command=_risk_command(formula="NaCl", context=context),
-        allow_fetch=True,
-        require_complete=False,
-    )
-
-    assert result.draft.missing_flags == ["clp_unavailable_for_target"]
-    assert result.draft.clp.hazard_codes == ["H302"]
-    assert result.draft.clp.signal_word == "warning"
-    assert result.draft.clp.notes == [
-        "SCL saknas för vald koncentration; visar SDS-koder (best effort)."
-    ]
-    assert result.draft.export_gate.ready is True
-    assert result.draft.export_gate.missing_data_flags == []
+    assert result.draft.sds.sds_ref == "NaCl"
+    assert result.draft.sds.markdown_available is True
+    assert result.draft.sds.pdf_available is False
+    assert result.draft.sds.provider == "carlroth"
+    assert result.draft.sds.revision == "undated"
+    assert result.warnings == []
 
 
 @pytest.mark.asyncio
-async def test_risk_draft_allows_export_when_sds_has_hazard_codes_but_no_bands() -> None:
+async def test_risk_draft_warns_when_sds_missing_offline() -> None:
     actor = make_user()
-    prep_result = _prep_result(formula_clean="NaCl")
-    hazard_entry = HazardEntry(key="NaCl", display_name="Salt")
-    templates = _risk_templates()
-    sds_data = HazardSdsData(
-        sds_ref="NaCl",
-        hazard_codes=("H302",),
-        pictograms=("GHS07",),
-        signal_word="warning",
-        density_g_ml=Decimal("1.0"),
-        clp_bands=(),
-        incompatibilities=("Acids",),
-        exothermicity=None,
-        reaction_notes=(),
-        sources=(),
-    )
+    prep = StubPrepHandler(result=_prep_result())
+    hazard = HazardEntry(key="NaCl", display_name="Salt", hazard_codes=("H319",))
+    hazards = StubHazardStore(hazard=hazard)
+    templates = StubRiskTemplatesStore(templates=_risk_templates())
+    sds_store = StubSdsStore(entry=None)
+    sessions = StubToolSessions()
     handler = ReagentPrepChefRiskAssessmentHandler(
-        prep=StubPrepHandler(result=prep_result),
-        hazards=StubHazardStore(hazard=hazard_entry),
-        risk_templates=StubRiskTemplatesStore(templates=templates),
-        sds_index=StubSdsIndexStore(sds_data=sds_data),
-        sessions=StubToolSessions(),
+        prep=prep,
+        hazards=hazards,
+        risk_templates=templates,
+        sds_store=sds_store,
+        sessions=sessions,
         uow=NoopUow(),
         id_generator=StubIdGenerator(),
     )
 
-    context = ReagentPrepChefRiskContext(
-        scope="Demo",
-        location=None,
-        participants="9A",
-        approver="Teacher",
-        assessment_date=date(2026, 2, 18),
-        next_review_date=date(2026, 6, 18),
-        local_routines=None,
+    command = _risk_command(
+        formula="NaCl",
+        context=ReagentPrepChefRiskContext(
+            scope="Demo",
+            participants="9A",
+            approver="Lärare",
+            assessment_date=date(2026, 3, 4),
+            next_review_date=date(2026, 6, 1),
+        ),
     )
-    result = await handler.handle(
-        actor=actor,
-        command=_risk_command(formula="NaCl", context=context),
-        allow_fetch=True,
-        require_complete=False,
-    )
+    result = await handler.handle(actor=actor, command=command)
 
-    assert result.draft.sds.pdf_available is True
-    assert result.draft.sds.missing_flags == ["sds_clp_bands_missing"]
-    assert result.draft.clp.hazard_codes == ["H302"]
-    assert result.draft.clp.pictograms == ["GHS07"]
-    assert result.draft.clp.signal_word == "warning"
-    assert result.draft.clp.notes == ["SCL saknas i SDS; visar SDS-koder (best effort)."]
-    assert result.draft.export_gate.ready is True
-    assert result.draft.export_gate.missing_data_flags == []
+    assert result.draft.sds.sds_ref == "NaCl"
+    assert result.draft.sds.markdown_available is False
+    assert result.draft.sds.pdf_available is False
+    assert "SDS saknas offline" in " ".join(result.warnings)

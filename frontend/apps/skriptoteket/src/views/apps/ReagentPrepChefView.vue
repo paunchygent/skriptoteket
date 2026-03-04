@@ -14,6 +14,7 @@ import ReagentPrepChefStepReagent from "./reagent-prep-chef/ReagentPrepChefStepR
 import ReagentPrepChefStepResult from "./reagent-prep-chef/ReagentPrepChefStepResult.vue";
 import ReagentPrepChefStepRisk from "./reagent-prep-chef/ReagentPrepChefStepRisk.vue";
 import ReagentPrepChefStepSource from "./reagent-prep-chef/ReagentPrepChefStepSource.vue";
+import ReagentPrepChefSdsModal from "./reagent-prep-chef/ReagentPrepChefSdsModal.vue";
 import ReagentPrepChefSettingsPopover from "./reagent-prep-chef/ReagentPrepChefSettingsPopover.vue";
 
 import type {
@@ -126,11 +127,26 @@ const {
   exportRiskPdf,
   saveRiskPdfToVault,
   openSds,
+  closeSds,
+  isSdsModalOpen,
+  isSdsLoading,
+  sdsDocument,
   resetRiskState,
 } = useReagentPrepChefRisk({
   apiPrefix,
   prep,
   currentPrepPayload,
+});
+
+const sdsModalTitle = computed(() => {
+  const ref = sdsDocument.value?.sds_ref;
+  return ref ? `SDS: ${ref}` : "SDS";
+});
+
+const sdsPdfUrl = computed(() => {
+  const ref = sdsDocument.value?.sds_ref;
+  if (!ref || !sdsDocument.value?.pdf_available) return null;
+  return `${apiPrefix.value}/sds/${encodeURIComponent(ref)}`;
 });
 
 function loadDefaultsIntoForm(): void {
@@ -429,6 +445,17 @@ onMounted(() => {
       :is-read-only="isLoadingDefaultsFromVault"
       @close="closeDefaultsVaultPicker"
       @confirm="onDefaultsVaultPickerConfirm"
+    />
+
+    <ReagentPrepChefSdsModal
+      :is-open="isSdsModalOpen"
+      :is-loading="isSdsLoading"
+      :title="sdsModalTitle"
+      :provider="sdsDocument?.provider ?? null"
+      :revision="sdsDocument?.revision ?? null"
+      :markdown="sdsDocument?.markdown ?? null"
+      :pdf-url="sdsPdfUrl"
+      @close="closeSds"
     />
   </div>
 </template>

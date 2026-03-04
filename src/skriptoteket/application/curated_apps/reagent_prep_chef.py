@@ -226,8 +226,6 @@ class ReagentPrepChefRiskItemOverride(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str
-    severity: int | None = Field(default=None, ge=1, le=5)
-    likelihood: int | None = Field(default=None, ge=1, le=5)
     measures: list[str] | None = None
     confirmed: bool = False
 
@@ -248,35 +246,6 @@ class ReagentPrepChefRiskAssessmentRequest(BaseModel):
     reset: bool = False
 
 
-RiskLevel = Literal["low", "medium", "high", "critical"]
-
-
-class ReagentPrepChefRiskRating(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    severity: int = Field(ge=1, le=5)
-    likelihood: int = Field(ge=1, le=5)
-    score: int = Field(ge=1, le=25)
-    level: RiskLevel
-
-
-class ReagentPrepChefClpClassification(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    hazard_codes: list[str] = Field(default_factory=list)
-    pictograms: list[str] = Field(default_factory=list)
-    signal_word: Literal["danger", "warning"] | None = None
-    notes: list[str] = Field(default_factory=list)
-
-
-class ReagentPrepChefChemistryHeuristics(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    incompatibilities: list[str] = Field(default_factory=list)
-    exothermicity: Literal["none", "low", "medium", "high"] | None = None
-    reaction_notes: list[str] = Field(default_factory=list)
-
-
 class ReagentPrepChefRiskItem(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -285,29 +254,27 @@ class ReagentPrepChefRiskItem(BaseModel):
     description: str | None = None
     hazard_codes: list[str] = Field(default_factory=list)
     measures: list[str] = Field(default_factory=list)
-    computed: ReagentPrepChefRiskRating
-    final: ReagentPrepChefRiskRating
     confirmed: bool
-
-
-ReagentPrepChefRiskMissingFlag = Literal[
-    "sds_ref_missing",
-    "sds_pdf_missing",
-    "sds_density_missing",
-    "sds_clp_bands_missing",
-    "sds_heuristics_missing",
-    "clp_unavailable_for_target",
-    "heuristics_unavailable",
-]
 
 
 class ReagentPrepChefSdsSnapshot(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    sds_ref: str | None = None
+    sds_ref: str
+    markdown_available: bool
     pdf_available: bool
-    missing_flags: list[ReagentPrepChefRiskMissingFlag] = Field(default_factory=list)
-    sources: list[str] = Field(default_factory=list)
+    provider: str | None = None
+    revision: str | None = None
+
+
+class ReagentPrepChefSdsMarkdownResult(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    sds_ref: str
+    provider: str
+    revision: str
+    markdown: str
+    pdf_available: bool
 
 
 class ReagentPrepChefRiskExportGate(BaseModel):
@@ -316,7 +283,6 @@ class ReagentPrepChefRiskExportGate(BaseModel):
     ready: bool
     missing_confirmations: list[str] = Field(default_factory=list)
     missing_context_fields: list[str] = Field(default_factory=list)
-    missing_data_flags: list[ReagentPrepChefRiskMissingFlag] = Field(default_factory=list)
 
 
 class ReagentPrepChefRiskAssessmentDraft(BaseModel):
@@ -325,12 +291,9 @@ class ReagentPrepChefRiskAssessmentDraft(BaseModel):
     sheet: ReagentPrepChefPrepSheet
     sds: ReagentPrepChefSdsSnapshot
     context: ReagentPrepChefRiskContext | None = None
-    clp: ReagentPrepChefClpClassification
-    heuristics: ReagentPrepChefChemistryHeuristics
     risks: list[ReagentPrepChefRiskItem]
     requires_confirmation: bool
     missing_confirmations: list[str] = Field(default_factory=list)
-    missing_flags: list[ReagentPrepChefRiskMissingFlag] = Field(default_factory=list)
     export_gate: ReagentPrepChefRiskExportGate
 
 

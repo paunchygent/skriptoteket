@@ -346,6 +346,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}/markdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sds Markdown */
+        get: operations["get_sds_markdown_api_v1_apps_chemistry_reagent_prep_chef_sds__sds_ref__markdown_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Jobs */
+        post: operations["submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Job Status */
+        get: operations["get_job_status_api_v1_apps_documents_conversion_hub_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/jobs/{job_id}/artifact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Artifact */
+        get: operations["download_artifact_api_v1_apps_documents_conversion_hub_jobs__job_id__artifact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Routes */
+        get: operations["list_routes_api_v1_apps_documents_conversion_hub_routes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/{app_id}": {
         parameters: {
             query?: never;
@@ -1679,6 +1764,18 @@ export interface components {
             /** Session Files Mode */
             session_files_mode?: string | null;
         };
+        /** Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post */
+        Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post: {
+            /** Files */
+            files: string[];
+            /** Job Spec Json */
+            job_spec_json: string;
+            /**
+             * Wait Seconds
+             * @default 0
+             */
+            wait_seconds: number;
+        };
         /** CatalogCuratedAppItem */
         CatalogCuratedAppItem: {
             /** App Id */
@@ -1751,6 +1848,59 @@ export interface components {
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ConversionHubJobStatusResult */
+        ConversionHubJobStatusResult: {
+            /** Job Id */
+            job_id: string;
+            /** Status */
+            status: string;
+        };
+        /** ConversionHubListRoutesResult */
+        ConversionHubListRoutesResult: {
+            /** Routes */
+            routes: components["schemas"]["ConversionHubRouteV2"][];
+        };
+        /**
+         * ConversionHubOutputFormatV2
+         * @description Output formats supported by Sir Convert-a-Lot v2 (mirrored).
+         * @enum {string}
+         */
+        ConversionHubOutputFormatV2: "md" | "pdf" | "docx";
+        /**
+         * ConversionHubRouteV2
+         * @description One supported conversion route.
+         */
+        ConversionHubRouteV2: {
+            output_format: components["schemas"]["ConversionHubOutputFormatV2"];
+            source_format: components["schemas"]["ConversionHubSourceFormatV2"];
+            /** Title */
+            title: string;
+        };
+        /**
+         * ConversionHubSourceFormatV2
+         * @description Uploaded source formats supported by Sir Convert-a-Lot v2 (mirrored).
+         * @enum {string}
+         */
+        ConversionHubSourceFormatV2: "pdf" | "md" | "html" | "docx";
+        /** ConversionHubSubmitResult */
+        ConversionHubSubmitResult: {
+            /** Jobs */
+            jobs: components["schemas"]["ConversionHubSubmittedJob"][];
+        };
+        /** ConversionHubSubmittedJob */
+        ConversionHubSubmittedJob: {
+            /**
+             * Idempotent Replay
+             * @default false
+             */
+            idempotent_replay: boolean;
+            /** Input Filename */
+            input_filename: string;
+            /** Job Id */
+            job_id: string;
+            /** Status */
+            status: string;
         };
         /** CreateDraftToolRequest */
         CreateDraftToolRequest: {
@@ -2824,26 +2974,6 @@ export interface components {
             /** Target Molarity */
             target_molarity: string;
         };
-        /** ReagentPrepChefChemistryHeuristics */
-        ReagentPrepChefChemistryHeuristics: {
-            /** Exothermicity */
-            exothermicity?: ("none" | "low" | "medium" | "high") | null;
-            /** Incompatibilities */
-            incompatibilities?: string[];
-            /** Reaction Notes */
-            reaction_notes?: string[];
-        };
-        /** ReagentPrepChefClpClassification */
-        ReagentPrepChefClpClassification: {
-            /** Hazard Codes */
-            hazard_codes?: string[];
-            /** Notes */
-            notes?: string[];
-            /** Pictograms */
-            pictograms?: string[];
-            /** Signal Word */
-            signal_word?: ("danger" | "warning") | null;
-        };
         /** ReagentPrepChefDefaultsResult */
         ReagentPrepChefDefaultsResult: {
             defaults?: components["schemas"]["ReagentPrepChefPrepRequest-Output"] | null;
@@ -2958,14 +3088,10 @@ export interface components {
         };
         /** ReagentPrepChefRiskAssessmentDraft */
         ReagentPrepChefRiskAssessmentDraft: {
-            clp: components["schemas"]["ReagentPrepChefClpClassification"];
             context?: components["schemas"]["ReagentPrepChefRiskContext"] | null;
             export_gate: components["schemas"]["ReagentPrepChefRiskExportGate"];
-            heuristics: components["schemas"]["ReagentPrepChefChemistryHeuristics"];
             /** Missing Confirmations */
             missing_confirmations?: string[];
-            /** Missing Flags */
-            missing_flags?: ("sds_ref_missing" | "sds_pdf_missing" | "sds_density_missing" | "sds_clp_bands_missing" | "sds_heuristics_missing" | "clp_unavailable_for_target" | "heuristics_unavailable")[];
             /** Requires Confirmation */
             requires_confirmation: boolean;
             /** Risks */
@@ -3025,19 +3151,15 @@ export interface components {
             missing_confirmations?: string[];
             /** Missing Context Fields */
             missing_context_fields?: string[];
-            /** Missing Data Flags */
-            missing_data_flags?: ("sds_ref_missing" | "sds_pdf_missing" | "sds_density_missing" | "sds_clp_bands_missing" | "sds_heuristics_missing" | "clp_unavailable_for_target" | "heuristics_unavailable")[];
             /** Ready */
             ready: boolean;
         };
         /** ReagentPrepChefRiskItem */
         ReagentPrepChefRiskItem: {
-            computed: components["schemas"]["ReagentPrepChefRiskRating"];
             /** Confirmed */
             confirmed: boolean;
             /** Description */
             description?: string | null;
-            final: components["schemas"]["ReagentPrepChefRiskRating"];
             /** Hazard Codes */
             hazard_codes?: string[];
             /** Id */
@@ -3056,26 +3178,8 @@ export interface components {
             confirmed: boolean;
             /** Id */
             id: string;
-            /** Likelihood */
-            likelihood?: number | null;
             /** Measures */
             measures?: string[] | null;
-            /** Severity */
-            severity?: number | null;
-        };
-        /** ReagentPrepChefRiskRating */
-        ReagentPrepChefRiskRating: {
-            /**
-             * Level
-             * @enum {string}
-             */
-            level: "low" | "medium" | "high" | "critical";
-            /** Likelihood */
-            likelihood: number;
-            /** Score */
-            score: number;
-            /** Severity */
-            severity: number;
         };
         /** ReagentPrepChefSafety */
         ReagentPrepChefSafety: {
@@ -3113,16 +3217,31 @@ export interface components {
         ReagentPrepChefSavePdfResult: {
             file: components["schemas"]["VaultFileInfo"];
         };
-        /** ReagentPrepChefSdsSnapshot */
-        ReagentPrepChefSdsSnapshot: {
-            /** Missing Flags */
-            missing_flags?: ("sds_ref_missing" | "sds_pdf_missing" | "sds_density_missing" | "sds_clp_bands_missing" | "sds_heuristics_missing" | "clp_unavailable_for_target" | "heuristics_unavailable")[];
+        /** ReagentPrepChefSdsMarkdownResult */
+        ReagentPrepChefSdsMarkdownResult: {
+            /** Markdown */
+            markdown: string;
             /** Pdf Available */
             pdf_available: boolean;
+            /** Provider */
+            provider: string;
+            /** Revision */
+            revision: string;
             /** Sds Ref */
-            sds_ref?: string | null;
-            /** Sources */
-            sources?: string[];
+            sds_ref: string;
+        };
+        /** ReagentPrepChefSdsSnapshot */
+        ReagentPrepChefSdsSnapshot: {
+            /** Markdown Available */
+            markdown_available: boolean;
+            /** Pdf Available */
+            pdf_available: boolean;
+            /** Provider */
+            provider?: string | null;
+            /** Revision */
+            revision?: string | null;
+            /** Sds Ref */
+            sds_ref: string;
         };
         /** ReagentPrepChefUpdateDefaultsRequest */
         ReagentPrepChefUpdateDefaultsRequest: {
@@ -4968,6 +5087,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sds_markdown_api_v1_apps_chemistry_reagent_prep_chef_sds__sds_ref__markdown_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sds_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReagentPrepChefSdsMarkdownResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubSubmitResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_job_status_api_v1_apps_documents_conversion_hub_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubJobStatusResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_artifact_api_v1_apps_documents_conversion_hub_jobs__job_id__artifact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_routes_api_v1_apps_documents_conversion_hub_routes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionHubListRoutesResult"];
                 };
             };
         };

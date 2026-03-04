@@ -34,6 +34,8 @@ export type ReagentPrepChefRiskContext =
   components["schemas"]["ReagentPrepChefRiskContext"];
 export type ReagentPrepChefRiskItemOverride =
   components["schemas"]["ReagentPrepChefRiskItemOverride"];
+export type ReagentPrepChefSdsMarkdownResult =
+  components["schemas"]["ReagentPrepChefSdsMarkdownResult"];
 
 export type ReagentPrepChefFormState = {
   chemicalFormula: string;
@@ -49,8 +51,6 @@ export type ReagentPrepChefFormState = {
 
 export type RiskOverrideDraft = {
   id: string;
-  severity: number | null;
-  likelihood: number | null;
   measures: string[] | null;
   confirmed: boolean;
 };

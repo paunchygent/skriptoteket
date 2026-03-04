@@ -5,9 +5,6 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 
 from skriptoteket.domain.curated_apps.reagent_prep_chef.risk_assessment import (
-    DEFAULT_RISK_LEVELS,
-    RiskLevel,
-    RiskLevelBand,
     RiskTemplate,
     RiskTemplates,
 )
@@ -53,22 +50,12 @@ def _clean_text_list(value: object) -> list[str]:
     return cleaned
 
 
-class _RiskLevelBandModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    level: RiskLevel
-    min_score: int
-    max_score: int
-
-
 class _RiskTemplateModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str
     title: str
     hazard_codes_any: list[str] = Field(default_factory=list)
-    default_severity: int = 1
-    default_likelihood: int = 1
     measures: list[str] = Field(default_factory=list)
     description: str | None = None
 
@@ -83,7 +70,6 @@ class _RiskTemplatesModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     version: int | None = None
-    risk_levels: list[_RiskLevelBandModel] = Field(default_factory=list)
     risk_items: list[_RiskTemplateModel] = Field(default_factory=list)
     generic_risks: list[_RiskTemplateModel] = Field(default_factory=list)
 
@@ -102,18 +88,11 @@ class InMemoryReagentPrepChefRiskTemplateStore(ReagentPrepChefRiskTemplateStoreP
 def _load_templates(path: Path) -> RiskTemplates:
     payload = path.read_text(encoding="utf-8")
     parsed = _TEMPLATES_ADAPTER.validate_json(payload)
-    risk_levels = tuple(
-        RiskLevelBand(level=item.level, min_score=item.min_score, max_score=item.max_score)
-        for item in parsed.risk_levels
-    )
-    if not risk_levels:
-        risk_levels = DEFAULT_RISK_LEVELS
 
     hazard_items = tuple(_to_template(item) for item in parsed.risk_items)
     generic_items = tuple(_to_template(item) for item in parsed.generic_risks)
 
     return RiskTemplates(
-        risk_levels=risk_levels,
         hazard_risks=hazard_items,
         generic_risks=generic_items,
     )
@@ -124,8 +103,6 @@ def _to_template(model: _RiskTemplateModel) -> RiskTemplate:
         id=model.id,
         title=model.title,
         hazard_codes_any=tuple(model.hazard_codes_any),
-        default_severity=model.default_severity,
-        default_likelihood=model.default_likelihood,
         measures=tuple(model.measures),
         description=model.description,
     )

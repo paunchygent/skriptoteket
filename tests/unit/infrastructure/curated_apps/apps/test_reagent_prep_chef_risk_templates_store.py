@@ -16,4 +16,4 @@ def test_risk_templates_store_loads_templates() -> None:
 
     templates = store.get()
     assert templates.generic_risks
-    assert templates.risk_levels
+    assert templates.hazard_risks

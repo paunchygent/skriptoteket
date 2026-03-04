@@ -103,6 +103,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0064-file-references-and-resolver.md`
 - `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`
 - `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md`
+- `docs/adr/adr-0067-reagent-prep-chef-sds-markdown-first-offline-corpus.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -230,6 +231,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0064-conversion-hub-backend-sir-convert-a-lot-v2-client-and-api.md`
 - `docs/backlog/prs/pr-0065-conversion-hub-spa-ui-batch-and-preview.md`
 - `docs/backlog/prs/pr-0066-migrate-e2e-tests-disable-html-to-pdf-preview-seeding.md`
+- `docs/backlog/prs/pr-0067-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
@@ -453,6 +455,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-19-07-story-003c-thin-adapter-consumer-adoption-and-scientific-pdf-workload.md`
 - `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md`
 - `docs/backlog/stories/story-20-02-curated-app-reagent-prep-chef-risk-assessment.md`
+- `docs/backlog/stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md`
 - `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md`
 

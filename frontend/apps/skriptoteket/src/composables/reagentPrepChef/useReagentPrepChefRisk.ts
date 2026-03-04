@@ -2,7 +2,7 @@ import { computed, nextTick, reactive, ref, watch } from "vue";
 
 import type { Ref } from "vue";
 
-import { apiFetchBlob, apiPost, isApiError } from "../../api/client";
+import { apiFetchBlob, apiGet, apiPost, isApiError } from "../../api/client";
 import { useToast } from "../useToast";
 
 import type {
@@ -13,6 +13,7 @@ import type {
   ReagentPrepChefRiskAssessmentResult,
   ReagentPrepChefRiskContext,
   ReagentPrepChefRiskItemOverride,
+  ReagentPrepChefSdsMarkdownResult,
   ReagentPrepChefSavePdfResult,
   RiskOverrideDraft,
 } from "../../views/apps/reagent-prep-chef/types";
@@ -36,6 +37,10 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
   const riskErrorMessage = ref<string | null>(null);
   const riskInitialized = ref(false);
   const riskSaveTimerId = ref<number | null>(null);
+
+  const isSdsModalOpen = ref(false);
+  const isSdsLoading = ref(false);
+  const sdsDocument = ref<ReagentPrepChefSdsMarkdownResult | null>(null);
 
   const riskContext = reactive<ReagentPrepChefRiskContext>({
     scope: "",
@@ -66,6 +71,9 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
     riskStateRev.value = 0;
     riskErrorMessage.value = null;
     riskInitialized.value = false;
+    isSdsModalOpen.value = false;
+    isSdsLoading.value = false;
+    sdsDocument.value = null;
     if (riskSaveTimerId.value !== null) {
       window.clearTimeout(riskSaveTimerId.value);
       riskSaveTimerId.value = null;
@@ -91,8 +99,6 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
         const override = riskOverrides[risk.id];
         return {
           id: risk.id,
-          severity: override?.severity ?? null,
-          likelihood: override?.likelihood ?? null,
           measures: override?.measures ?? null,
           confirmed: override?.confirmed ?? false,
         };
@@ -138,8 +144,6 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
       const measures = item.measures ?? [];
       riskOverrides[item.id] = {
         id: item.id,
-        severity: item.final.severity,
-        likelihood: item.final.likelihood,
         measures: [...measures],
         confirmed: item.confirmed,
       };
@@ -237,8 +241,6 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
     if (!riskOverrides[riskId]) {
       riskOverrides[riskId] = {
         id: riskId,
-        severity: null,
-        likelihood: null,
         measures,
         confirmed: false,
       };
@@ -319,14 +321,37 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
     }
   }
 
-  function openSds(): void {
+  async function openSds(): Promise<void> {
     const sds = riskDraft.value?.sds;
-    if (!sds?.pdf_available || !sds.sds_ref) {
+    if (!sds?.markdown_available || !sds.sds_ref) {
       toast.failure("SDS saknas offline.");
       return;
     }
-    const url = `${options.apiPrefix.value}/sds/${encodeURIComponent(sds.sds_ref)}`;
-    window.open(url, "_blank", "noopener");
+    if (isSdsLoading.value) return;
+
+    isSdsLoading.value = true;
+    riskErrorMessage.value = null;
+
+    try {
+      sdsDocument.value = await apiGet<ReagentPrepChefSdsMarkdownResult>(
+        `${options.apiPrefix.value}/sds/${encodeURIComponent(sds.sds_ref)}/markdown`,
+      );
+      isSdsModalOpen.value = true;
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        toast.failure(error.message);
+      } else if (error instanceof Error) {
+        toast.failure(error.message);
+      } else {
+        toast.failure("Det gick inte att öppna SDS just nu.");
+      }
+    } finally {
+      isSdsLoading.value = false;
+    }
+  }
+
+  function closeSds(): void {
+    isSdsModalOpen.value = false;
   }
 
   watch(
@@ -375,6 +400,10 @@ export function useReagentPrepChefRisk(options: RiskOptions) {
     exportRiskPdf,
     saveRiskPdfToVault,
     openSds,
+    closeSds,
+    isSdsModalOpen,
+    isSdsLoading,
+    sdsDocument,
     resetRiskState,
   };
 }

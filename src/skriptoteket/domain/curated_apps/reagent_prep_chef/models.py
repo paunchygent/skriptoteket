@@ -74,34 +74,19 @@ class HazardEntry:
 
 
 @dataclass(frozen=True, slots=True)
-class HazardSdsData:
-    sds_ref: str
-    hazard_codes: tuple[str, ...]
-    pictograms: tuple[str, ...]
-    signal_word: Literal["danger", "warning"] | None = None
-    density_g_ml: Decimal | None = None
-    clp_bands: tuple[ClpBand, ...] = ()
-    incompatibilities: tuple[str, ...] = ()
-    exothermicity: ExothermicityLevel | None = None
-    reaction_notes: tuple[str, ...] = ()
-    sources: tuple[str, ...] = ()
+class SdsCorpusEntry:
+    """Offline SDS document reference for a curated hazard.
 
+    This is a lightweight pointer to repo-owned SDS documents (markdown-first per ADR-0067),
+    with an optional PDF filename when an original PDF is provisioned outside git.
+    """
 
-@dataclass(frozen=True, slots=True)
-class SdsFetchResult:
     sds_ref: str
-    sds_bytes: bytes
-    media_type: str
-    source_url: str
-    hazard_codes: tuple[str, ...]
-    pictograms: tuple[str, ...]
-    signal_word: Literal["danger", "warning"] | None = None
-    clp_bands: tuple[ClpBand, ...] = ()
-    incompatibilities: tuple[str, ...] = ()
-    exothermicity: ExothermicityLevel | None = None
-    reaction_notes: tuple[str, ...] = ()
-    density_g_ml: Decimal | None = None
-    sources: tuple[str, ...] = ()
+    key: str
+    md_file_name: str
+    provider: str
+    revision: str
+    pdf_file_name: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

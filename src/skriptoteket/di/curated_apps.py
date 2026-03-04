@@ -56,32 +56,11 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.hazards_sto
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.pdf_renderer import (
     WeasyPrintPdfRenderer,
 )
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.pubchem_client import (
-    PubChemClient,
-    PubChemClientSettings,
-)
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.risk_templates_store import (
     InMemoryReagentPrepChefRiskTemplateStore,
 )
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_curated_meta_store import (
-    CuratedSdsMetaStore,
-)
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_fetcher import (
-    PubChemSdsFetcher,
-)
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_fetcher_settings import (
-    SdsFetcherSettings,
-)
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_index_store import (
-    FileSystemReagentPrepChefSdsIndexStore,
-)
-from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_pdf_providers import (
-    CuratedSdsLinkoutStore,
-    SdsPdfProviderRegistry,
-    build_sds_pdf_provider_registry,
-)
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store import (
-    CachedReagentPrepChefSdsStore,
+    FileSystemReagentPrepChefSdsStore,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -100,8 +79,6 @@ from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefSaveDefaultsHandlerProtocol,
     ReagentPrepChefSavePdfHandlerProtocol,
     ReagentPrepChefSaveRiskPdfHandlerProtocol,
-    ReagentPrepChefSdsFetcherProtocol,
-    ReagentPrepChefSdsIndexStoreProtocol,
     ReagentPrepChefSdsStoreProtocol,
     ReagentPrepChefUpdateDefaultsHandlerProtocol,
 )
@@ -161,79 +138,14 @@ class CuratedAppsProvider(Provider):
         return InMemoryReagentPrepChefRiskTemplateStore(templates_path=templates_path)
 
     @provide(scope=Scope.APP)
-    async def reagent_prep_chef_pubchem_client(
-        self, settings: Settings
-    ) -> AsyncIterator[PubChemClient]:
-        client = PubChemClient(
-            settings=PubChemClientSettings(
-                base_url=settings.PUBCHEM_BASE_URL,
-                timeout_seconds=settings.SDS_FETCH_TIMEOUT_SECONDS,
-                user_agent=settings.SDS_FETCH_USER_AGENT,
-                listkey_max_wait_seconds=settings.SDS_FETCH_LISTKEY_MAX_SECONDS,
-                listkey_poll_interval_seconds=settings.SDS_FETCH_LISTKEY_POLL_SECONDS,
-                resolve_retry_attempts=settings.SDS_FETCH_RETRY_ATTEMPTS,
-                resolve_retry_backoff_seconds=settings.SDS_FETCH_RETRY_BACKOFF_SECONDS,
-                resolve_retry_backoff_max_seconds=settings.SDS_FETCH_RETRY_BACKOFF_MAX_SECONDS,
-                rate_limit_per_second=settings.PUBCHEM_RATE_LIMIT_PER_SECOND,
-                max_in_flight=settings.PUBCHEM_MAX_IN_FLIGHT,
-                throttle_yellow_delay_seconds=settings.PUBCHEM_THROTTLE_YELLOW_DELAY_SECONDS,
-                throttle_red_delay_seconds=settings.PUBCHEM_THROTTLE_RED_DELAY_SECONDS,
-            )
-        )
-        try:
-            yield client
-        finally:
-            await client.close()
-
-    @provide(scope=Scope.APP)
-    def reagent_prep_chef_sds_pdf_registry(self, settings: Settings) -> SdsPdfProviderRegistry:
-        curated_store = None
-        if settings.SDS_CURATED_LINKOUTS_PATH is not None:
-            curated_store = CuratedSdsLinkoutStore(path=settings.SDS_CURATED_LINKOUTS_PATH)
-        return build_sds_pdf_provider_registry(curated_store=curated_store)
-
-    @provide(scope=Scope.APP)
-    def reagent_prep_chef_sds_fetcher(
-        self,
-        settings: Settings,
-        pubchem: PubChemClient,
-        sds_pdf_registry: SdsPdfProviderRegistry,
-    ) -> ReagentPrepChefSdsFetcherProtocol:
-        curated_meta_store = None
-        if settings.SDS_CURATED_META_PATH is not None:
-            curated_meta_store = CuratedSdsMetaStore(path=settings.SDS_CURATED_META_PATH)
-        fetcher_settings = SdsFetcherSettings(
-            timeout_seconds=settings.SDS_FETCH_TIMEOUT_SECONDS,
-            user_agent=settings.SDS_FETCH_USER_AGENT,
-            retry_attempts=settings.SDS_FETCH_RETRY_ATTEMPTS,
-            retry_backoff_seconds=settings.SDS_FETCH_RETRY_BACKOFF_SECONDS,
-            retry_backoff_max_seconds=settings.SDS_FETCH_RETRY_BACKOFF_MAX_SECONDS,
-            require_pubchem_cid=True,
-            cid_candidate_limit=settings.SDS_FETCH_CID_CANDIDATE_LIMIT,
-            autocomplete_limit=settings.SDS_FETCH_AUTOCOMPLETE_LIMIT,
-        )
-        return PubChemSdsFetcher(
-            pubchem=pubchem,
-            settings=fetcher_settings,
-            pdf_provider_registry=sds_pdf_registry,
-            curated_meta_store=curated_meta_store,
-        )
-
-    @provide(scope=Scope.APP)
-    def reagent_prep_chef_sds_index_store(
-        self,
-        settings: Settings,
-        fetcher: ReagentPrepChefSdsFetcherProtocol,
-    ) -> ReagentPrepChefSdsIndexStoreProtocol:
-        cache_root = settings.SDS_CACHE_ROOT or (settings.ARTIFACTS_ROOT / "sds-cache")
-        return FileSystemReagentPrepChefSdsIndexStore(cache_root=cache_root, fetcher=fetcher)
-
-    @provide(scope=Scope.APP)
     def reagent_prep_chef_sds_store(
         self,
-        index: ReagentPrepChefSdsIndexStoreProtocol,
     ) -> ReagentPrepChefSdsStoreProtocol:
-        return CachedReagentPrepChefSdsStore(index=index)
+        return FileSystemReagentPrepChefSdsStore(
+            index_path=Path("data/reagent_prep_chef/sds/index.json"),
+            markdown_dir=Path("data/reagent_prep_chef/sds/markdown"),
+            pdf_dir=Path("data/reagent_prep_chef/sds/files"),
+        )
 
     @provide(scope=Scope.REQUEST)
     def reagent_prep_chef_prep_handler(
@@ -273,7 +185,7 @@ class CuratedAppsProvider(Provider):
         prep: ReagentPrepChefPrepHandlerProtocol,
         hazards: ReagentPrepChefHazardStoreProtocol,
         risk_templates: ReagentPrepChefRiskTemplateStoreProtocol,
-        sds_index: ReagentPrepChefSdsIndexStoreProtocol,
+        sds_store: ReagentPrepChefSdsStoreProtocol,
         sessions: ToolSessionRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         id_generator: IdGeneratorProtocol,
@@ -282,7 +194,7 @@ class CuratedAppsProvider(Provider):
             prep=prep,
             hazards=hazards,
             risk_templates=risk_templates,
-            sds_index=sds_index,
+            sds_store=sds_store,
             sessions=sessions,
             uow=uow,
             id_generator=id_generator,

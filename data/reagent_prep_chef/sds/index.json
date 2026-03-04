@@ -1,0 +1,1257 @@
+{
+  "as_of": "2026-03-04",
+  "entries": {
+    "(NH4)2CO3": {
+      "display_name": "Ammoniumkarbonat",
+      "key": "(NH4)2CO3",
+      "md_file_name": "(NH4)2CO3__carlroth__undated.md",
+      "pdf_file_name": "(NH4)2CO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "(NH4)2CO3"
+    },
+    "(NH4)2SO4": {
+      "display_name": "Ammoniumsulfat",
+      "key": "(NH4)2SO4",
+      "md_file_name": "(NH4)2SO4__carlroth__undated.md",
+      "pdf_file_name": "(NH4)2SO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "(NH4)2SO4"
+    },
+    "AgNO3": {
+      "display_name": "Silvernitrat",
+      "key": "AgNO3",
+      "md_file_name": "AgNO3__carlroth__undated.md",
+      "pdf_file_name": "AgNO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "AgNO3"
+    },
+    "Al2(SO4)3·18H2O": {
+      "display_name": "Aluminiumsulfat (octadecahydrat)",
+      "key": "Al2(SO4)3·18H2O",
+      "md_file_name": "Al2(SO4)3·18H2O__carlroth__undated.md",
+      "pdf_file_name": "Al2(SO4)3·18H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Al2(SO4)3·18H2O"
+    },
+    "AlPO4": {
+      "display_name": "Berlinit",
+      "key": "AlPO4",
+      "md_file_name": "AlPO4__carlroth__undated.md",
+      "pdf_file_name": "AlPO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "AlPO4"
+    },
+    "Ba(NO3)2": {
+      "display_name": "Bariumnitrat",
+      "key": "Ba(NO3)2",
+      "md_file_name": "Ba(NO3)2__carlroth__undated.md",
+      "pdf_file_name": "Ba(NO3)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Ba(NO3)2"
+    },
+    "Ba(OH)2": {
+      "display_name": "Bariumhydroxid",
+      "key": "Ba(OH)2",
+      "md_file_name": "Ba(OH)2__carlroth__undated.md",
+      "pdf_file_name": "Ba(OH)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Ba(OH)2"
+    },
+    "BaCl2": {
+      "display_name": "Bariumklorid",
+      "key": "BaCl2",
+      "md_file_name": "BaCl2__carlroth__undated.md",
+      "pdf_file_name": "BaCl2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "BaCl2"
+    },
+    "BaCl2·2H2O": {
+      "display_name": "Bariumklorid (dihydrat)",
+      "key": "BaCl2·2H2O",
+      "md_file_name": "BaCl2·2H2O__carlroth__undated.md",
+      "pdf_file_name": "BaCl2·2H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "BaCl2·2H2O"
+    },
+    "BaSO4": {
+      "display_name": "Bariumsulfat",
+      "key": "BaSO4",
+      "md_file_name": "BaSO4__carlroth__undated.md",
+      "pdf_file_name": "BaSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "BaSO4"
+    },
+    "C12H22O11": {
+      "display_name": "Sackaros",
+      "key": "C12H22O11",
+      "md_file_name": "C12H22O11__carlroth__undated.md",
+      "pdf_file_name": "C12H22O11__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C12H22O11"
+    },
+    "C20H14O4": {
+      "display_name": "Fenolftalein",
+      "key": "C20H14O4",
+      "md_file_name": "C20H14O4__carlroth__undated.md",
+      "pdf_file_name": "C20H14O4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C20H14O4"
+    },
+    "C27H28Br2O5S": {
+      "display_name": "Bromtymolblått",
+      "key": "C27H28Br2O5S",
+      "md_file_name": "C27H28Br2O5S__carlroth__undated.md",
+      "pdf_file_name": "C27H28Br2O5S__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C27H28Br2O5S"
+    },
+    "C3H8O": {
+      "display_name": "Isopropanol",
+      "key": "C3H8O",
+      "md_file_name": "C3H8O__carlroth__undated.md",
+      "pdf_file_name": "C3H8O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C3H8O"
+    },
+    "C3H8O3": {
+      "display_name": "Propantriol",
+      "key": "C3H8O3",
+      "md_file_name": "C3H8O3__carlroth__undated.md",
+      "pdf_file_name": "C3H8O3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C3H8O3"
+    },
+    "C4H6O6": {
+      "display_name": "Vinsyra",
+      "key": "C4H6O6",
+      "md_file_name": "C4H6O6__carlroth__undated.md",
+      "pdf_file_name": "C4H6O6__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C4H6O6"
+    },
+    "C6H12O6": {
+      "display_name": "Glukos",
+      "key": "C6H12O6",
+      "md_file_name": "C6H12O6__carlroth__undated.md",
+      "pdf_file_name": "C6H12O6__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C6H12O6"
+    },
+    "C6H8O7": {
+      "display_name": "Citronsyra",
+      "key": "C6H8O7",
+      "md_file_name": "C6H8O7__carlroth__undated.md",
+      "pdf_file_name": "C6H8O7__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "C6H8O7"
+    },
+    "CH3COOH": {
+      "display_name": "Ättiksyra (CH3COOH)",
+      "key": "CH3COOH",
+      "md_file_name": "CH3COOH__carlroth__undated.md",
+      "pdf_file_name": "CH3COOH__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CH3COOH"
+    },
+    "CH4N2O": {
+      "display_name": "Urea",
+      "key": "CH4N2O",
+      "md_file_name": "CH4N2O__carlroth__undated.md",
+      "pdf_file_name": "CH4N2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CH4N2O"
+    },
+    "CH4O": {
+      "display_name": "Metanol",
+      "key": "CH4O",
+      "md_file_name": "CH4O__carlroth__undated.md",
+      "pdf_file_name": "CH4O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CH4O"
+    },
+    "Ca(C2H3O2)2": {
+      "display_name": "Kalciumacetat",
+      "key": "Ca(C2H3O2)2",
+      "md_file_name": "Ca(C2H3O2)2__carlroth__undated.md",
+      "pdf_file_name": "Ca(C2H3O2)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Ca(C2H3O2)2"
+    },
+    "Ca(NO3)2": {
+      "display_name": "Kalciumnitrat",
+      "key": "Ca(NO3)2",
+      "md_file_name": "Ca(NO3)2__carlroth__undated.md",
+      "pdf_file_name": "Ca(NO3)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Ca(NO3)2"
+    },
+    "Ca3(PO4)2": {
+      "display_name": "Kalciumfosfat",
+      "key": "Ca3(PO4)2",
+      "md_file_name": "Ca3(PO4)2__carlroth__undated.md",
+      "pdf_file_name": "Ca3(PO4)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Ca3(PO4)2"
+    },
+    "CaCO3": {
+      "display_name": "Kalciumkarbonat",
+      "key": "CaCO3",
+      "md_file_name": "CaCO3__carlroth__undated.md",
+      "pdf_file_name": "CaCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CaCO3"
+    },
+    "CaCl2·2H2O": {
+      "display_name": "Kalciumklorid (dihydrat)",
+      "key": "CaCl2·2H2O",
+      "md_file_name": "CaCl2·2H2O__carlroth__undated.md",
+      "pdf_file_name": "CaCl2·2H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CaCl2·2H2O"
+    },
+    "CaF2": {
+      "display_name": "Kalciumfluorid",
+      "key": "CaF2",
+      "md_file_name": "CaF2__carlroth__undated.md",
+      "pdf_file_name": "CaF2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CaF2"
+    },
+    "CaHPO4": {
+      "display_name": "Kalciumvätefosfat",
+      "key": "CaHPO4",
+      "md_file_name": "CaHPO4__carlroth__undated.md",
+      "pdf_file_name": "CaHPO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CaHPO4"
+    },
+    "CaO": {
+      "display_name": "Kalciumoxid",
+      "key": "CaO",
+      "md_file_name": "CaO__carlroth__undated.md",
+      "pdf_file_name": "CaO__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CaO"
+    },
+    "CaSO4·2H2O": {
+      "display_name": "Kalciumsulfat (dihydrat, gips)",
+      "key": "CaSO4·2H2O",
+      "md_file_name": "CaSO4·2H2O__carlroth__undated.md",
+      "pdf_file_name": "CaSO4·2H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CaSO4·2H2O"
+    },
+    "CoCl2·6H2O": {
+      "display_name": "Kobolt(II)klorid (hexahydrat)",
+      "key": "CoCl2·6H2O",
+      "md_file_name": "CoCl2·6H2O__carlroth__undated.md",
+      "pdf_file_name": "CoCl2·6H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CoCl2·6H2O"
+    },
+    "Cu": {
+      "display_name": "Koppar (Cu)",
+      "key": "Cu",
+      "md_file_name": "Cu__carlroth__undated.md",
+      "pdf_file_name": "Cu__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Cu"
+    },
+    "Cu(NO3)2·3H2O": {
+      "display_name": "Koppar(II)nitrat (trihydrat)",
+      "key": "Cu(NO3)2·3H2O",
+      "md_file_name": "Cu(NO3)2·3H2O__carlroth__undated.md",
+      "pdf_file_name": "Cu(NO3)2·3H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Cu(NO3)2·3H2O"
+    },
+    "CuCO3": {
+      "display_name": "Kopparkarbonat",
+      "key": "CuCO3",
+      "md_file_name": "CuCO3__carlroth__2025-08-04.md",
+      "pdf_file_name": "CuCO3__carlroth__2025-08-04.pdf",
+      "provider": "carlroth",
+      "revision": "2025-08-04",
+      "sds_ref": "CuCO3"
+    },
+    "CuCl2·2H2O": {
+      "display_name": "Koppar(II)klorid (dihydrat)",
+      "key": "CuCl2·2H2O",
+      "md_file_name": "CuCl2·2H2O__carlroth__undated.md",
+      "pdf_file_name": "CuCl2·2H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CuCl2·2H2O"
+    },
+    "CuS": {
+      "display_name": "Kopparindigo",
+      "key": "CuS",
+      "md_file_name": "CuS__carlroth__undated.md",
+      "pdf_file_name": "CuS__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CuS"
+    },
+    "CuSO4": {
+      "display_name": "Kopparsulfat (anhydrat)",
+      "key": "CuSO4",
+      "md_file_name": "CuSO4__carlroth__undated.md",
+      "pdf_file_name": "CuSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CuSO4"
+    },
+    "CuSO4·5H2O": {
+      "display_name": "Kopparsulfat (pentahydrat)",
+      "key": "CuSO4·5H2O",
+      "md_file_name": "CuSO4·5H2O__carlroth__undated.md",
+      "pdf_file_name": "CuSO4·5H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "CuSO4·5H2O"
+    },
+    "Fe": {
+      "display_name": "Järn (Fe)",
+      "key": "Fe",
+      "md_file_name": "Fe__carlroth__undated.md",
+      "pdf_file_name": "Fe__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Fe"
+    },
+    "Fe(NO3)3·9H2O": {
+      "display_name": "Järn(III)nitrat (nonahydrat)",
+      "key": "Fe(NO3)3·9H2O",
+      "md_file_name": "Fe(NO3)3·9H2O__carlroth__undated.md",
+      "pdf_file_name": "Fe(NO3)3·9H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Fe(NO3)3·9H2O"
+    },
+    "Fe2O3": {
+      "display_name": "Järn(III)oxid",
+      "key": "Fe2O3",
+      "md_file_name": "Fe2O3__carlroth__undated.md",
+      "pdf_file_name": "Fe2O3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Fe2O3"
+    },
+    "Fe3O4": {
+      "display_name": "Järn(II,III)oxid",
+      "key": "Fe3O4",
+      "md_file_name": "Fe3O4__carlroth__undated.md",
+      "pdf_file_name": "Fe3O4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Fe3O4"
+    },
+    "FeCO3": {
+      "display_name": "Järnspat",
+      "key": "FeCO3",
+      "md_file_name": "FeCO3__carlroth__undated.md",
+      "pdf_file_name": "FeCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "FeCO3"
+    },
+    "FeCl2": {
+      "display_name": "Järn(II)klorid",
+      "key": "FeCl2",
+      "md_file_name": "FeCl2__carlroth__undated.md",
+      "pdf_file_name": "FeCl2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "FeCl2"
+    },
+    "FeCl2·4H2O": {
+      "display_name": "Järn(II)klorid (tetrahydrat)",
+      "key": "FeCl2·4H2O",
+      "md_file_name": "FeCl2·4H2O__carlroth__undated.md",
+      "pdf_file_name": "FeCl2·4H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "FeCl2·4H2O"
+    },
+    "FeCl3": {
+      "display_name": "Järn(III)klorid",
+      "key": "FeCl3",
+      "md_file_name": "FeCl3__carlroth__undated.md",
+      "pdf_file_name": "FeCl3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "FeCl3"
+    },
+    "FeCl3·6H2O": {
+      "display_name": "Järn(III)klorid (hexahydrat)",
+      "key": "FeCl3·6H2O",
+      "md_file_name": "FeCl3·6H2O__carlroth__2025-04-01.md",
+      "pdf_file_name": "FeCl3·6H2O__carlroth__2025-04-01.pdf",
+      "provider": "carlroth",
+      "revision": "2025-04-01",
+      "sds_ref": "FeCl3·6H2O"
+    },
+    "FeS": {
+      "display_name": "Järnsulfid",
+      "key": "FeS",
+      "md_file_name": "FeS__fishersci__undated.md",
+      "pdf_file_name": "FeS__fishersci__undated.pdf",
+      "provider": "fishersci",
+      "revision": "undated",
+      "sds_ref": "FeS"
+    },
+    "FeSO4·7H2O": {
+      "display_name": "Järn(II)sulfat (heptahydrat)",
+      "key": "FeSO4·7H2O",
+      "md_file_name": "FeSO4·7H2O__carlroth__undated.md",
+      "pdf_file_name": "FeSO4·7H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "FeSO4·7H2O"
+    },
+    "H2C2O4·2H2O": {
+      "display_name": "Oxalsyra (dihydrat)",
+      "key": "H2C2O4·2H2O",
+      "md_file_name": "H2C2O4·2H2O__carlroth__undated.md",
+      "pdf_file_name": "H2C2O4·2H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "H2C2O4·2H2O"
+    },
+    "H3BO3": {
+      "display_name": "Borsyra",
+      "key": "H3BO3",
+      "md_file_name": "H3BO3__carlroth__undated.md",
+      "pdf_file_name": "H3BO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "H3BO3"
+    },
+    "H3PO4": {
+      "display_name": "Fosforsyra (H3PO4)",
+      "key": "H3PO4",
+      "md_file_name": "H3PO4__carlroth__undated.md",
+      "pdf_file_name": "H3PO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "H3PO4"
+    },
+    "HI": {
+      "display_name": "Vätejodid",
+      "key": "HI",
+      "md_file_name": "HI__carlroth__undated.md",
+      "pdf_file_name": "HI__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "HI"
+    },
+    "HNO3": {
+      "display_name": "Salpetersyra (HNO3)",
+      "key": "HNO3",
+      "md_file_name": "HNO3__carlroth__undated.md",
+      "pdf_file_name": "HNO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "HNO3"
+    },
+    "I2": {
+      "display_name": "Jod (I2)",
+      "key": "I2",
+      "md_file_name": "I2__carlroth__undated.md",
+      "pdf_file_name": "I2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "I2"
+    },
+    "K2CO3": {
+      "display_name": "Kaliumkarbonat",
+      "key": "K2CO3",
+      "md_file_name": "K2CO3__carlroth__undated.md",
+      "pdf_file_name": "K2CO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "K2CO3"
+    },
+    "K2CrO4": {
+      "display_name": "Kaliumkromat",
+      "key": "K2CrO4",
+      "md_file_name": "K2CrO4__carlroth__undated.md",
+      "pdf_file_name": "K2CrO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "K2CrO4"
+    },
+    "K2HPO4": {
+      "display_name": "Dikaliumhydrogenfosfat",
+      "key": "K2HPO4",
+      "md_file_name": "K2HPO4__carlroth__undated.md",
+      "pdf_file_name": "K2HPO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "K2HPO4"
+    },
+    "K2O": {
+      "display_name": "Kaliumoxid",
+      "key": "K2O",
+      "md_file_name": "K2O__eastharbour__undated.md",
+      "pdf_file_name": "K2O__eastharbour__undated.pdf",
+      "provider": "eastharbour",
+      "revision": "undated",
+      "sds_ref": "K2O"
+    },
+    "K2S2O8": {
+      "display_name": "Kaliumpersulfat",
+      "key": "K2S2O8",
+      "md_file_name": "K2S2O8__carlroth__undated.md",
+      "pdf_file_name": "K2S2O8__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "K2S2O8"
+    },
+    "K2SO4": {
+      "display_name": "Kaliumsulfat",
+      "key": "K2SO4",
+      "md_file_name": "K2SO4__carlroth__undated.md",
+      "pdf_file_name": "K2SO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "K2SO4"
+    },
+    "KBr": {
+      "display_name": "Kaliumbromid",
+      "key": "KBr",
+      "md_file_name": "KBr__carlroth__undated.md",
+      "pdf_file_name": "KBr__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KBr"
+    },
+    "KC2H3O2": {
+      "display_name": "Kaliumacetat",
+      "key": "KC2H3O2",
+      "md_file_name": "KC2H3O2__carlroth__undated.md",
+      "pdf_file_name": "KC2H3O2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KC2H3O2"
+    },
+    "KCl": {
+      "display_name": "Kaliumklorid",
+      "key": "KCl",
+      "md_file_name": "KCl__carlroth__undated.md",
+      "pdf_file_name": "KCl__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KCl"
+    },
+    "KClO3": {
+      "display_name": "Kaliumklorat",
+      "key": "KClO3",
+      "md_file_name": "KClO3__carlroth__undated.md",
+      "pdf_file_name": "KClO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KClO3"
+    },
+    "KClO4": {
+      "display_name": "Kaliumperklorat",
+      "key": "KClO4",
+      "md_file_name": "KClO4__carlroth__undated.md",
+      "pdf_file_name": "KClO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KClO4"
+    },
+    "KF": {
+      "display_name": "Kaliumfluorid",
+      "key": "KF",
+      "md_file_name": "KF__carlroth__undated.md",
+      "pdf_file_name": "KF__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KF"
+    },
+    "KH2PO4": {
+      "display_name": "Kaliumdihydrogenfosfat",
+      "key": "KH2PO4",
+      "md_file_name": "KH2PO4__carlroth__undated.md",
+      "pdf_file_name": "KH2PO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KH2PO4"
+    },
+    "KI": {
+      "display_name": "Kaliumjodid",
+      "key": "KI",
+      "md_file_name": "KI__carlroth__undated.md",
+      "pdf_file_name": "KI__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KI"
+    },
+    "KMnO4": {
+      "display_name": "Kaliumpermanganat",
+      "key": "KMnO4",
+      "md_file_name": "KMnO4__carlroth__undated.md",
+      "pdf_file_name": "KMnO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KMnO4"
+    },
+    "KNO2": {
+      "display_name": "Kaliumnitrit",
+      "key": "KNO2",
+      "md_file_name": "KNO2__carlroth__undated.md",
+      "pdf_file_name": "KNO2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KNO2"
+    },
+    "KNO3": {
+      "display_name": "Kaliumnitrat",
+      "key": "KNO3",
+      "md_file_name": "KNO3__carlroth__undated.md",
+      "pdf_file_name": "KNO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KNO3"
+    },
+    "KSCN": {
+      "display_name": "Kaliumtiocyanat",
+      "key": "KSCN",
+      "md_file_name": "KSCN__carlroth__undated.md",
+      "pdf_file_name": "KSCN__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "KSCN"
+    },
+    "Li2CO3": {
+      "display_name": "Litiumkarbonat",
+      "key": "Li2CO3",
+      "md_file_name": "Li2CO3__carlroth__undated.md",
+      "pdf_file_name": "Li2CO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Li2CO3"
+    },
+    "LiCl": {
+      "display_name": "Litiumklorid",
+      "key": "LiCl",
+      "md_file_name": "LiCl__carlroth__undated.md",
+      "pdf_file_name": "LiCl__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "LiCl"
+    },
+    "LiOH": {
+      "display_name": "Litiumhydroxid",
+      "key": "LiOH",
+      "md_file_name": "LiOH__carlroth__undated.md",
+      "pdf_file_name": "LiOH__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "LiOH"
+    },
+    "Mg": {
+      "display_name": "Magnesium (Mg)",
+      "key": "Mg",
+      "md_file_name": "Mg__carlroth__undated.md",
+      "pdf_file_name": "Mg__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Mg"
+    },
+    "Mg(OH)2": {
+      "display_name": "Magnesiumhydroxid",
+      "key": "Mg(OH)2",
+      "md_file_name": "Mg(OH)2__carlroth__undated.md",
+      "pdf_file_name": "Mg(OH)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Mg(OH)2"
+    },
+    "MgCO3": {
+      "display_name": "Magnesit",
+      "key": "MgCO3",
+      "md_file_name": "MgCO3__carlroth__undated.md",
+      "pdf_file_name": "MgCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MgCO3"
+    },
+    "MgCl2": {
+      "display_name": "Magnesiumklorid",
+      "key": "MgCl2",
+      "md_file_name": "MgCl2__carlroth__undated.md",
+      "pdf_file_name": "MgCl2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MgCl2"
+    },
+    "MgCl2·6H2O": {
+      "display_name": "Magnesiumklorid (hexahydrat)",
+      "key": "MgCl2·6H2O",
+      "md_file_name": "MgCl2·6H2O__carlroth__undated.md",
+      "pdf_file_name": "MgCl2·6H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MgCl2·6H2O"
+    },
+    "MgO": {
+      "display_name": "Magnesiumoxid",
+      "key": "MgO",
+      "md_file_name": "MgO__carlroth__undated.md",
+      "pdf_file_name": "MgO__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MgO"
+    },
+    "MgSO4": {
+      "display_name": "Magnesiumsulfat (anhydrat)",
+      "key": "MgSO4",
+      "md_file_name": "MgSO4__carlroth__undated.md",
+      "pdf_file_name": "MgSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MgSO4"
+    },
+    "MgSO4·7H2O": {
+      "display_name": "Magnesiumsulfat (heptahydrat)",
+      "key": "MgSO4·7H2O",
+      "md_file_name": "MgSO4·7H2O__carlroth__undated.md",
+      "pdf_file_name": "MgSO4·7H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MgSO4·7H2O"
+    },
+    "Mn": {
+      "display_name": "Mangan",
+      "key": "Mn",
+      "md_file_name": "Mn__carlroth__undated.md",
+      "pdf_file_name": "Mn__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Mn"
+    },
+    "MnCO3": {
+      "display_name": "Rodokrosit",
+      "key": "MnCO3",
+      "md_file_name": "MnCO3__carlroth__undated.md",
+      "pdf_file_name": "MnCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MnCO3"
+    },
+    "MnO2": {
+      "display_name": "Mangandioxid",
+      "key": "MnO2",
+      "md_file_name": "MnO2__carlroth__undated.md",
+      "pdf_file_name": "MnO2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MnO2"
+    },
+    "MnSO4": {
+      "display_name": "Mangan(II)sulfat",
+      "key": "MnSO4",
+      "md_file_name": "MnSO4__carlroth__undated.md",
+      "pdf_file_name": "MnSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "MnSO4"
+    },
+    "NH3": {
+      "display_name": "Ammoniak (NH3)",
+      "key": "NH3",
+      "md_file_name": "NH3__carlroth__undated.md",
+      "pdf_file_name": "NH3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NH3"
+    },
+    "NH4C2H3O2": {
+      "display_name": "Ammoniumacetat",
+      "key": "NH4C2H3O2",
+      "md_file_name": "NH4C2H3O2__carlroth__undated.md",
+      "pdf_file_name": "NH4C2H3O2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NH4C2H3O2"
+    },
+    "NH4HCO3": {
+      "display_name": "Ammoniumvätekarbonat",
+      "key": "NH4HCO3",
+      "md_file_name": "NH4HCO3__carlroth__undated.md",
+      "pdf_file_name": "NH4HCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NH4HCO3"
+    },
+    "Na2B4O7·10H2O": {
+      "display_name": "Borax (natriumtetraborat, decahydrat)",
+      "key": "Na2B4O7·10H2O",
+      "md_file_name": "Na2B4O7·10H2O__carlroth__undated.md",
+      "pdf_file_name": "Na2B4O7·10H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2B4O7·10H2O"
+    },
+    "Na2C2O4": {
+      "display_name": "Natriumoxalat",
+      "key": "Na2C2O4",
+      "md_file_name": "Na2C2O4__carlroth__undated.md",
+      "pdf_file_name": "Na2C2O4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2C2O4"
+    },
+    "Na2CO3·10H2O": {
+      "display_name": "Natriumkarbonat (decahydrat)",
+      "key": "Na2CO3·10H2O",
+      "md_file_name": "Na2CO3·10H2O__carlroth__undated.md",
+      "pdf_file_name": "Na2CO3·10H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2CO3·10H2O"
+    },
+    "Na2CrO4": {
+      "display_name": "Natriumkromat",
+      "key": "Na2CrO4",
+      "md_file_name": "Na2CrO4__external__undated.md",
+      "pdf_file_name": "Na2CrO4__external__undated.pdf",
+      "provider": "external",
+      "revision": "undated",
+      "sds_ref": "Na2CrO4"
+    },
+    "Na2HPO4": {
+      "display_name": "Dinatriumhydrogenfosfat",
+      "key": "Na2HPO4",
+      "md_file_name": "Na2HPO4__carlroth__undated.md",
+      "pdf_file_name": "Na2HPO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2HPO4"
+    },
+    "Na2O": {
+      "display_name": "Natriumoxid",
+      "key": "Na2O",
+      "md_file_name": "Na2O__carlroth__undated.md",
+      "pdf_file_name": "Na2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2O"
+    },
+    "Na2S": {
+      "display_name": "Natriumsulfid",
+      "key": "Na2S",
+      "md_file_name": "Na2S__carlroth__undated.md",
+      "pdf_file_name": "Na2S__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2S"
+    },
+    "Na2S2O3": {
+      "display_name": "Natriumtiosulfat",
+      "key": "Na2S2O3",
+      "md_file_name": "Na2S2O3__carlroth__undated.md",
+      "pdf_file_name": "Na2S2O3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2S2O3"
+    },
+    "Na2S2O3·5H2O": {
+      "display_name": "Natriumtiosulfat (pentahydrat)",
+      "key": "Na2S2O3·5H2O",
+      "md_file_name": "Na2S2O3·5H2O__carlroth__undated.md",
+      "pdf_file_name": "Na2S2O3·5H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2S2O3·5H2O"
+    },
+    "Na2S2O5": {
+      "display_name": "Natriumpyrosulfit",
+      "key": "Na2S2O5",
+      "md_file_name": "Na2S2O5__carlroth__undated.md",
+      "pdf_file_name": "Na2S2O5__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2S2O5"
+    },
+    "Na2S2O8": {
+      "display_name": "Natriumpersulfat",
+      "key": "Na2S2O8",
+      "md_file_name": "Na2S2O8__carlroth__undated.md",
+      "pdf_file_name": "Na2S2O8__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2S2O8"
+    },
+    "Na2SO3": {
+      "display_name": "Natriumsulfit",
+      "key": "Na2SO3",
+      "md_file_name": "Na2SO3__carlroth__undated.md",
+      "pdf_file_name": "Na2SO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2SO3"
+    },
+    "Na2SO4": {
+      "display_name": "Natriumsulfat",
+      "key": "Na2SO4",
+      "md_file_name": "Na2SO4__carlroth__undated.md",
+      "pdf_file_name": "Na2SO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2SO4"
+    },
+    "Na2SO4·10H2O": {
+      "display_name": "Natriumsulfat (decahydrat)",
+      "key": "Na2SO4·10H2O",
+      "md_file_name": "Na2SO4·10H2O__carlroth__undated.md",
+      "pdf_file_name": "Na2SO4·10H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na2SO4·10H2O"
+    },
+    "Na3PO4·12H2O": {
+      "display_name": "Natriumfosfat (dodekahydrat)",
+      "key": "Na3PO4·12H2O",
+      "md_file_name": "Na3PO4·12H2O__carlroth__undated.md",
+      "pdf_file_name": "Na3PO4·12H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Na3PO4·12H2O"
+    },
+    "NaBr": {
+      "display_name": "Natriumbromid",
+      "key": "NaBr",
+      "md_file_name": "NaBr__carlroth__undated.md",
+      "pdf_file_name": "NaBr__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaBr"
+    },
+    "NaC2H3O2": {
+      "display_name": "Natriumacetat",
+      "key": "NaC2H3O2",
+      "md_file_name": "NaC2H3O2__carlroth__undated.md",
+      "pdf_file_name": "NaC2H3O2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaC2H3O2"
+    },
+    "NaCl": {
+      "display_name": "Natriumklorid",
+      "key": "NaCl",
+      "md_file_name": "NaCl__carlroth__undated.md",
+      "pdf_file_name": "NaCl__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaCl"
+    },
+    "NaClO": {
+      "display_name": "Natriumhypoklorit",
+      "key": "NaClO",
+      "md_file_name": "NaClO__carlroth__undated.md",
+      "pdf_file_name": "NaClO__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaClO"
+    },
+    "NaClO3": {
+      "display_name": "Natriumklorat",
+      "key": "NaClO3",
+      "md_file_name": "NaClO3__carlroth__undated.md",
+      "pdf_file_name": "NaClO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaClO3"
+    },
+    "NaClO4": {
+      "display_name": "Natriumperklorat",
+      "key": "NaClO4",
+      "md_file_name": "NaClO4__carlroth__undated.md",
+      "pdf_file_name": "NaClO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaClO4"
+    },
+    "NaF": {
+      "display_name": "Natriumfluorid",
+      "key": "NaF",
+      "md_file_name": "NaF__carlroth__undated.md",
+      "pdf_file_name": "NaF__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaF"
+    },
+    "NaH2PO4": {
+      "display_name": "Natriumdihydrogenfosfat",
+      "key": "NaH2PO4",
+      "md_file_name": "NaH2PO4__carlroth__undated.md",
+      "pdf_file_name": "NaH2PO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaH2PO4"
+    },
+    "NaHCO3": {
+      "display_name": "Natriumvätekarbonat",
+      "key": "NaHCO3",
+      "md_file_name": "NaHCO3__carlroth__undated.md",
+      "pdf_file_name": "NaHCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaHCO3"
+    },
+    "NaHSO3": {
+      "display_name": "Natriumvätesulfit",
+      "key": "NaHSO3",
+      "md_file_name": "NaHSO3__carlroth__undated.md",
+      "pdf_file_name": "NaHSO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaHSO3"
+    },
+    "NaHSO4": {
+      "display_name": "Natriumvätesulfat",
+      "key": "NaHSO4",
+      "md_file_name": "NaHSO4__carlroth__undated.md",
+      "pdf_file_name": "NaHSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaHSO4"
+    },
+    "NaI": {
+      "display_name": "Natriumjodid",
+      "key": "NaI",
+      "md_file_name": "NaI__carlroth__undated.md",
+      "pdf_file_name": "NaI__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaI"
+    },
+    "NaNO2": {
+      "display_name": "Natriumnitrit",
+      "key": "NaNO2",
+      "md_file_name": "NaNO2__carlroth__undated.md",
+      "pdf_file_name": "NaNO2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaNO2"
+    },
+    "NaNO3": {
+      "display_name": "Natriumnitrat",
+      "key": "NaNO3",
+      "md_file_name": "NaNO3__carlroth__undated.md",
+      "pdf_file_name": "NaNO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaNO3"
+    },
+    "NaSCN": {
+      "display_name": "Natriumtiocyanat",
+      "key": "NaSCN",
+      "md_file_name": "NaSCN__carlroth__undated.md",
+      "pdf_file_name": "NaSCN__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NaSCN"
+    },
+    "Ni": {
+      "display_name": "Nickel",
+      "key": "Ni",
+      "md_file_name": "Ni__carlroth__undated.md",
+      "pdf_file_name": "Ni__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Ni"
+    },
+    "NiCl2·6H2O": {
+      "display_name": "Nickel(II)klorid (hexahydrat)",
+      "key": "NiCl2·6H2O",
+      "md_file_name": "NiCl2·6H2O__carlroth__undated.md",
+      "pdf_file_name": "NiCl2·6H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "NiCl2·6H2O"
+    },
+    "Pb": {
+      "display_name": "Bly",
+      "key": "Pb",
+      "md_file_name": "Pb__carlroth__undated.md",
+      "pdf_file_name": "Pb__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Pb"
+    },
+    "Pb(NO3)2": {
+      "display_name": "Bly(II)nitrat",
+      "key": "Pb(NO3)2",
+      "md_file_name": "Pb(NO3)2__carlroth__undated.md",
+      "pdf_file_name": "Pb(NO3)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Pb(NO3)2"
+    },
+    "PbO": {
+      "display_name": "Blyoxider",
+      "key": "PbO",
+      "md_file_name": "PbO__carlroth__undated.md",
+      "pdf_file_name": "PbO__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "PbO"
+    },
+    "SiO2": {
+      "display_name": "Kiseldioxid",
+      "key": "SiO2",
+      "md_file_name": "SiO2__carlroth__undated.md",
+      "pdf_file_name": "SiO2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "SiO2"
+    },
+    "Sn": {
+      "display_name": "Tenn",
+      "key": "Sn",
+      "md_file_name": "Sn__carlroth__undated.md",
+      "pdf_file_name": "Sn__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Sn"
+    },
+    "SnO2": {
+      "display_name": "Kassiterit",
+      "key": "SnO2",
+      "md_file_name": "SnO2__carlroth__undated.md",
+      "pdf_file_name": "SnO2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "SnO2"
+    },
+    "Sr(NO3)2": {
+      "display_name": "Strontiumnitrat",
+      "key": "Sr(NO3)2",
+      "md_file_name": "Sr(NO3)2__carlroth__undated.md",
+      "pdf_file_name": "Sr(NO3)2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Sr(NO3)2"
+    },
+    "SrCO3": {
+      "display_name": "Strontianit",
+      "key": "SrCO3",
+      "md_file_name": "SrCO3__carlroth__undated.md",
+      "pdf_file_name": "SrCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "SrCO3"
+    },
+    "SrSO4": {
+      "display_name": "Celestin",
+      "key": "SrSO4",
+      "md_file_name": "SrSO4__carlroth__undated.md",
+      "pdf_file_name": "SrSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "SrSO4"
+    },
+    "Zn": {
+      "display_name": "Zink (Zn)",
+      "key": "Zn",
+      "md_file_name": "Zn__carlroth__undated.md",
+      "pdf_file_name": "Zn__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "Zn"
+    },
+    "ZnCO3": {
+      "display_name": "Zinkspat",
+      "key": "ZnCO3",
+      "md_file_name": "ZnCO3__carlroth__undated.md",
+      "pdf_file_name": "ZnCO3__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "ZnCO3"
+    },
+    "ZnCl2": {
+      "display_name": "Zinkklorid",
+      "key": "ZnCl2",
+      "md_file_name": "ZnCl2__carlroth__undated.md",
+      "pdf_file_name": "ZnCl2__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "ZnCl2"
+    },
+    "ZnO": {
+      "display_name": "Zinkoxid",
+      "key": "ZnO",
+      "md_file_name": "ZnO__carlroth__undated.md",
+      "pdf_file_name": "ZnO__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "ZnO"
+    },
+    "ZnS": {
+      "display_name": "Zinksulfid",
+      "key": "ZnS",
+      "md_file_name": "ZnS__carlroth__undated.md",
+      "pdf_file_name": "ZnS__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "ZnS"
+    },
+    "ZnSO4": {
+      "display_name": "Zinksulfat",
+      "key": "ZnSO4",
+      "md_file_name": "ZnSO4__carlroth__undated.md",
+      "pdf_file_name": "ZnSO4__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "ZnSO4"
+    },
+    "ZnSO4·7H2O": {
+      "display_name": "Zinksulfat (heptahydrat)",
+      "key": "ZnSO4·7H2O",
+      "md_file_name": "ZnSO4·7H2O__carlroth__undated.md",
+      "pdf_file_name": "ZnSO4·7H2O__carlroth__undated.pdf",
+      "provider": "carlroth",
+      "revision": "undated",
+      "sds_ref": "ZnSO4·7H2O"
+    }
+  },
+  "version": 1
+}

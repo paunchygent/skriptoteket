@@ -14,6 +14,7 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefSaveDefaultsResult,
     ReagentPrepChefSavePdfRequest,
     ReagentPrepChefSavePdfResult,
+    ReagentPrepChefSdsMarkdownResult,
     ReagentPrepChefUpdateDefaultsRequest,
 )
 from skriptoteket.domain.errors import not_found
@@ -82,12 +83,7 @@ async def risk_assessment(
     _: None = Depends(require_csrf_token),
 ) -> ReagentPrepChefRiskAssessmentResult:
     _require_app_access(registry=registry, user=user)
-    return await handler.handle(
-        actor=user,
-        command=command,
-        allow_fetch=True,
-        require_complete=False,
-    )
+    return await handler.handle(actor=user, command=command)
 
 
 @router.post("/export-pdf")
@@ -211,9 +207,28 @@ async def get_sds(
     user: User = Depends(require_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
-    filename, content, media_type = store.get(sds_ref=sds_ref)
+    filename, content, media_type = store.get_pdf(sds_ref=sds_ref)
     return Response(
         content=content,
         media_type=media_type,
         headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
+
+
+@router.get("/sds/{sds_ref}/markdown", response_model=ReagentPrepChefSdsMarkdownResult)
+@inject
+async def get_sds_markdown(
+    sds_ref: str,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    store: FromDishka[ReagentPrepChefSdsStoreProtocol],
+    user: User = Depends(require_user_api),
+) -> ReagentPrepChefSdsMarkdownResult:
+    _require_app_access(registry=registry, user=user)
+    entry, markdown = store.get_markdown(sds_ref=sds_ref)
+    return ReagentPrepChefSdsMarkdownResult(
+        sds_ref=entry.sds_ref,
+        provider=entry.provider,
+        revision=entry.revision,
+        markdown=markdown,
+        pdf_available=entry.pdf_file_name is not None,
     )

@@ -8,8 +8,6 @@ import pytest
 
 from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefChemistry,
-    ReagentPrepChefChemistryHeuristics,
-    ReagentPrepChefClpClassification,
     ReagentPrepChefLogistics,
     ReagentPrepChefMeta,
     ReagentPrepChefPrepSheet,
@@ -19,7 +17,6 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefRiskContext,
     ReagentPrepChefRiskExportGate,
     ReagentPrepChefRiskItem,
-    ReagentPrepChefRiskRating,
     ReagentPrepChefSafety,
     ReagentPrepChefSavePdfResult,
     ReagentPrepChefSdsSnapshot,
@@ -70,14 +67,14 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
             notes=[],
         ),
     )
-    rating = ReagentPrepChefRiskRating(severity=2, likelihood=2, score=4, level="low")
     draft = ReagentPrepChefRiskAssessmentDraft(
         sheet=sheet,
         sds=ReagentPrepChefSdsSnapshot(
             sds_ref="NaCl",
+            markdown_available=True,
             pdf_available=True,
-            missing_flags=[],
-            sources=[],
+            provider="carlroth",
+            revision="undated",
         ),
         context=ReagentPrepChefRiskContext(
             scope="Demo",
@@ -88,17 +85,6 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
             next_review_date=date(2026, 6, 1),
             local_routines="Följ lokala rutiner.",
         ),
-        clp=ReagentPrepChefClpClassification(
-            hazard_codes=[],
-            pictograms=[],
-            signal_word=None,
-            notes=[],
-        ),
-        heuristics=ReagentPrepChefChemistryHeuristics(
-            incompatibilities=[],
-            exothermicity=None,
-            reaction_notes=[],
-        ),
         risks=[
             ReagentPrepChefRiskItem(
                 id="glass_breakage",
@@ -106,19 +92,15 @@ def _sample_risk_result(*, now: datetime) -> ReagentPrepChefRiskAssessmentResult
                 description=None,
                 hazard_codes=[],
                 measures=["Hantera glas varsamt"],
-                computed=rating,
-                final=rating,
                 confirmed=True,
             )
         ],
         requires_confirmation=False,
         missing_confirmations=[],
-        missing_flags=[],
         export_gate=ReagentPrepChefRiskExportGate(
             ready=True,
             missing_confirmations=[],
             missing_context_fields=[],
-            missing_data_flags=[],
         ),
     )
     return ReagentPrepChefRiskAssessmentResult(draft=draft, warnings=[], state_rev=1)

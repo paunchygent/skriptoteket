@@ -75,9 +75,8 @@ async def test_get_sds_returns_content(
     sessions.sessions[session.id] = session
     sds_store.add(
         sds_ref="NaCl",
-        filename="NaCl.pdf",
-        content=b"%PDF-1.4\n%test\n",
-        media_type="application/pdf",
+        pdf_file_name="NaCl.pdf",
+        pdf_bytes=b"%PDF-1.4\n%test\n",
     )
 
     client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
@@ -87,7 +86,7 @@ async def test_get_sds_returns_content(
     assert response.headers["content-type"].startswith("application/pdf")
     assert "NaCl.pdf" in response.headers["content-disposition"]
     assert response.content.startswith(b"%PDF")
-    assert sds_store.calls == ["NaCl"]
+    assert sds_store.calls_pdf == ["NaCl"]
 
 
 @pytest.mark.asyncio
@@ -109,3 +108,39 @@ async def test_get_sds_returns_404_for_missing(
     response = await client.get(f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/Unknown")
 
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_sds_markdown_returns_payload(
+    client: httpx.AsyncClient,
+    settings: Settings,
+    current_user_provider: StubCurrentUserProvider,
+    sessions: StubSessionRepository,
+    sds_store: StubSdsStore,
+    now: datetime,
+) -> None:
+    user = make_user(role=Role.USER)
+    session = make_session(user_id=user.id, now=now)
+
+    current_user_provider.user = user
+    sessions.sessions[session.id] = session
+    sds_store.add(
+        sds_ref="NaCl",
+        md_file_name="NaCl.md",
+        provider="carlroth",
+        revision="undated",
+        markdown="# Säkerhetsdatablad\n\n## AVSNITT 1\n",
+        pdf_file_name=None,
+    )
+
+    client.cookies.set(settings.SESSION_COOKIE_NAME, str(session.id))
+    response = await client.get(f"/api/v1/apps/{reagent_prep_chef_api.APP_ID}/sds/NaCl/markdown")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["sds_ref"] == "NaCl"
+    assert payload["provider"] == "carlroth"
+    assert payload["revision"] == "undated"
+    assert payload["pdf_available"] is False
+    assert payload["markdown"].startswith("# Säkerhetsdatablad")
+    assert sds_store.calls_markdown == ["NaCl"]

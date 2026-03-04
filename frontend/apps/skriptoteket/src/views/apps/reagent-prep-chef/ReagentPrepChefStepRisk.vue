@@ -35,20 +35,6 @@ const emit = defineEmits<{
   (event: "export"): void;
   (event: "save"): void;
 }>();
-
-const MISSING_FLAG_LABELS: Record<string, string> = {
-  sds_ref_missing: "SDS-referens saknas.",
-  sds_pdf_missing: "SDS saknas offline.",
-  sds_density_missing: "Densitet saknas i SDS.",
-  sds_clp_bands_missing: "CLP-data saknas i SDS.",
-  sds_heuristics_missing: "Kemiska heuristiker saknas i SDS.",
-  clp_unavailable_for_target: "CLP-klassning saknas för vald koncentration.",
-  heuristics_unavailable: "Kemiska heuristiker saknas.",
-};
-
-function formatMissingFlag(flag: string): string {
-  return MISSING_FLAG_LABELS[flag] ?? flag;
-}
 </script>
 
 <template>
@@ -58,7 +44,7 @@ function formatMissingFlag(flag: string): string {
         <div class="space-y-1">
           <h2 class="text-lg font-semibold text-navy">Riskbedömning</h2>
           <p class="text-sm text-navy/60">
-            Utkastet bygger på beräkningen och kuraterad SDS-data. Bekräfta varje risk innan export.
+            Utkastet bygger på beräkningen och kuraterad data. Bekräfta checklistan innan export.
           </p>
         </div>
         <button
@@ -110,7 +96,7 @@ function formatMissingFlag(flag: string): string {
 
         <div class="flex flex-wrap items-center gap-2 text-xs text-navy/70">
           <button
-            v-if="props.riskDraft.sds.pdf_available"
+            v-if="props.riskDraft.sds.markdown_available"
             type="button"
             class="btn-ghost"
             @click="emit('openSds')"
@@ -188,23 +174,16 @@ function formatMissingFlag(flag: string): string {
           </div>
 
           <div class="space-y-3">
-            <h3 class="text-sm font-semibold text-navy">CLP & heuristik</h3>
+            <h3 class="text-sm font-semibold text-navy">Säkerhet (kuraterad)</h3>
             <div class="p-3 border border-navy bg-canvas shadow-none space-y-1 text-xs text-navy/80">
-              <p>H-koder: {{ props.riskDraft.clp.hazard_codes?.join(", ") || "—" }}</p>
-              <p>Piktogram: {{ props.riskDraft.clp.pictograms?.join(", ") || "—" }}</p>
-              <p>Signalord: {{ props.riskDraft.clp.signal_word || "—" }}</p>
-              <p v-if="props.riskDraft.clp.notes?.length">
-                Noteringar: {{ props.riskDraft.clp.notes.join(", ") }}
+              <p v-if="props.riskDraft.sheet.safety.level === 'unknown'">
+                {{ props.riskDraft.sheet.safety.message || "Konsultera SDS innan användning." }}
               </p>
-            </div>
-            <div class="p-3 border border-navy bg-canvas shadow-none space-y-1 text-xs text-navy/80">
-              <p>
-                Inkompatibiliteter: {{ props.riskDraft.heuristics.incompatibilities?.join(", ") || "—" }}
-              </p>
-              <p>Exotermitet: {{ props.riskDraft.heuristics.exothermicity || "—" }}</p>
-              <p v-if="props.riskDraft.heuristics.reaction_notes?.length">
-                Noteringar: {{ props.riskDraft.heuristics.reaction_notes.join(", ") }}
-              </p>
+              <template v-else>
+                <p>H-koder: {{ props.riskDraft.sheet.safety.hazard_codes?.join(", ") || "—" }}</p>
+                <p>PPE: {{ props.riskDraft.sheet.safety.ppe?.join(", ") || "—" }}</p>
+                <p>Avfall: {{ props.riskDraft.sheet.safety.disposal || "—" }}</p>
+              </template>
             </div>
           </div>
         </div>
@@ -235,7 +214,6 @@ function formatMissingFlag(flag: string): string {
                   {{ risk.description }}
                 </p>
               </div>
-              <span class="text-xs text-navy/60 uppercase">{{ risk.final.level }}</span>
             </div>
 
             <p
@@ -245,50 +223,14 @@ function formatMissingFlag(flag: string): string {
               H-koder: {{ risk.hazard_codes.join(", ") }}
             </p>
 
-            <div class="grid gap-3 sm:grid-cols-3 text-sm">
-              <div class="space-y-1">
-                <label class="text-xs font-semibold text-navy">Allvar (1–5)</label>
-                <select
-                  v-model.number="riskOverrides[risk.id].severity"
-                  class="w-full border border-navy bg-white px-2 py-1 text-navy"
-                >
-                  <option
-                    v-for="value in [1, 2, 3, 4, 5]"
-                    :key="value"
-                    :value="value"
-                  >
-                    {{ value }}
-                  </option>
-                </select>
-              </div>
-              <div class="space-y-1">
-                <label class="text-xs font-semibold text-navy">Sannolikhet (1–5)</label>
-                <select
-                  v-model.number="riskOverrides[risk.id].likelihood"
-                  class="w-full border border-navy bg-white px-2 py-1 text-navy"
-                >
-                  <option
-                    v-for="value in [1, 2, 3, 4, 5]"
-                    :key="value"
-                    :value="value"
-                  >
-                    {{ value }}
-                  </option>
-                </select>
-              </div>
-              <div class="space-y-1 text-xs text-navy/70">
-                <p>Poäng: <span class="font-mono">{{ risk.final.score }}</span></p>
-                <p>Nivå: <span class="font-mono">{{ risk.final.level }}</span></p>
-                <label class="flex items-center gap-2 pt-1">
-                  <input
-                    v-model="riskOverrides[risk.id].confirmed"
-                    type="checkbox"
-                    class="h-4 w-4 border border-navy"
-                  >
-                  Bekräfta
-                </label>
-              </div>
-            </div>
+            <label class="flex items-center gap-2 text-xs text-navy/70">
+              <input
+                v-model="riskOverrides[risk.id].confirmed"
+                type="checkbox"
+                class="h-4 w-4 border border-navy"
+              >
+              Bekräfta
+            </label>
 
             <div class="space-y-1">
               <label class="text-xs font-semibold text-navy">Åtgärder (en per rad)</label>
@@ -326,21 +268,6 @@ function formatMissingFlag(flag: string): string {
           >
             {{ props.isSavingRiskPdfToVault ? "Sparar…" : "Spara i Mina filer" }}
           </button>
-        </div>
-
-        <div
-          v-if="(props.riskDraft.export_gate?.missing_data_flags ?? []).length > 0"
-          class="p-3 border border-burgundy bg-canvas shadow-none space-y-1"
-        >
-          <p class="font-semibold text-burgundy text-xs">Kan inte exportera ännu</p>
-          <ul class="list-disc pl-5 space-y-1 text-burgundy text-xs">
-            <li
-              v-for="flag in props.riskDraft.export_gate?.missing_data_flags ?? []"
-              :key="flag"
-            >
-              {{ formatMissingFlag(flag) }}
-            </li>
-          </ul>
         </div>
 
         <p

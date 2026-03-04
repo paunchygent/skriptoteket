@@ -153,12 +153,41 @@ def main() -> None:
         ).to_be_visible(timeout=30_000)
         page.screenshot(path=str(artifacts_dir / "04-reagent-calc.png"), full_page=True)
 
+        # Riskbedömning + SDS modal (ST-20-02)
+        page.get_by_role("button", name=re.compile(r"Riskbedömning", re.IGNORECASE)).click()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Riskbedömning", re.IGNORECASE))
+        ).to_be_visible(timeout=30_000)
+
+        open_sds_button = page.get_by_role("button", name=re.compile(r"Öppna SDS", re.IGNORECASE))
+        expect(open_sds_button).to_be_visible(timeout=30_000)
+        page.screenshot(path=str(artifacts_dir / "05-reagent-risk.png"), full_page=True)
+
+        open_sds_button.click()
+        page.wait_for_timeout(750)
+        page.screenshot(path=str(artifacts_dir / "06-reagent-sds-click.png"), full_page=True)
+
+        dialog = page.get_by_role("dialog")
+        expect(dialog).to_be_visible(timeout=30_000)
+        expect(dialog.get_by_text(re.compile(r"SDS:\s*NaCl", re.IGNORECASE))).to_be_visible(
+            timeout=30_000
+        )
+        expect(dialog.get_by_text(re.compile(r"Leverantör", re.IGNORECASE))).to_be_visible(
+            timeout=30_000
+        )
+        expect(
+            dialog.get_by_role("heading", name=re.compile(r"AVSNITT\s*1\b", re.IGNORECASE))
+        ).to_be_visible(timeout=30_000)
+        page.screenshot(path=str(artifacts_dir / "06-reagent-sds.png"), full_page=True)
+        dialog.click(position={"x": 10, "y": 10})
+        expect(dialog).to_be_hidden(timeout=30_000)
+
         # Reload should always land on step 1 (Ämne) to avoid blank intermediate steps.
         page.reload(wait_until="domcontentloaded")
         expect(page.get_by_role("heading", name=re.compile(r"Ämne", re.IGNORECASE))).to_be_visible(
             timeout=30_000
         )
-        page.screenshot(path=str(artifacts_dir / "05-reagent-reload-step-1.png"), full_page=True)
+        page.screenshot(path=str(artifacts_dir / "07-reagent-reload-step-1.png"), full_page=True)
 
         page.get_by_role("button", name=re.compile(r"Fortsätt", re.IGNORECASE)).click()
         expect(
@@ -179,7 +208,7 @@ def main() -> None:
             export_button.click()
         download = download_info.value
         download.save_as(str(artifacts_dir / "reagensberedning.pdf"))
-        page.screenshot(path=str(artifacts_dir / "06-reagent-export.png"), full_page=True)
+        page.screenshot(path=str(artifacts_dir / "08-reagent-export.png"), full_page=True)
 
         context.close()
         browser.close()

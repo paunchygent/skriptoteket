@@ -63,6 +63,9 @@ frontend/apps/skriptoteket/openapi.json
 # Local scratch PDFs (not part of repo data fixtures)
 data/pdfs/
 
+# Reagensberedning SDS PDF originals (large; stored outside git)
+data/reagent_prep_chef/sds/files/
+
 # Sensitive operational docs (credentials, server details)
 .agents/rules/080-home-server-deployment.md
 .agents/handoff.md

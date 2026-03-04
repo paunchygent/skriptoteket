@@ -180,28 +180,56 @@ def build_risk_export_html(
         + "</table>"
     )
 
-    clp = draft.clp
-    clp_rows = [
-        ("H-koder", ", ".join(clp.hazard_codes) if clp.hazard_codes else "—"),
-        ("Piktogram", ", ".join(clp.pictograms) if clp.pictograms else "—"),
-        ("Signalord", clp.signal_word or "—"),
-        ("Noteringar", ", ".join(clp.notes) if clp.notes else "—"),
-    ]
-    clp_table = (
-        "<table class='kv'>"
-        + "".join(f"<tr><th>{esc(k)}</th><td>{esc(v)}</td></tr>" for k, v in clp_rows)
-        + "</table>"
+    safety = draft.sheet.safety
+    safety_disclaimer = (
+        "<p>Den här riskbedömningen bygger på kuraterad data och utkastet ersätter inte SDS "
+        "eller lokala rutiner.</p>"
     )
+    if safety.level == "unknown":
+        safety_html = (
+            "<section class='section safety'>"
+            "<h2>Säkerhet</h2>"
+            f"{safety_disclaimer}"
+            f"<p>{esc(safety.message or 'Konsultera SDS innan användning.')}</p>"
+            "</section>"
+        )
+    else:
+        safety_rows: list[tuple[str, str]] = []
+        if safety.display_name:
+            safety_rows.append(("Ämne", safety.display_name))
+        if safety.ppe:
+            safety_rows.append(("PPE", ", ".join(safety.ppe)))
+        if safety.hazard_codes:
+            safety_rows.append(("H-koder", ", ".join(safety.hazard_codes)))
+        if safety.disposal:
+            safety_rows.append(("Avfall", safety.disposal))
 
-    heuristics = draft.heuristics
-    heuristics_rows = [
-        ("Inkompatibilitet", ", ".join(heuristics.incompatibilities) or "—"),
-        ("Exotermitet", heuristics.exothermicity or "—"),
-        ("Reaktionsnoteringar", ", ".join(heuristics.reaction_notes) or "—"),
+        safety_table = ""
+        if safety_rows:
+            safety_table = (
+                "<table class='kv'>"
+                + "".join(f"<tr><th>{esc(k)}</th><td>{esc(v)}</td></tr>" for k, v in safety_rows)
+                + "</table>"
+            )
+
+        safety_html = (
+            "<section class='section safety'>"
+            "<h2>Säkerhet</h2>"
+            f"{safety_disclaimer}"
+            f"{safety_table}"
+            "</section>"
+        )
+
+    sds = draft.sds
+    sds_rows = [
+        ("SDS-ref", sds.sds_ref),
+        ("Leverantör", sds.provider or "—"),
+        ("Revision", sds.revision or "—"),
+        ("Tillgänglig offline", "Ja" if sds.markdown_available else "Nej"),
     ]
-    heuristics_table = (
+    sds_table = (
         "<table class='kv'>"
-        + "".join(f"<tr><th>{esc(k)}</th><td>{esc(v)}</td></tr>" for k, v in heuristics_rows)
+        + "".join(f"<tr><th>{esc(k)}</th><td>{esc(v)}</td></tr>" for k, v in sds_rows)
         + "</table>"
     )
 
@@ -220,10 +248,7 @@ def build_risk_export_html(
         risks_rows += (
             "<tr>"
             f"<td>{esc(risk.title)}</td>"
-            f"<td>{risk.final.severity}</td>"
-            f"<td>{risk.final.likelihood}</td>"
-            f"<td>{risk.final.score}</td>"
-            f"<td>{esc(risk.final.level)}</td>"
+            f"<td>{esc(', '.join(risk.hazard_codes) if risk.hazard_codes else '—')}</td>"
             f"<td>{'Ja' if risk.confirmed else 'Nej'}</td>"
             f"<td>{measures_html}</td>"
             "</tr>"
@@ -232,8 +257,7 @@ def build_risk_export_html(
     risks_table = (
         "<table class='kv risks'>"
         "<tr>"
-        "<th>Risk</th><th>Allvar</th><th>Sannolikhet</th>"
-        "<th>Poäng</th><th>Nivå</th><th>Bekräftad</th><th>Åtgärder</th>"
+        "<th>Risk</th><th>H-koder</th><th>Bekräftad</th><th>Åtgärder</th>"
         "</tr>"
         f"{risks_rows}"
         "</table>"
@@ -268,13 +292,11 @@ def build_risk_export_html(
         "<h2>Förutsättningar</h2>"
         f"{prep_table}"
         "</section>"
+        f"{safety_html}"
         "<section class='section'>"
-        "<h2>CLP-klassning</h2>"
-        f"{clp_table}"
-        "</section>"
-        "<section class='section'>"
-        "<h2>Kemiska heuristiker</h2>"
-        f"{heuristics_table}"
+        "<h2>SDS</h2>"
+        "<p>Öppna och konsultera fullständig SDS i appen.</p>"
+        f"{sds_table}"
         "</section>"
         f"{warnings_html}"
         "<section class='section'>"

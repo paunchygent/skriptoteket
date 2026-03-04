@@ -11,8 +11,10 @@ links:
   - ADR-0023
   - ADR-0024
   - ADR-0036
+  - ADR-0067
   - EPIC-20
   - ST-20-01
+  - ST-20-02
   - REV-EPIC-20
 ---
 
@@ -43,7 +45,7 @@ typed form and a structured prep sheet, while the backend stays deterministic an
 - Predicting reaction heat / chemistry outcomes (no heuristics).
 - Mixing multiple reagents into recipes (single-solute prep per run).
 - Concentration-dependent hazard classification beyond curated entries.
-- Direct SDS fetching from the SPA. Backend fetch + cache is allowed, but the SPA must only open backend-hosted SDS copies.
+- SDS fetch/discovery at runtime. SDS is served from the repo-owned markdown-first offline corpus (ADR-0067) and the SPA must only open backend-hosted copies.
 
 ## App identity and catalog placement
 

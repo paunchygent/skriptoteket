@@ -2,7 +2,7 @@
 
 These protocols define the DI seams between layers:
 - application handlers (prep, defaults, risk assessment, exports)
-- SDS fetching/caching and risk template retrieval
+- SDS corpus access and risk template retrieval
 - PDF rendering and storage
 
 Related:
@@ -30,8 +30,7 @@ from skriptoteket.application.curated_apps.reagent_prep_chef import (
 )
 from skriptoteket.domain.curated_apps.reagent_prep_chef.models import (
     HazardEntry,
-    HazardSdsData,
-    SdsFetchResult,
+    SdsCorpusEntry,
 )
 from skriptoteket.domain.curated_apps.reagent_prep_chef.risk_assessment import (
     RiskTemplates,
@@ -129,8 +128,6 @@ class ReagentPrepChefRiskAssessmentHandlerProtocol(Protocol):
         *,
         actor: User,
         command: ReagentPrepChefRiskAssessmentRequest,
-        allow_fetch: bool = True,
-        require_complete: bool = False,
     ) -> ReagentPrepChefRiskAssessmentResult: ...
 
 
@@ -153,20 +150,8 @@ class ReagentPrepChefSaveRiskPdfHandlerProtocol(Protocol):
 
 
 class ReagentPrepChefSdsStoreProtocol(Protocol):
-    def get(self, *, sds_ref: str) -> tuple[str, bytes, str]: ...
+    def get_entry(self, *, sds_ref: str) -> SdsCorpusEntry: ...
 
+    def get_markdown(self, *, sds_ref: str) -> tuple[SdsCorpusEntry, str]: ...
 
-class ReagentPrepChefSdsIndexStoreProtocol(Protocol):
-    async def ensure(
-        self,
-        *,
-        hazard: HazardEntry,
-        allow_fetch: bool = True,
-        require_complete: bool = True,
-    ) -> HazardSdsData: ...
-
-    def get_cached(self, *, sds_ref: str) -> tuple[str, bytes, str]: ...
-
-
-class ReagentPrepChefSdsFetcherProtocol(Protocol):
-    async def fetch(self, *, hazard: HazardEntry) -> SdsFetchResult: ...
+    def get_pdf(self, *, sds_ref: str) -> tuple[str, bytes, str]: ...
