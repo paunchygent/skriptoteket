@@ -105,6 +105,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`
 - `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md`
 - `docs/adr/adr-0067-reagent-prep-chef-sds-markdown-first-offline-corpus.md`
+- `docs/adr/adr-0068-textbook-corpus-pristine-cleanup-and-rag-ingest-governance.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -165,6 +166,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-19-runner-io-and-file-references-foundations.md`
 - `docs/backlog/reviews/review-epic-20-curated-app-reagent-prep-chef.md`
 - `docs/backlog/reviews/review-epic-21-curated-app-conversion-hub.md`
+- `docs/backlog/reviews/review-epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 
 ### Backlog Sprints
 

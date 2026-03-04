@@ -38,4 +38,5 @@ outcome: "A deterministic, provenance-complete textbook corpus pipeline that pre
 ## Dependencies
 
 - Sir Convert-a-Lot v2 conversion lane and job metadata semantics (EPIC-21, ADR-0066).
+- Governance contract for script/manual separation and promotion gates (ADR-0068).
 - PostgreSQL vector indexing rollout used by downstream retrieval stack.

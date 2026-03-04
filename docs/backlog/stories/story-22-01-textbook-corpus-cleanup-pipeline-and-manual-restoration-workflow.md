@@ -9,6 +9,7 @@ epic: "EPIC-22"
 dependencies:
   - "EPIC-21"
   - "ADR-0066"
+  - "ADR-0068"
 acceptance_criteria:
   - "Given textbook conversion artifacts exist, when the baseline is prepared, then immutable raw artifacts + checksums + reconciled terminal job states are stored before cleanup starts."
   - "Given script cleanup runs, when output is generated, then only deterministic mechanical transforms are applied and all ambiguous/semantic regions are emitted to a manual restoration queue."
