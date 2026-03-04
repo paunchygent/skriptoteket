@@ -72,6 +72,12 @@ Create an immutable, reconciled baseline that downstream cleanup and manual rest
      - `sir_convert_a_lot_manifest_full_ocr.json` entry transitioned from manifest `running`
        to reconciled `succeeded` and fetched output to:
        `raw/outputs/fetched/jobv2_9ae51f803055434caba2f2de26.md`
+5. Added immutable-output safety guard:
+   - `scripts/build_textbook_corpus_baseline.py` now fails closed if `--output-dir`
+     already exists and is non-empty.
+   - Explicit override requires `--allow-overwrite`.
+   - Unit test:
+     `tests/unit/scripts/test_build_textbook_corpus_baseline.py::test_build_baseline_refuses_non_empty_output_without_allow_overwrite`
 
 ## Rollback plan
 

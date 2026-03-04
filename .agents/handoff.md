@@ -70,6 +70,15 @@ Keep this file updated so the next session can pick up work quickly.
     - `.pre-commit-config.yaml` (`reagent-hazard-shortcard-guard`)
   - Policy reference doc:
     `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
+- PR-0073 delivered (textbook corpus immutable baseline + reconciliation):
+  - Baseline/reconciliation script:
+    `scripts/build_textbook_corpus_baseline.py`
+  - Tests:
+    `tests/unit/scripts/test_build_textbook_corpus_baseline.py`
+  - PDM alias:
+    `pdm run textbook-corpus-baseline`
+  - Follow-up hardening: baseline output path now fails closed on non-empty dirs unless
+    `--allow-overwrite` is explicitly passed.
 - Older history: see `.agents/readme-first.md` + `docs/` (PR-0062 is canceled).
 
 ## Verification
@@ -109,6 +118,14 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run sds-check-hazard-alignment`
   - `pdm run lint`
   - `pdm run docs-validate`
+- 2026-03-04: PR-0073 baseline validation:
+  - `pdm run pytest -q tests/unit/scripts/test_build_textbook_corpus_baseline.py`
+  - `pdm run ruff check scripts/build_textbook_corpus_baseline.py tests/unit/scripts/test_build_textbook_corpus_baseline.py`
+  - `pdm run textbook-corpus-baseline --source-dir /Users/olofs_mba/Documents/Repos/html_to_pdf_handout_templates/Kemi --output-dir .artifacts/textbook_corpus/kemi-baseline --service-url http://127.0.0.1:28085`
+- 2026-03-04: PR-0073 immutability hardening follow-up:
+  - `pdm run pytest -q tests/unit/scripts/test_build_textbook_corpus_baseline.py`
+  - `pdm run lint`
+  - `pdm run docs-validate`
 
 ## How to Run
 
@@ -134,3 +151,4 @@ pdm run fe-test
 ## Next Steps
 
 - PR-0072: If/when hazards contract adds `p_codes`, extend guard rules so P-code drift is blocking in CI as well.
+- PR-0073: Add optional `--manifest-allowlist` so reconciliations can be scoped to a subset without changing source manifests.

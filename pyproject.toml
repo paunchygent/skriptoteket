@@ -354,6 +354,8 @@ sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
 sds-check-hazard-alignment = "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment"
 textbook-corpus-baseline = "python -m scripts.build_textbook_corpus_baseline"
+textbook-corpus-mechanical = "python -m scripts.build_textbook_corpus_mechanical_cleanup"
+textbook-corpus-manual = "python -m scripts.build_textbook_corpus_manual_restoration_workflow"
 
 # Agent skills (repo-local)
 skills-prompt = "python -m scripts.skills_prompt"

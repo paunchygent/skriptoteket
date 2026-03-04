@@ -128,6 +128,14 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print reconciliation summary without writing files.",
     )
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        help=(
+            "Allow writing into a non-empty output directory. "
+            "Default behavior fails closed to protect immutable baselines."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -245,6 +253,19 @@ def _save_json(payload: dict[str, Any], destination: Path, dry_run: bool) -> Non
     )
 
 
+def _ensure_output_dir_safe(*, output_dir: Path, allow_overwrite: bool, dry_run: bool) -> None:
+    if dry_run:
+        return
+    if output_dir.exists() and not output_dir.is_dir():
+        raise SystemExit(f"Output path exists and is not a directory: {output_dir}")
+    if output_dir.exists() and any(output_dir.iterdir()) and not allow_overwrite:
+        raise SystemExit(
+            "Refusing to overwrite non-empty baseline output directory. "
+            "Use --allow-overwrite only when you have explicitly archived/verified prior baseline output."
+        )
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+
 def build_baseline(
     *,
     source_dir: Path,
@@ -252,8 +273,15 @@ def build_baseline(
     manifest_glob: str,
     service_client: ServiceClientProtocol | None,
     fetch_missing_artifacts: bool,
+    allow_overwrite: bool,
     dry_run: bool,
 ) -> dict[str, Any]:
+    _ensure_output_dir_safe(
+        output_dir=output_dir,
+        allow_overwrite=allow_overwrite,
+        dry_run=dry_run,
+    )
+
     manifest_paths = sorted(source_dir.glob(manifest_glob))
     entries = _load_manifest_entries(source_dir, manifest_glob)
     checksum_records: list[SnapshotRecord] = []
@@ -453,14 +481,13 @@ def main() -> None:
     if api_key:
         service_client = ServiceClient(service_url=args.service_url, api_key=api_key)
 
-    if not args.dry_run:
-        output_dir.mkdir(parents=True, exist_ok=True)
     payload = build_baseline(
         source_dir=source_dir,
         output_dir=output_dir,
         manifest_glob=args.manifest_glob,
         service_client=service_client,
         fetch_missing_artifacts=bool(args.fetch_missing_artifacts),
+        allow_overwrite=bool(args.allow_overwrite),
         dry_run=bool(args.dry_run),
     )
 

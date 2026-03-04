@@ -44,10 +44,9 @@ Current textbook OCR markdown contains structural and semantic corruption patter
 
 ## PR Tasks (ordered)
 
-- [ ] 1. PR-0073: Governance + immutable snapshot + job reconciliation gate
 - [x] 1. PR-0073: Governance + immutable snapshot + job reconciliation gate
-- [ ] 2. PR-0074: Deterministic mechanical cleanup + issue ledger + manual queue generation
-- [ ] 3. PR-0075: Multi-agent manual restoration workflow + reversible patch application
+- [x] 2. PR-0074: Deterministic mechanical cleanup + issue ledger + manual queue generation
+- [x] 3. PR-0075: Multi-agent manual restoration workflow + reversible patch application
 - [ ] 4. PR-0076: Integrity gates + pristine corpus build contract
 - [ ] 5. PR-0077: RAG packaging + PostgreSQL vector ingest contract + retrieval QA gates
 

@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from scripts.build_textbook_corpus_baseline import build_baseline
 
 
@@ -83,6 +85,7 @@ def test_build_baseline_copies_manifest_sources_and_local_outputs(tmp_path: Path
         manifest_glob="sir_convert_a_lot_manifest*.json",
         service_client=None,
         fetch_missing_artifacts=True,
+        allow_overwrite=False,
         dry_run=False,
     )
 
@@ -135,6 +138,7 @@ def test_build_baseline_reconciles_timeout_job_and_fetches_artifact(tmp_path: Pa
         manifest_glob="sir_convert_a_lot_manifest*.json",
         service_client=fake_client,
         fetch_missing_artifacts=True,
+        allow_overwrite=False,
         dry_run=False,
     )
 
@@ -188,9 +192,33 @@ def test_build_baseline_marks_reconciliation_skipped_without_service_client(tmp_
         manifest_glob="sir_convert_a_lot_manifest*.json",
         service_client=None,
         fetch_missing_artifacts=True,
+        allow_overwrite=False,
         dry_run=False,
     )
 
     row = payload["report"]["reconciliation_rows"][0]
     assert "reconciliation_skipped_missing_api_key" in row["issues"]
     assert row["fetched_artifact_snapshot_path"] is None
+
+
+def test_build_baseline_refuses_non_empty_output_without_allow_overwrite(tmp_path: Path) -> None:
+    source_dir = tmp_path / "source"
+    output_dir = tmp_path / "baseline"
+    source_dir.mkdir(parents=True)
+    output_dir.mkdir(parents=True)
+    (output_dir / "existing.txt").write_text("already here\n", encoding="utf-8")
+    (source_dir / "sir_convert_a_lot_manifest.json").write_text(
+        json.dumps({"entries": []}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit, match="Refusing to overwrite non-empty baseline output"):
+        build_baseline(
+            source_dir=source_dir,
+            output_dir=output_dir,
+            manifest_glob="sir_convert_a_lot_manifest*.json",
+            service_client=None,
+            fetch_missing_artifacts=True,
+            allow_overwrite=False,
+            dry_run=False,
+        )
