@@ -139,6 +139,9 @@ COPY pyproject.toml pdm.lock ./
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY src ./src
+# Repo-owned curated app corpora (markdown-first SDS corpus for Reagent Prep Chef).
+COPY data/reagent_prep_chef/sds/index.json ./data/reagent_prep_chef/sds/index.json
+COPY data/reagent_prep_chef/sds/markdown ./data/reagent_prep_chef/sds/markdown
 
 EXPOSE 8000
 CMD ["pdm", "run", "serve"]

@@ -74,7 +74,10 @@ pdm run fe-test
 
 ## Next Steps
 
-- Commit the SDS markdown corpus + `data/reagent_prep_chef/sds/index.json` + `data/reagent_prep_chef/sds/gaps.md`
-  (tracked as ST-20-03 / PR-0067; PDF originals stay outside git under `data/reagent_prep_chef/sds/files/`).
-- Fill remaining SDS markdown gaps (25 keys): see `data/reagent_prep_chef/sds/gaps.md` (ST-20-03 / PR-0067).
+- PR-0069: fix Docker deployments so the web container can read `data/reagent_prep_chef/sds/index.json` and Riskbedömning
+  can open SDS markdown in-app (no `SDS index not found`).
+- PR-0068: download SDS PDF originals for the 25 missing keys in `data/reagent_prep_chef/sds/gaps.md` and store them
+  outside git under `data/reagent_prep_chef/sds/files/` using `<key>__<provider>__<revision>.pdf`.
+- PR-0067: convert PDFs → Swedish markdown, sync into `data/reagent_prep_chef/sds/markdown/`, then rebuild index/gaps
+  until `data/reagent_prep_chef/sds/gaps.md` shows `Missing markdown: 0`.
 - Close PR-0060 acceptance: confirm Riskbedömning export/save flows + OpenAPI/TS types regeneration.

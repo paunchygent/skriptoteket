@@ -10,6 +10,7 @@ stories:
   - "ST-20-03"
 tags: ["curated-apps", "data", "docs"]
 adrs: ["ADR-0067"]
+dependencies: ["PR-0068"]
 acceptance_criteria:
   - "SDS markdown corpus is committed under `data/reagent_prep_chef/sds/markdown/` and is treated as the source of truth."
   - "Deterministic index and gaps docs are regenerated and committed: `data/reagent_prep_chef/sds/index.json`, `data/reagent_prep_chef/sds/gaps.md`."
@@ -37,15 +38,18 @@ in place, but the corpus is not yet complete for all curated hazards keys.
 
 ## Implementation plan
 
-1. Source PDFs (prefer trusted supplier portals; Swedish when available).
-2. Convert PDFs → markdown (batch conversion via Sir Convert-a-Lot).
-3. Stage markdown under `.artifacts/sds-corpus/manual-markdown/` and sync into repo-owned storage:
+0. Source PDFs (see PR-0068; Swedish-first, supplier portals only).
+1. Convert PDFs → markdown (batch conversion via Sir Convert-a-Lot).
+2. If a Swedish SDS is not available from the supplier, produce a Swedish markdown version as the final committed file
+   (no language detection in product).
+3. Fix conversion formatting issues (headings/section numbers/tables) so the markdown is readable in-app.
+4. Stage markdown under `.artifacts/sds-corpus/manual-markdown/` and sync into repo-owned storage:
    - `pdm run python scripts/sync_reagent_prep_chef_sds_markdown.py`
-4. Provision PDFs (optional) under `data/reagent_prep_chef/sds/files/` (gitignored).
-5. Regenerate index + gaps:
+5. Provision PDFs (optional) under `data/reagent_prep_chef/sds/files/` (gitignored).
+6. Regenerate index + gaps:
    - `pdm run python scripts/build_reagent_prep_chef_sds_index.py`
-6. Verify `data/reagent_prep_chef/sds/gaps.md` shows `Missing markdown: 0`.
-7. Update `docs/index.md`.
+7. Verify `data/reagent_prep_chef/sds/gaps.md` shows `Missing markdown: 0`.
+8. Update `docs/index.md`.
 
 ## Test plan
 

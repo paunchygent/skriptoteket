@@ -232,6 +232,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0065-conversion-hub-spa-ui-batch-and-preview.md`
 - `docs/backlog/prs/pr-0066-migrate-e2e-tests-disable-html-to-pdf-preview-seeding.md`
 - `docs/backlog/prs/pr-0067-curated-app-reagent-prep-chef-sds-corpus.md`
+- `docs/backlog/prs/pr-0068-reagent-prep-chef-sds-pdfs-manual-download.md`
+- `docs/backlog/prs/pr-0069-reagent-prep-chef-sds-index-available-in-docker.md`
 - `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-drawer-density.md`
 - `docs/backlog/prs/pr-0029-editor-ai-ux-copy-and-smooth-typing.md`
 - `docs/backlog/prs/pr-0030-editor-chat-streaming-reactivity-and-typing-status.md`
