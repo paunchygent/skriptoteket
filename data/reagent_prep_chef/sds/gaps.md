@@ -1,33 +1,6 @@
 # SDS gaps (Reagensberedning)
 - Generated: 2026-03-04
 - Hazards total: 164
-- Indexed: 139
-- Missing markdown: 25
+- Indexed: 164
+- Missing markdown: 0
 - Missing PDFs: 0
-
-## Missing SDS markdown
-- `Al`
-- `Al2O3`
-- `AlCl3`
-- `AlCl3·6H2O`
-- `C2H6O`
-- `C3H6O`
-- `C7H6O2`
-- `C7H6O3`
-- `Ca(OH)2`
-- `CaC2`
-- `CaCl2`
-- `Cu2O`
-- `CuO`
-- `H2O2`
-- `H2SO4`
-- `HCl`
-- `HF`
-- `K2Cr2O7`
-- `KOH`
-- `NH4Cl`
-- `NH4NO3`
-- `Na2CO3`
-- `NaOH`
-- `S`
-- `SrCl2`

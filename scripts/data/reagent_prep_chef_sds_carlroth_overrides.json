@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "targets": {
+    "Al": {
+      "prepend_queries": ["aluminium powder"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/non-renewable-desiccants/aluminium-powder/p/5285.2"
+      ]
+    },
+    "Al2O3": {
+      "prepend_queries": ["aluminium oxide"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/a-to-z/aluminium-oxide/p/9420.3"
+      ]
+    },
+    "AlCl3": {
+      "prepend_queries": ["aluminium chloride"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/lewis-acids/aluminium-chloride/p/cn86.3"
+      ]
+    },
+    "CaCl2": {
+      "prepend_queries": ["calcium chloride"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/renewable-desiccants/calcium-chloride/p/a119.1"
+      ]
+    },
+    "Cu2O": {
+      "prepend_queries": ["copper(i) oxide", "cu2o"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/a-to-z/copper%28i%29-oxide/p/2733.3"
+      ]
+    },
+    "CuO": {
+      "prepend_queries": ["copper(ii) oxide", "cuo"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/a-to-z/copper%28ii%29-oxide/p/8169.3"
+      ]
+    },
+    "H2O2": {
+      "prepend_queries": ["hydrogen peroxide"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/a-to-z/hydrogen-peroxide/p/cp26.1"
+      ]
+    },
+    "H2SO4": {
+      "prepend_queries": ["sulphuric acid", "h2so4"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/a-to-z/sulphuric-acid/p/9789.1"
+      ]
+    },
+    "HCl": {
+      "prepend_queries": ["hydrochloric acid"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/lewis-acids/hydrochloric-acid/p/9277.4"
+      ]
+    },
+    "HF": {
+      "prepend_queries": ["hydrofluoric acid"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/rotipuran-supra/hydrofluoric-acid/p/hn54.1"
+      ]
+    },
+    "NH4NO3": {
+      "prepend_queries": ["ammonium nitrate", "nh4no3"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/ammonium-salts-nh4/ammonium-nitrate/p/k299.2"
+      ]
+    },
+    "S": {
+      "prepend_queries": ["sulphur", "sulfur"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/sulfur/sulphur/p/9304.1"
+      ]
+    },
+    "SrCl2": {
+      "prepend_queries": ["strontium chloride"],
+      "product_urls": [
+        "https://www.carlroth.com/com/en/strontium-salts-sr/strontium-chloride-hexahydrate/p/4473.3"
+      ]
+    }
+  }
+}

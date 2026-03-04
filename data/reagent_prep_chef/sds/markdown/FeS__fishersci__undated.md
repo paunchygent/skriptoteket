@@ -1,13 +1,3 @@
-
-Revisionsdatum
-
-19-Dec-2025
-
-Revisionsnummer 7
-
-Detta säkerhetsdatablad har upprättats i enlighet med kraven i: US OSHA Hazard Communication
-Standard 2024 (29 CFR 1910.1200)
-
 ## 1. Identifiering
 
 Produktnamn

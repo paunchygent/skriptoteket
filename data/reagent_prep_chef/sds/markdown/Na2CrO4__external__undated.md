@@ -1,15 +1,3 @@
-
-
-
-Sida: 1 av 8
-
-
-Utfärdandedatum: oktober 2021
-
-ÅTERUTGIVEN av CHEMSUPP
-
-Produktnamn NATRIUMKROMAT
-
 ## Klassificerad som farlig
 
 ## 1. Identifiering
