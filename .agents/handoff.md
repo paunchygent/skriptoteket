@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Snapshot
 
 - Date: 2026-03-04
-- Branch: `main + local changes`
+- Branch: `main`
 - Current sprint: None (between sprints; last: `SPR-2026-01-05` (done))
 - Production: Full Vue SPA
 - Completed: ADR-0067 pivot + PR-0060 updates; legacy SDS fetch pipeline removed.
