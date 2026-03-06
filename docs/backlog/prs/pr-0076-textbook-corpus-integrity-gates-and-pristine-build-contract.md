@@ -2,7 +2,7 @@
 type: pr
 id: PR-0076
 title: "Textbook corpus — integrity gates and pristine build contract"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-04
 updated: 2026-03-04
@@ -40,6 +40,29 @@ Define and enforce deterministic quality gates that must pass before the corpus 
 - Unit tests for each validator.
 - End-to-end dry run from mechanical + manual patches to pristine build.
 - Negative tests that ensure gate failures block promotion.
+
+## Implementation evidence
+
+Implemented:
+
+- `scripts/build_textbook_corpus_integrity_gates.py`
+- `tests/unit/scripts/test_build_textbook_corpus_integrity_gates.py`
+
+Validation commands:
+
+- `pdm run ruff check scripts/build_textbook_corpus_integrity_gates.py tests/unit/scripts/test_build_textbook_corpus_integrity_gates.py`
+- `pdm run pytest -q tests/unit/scripts/test_build_textbook_corpus_integrity_gates.py`
+- `pdm run python scripts/build_textbook_corpus_integrity_gates.py validate --input-markdown '.artifacts/textbook_corpus/manual-kemi/applied/Syntes 1 - hela boken (1).full_ocr.restored.md' --issue-ledger '.artifacts/textbook_corpus/mechanical-kemi/ledgers/Syntes 1 - hela boken (1).full_ocr.issue-ledger.jsonl' --manual-queue '.artifacts/textbook_corpus/manual-kemi/resolved-manual-queue.jsonl' --output-dir '.artifacts/textbook_corpus/integrity-kemi'`
+- `pdm run python scripts/build_textbook_corpus_integrity_gates.py build-pristine --input-markdown '.artifacts/textbook_corpus/manual-kemi/applied/Syntes 1 - hela boken (1).full_ocr.restored.md' --issue-ledger '.artifacts/textbook_corpus/mechanical-kemi/ledgers/Syntes 1 - hela boken (1).full_ocr.issue-ledger.jsonl' --manual-queue '.artifacts/textbook_corpus/manual-kemi/resolved-manual-queue.jsonl' --output-dir '.artifacts/textbook_corpus/integrity-kemi'`
+
+Observed runtime behavior:
+
+- Validator emitted machine-readable artifacts under `.artifacts/textbook_corpus/integrity-kemi/reports/`.
+- Full restored textbook now passes all critical gates (`critical=0`) with non-blocking warnings (`warning=10`).
+- Pristine promotion succeeded and wrote:
+  - `.artifacts/textbook_corpus/integrity-kemi/pristine/Syntes 1 - hela boken (1).full_ocr.restored.pristine.md`
+  - `.artifacts/textbook_corpus/integrity-kemi/pristine/Syntes 1 - hela boken (1).full_ocr.restored.pristine-report.json`
+- Manual restoration packet status is complete (`approved=63`, `proposed=0`) in `.artifacts/textbook_corpus/manual-kemi/validate-report.json`.
 
 ## Rollback plan
 
