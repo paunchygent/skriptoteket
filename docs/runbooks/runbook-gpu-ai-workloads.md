@@ -11,6 +11,15 @@ system: "hemma.hule.education"
 
 Operations guide for AI workloads on the AMD Radeon AI PRO R9700 (32GB VRAM, RDNA 4).
 
+## Storage Tiers
+
+- `/srv/scratch` = fast SSD work tier for Docker root, BuildKit cache,
+  HF/model caches, and active generated artifacts.
+- `/srv/storage` = large HDD bulk-data tier for raw corpora and cold retained
+  datasets.
+- `/` must not be the long-term home for Docker persistent state or large GPU
+  artifact trees.
+
 ## Hardware Specifications
 
 | Component | Value |

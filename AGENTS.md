@@ -80,6 +80,13 @@ Target Python is **3.13–3.14**.
 - Root access requires explicit approval; use `ssh hemma-root` when needed.
 - LAN aliases: `ssh hemma-local` (non-root), `ssh hemma-local-root` (root).
 Switch to run bash on hemma via heredocs to avoid nested quoting issues.
+- Hemma storage tiers are explicit:
+  - `/srv/scratch` = fast SSD working tier for Docker root/BuildKit cache,
+    HF/model caches, and active generated artifacts.
+  - `/srv/storage` = large HDD bulk-data tier for raw corpora and cold retained
+    datasets.
+  - `/` must not be the long-term home for Docker persistent state or large ML
+    artifact trees.
 
 ## Skill Usage (REQUIRED)
 

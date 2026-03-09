@@ -72,6 +72,11 @@ docker compose build
 - **REQUIRED**: Inject secrets via environment variables (or a local `.env` that is git-ignored).
 - **REQUIRED**: Compose files should reference env vars; never embed secret values.
 
+## 4.1 Hemma Storage Contract
+
+- On Hemma, Docker persistent state belongs on `/srv/scratch`, not on `/`.
+- On Hemma, raw corpora and cold retained datasets belong on `/srv/storage`.
+
 ## 5. Database Image & Locales
 
 - **REQUIRED**: Use a Debian-based Postgres image (`postgres:16`) to avoid Alpine locale/tooling pitfalls.

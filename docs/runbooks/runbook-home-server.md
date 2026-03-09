@@ -11,6 +11,19 @@ system: "hemma.hule.education"
 
 Operations guide for the home server hosting Skriptoteket and future HuleEdu services.
 
+## Storage Tiers
+
+- `/srv/scratch` = fast SSD work tier
+  - Docker root and BuildKit cache
+  - HF/model caches
+  - active generated artifacts
+- `/srv/storage` = large HDD bulk-data tier
+  - raw corpora
+  - cold retained datasets
+- `/` = OS disk
+  - not the long-term home for Docker persistent state or large ML artifact
+    trees
+
 ## Setup
 
 ### Server Access (SSH)
