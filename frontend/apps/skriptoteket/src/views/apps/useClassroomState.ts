@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { apiPost, apiPatch } from '../../api/client'
 
 export interface Student {
   id: string
@@ -18,6 +19,27 @@ export interface Seat {
   zone?: string | null
 }
 
+export interface GroupAssignment {
+  student_id: string
+  group_id: string
+}
+
+export interface SeatAssignment {
+  student_id: string
+  seat_id: string
+}
+
+export interface PlanDraft {
+  id: string
+  roster_id: string
+  template_id: string
+  lesson_mode_id: string
+  revision: number
+  group_count: number
+  group_assignments: GroupAssignment[]
+  seat_assignments: SeatAssignment[]
+}
+
 export const useClassroomState = defineStore('classroom-state', () => {
   // 1. Normalized Draft Entities
   const studentsById = ref<Record<string, Student>>({})
@@ -32,6 +54,8 @@ export const useClassroomState = defineStore('classroom-state', () => {
 
   // Persistence State
   const activeDraftId = ref<string | null>(null)
+  const currentRevision = ref(0)
+  const groupCount = ref(6)
   const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
   let saveTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -91,6 +115,7 @@ export const useClassroomState = defineStore('classroom-state', () => {
   }
 
   function initializeGroups(count: number) {
+    groupCount.value = count
     groupsById.value = {}
     for (let i = 1; i <= count; i++) {
       const id = `group-${i}`
@@ -105,26 +130,48 @@ export const useClassroomState = defineStore('classroom-state', () => {
     })
   }
 
+  function hydrate(draft: PlanDraft) {
+    activeDraftId.value = draft.id
+    currentRevision.value = draft.revision
+    groupCount.value = draft.group_count
+
+    initializeGroups(draft.group_count)
+
+    // Clear existing assignments
+    Object.keys(studentsById.value).forEach(id => {
+      groupAssignmentsByStudentId.value[id] = null
+      seatAssignmentsByStudentId.value[id] = null
+    })
+
+    // Apply draft assignments
+    draft.group_assignments.forEach((ga: GroupAssignment) => {
+      groupAssignmentsByStudentId.value[ga.student_id] = ga.group_id
+    })
+    draft.seat_assignments.forEach((sa: SeatAssignment) => {
+      seatAssignmentsByStudentId.value[sa.student_id] = sa.seat_id
+    })
+
+    saveStatus.value = 'saved'
+  }
+
   // 5. Draft Persistence API
 
   async function createDraft(rosterId: string, templateId: string, lessonModeId: string) {
     saveStatus.value = 'saving'
     try {
-      const response = await fetch('/api/v1/apps/classroom.group-seating-studio/drafts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roster_id: rosterId,
-          template_id: templateId,
-          lesson_mode_id: lessonModeId,
-          group_assignments: groupAssignmentsByStudentId.value,
-          seat_assignments: seatAssignmentsByStudentId.value
-        })
+      const data = await apiPost<PlanDraft>('/api/v1/apps/classroom.group-seating-studio/drafts', {
+        roster_id: rosterId,
+        template_id: templateId,
+        lesson_mode_id: lessonModeId,
+        group_assignments: [],
+        seat_assignments: []
       })
-      if (!response.ok) throw new Error('Failed to create draft')
-      const data = await response.json()
       activeDraftId.value = data.id
+      currentRevision.value = data.revision
       saveStatus.value = 'saved'
+
+      // Persist draft ID for resume
+      sessionStorage.setItem('classroom_planner_active_draft_id', data.id)
     } catch (e) {
       saveStatus.value = 'error'
       console.error(e)
@@ -139,21 +186,29 @@ export const useClassroomState = defineStore('classroom-state', () => {
 
     saveTimeout = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/v1/apps/classroom.group-seating-studio/drafts/${activeDraftId.value}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            group_assignments: groupAssignmentsByStudentId.value,
-            seat_assignments: seatAssignmentsByStudentId.value
-          })
+        const groupAssignments: GroupAssignment[] = []
+        Object.entries(groupAssignmentsByStudentId.value).forEach(([sid, gid]) => {
+          if (gid) groupAssignments.push({ student_id: sid, group_id: gid })
         })
-        if (!response.ok) throw new Error('Failed to save draft')
+
+        const seatAssignments: SeatAssignment[] = []
+        Object.entries(seatAssignmentsByStudentId.value).forEach(([sid, sid_seat]) => {
+          if (sid_seat) seatAssignments.push({ student_id: sid, seat_id: sid_seat })
+        })
+
+        const data = await apiPatch<PlanDraft>(`/api/v1/apps/classroom.group-seating-studio/drafts/${activeDraftId.value}`, {
+          expected_revision: currentRevision.value,
+          group_count: groupCount.value,
+          group_assignments: groupAssignments,
+          seat_assignments: seatAssignments
+        })
+        currentRevision.value = data.revision
         saveStatus.value = 'saved'
       } catch (e) {
         saveStatus.value = 'error'
         console.error(e)
       }
-    }, 1000) // 1 second debounce
+    }, 1000)
   }
 
   // 6. Strict State Reducers
@@ -202,6 +257,13 @@ export const useClassroomState = defineStore('classroom-state', () => {
     _triggerAutosave()
   }
 
+  function setGroupCount(count: number) {
+    if (count < 1) return
+    groupCount.value = count
+    initializeGroups(count)
+    _triggerAutosave()
+  }
+
   return {
     // State
     studentsById,
@@ -211,6 +273,7 @@ export const useClassroomState = defineStore('classroom-state', () => {
     seatAssignmentsByStudentId,
     activeDraftId,
     saveStatus,
+    groupCount,
 
     // Getters
     ungroupedStudents,
@@ -223,10 +286,12 @@ export const useClassroomState = defineStore('classroom-state', () => {
     initializeGroups,
     initializeFromTemplate,
     createDraft,
+    hydrate,
     assignStudentToGroup,
     removeStudentFromGroup,
     assignStudentToSeat,
     swapSeatAssignments,
-    clearSeatAssignment
+    clearSeatAssignment,
+    setGroupCount
   }
 })

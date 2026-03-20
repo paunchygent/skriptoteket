@@ -3,15 +3,32 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from skriptoteket.application.apps.classroom_planner.services import (
-    ClassroomPlannerBootstrapService,
-    ClassroomPlannerService,
+from skriptoteket.application.curated_apps.classroom_planner import (
+    CreateDraftHandler,
+    CreateRoomTemplateHandler,
+    CreateRosterHandler,
+    DeleteRoomTemplateHandler,
+    DeleteRosterHandler,
+    GetBootstrapHandler,
+    GetDraftHandler,
+    GetRoomTemplateHandler,
+    GetRosterHandler,
+    ListRoomTemplatesHandler,
+    ListRostersHandler,
+    PatchDraftHandler,
+    UpdateRoomTemplateHandler,
+    UpdateRosterHandler,
 )
-from skriptoteket.domain.apps.classroom_planner.models import Seat, Student
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    GroupAssignment,
+    Seat,
+    SeatAssignment,
+    Student,
+)
 from skriptoteket.domain.identity.models import User
-from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(
@@ -40,11 +57,11 @@ class ClassroomPlannerBootstrapResponse(BaseModel):
 @router.get("/bootstrap", response_model=ClassroomPlannerBootstrapResponse)
 @inject
 async def get_bootstrap(
-    service: FromDishka[ClassroomPlannerBootstrapService],
+    handler: FromDishka[GetBootstrapHandler],
     user: User = Depends(require_user_api),
 ) -> ClassroomPlannerBootstrapResponse:
     """Returns the initialization payload for the Classroom Planner."""
-    payload = await service.get_bootstrap_payload(owner_user_id=user.id)
+    payload = await handler.handle(owner_user_id=user.id)
 
     return ClassroomPlannerBootstrapResponse(
         lesson_modes=[LessonModePresetDto(id=m.id, name=m.name) for m in payload.lesson_modes],
@@ -67,9 +84,16 @@ class CreateRosterRequest(BaseModel):
     name: str
     students: list[Student]
 
+    @model_validator(mode="after")
+    def validate_unique_students(self) -> "CreateRosterRequest":
+        ids = [s.id for s in self.students]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Student IDs must be unique within a roster.")
+        return self
+
 
 class UpdateRosterRequest(CreateRosterRequest):
-    """Alias for updating a roster (F4)."""
+    """Alias for updating a roster."""
 
     pass
 
@@ -89,9 +113,16 @@ class CreateRoomTemplateRequest(BaseModel):
     name: str
     seats: list[Seat]
 
+    @model_validator(mode="after")
+    def validate_unique_seats(self) -> "CreateRoomTemplateRequest":
+        ids = [s.id for s in self.seats]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Seat IDs must be unique within a room template.")
+        return self
+
 
 class UpdateRoomTemplateRequest(CreateRoomTemplateRequest):
-    """Alias for updating a room template (F4)."""
+    """Alias for updating a room template."""
 
     pass
 
@@ -102,10 +133,10 @@ class UpdateRoomTemplateRequest(CreateRoomTemplateRequest):
 @router.get("/rosters", response_model=list[RosterDto])
 @inject
 async def list_rosters(
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[ListRostersHandler],
     user: User = Depends(require_user_api),
 ) -> list[RosterDto]:
-    rosters = await service.list_rosters(owner_user_id=user.id)
+    rosters = await handler.handle(owner_user_id=user.id)
     return [RosterDto.model_validate(r) for r in rosters]
 
 
@@ -113,10 +144,10 @@ async def list_rosters(
 @inject
 async def get_roster(
     roster_id: UUID,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[GetRosterHandler],
     user: User = Depends(require_user_api),
 ) -> RosterDto:
-    roster = await service.get_roster(roster_id=roster_id, owner_user_id=user.id)
+    roster = await handler.handle(roster_id=roster_id, owner_user_id=user.id)
     return RosterDto.model_validate(roster)
 
 
@@ -124,10 +155,11 @@ async def get_roster(
 @inject
 async def create_roster(
     request: CreateRosterRequest,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[CreateRosterHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> RosterDto:
-    roster = await service.create_roster(
+    roster = await handler.handle(
         owner_user_id=user.id, name=request.name, students=request.students
     )
     return RosterDto.model_validate(roster)
@@ -138,10 +170,11 @@ async def create_roster(
 async def update_roster(
     roster_id: UUID,
     request: UpdateRosterRequest,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[UpdateRosterHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> RosterDto:
-    roster = await service.update_roster(
+    roster = await handler.handle(
         roster_id=roster_id,
         owner_user_id=user.id,
         name=request.name,
@@ -154,10 +187,11 @@ async def update_roster(
 @inject
 async def delete_roster(
     roster_id: UUID,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[DeleteRosterHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> None:
-    await service.delete_roster(roster_id=roster_id, owner_user_id=user.id)
+    await handler.handle(roster_id=roster_id, owner_user_id=user.id)
 
 
 # RoomTemplate Endpoints
@@ -166,10 +200,10 @@ async def delete_roster(
 @router.get("/templates", response_model=list[RoomTemplateDto])
 @inject
 async def list_templates(
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[ListRoomTemplatesHandler],
     user: User = Depends(require_user_api),
 ) -> list[RoomTemplateDto]:
-    templates = await service.list_templates(owner_user_id=user.id)
+    templates = await handler.handle(owner_user_id=user.id)
     return [RoomTemplateDto.model_validate(t) for t in templates]
 
 
@@ -177,10 +211,10 @@ async def list_templates(
 @inject
 async def get_template(
     template_id: UUID,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[GetRoomTemplateHandler],
     user: User = Depends(require_user_api),
 ) -> RoomTemplateDto:
-    template = await service.get_template(template_id=template_id, owner_user_id=user.id)
+    template = await handler.handle(template_id=template_id, owner_user_id=user.id)
     return RoomTemplateDto.model_validate(template)
 
 
@@ -188,12 +222,11 @@ async def get_template(
 @inject
 async def create_template(
     request: CreateRoomTemplateRequest,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[CreateRoomTemplateHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> RoomTemplateDto:
-    template = await service.create_template(
-        owner_user_id=user.id, name=request.name, seats=request.seats
-    )
+    template = await handler.handle(owner_user_id=user.id, name=request.name, seats=request.seats)
     return RoomTemplateDto.model_validate(template)
 
 
@@ -202,10 +235,11 @@ async def create_template(
 async def update_template(
     template_id: UUID,
     request: UpdateRoomTemplateRequest,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[UpdateRoomTemplateHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> RoomTemplateDto:
-    template = await service.update_template(
+    template = await handler.handle(
         template_id=template_id,
         owner_user_id=user.id,
         name=request.name,
@@ -218,13 +252,26 @@ async def update_template(
 @inject
 async def delete_template(
     template_id: UUID,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[DeleteRoomTemplateHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> None:
-    await service.delete_template(template_id=template_id, owner_user_id=user.id)
+    await handler.handle(template_id=template_id, owner_user_id=user.id)
 
 
 # PlanDraft DTOs
+
+
+class GroupAssignmentDto(BaseModel):
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+    student_id: str
+    group_id: str
+
+
+class SeatAssignmentDto(BaseModel):
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+    student_id: str
+    seat_id: str
 
 
 class PlanDraftDto(BaseModel):
@@ -234,21 +281,25 @@ class PlanDraftDto(BaseModel):
     roster_id: UUID
     template_id: UUID
     lesson_mode_id: str
-    group_assignments: dict[str, str | None]
-    seat_assignments: dict[str, str | None]
+    revision: int
+    group_count: int
+    group_assignments: list[GroupAssignmentDto]
+    seat_assignments: list[SeatAssignmentDto]
 
 
 class CreatePlanDraftRequest(BaseModel):
     roster_id: UUID
     template_id: UUID
     lesson_mode_id: str
-    group_assignments: dict[str, str | None] = Field(default_factory=dict)
-    seat_assignments: dict[str, str | None] = Field(default_factory=dict)
+    group_assignments: list[GroupAssignmentDto] = Field(default_factory=list)
+    seat_assignments: list[SeatAssignmentDto] = Field(default_factory=list)
 
 
 class UpdatePlanDraftRequest(BaseModel):
-    group_assignments: dict[str, str | None] | None = None
-    seat_assignments: dict[str, str | None] | None = None
+    expected_revision: int | None = None
+    group_count: int | None = None
+    group_assignments: list[GroupAssignmentDto] | None = None
+    seat_assignments: list[SeatAssignmentDto] | None = None
 
 
 # PlanDraft Endpoints
@@ -258,16 +309,23 @@ class UpdatePlanDraftRequest(BaseModel):
 @inject
 async def create_draft(
     request: CreatePlanDraftRequest,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[CreateDraftHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> PlanDraftDto:
-    draft = await service.create_draft(
+    draft = await handler.handle(
         owner_user_id=user.id,
         roster_id=request.roster_id,
         template_id=request.template_id,
         lesson_mode_id=request.lesson_mode_id,
-        group_assignments=request.group_assignments,
-        seat_assignments=request.seat_assignments,
+        group_assignments=[
+            GroupAssignment(student_id=ga.student_id, group_id=ga.group_id)
+            for ga in request.group_assignments
+        ],
+        seat_assignments=[
+            SeatAssignment(student_id=sa.student_id, seat_id=sa.seat_id)
+            for sa in request.seat_assignments
+        ],
     )
     return PlanDraftDto.model_validate(draft)
 
@@ -276,10 +334,10 @@ async def create_draft(
 @inject
 async def get_draft(
     draft_id: UUID,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[GetDraftHandler],
     user: User = Depends(require_user_api),
 ) -> PlanDraftDto:
-    draft = await service.get_draft(draft_id=draft_id, owner_user_id=user.id)
+    draft = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
     return PlanDraftDto.model_validate(draft)
 
 
@@ -288,13 +346,26 @@ async def get_draft(
 async def update_draft(
     draft_id: UUID,
     request: UpdatePlanDraftRequest,
-    service: FromDishka[ClassroomPlannerService],
+    handler: FromDishka[PatchDraftHandler],
     user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
 ) -> PlanDraftDto:
-    draft = await service.update_draft(
+    draft = await handler.handle(
         draft_id=draft_id,
         owner_user_id=user.id,
-        group_assignments=request.group_assignments,
-        seat_assignments=request.seat_assignments,
+        expected_revision=request.expected_revision,
+        group_count=request.group_count,
+        group_assignments=[
+            GroupAssignment(student_id=ga.student_id, group_id=ga.group_id)
+            for ga in request.group_assignments
+        ]
+        if request.group_assignments is not None
+        else None,
+        seat_assignments=[
+            SeatAssignment(student_id=sa.student_id, seat_id=sa.seat_id)
+            for sa in request.seat_assignments
+        ]
+        if request.seat_assignments is not None
+        else None,
     )
     return PlanDraftDto.model_validate(draft)

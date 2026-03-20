@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useClassroomState, type Student, type Seat } from './useClassroomState'
+import { useClassroomState, type Student, type Seat, type PlanDraft } from './useClassroomState'
 import GroupBoard from './components/GroupBoard.vue'
 import RoomCanvas from './components/RoomCanvas.vue'
 import CreateRosterModal from './components/CreateRosterModal.vue'
 import CreateRoomTemplateModal from './components/CreateRoomTemplateModal.vue'
+import { apiGet } from '../../api/client'
 
 interface LessonMode {
   id: string
@@ -21,6 +22,11 @@ interface RoomTemplate {
   id: string
   name: string
   seats: Seat[]
+}
+
+interface BootstrapResponse {
+  lesson_modes: LessonMode[]
+  feature_flags: Record<string, boolean>
 }
 
 const classroomState = useClassroomState()
@@ -52,13 +58,12 @@ const isLoadingCatalog = ref(false)
 async function fetchCatalog() {
   isLoadingCatalog.value = true
   try {
-    const [rostersRes, templatesRes] = await Promise.all([
-      fetch('/api/v1/apps/classroom.group-seating-studio/rosters'),
-      fetch('/api/v1/apps/classroom.group-seating-studio/templates')
+    const [rosters, templates] = await Promise.all([
+      apiGet<Roster[]>('/api/v1/apps/classroom.group-seating-studio/rosters'),
+      apiGet<RoomTemplate[]>('/api/v1/apps/classroom.group-seating-studio/templates')
     ])
-
-    if (rostersRes.ok) availableRosters.value = await rostersRes.json()
-    if (templatesRes.ok) availableTemplates.value = await templatesRes.json()
+    availableRosters.value = rosters
+    availableTemplates.value = templates
   } catch {
     // Silently fail, user can still see empty lists
   } finally {
@@ -68,23 +73,50 @@ async function fetchCatalog() {
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/v1/apps/classroom.group-seating-studio/bootstrap')
-    if (!res.ok) {
-      lessonModes.value = [
-        { id: 'seating', name: 'Sittplatsschema' },
-        { id: 'group_work', name: 'Gruppering' }
-      ]
-    } else {
-      const data = await res.json()
-      lessonModes.value = data.lesson_modes || []
-    }
+    const data = await apiGet<BootstrapResponse>('/api/v1/apps/classroom.group-seating-studio/bootstrap')
+    lessonModes.value = data.lesson_modes || [
+      { id: 'seating', name: 'Sittplatsschema' },
+      { id: 'group_work', name: 'Gruppering' }
+    ]
     await fetchCatalog()
+
+    // Check for existing draft to resume
+    const savedDraftId = sessionStorage.getItem('classroom_planner_active_draft_id')
+    if (savedDraftId) {
+      await resumeDraft(savedDraftId)
+    }
   } catch {
     bootstrapError.value = "Failed to load Klassrumskartan metadata."
   } finally {
     isBootstrapping.value = false
   }
 })
+
+async function resumeDraft(draftId: string) {
+  try {
+    const draft = await apiGet<PlanDraft>(`/api/v1/apps/classroom.group-seating-studio/drafts/${draftId}`)
+
+    // Find associated roster and template
+    const roster = availableRosters.value.find(r => r.id === draft.roster_id)
+    const template = availableTemplates.value.find(t => t.id === draft.template_id)
+    const mode = lessonModes.value.find(m => m.id === draft.lesson_mode_id)
+
+    if (roster && template && mode) {
+      selectedRoster.value = roster
+      selectedTemplate.value = template
+      selectedLessonMode.value = mode
+
+      classroomState.initializeFromRoster(roster.students)
+      classroomState.initializeFromTemplate(template.seats)
+      classroomState.hydrate(draft)
+
+      isReadyToStart.value = true
+    }
+  } catch (e) {
+    console.error("Failed to resume draft", e)
+    sessionStorage.removeItem('classroom_planner_active_draft_id')
+  }
+}
 
 function onRosterCreated(newRoster: Roster) {
   isCreateRosterModalOpen.value = false
@@ -97,13 +129,13 @@ function onRoomCreated(newRoom: RoomTemplate) {
   availableTemplates.value.push(newRoom)
   selectedTemplate.value = newRoom
 }
+
 const isReadyToStart = ref(false)
 
 async function startPlanning() {
   if (selectedLessonMode.value && selectedRoster.value && selectedTemplate.value) {
     classroomState.initializeFromRoster(selectedRoster.value.students)
     classroomState.initializeFromTemplate(selectedTemplate.value.seats)
-    classroomState.initializeGroups(6) // Default to 6 groups for now
 
     // Create the persistent draft
     await classroomState.createDraft(
@@ -119,6 +151,7 @@ async function startPlanning() {
 
 function resetSelection() {
   isReadyToStart.value = false
+  sessionStorage.removeItem('classroom_planner_active_draft_id')
 }
 </script>
 
@@ -142,7 +175,7 @@ function resetSelection() {
         class="flex gap-4"
       >
         <button
-          class="px-4 py-2 border-2 border-navy bg-white text-navy font-black uppercase text-[10px] tracking-widest shadow-brutal-xs hover:-translate-y-0.5 transition-all"
+          class="px-4 py-2 border-2 border-navy bg-white text-navy font-black uppercase text-[10px] tracking-widest shadow-brutal-xs transition-all hover:bg-navy/5"
           @click="resetSelection"
         >
           Byt inställningar
@@ -310,7 +343,30 @@ function resetSelection() {
             </button>
           </div>
 
-          <div class="flex gap-4">
+          <div class="flex items-center gap-6">
+            <!-- Group Count Control (only in grouping view) -->
+            <div
+              v-if="currentView === 'groups'"
+              class="flex items-center gap-3 bg-paper border-2 border-navy p-1 px-3"
+            >
+              <span class="text-[10px] font-black uppercase tracking-widest text-navy/60">Antal grupper</span>
+              <div class="flex items-center gap-2">
+                <button
+                  class="w-6 h-6 border border-navy flex items-center justify-center font-black hover:bg-navy hover:text-white transition-colors"
+                  @click="classroomState.setGroupCount(classroomState.groupCount - 1)"
+                >
+                  -
+                </button>
+                <span class="text-sm font-bold w-4 text-center">{{ classroomState.groupCount }}</span>
+                <button
+                  class="w-6 h-6 border border-navy flex items-center justify-center font-black hover:bg-navy hover:text-white transition-colors"
+                  @click="classroomState.setGroupCount(classroomState.groupCount + 1)"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
             <div
               class="px-6 py-3 border-2 border-navy bg-white text-xs tracking-widest shadow-brutal-xs flex items-center gap-2"
               :class="{

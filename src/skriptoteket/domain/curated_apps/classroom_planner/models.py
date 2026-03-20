@@ -72,6 +72,24 @@ class RoomTemplate(BaseModel):
     updated_at: datetime
 
 
+class GroupAssignment(BaseModel):
+    """Assignment of a student to a specific group."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    student_id: str
+    group_id: str
+
+
+class SeatAssignment(BaseModel):
+    """Assignment of a student to a specific seat."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    student_id: str
+    seat_id: str
+
+
 class PlanDraft(BaseModel):
     """An active draft of a seating/grouping plan."""
 
@@ -83,10 +101,11 @@ class PlanDraft(BaseModel):
     template_id: UUID
     lesson_mode_id: str
 
-    # student_id -> group_id
-    group_assignments: dict[str, str | None] = Field(default_factory=dict)
-    # student_id -> seat_id
-    seat_assignments: dict[str, str | None] = Field(default_factory=dict)
+    revision: int = 0
+    group_count: int = 6
+
+    group_assignments: list[GroupAssignment] = Field(default_factory=list)
+    seat_assignments: list[SeatAssignment] = Field(default_factory=list)
 
     created_at: datetime
     updated_at: datetime

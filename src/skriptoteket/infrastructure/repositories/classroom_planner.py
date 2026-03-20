@@ -5,8 +5,20 @@ from uuid import UUID
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from skriptoteket.domain.apps.classroom_planner.models import PlanDraft, RoomTemplate, Roster
-from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    GroupAssignment,
+    PlanDraft,
+    RoomTemplate,
+    Roster,
+    Seat,
+    SeatAssignment,
+    Student,
+)
+from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
+    GroupAssignmentModel,
+    PlanDraftModel,
+    SeatAssignmentModel,
+)
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
 )
@@ -24,12 +36,33 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    def _to_domain(self, model: PlanDraftModel) -> PlanDraft:
+        return PlanDraft(
+            id=model.id,
+            owner_user_id=model.owner_user_id,
+            roster_id=model.roster_id,
+            template_id=model.template_id,
+            lesson_mode_id=model.lesson_mode_id,
+            revision=model.revision,
+            group_count=model.group_count,
+            group_assignments=[
+                GroupAssignment(student_id=ga.student_id, group_id=ga.group_id)
+                for ga in model.group_assignments
+            ],
+            seat_assignments=[
+                SeatAssignment(student_id=sa.student_id, seat_id=sa.seat_id)
+                for sa in model.seat_assignments
+            ],
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+        )
+
     async def get_by_id(self, *, draft_id: UUID) -> PlanDraft | None:
         result = await self._session.execute(
             select(PlanDraftModel).where(PlanDraftModel.id == draft_id)
         )
         model = result.scalar_one_or_none()
-        return PlanDraft.model_validate(model) if model else None
+        return self._to_domain(model) if model else None
 
     async def list_by_owner(self, *, owner_user_id: UUID) -> list[PlanDraft]:
         result = await self._session.execute(
@@ -37,7 +70,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             .where(PlanDraftModel.owner_user_id == owner_user_id)
             .order_by(PlanDraftModel.updated_at.desc())
         )
-        return [PlanDraft.model_validate(model) for model in result.scalars().all()]
+        return [self._to_domain(model) for model in result.scalars().all()]
 
     async def save(self, *, draft: PlanDraft) -> None:
         model = await self._session.get(PlanDraftModel, draft.id)
@@ -45,9 +78,19 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.roster_id = draft.roster_id
             model.template_id = draft.template_id
             model.lesson_mode_id = draft.lesson_mode_id
-            model.group_assignments = draft.group_assignments
-            model.seat_assignments = draft.seat_assignments
+            model.revision = draft.revision
+            model.group_count = draft.group_count
             model.updated_at = draft.updated_at
+
+            # Update assignments (replace all for simplicity in Slice 1, cascading handles cleanup)
+            model.group_assignments = [
+                GroupAssignmentModel(student_id=ga.student_id, group_id=ga.group_id)
+                for ga in draft.group_assignments
+            ]
+            model.seat_assignments = [
+                SeatAssignmentModel(student_id=sa.student_id, seat_id=sa.seat_id)
+                for sa in draft.seat_assignments
+            ]
         else:
             model = PlanDraftModel(
                 id=draft.id,
@@ -55,8 +98,16 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 template_id=draft.template_id,
                 lesson_mode_id=draft.lesson_mode_id,
-                group_assignments=draft.group_assignments,
-                seat_assignments=draft.seat_assignments,
+                revision=draft.revision,
+                group_count=draft.group_count,
+                group_assignments=[
+                    GroupAssignmentModel(student_id=ga.student_id, group_id=ga.group_id)
+                    for ga in draft.group_assignments
+                ],
+                seat_assignments=[
+                    SeatAssignmentModel(student_id=sa.student_id, seat_id=sa.seat_id)
+                    for sa in draft.seat_assignments
+                ],
                 created_at=draft.created_at,
                 updated_at=draft.updated_at,
             )
@@ -77,7 +128,16 @@ class PostgreSQLRosterRepository(RosterRepositoryProtocol):
     async def get_by_id(self, *, roster_id: UUID) -> Roster | None:
         result = await self._session.execute(select(RosterModel).where(RosterModel.id == roster_id))
         model = result.scalar_one_or_none()
-        return Roster.model_validate(model) if model else None
+        if not model:
+            return None
+        return Roster(
+            id=model.id,
+            owner_user_id=model.owner_user_id,
+            name=model.name,
+            students=[Student(id=s["id"], display_name=s["display_name"]) for s in model.students],
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+        )
 
     async def list_by_owner(self, *, owner_user_id: UUID) -> list[Roster]:
         result = await self._session.execute(
@@ -85,7 +145,19 @@ class PostgreSQLRosterRepository(RosterRepositoryProtocol):
             .where(RosterModel.owner_user_id == owner_user_id)
             .order_by(RosterModel.name)
         )
-        return [Roster.model_validate(model) for model in result.scalars().all()]
+        return [
+            Roster(
+                id=model.id,
+                owner_user_id=model.owner_user_id,
+                name=model.name,
+                students=[
+                    Student(id=s["id"], display_name=s["display_name"]) for s in model.students
+                ],
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+            )
+            for model in result.scalars().all()
+        ]
 
     async def save(self, *, roster: Roster) -> None:
         model = await self._session.get(RosterModel, roster.id)
@@ -121,7 +193,16 @@ class PostgreSQLRoomTemplateRepository(RoomTemplateRepositoryProtocol):
             select(RoomTemplateModel).where(RoomTemplateModel.id == template_id)
         )
         model = result.scalar_one_or_none()
-        return RoomTemplate.model_validate(model) if model else None
+        if not model:
+            return None
+        return RoomTemplate(
+            id=model.id,
+            owner_user_id=model.owner_user_id,
+            name=model.name,
+            seats=[Seat(id=s["id"], x=s["x"], y=s["y"], zone=s.get("zone")) for s in model.seats],
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+        )
 
     async def list_by_owner(self, *, owner_user_id: UUID) -> list[RoomTemplate]:
         result = await self._session.execute(
@@ -129,7 +210,19 @@ class PostgreSQLRoomTemplateRepository(RoomTemplateRepositoryProtocol):
             .where(RoomTemplateModel.owner_user_id == owner_user_id)
             .order_by(RoomTemplateModel.name)
         )
-        return [RoomTemplate.model_validate(model) for model in result.scalars().all()]
+        return [
+            RoomTemplate(
+                id=model.id,
+                owner_user_id=model.owner_user_id,
+                name=model.name,
+                seats=[
+                    Seat(id=s["id"], x=s["x"], y=s["y"], zone=s.get("zone")) for s in model.seats
+                ],
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+            )
+            for model in result.scalars().all()
+        ]
 
     async def save(self, *, template: RoomTemplate) -> None:
         model = await self._session.get(RoomTemplateModel, template.id)

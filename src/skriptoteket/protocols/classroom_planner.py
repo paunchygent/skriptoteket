@@ -3,7 +3,11 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
-from skriptoteket.domain.apps.classroom_planner.models import PlanDraft, RoomTemplate, Roster
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    PlanDraft,
+    RoomTemplate,
+    Roster,
+)
 
 
 class PlanDraftRepositoryProtocol(Protocol):

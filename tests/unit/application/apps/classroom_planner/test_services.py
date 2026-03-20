@@ -4,15 +4,28 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.apps.classroom_planner.services import (
-    ClassroomPlannerBootstrapService,
-    ClassroomPlannerService,
+from skriptoteket.application.curated_apps.classroom_planner import (
+    CreateDraftHandler,
+    CreateRoomTemplateHandler,
+    CreateRosterHandler,
+    DeleteRoomTemplateHandler,
+    DeleteRosterHandler,
+    GetBootstrapHandler,
+    GetDraftHandler,
+    GetRoomTemplateHandler,
+    GetRosterHandler,
+    ListRostersHandler,
+    PatchDraftHandler,
+    UpdateRoomTemplateHandler,
+    UpdateRosterHandler,
 )
-from skriptoteket.domain.apps.classroom_planner.models import (
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    GroupAssignment,
     PlanDraft,
     RoomTemplate,
     Roster,
     Seat,
+    SeatAssignment,
     Student,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -66,48 +79,34 @@ def id_generator():
     return mock
 
 
-@pytest.fixture
-def service(uow, rosters, templates, drafts, clock, id_generator):
-    return ClassroomPlannerService(
-        uow=uow,
-        rosters=rosters,
-        templates=templates,
-        drafts=drafts,
-        clock=clock,
-        id_generator=id_generator,
-    )
-
-
-# Bootstrap Service Tests
+# Bootstrap Handler Tests
 
 
 @pytest.mark.asyncio
-async def test_bootstrap_service_returns_payload():
-    service = ClassroomPlannerBootstrapService()
+async def test_bootstrap_handler_returns_payload():
+    handler = GetBootstrapHandler()
     owner_id = uuid4()
 
-    payload = await service.get_bootstrap_payload(owner_user_id=owner_id)
+    payload = await handler.handle(owner_user_id=owner_id)
 
     assert len(payload.lesson_modes) > 0
     assert "solver_v1" in payload.feature_flags
 
 
-# Roster CRUD Tests
+# Roster Handler Tests
 
 
 @pytest.mark.asyncio
-async def test_create_roster_persists_and_returns_roster(service, rosters, clock, id_generator):
-    # Arrange
+async def test_create_roster_persists_and_returns_roster(uow, rosters, clock, id_generator):
+    handler = CreateRosterHandler(uow, rosters, clock, id_generator)
     owner_id = uuid4()
     roster_id = uuid4()
     id_generator.new_uuid.side_effect = None
     id_generator.new_uuid.return_value = roster_id
     students = [Student(id="s1", display_name="Student 1")]
 
-    # Act
-    result = await service.create_roster(owner_user_id=owner_id, name="Class A", students=students)
+    result = await handler.handle(owner_user_id=owner_id, name="Class A", students=students)
 
-    # Assert
     assert result.id == roster_id
     assert result.owner_user_id == owner_id
     assert result.name == "Class A"
@@ -117,8 +116,8 @@ async def test_create_roster_persists_and_returns_roster(service, rosters, clock
 
 
 @pytest.mark.asyncio
-async def test_get_roster_returns_from_repo_if_owner_matches(service, rosters, now):
-    # Arrange
+async def test_get_roster_returns_from_repo_if_owner_matches(rosters, now):
+    handler = GetRosterHandler(rosters)
     roster_id = uuid4()
     owner_id = uuid4()
     roster = Roster(
@@ -131,16 +130,14 @@ async def test_get_roster_returns_from_repo_if_owner_matches(service, rosters, n
     )
     rosters.get_by_id.return_value = roster
 
-    # Act
-    result = await service.get_roster(roster_id=roster_id, owner_user_id=owner_id)
+    result = await handler.handle(roster_id=roster_id, owner_user_id=owner_id)
 
-    # Assert
     assert result == roster
 
 
 @pytest.mark.asyncio
-async def test_get_roster_raises_not_found_if_owner_mismatch(service, rosters, now):
-    # Arrange
+async def test_get_roster_raises_not_found_if_owner_mismatch(rosters, now):
+    handler = GetRosterHandler(rosters)
     roster_id = uuid4()
     roster = Roster(
         id=roster_id,
@@ -152,26 +149,27 @@ async def test_get_roster_raises_not_found_if_owner_mismatch(service, rosters, n
     )
     rosters.get_by_id.return_value = roster
 
-    # Act & Assert
     with pytest.raises(DomainError) as exc:
-        await service.get_roster(roster_id=roster_id, owner_user_id=uuid4())
+        await handler.handle(roster_id=roster_id, owner_user_id=uuid4())
     assert exc.value.code == ErrorCode.NOT_FOUND
 
 
 @pytest.mark.asyncio
-async def test_list_rosters_returns_from_repo(service, rosters):
+async def test_list_rosters_returns_from_repo(rosters):
+    handler = ListRostersHandler(rosters)
     owner_id = uuid4()
     expected = [Mock(spec=Roster)]
     rosters.list_by_owner.return_value = expected
 
-    result = await service.list_rosters(owner_user_id=owner_id)
+    result = await handler.handle(owner_user_id=owner_id)
 
     assert result == expected
     rosters.list_by_owner.assert_awaited_once_with(owner_user_id=owner_id)
 
 
 @pytest.mark.asyncio
-async def test_update_roster_updates_and_saves(service, rosters, now, clock):
+async def test_update_roster_updates_and_saves(uow, rosters, now, clock):
+    handler = UpdateRosterHandler(uow, rosters, clock)
     owner_id = uuid4()
     roster_id = uuid4()
     old_roster = Roster(
@@ -187,7 +185,7 @@ async def test_update_roster_updates_and_saves(service, rosters, now, clock):
     clock.now.return_value = new_now
     new_students = [Student(id="s2", display_name="Student 2")]
 
-    result = await service.update_roster(
+    result = await handler.handle(
         roster_id=roster_id, owner_user_id=owner_id, name="New Name", students=new_students
     )
 
@@ -198,7 +196,8 @@ async def test_update_roster_updates_and_saves(service, rosters, now, clock):
 
 
 @pytest.mark.asyncio
-async def test_delete_roster_calls_repo_delete(service, rosters, now):
+async def test_delete_roster_calls_repo_delete(uow, rosters, now):
+    handler = DeleteRosterHandler(uow, rosters)
     owner_id = uuid4()
     roster_id = uuid4()
     roster = Roster(
@@ -211,29 +210,25 @@ async def test_delete_roster_calls_repo_delete(service, rosters, now):
     )
     rosters.get_by_id.return_value = roster
 
-    await service.delete_roster(roster_id=roster_id, owner_user_id=owner_id)
+    await handler.handle(roster_id=roster_id, owner_user_id=owner_id)
 
     rosters.delete.assert_awaited_once_with(roster_id=roster_id)
 
 
-# RoomTemplate CRUD Tests
+# RoomTemplate Handler Tests
 
 
 @pytest.mark.asyncio
-async def test_create_template_persists_and_returns_template(
-    service, templates, clock, id_generator
-):
-    # Arrange
+async def test_create_template_persists_and_returns_template(uow, templates, clock, id_generator):
+    handler = CreateRoomTemplateHandler(uow, templates, clock, id_generator)
     owner_id = uuid4()
     template_id = uuid4()
     id_generator.new_uuid.side_effect = None
     id_generator.new_uuid.return_value = template_id
     seats = [Seat(id="seat1", x=0, y=0)]
 
-    # Act
-    result = await service.create_template(owner_user_id=owner_id, name="Room 101", seats=seats)
+    result = await handler.handle(owner_user_id=owner_id, name="Room 101", seats=seats)
 
-    # Assert
     assert result.id == template_id
     assert result.name == "Room 101"
     assert result.seats == seats
@@ -242,7 +237,8 @@ async def test_create_template_persists_and_returns_template(
 
 
 @pytest.mark.asyncio
-async def test_get_template_returns_from_repo_if_owner_matches(service, templates, now):
+async def test_get_template_returns_from_repo_if_owner_matches(templates, now):
+    handler = GetRoomTemplateHandler(templates)
     template_id = uuid4()
     owner_id = uuid4()
     template = RoomTemplate(
@@ -255,13 +251,14 @@ async def test_get_template_returns_from_repo_if_owner_matches(service, template
     )
     templates.get_by_id.return_value = template
 
-    result = await service.get_template(template_id=template_id, owner_user_id=owner_id)
+    result = await handler.handle(template_id=template_id, owner_user_id=owner_id)
 
     assert result == template
 
 
 @pytest.mark.asyncio
-async def test_update_template_updates_and_saves(service, templates, now, clock):
+async def test_update_template_updates_and_saves(uow, templates, now, clock):
+    handler = UpdateRoomTemplateHandler(uow, templates, clock)
     owner_id = uuid4()
     template_id = uuid4()
     old_template = RoomTemplate(
@@ -277,7 +274,7 @@ async def test_update_template_updates_and_saves(service, templates, now, clock)
     clock.now.return_value = new_now
     new_seats = [Seat(id="s2", x=1, y=1)]
 
-    result = await service.update_template(
+    result = await handler.handle(
         template_id=template_id, owner_user_id=owner_id, name="New Name", seats=new_seats
     )
 
@@ -288,7 +285,8 @@ async def test_update_template_updates_and_saves(service, templates, now, clock)
 
 
 @pytest.mark.asyncio
-async def test_delete_template_calls_repo_delete(service, templates, now):
+async def test_delete_template_calls_repo_delete(uow, templates, now):
+    handler = DeleteRoomTemplateHandler(uow, templates)
     owner_id = uuid4()
     template_id = uuid4()
     template = RoomTemplate(
@@ -301,16 +299,19 @@ async def test_delete_template_calls_repo_delete(service, templates, now):
     )
     templates.get_by_id.return_value = template
 
-    await service.delete_template(template_id=template_id, owner_user_id=owner_id)
+    await handler.handle(template_id=template_id, owner_user_id=owner_id)
 
     templates.delete.assert_awaited_once_with(template_id=template_id)
 
 
-# PlanDraft CRUD Tests
+# PlanDraft Handler Tests
 
 
 @pytest.mark.asyncio
-async def test_create_draft_persists_and_returns_draft(service, drafts, clock, id_generator):
+async def test_create_draft_persists_and_returns_draft(
+    uow, rosters, templates, drafts, clock, id_generator
+):
+    handler = CreateDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
     owner_id = uuid4()
     draft_id = uuid4()
     roster_id = uuid4()
@@ -318,13 +319,17 @@ async def test_create_draft_persists_and_returns_draft(service, drafts, clock, i
     id_generator.new_uuid.side_effect = None
     id_generator.new_uuid.return_value = draft_id
 
-    result = await service.create_draft(
+    # Mock dependencies existence
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+
+    result = await handler.handle(
         owner_user_id=owner_id,
         roster_id=roster_id,
         template_id=template_id,
         lesson_mode_id="standard",
-        group_assignments={"s1": "g1"},
-        seat_assignments={"s2": "seat1"},
+        group_assignments=[GroupAssignment(student_id="s1", group_id="g1")],
+        seat_assignments=[SeatAssignment(student_id="s2", seat_id="seat1")],
     )
 
     assert result.id == draft_id
@@ -332,14 +337,15 @@ async def test_create_draft_persists_and_returns_draft(service, drafts, clock, i
     assert result.roster_id == roster_id
     assert result.template_id == template_id
     assert result.lesson_mode_id == "standard"
-    assert result.group_assignments == {"s1": "g1"}
-    assert result.seat_assignments == {"s2": "seat1"}
+    assert len(result.group_assignments) == 1
+    assert len(result.seat_assignments) == 1
     assert result.created_at == clock.now()
     drafts.save.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_get_draft_returns_from_repo_if_owner_matches(service, drafts, now):
+async def test_get_draft_returns_from_repo_if_owner_matches(drafts, now):
+    handler = GetDraftHandler(drafts)
     draft_id = uuid4()
     owner_id = uuid4()
     draft = PlanDraft(
@@ -348,20 +354,21 @@ async def test_get_draft_returns_from_repo_if_owner_matches(service, drafts, now
         roster_id=uuid4(),
         template_id=uuid4(),
         lesson_mode_id="standard",
-        group_assignments={},
-        seat_assignments={},
+        group_assignments=[],
+        seat_assignments=[],
         created_at=now,
         updated_at=now,
     )
     drafts.get_by_id.return_value = draft
 
-    result = await service.get_draft(draft_id=draft_id, owner_user_id=owner_id)
+    result = await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
 
     assert result == draft
 
 
 @pytest.mark.asyncio
-async def test_update_draft_updates_and_saves(service, drafts, now, clock):
+async def test_patch_draft_updates_and_saves(uow, drafts, now, clock):
+    handler = PatchDraftHandler(uow, drafts, clock)
     owner_id = uuid4()
     draft_id = uuid4()
     old_draft = PlanDraft(
@@ -370,8 +377,9 @@ async def test_update_draft_updates_and_saves(service, drafts, now, clock):
         roster_id=uuid4(),
         template_id=uuid4(),
         lesson_mode_id="standard",
-        group_assignments={"s1": "g1"},
-        seat_assignments={},
+        revision=0,
+        group_assignments=[GroupAssignment(student_id="s1", group_id="g1")],
+        seat_assignments=[],
         created_at=now,
         updated_at=now,
     )
@@ -379,14 +387,44 @@ async def test_update_draft_updates_and_saves(service, drafts, now, clock):
     new_now = datetime(2025, 1, 2, tzinfo=timezone.utc)
     clock.now.return_value = new_now
 
-    result = await service.update_draft(
+    result = await handler.handle(
         draft_id=draft_id,
         owner_user_id=owner_id,
-        group_assignments={"s1": "g2"},
-        seat_assignments={"s1": "seat1"},
+        expected_revision=0,
+        group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
+        seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
     )
 
-    assert result.group_assignments == {"s1": "g2"}
-    assert result.seat_assignments == {"s1": "seat1"}
+    assert result.revision == 1
+    assert len(result.group_assignments) == 1
+    assert result.group_assignments[0].group_id == "g2"
     assert result.updated_at == new_now
     drafts.save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_patch_draft_raises_conflict_if_revision_mismatch(uow, drafts, now, clock):
+    handler = PatchDraftHandler(uow, drafts, clock)
+    owner_id = uuid4()
+    draft_id = uuid4()
+    old_draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="standard",
+        revision=5,
+        group_assignments=[],
+        seat_assignments=[],
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.return_value = old_draft
+
+    with pytest.raises(DomainError) as exc:
+        await handler.handle(
+            draft_id=draft_id,
+            owner_user_id=owner_id,
+            expected_revision=4,  # Mismatch
+        )
+    assert exc.value.code == ErrorCode.CONFLICT

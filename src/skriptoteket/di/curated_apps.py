@@ -9,9 +9,21 @@ import httpx
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from skriptoteket.application.apps.classroom_planner.services import (
-    ClassroomPlannerBootstrapService,
-    ClassroomPlannerService,
+from skriptoteket.application.curated_apps.classroom_planner import (
+    CreateDraftHandler,
+    CreateRoomTemplateHandler,
+    CreateRosterHandler,
+    DeleteRoomTemplateHandler,
+    DeleteRosterHandler,
+    GetBootstrapHandler,
+    GetDraftHandler,
+    GetRoomTemplateHandler,
+    GetRosterHandler,
+    ListRoomTemplatesHandler,
+    ListRostersHandler,
+    PatchDraftHandler,
+    UpdateRoomTemplateHandler,
+    UpdateRosterHandler,
 )
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
     ReagentPrepChefGetDefaultsHandler,
@@ -359,13 +371,83 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
-    def classroom_planner_bootstrap_service(
-        self,
-    ) -> ClassroomPlannerBootstrapService:
-        return ClassroomPlannerBootstrapService()
+    def get_bootstrap_handler(self) -> GetBootstrapHandler:
+        return GetBootstrapHandler()
 
     @provide(scope=Scope.REQUEST)
-    def classroom_planner_service(
+    def list_rosters_handler(self, rosters: RosterRepositoryProtocol) -> ListRostersHandler:
+        return ListRostersHandler(rosters=rosters)
+
+    @provide(scope=Scope.REQUEST)
+    def get_roster_handler(self, rosters: RosterRepositoryProtocol) -> GetRosterHandler:
+        return GetRosterHandler(rosters=rosters)
+
+    @provide(scope=Scope.REQUEST)
+    def create_roster_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateRosterHandler:
+        return CreateRosterHandler(uow=uow, rosters=rosters, clock=clock, id_generator=id_generator)
+
+    @provide(scope=Scope.REQUEST)
+    def update_roster_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateRosterHandler:
+        return UpdateRosterHandler(uow=uow, rosters=rosters, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def delete_roster_handler(
+        self, uow: UnitOfWorkProtocol, rosters: RosterRepositoryProtocol
+    ) -> DeleteRosterHandler:
+        return DeleteRosterHandler(uow=uow, rosters=rosters)
+
+    @provide(scope=Scope.REQUEST)
+    def list_room_templates_handler(
+        self, templates: RoomTemplateRepositoryProtocol
+    ) -> ListRoomTemplatesHandler:
+        return ListRoomTemplatesHandler(templates=templates)
+
+    @provide(scope=Scope.REQUEST)
+    def get_room_template_handler(
+        self, templates: RoomTemplateRepositoryProtocol
+    ) -> GetRoomTemplateHandler:
+        return GetRoomTemplateHandler(templates=templates)
+
+    @provide(scope=Scope.REQUEST)
+    def create_room_template_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateRoomTemplateHandler:
+        return CreateRoomTemplateHandler(
+            uow=uow, templates=templates, clock=clock, id_generator=id_generator
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def update_room_template_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateRoomTemplateHandler:
+        return UpdateRoomTemplateHandler(uow=uow, templates=templates, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def delete_room_template_handler(
+        self, uow: UnitOfWorkProtocol, templates: RoomTemplateRepositoryProtocol
+    ) -> DeleteRoomTemplateHandler:
+        return DeleteRoomTemplateHandler(uow=uow, templates=templates)
+
+    @provide(scope=Scope.REQUEST)
+    def create_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
@@ -373,8 +455,8 @@ class CuratedAppsProvider(Provider):
         drafts: PlanDraftRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> ClassroomPlannerService:
-        return ClassroomPlannerService(
+    ) -> CreateDraftHandler:
+        return CreateDraftHandler(
             uow=uow,
             rosters=rosters,
             templates=templates,
@@ -382,6 +464,19 @@ class CuratedAppsProvider(Provider):
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def get_draft_handler(self, drafts: PlanDraftRepositoryProtocol) -> GetDraftHandler:
+        return GetDraftHandler(drafts=drafts)
+
+    @provide(scope=Scope.REQUEST)
+    def patch_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> PatchDraftHandler:
+        return PatchDraftHandler(uow=uow, drafts=drafts, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def plan_draft_repository(self, session: AsyncSession) -> PlanDraftRepositoryProtocol:
