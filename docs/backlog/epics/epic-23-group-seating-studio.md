@@ -32,6 +32,7 @@ dependencies: ["ADR-0022", "ADR-0023", "ADR-0069"]
 - [x] [ST-23-04: Seat assignment canvas](../stories/story-23-04-group-seating-studio-seat-canvas.md)
 - [x] [ST-23-05: Cross-view synchronization and invariants](../stories/story-23-05-group-seating-studio-sync-engine.md)
 - [x] [ST-23-06: PlanDraft persistence and autosave](../stories/story-23-06-group-seating-studio-draft-persistence.md)
+- [x] [ST-23-07: Management Modals (Rosters & Rooms)](../stories/story-23-07-group-seating-studio-management-modals.md)
 
 ## Implementation Summary (as of 2026-03-20)
 
@@ -41,3 +42,4 @@ dependencies: ["ADR-0022", "ADR-0023", "ADR-0069"]
 - **ST-23-04**: Delivered the Seat Assignment Canvas. Implemented `RoomCanvas.vue` and `SeatNode.vue` with absolute positioning based on `x`/`y` coordinates. Connected seat assignment logic (`assignStudentToSeat`, `clearSeatAssignment`, `swapSeatAssignments`) to drag-and-drop events. Added cross-view indicators showing seated status in the group board. Tested with Vitest.
 - **ST-23-05**: Validated and marked complete. The normalized Pinia architecture and explicit reducers built during ST-23-03/04 fully satisfied the invariant requirements. Used native HTML5 drag-and-drop to completely bypass destructive array mutations, ensuring rock-solid cross-view synchronization.
 - **ST-23-06**: Delivered PlanDraft persistence and autosave. Implemented the `PlanDraft` SQLAlchemy model and updated the DI/service layer to handle storing JSONB mappings for group and seat assignments. Exposed `POST /drafts`, `GET /drafts/{id}`, and `PATCH /drafts/{id}` endpoints. Updated the frontend `useClassroomState.ts` with a `_triggerAutosave()` method that debounces PATCH requests automatically when any strict reducer fires, providing seamless background saving with status indicators in the UI.
+- **ST-23-07**: Delivered Management Modals and simplification. Added `CreateRosterModal.vue` (bulk-paste names) and `CreateRoomTemplateModal.vue` (spatial grid builder) to enable user-generated data. Simplified lesson modes to 'Sittplatsschema' and 'Gruppering' per user feedback. Fixed UI hover specs to align with brutalist standards (no lifting).

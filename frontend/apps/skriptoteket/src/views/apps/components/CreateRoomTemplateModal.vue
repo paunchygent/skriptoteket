@@ -11,11 +11,12 @@ const name = ref('')
 const isSubmitting = ref(false)
 const error = ref<string | null>(null)
 
-// 10x10 Grid representation for building a room
-const GRID_SIZE = 10
+// Grid representation for building a room
+const GRID_COLS = 15
+const GRID_ROWS = 10
 const SEAT_SIZE = 80 // pixels
 const grid = ref<boolean[][]>(
-  Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false))
+  Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(false))
 )
 
 function toggleSeat(row: number, col: number) {
@@ -26,8 +27,8 @@ const parsedSeats = computed<Seat[]>(() => {
   const seats: Seat[] = []
   let seatCounter = 1
 
-  for (let row = 0; row < GRID_SIZE; row++) {
-    for (let col = 0; col < GRID_SIZE; col++) {
+  for (let row = 0; row < GRID_ROWS; row++) {
+    for (let col = 0; col < GRID_COLS; col++) {
       if (grid.value[row][col]) {
         seats.push({
           id: `seat-${seatCounter++}`,
@@ -117,19 +118,19 @@ async function submit() {
           </div>
           <p class="text-xs text-navy/60 mb-2">Klicka i rutnätet för att placera ut bord/stolar.</p>
 
-          <div class="border-2 border-navy bg-paper p-4 flex justify-center overflow-x-auto">
+          <div class="border-2 border-navy bg-paper p-4 flex justify-start overflow-x-auto">
             <div
-              class="grid gap-1"
-              :style="{ gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))` }"
+              class="grid gap-1 shrink-0"
+              :style="{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))` }"
             >
               <template
-                v-for="row in GRID_SIZE"
+                v-for="row in GRID_ROWS"
                 :key="`row-${row}`"
               >
                 <div
-                  v-for="col in GRID_SIZE"
+                  v-for="col in GRID_COLS"
                   :key="`cell-${row}-${col}`"
-                  class="w-10 h-10 border-2 transition-colors cursor-pointer"
+                  class="w-8 h-8 sm:w-10 sm:h-10 border-2 transition-colors cursor-pointer"
                   :class="grid[row-1][col-1] ? 'bg-navy border-navy' : 'bg-white border-navy/20 hover:border-navy/50'"
                   @click="toggleSeat(row-1, col-1)"
                 />
