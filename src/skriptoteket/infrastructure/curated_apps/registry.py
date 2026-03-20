@@ -60,6 +60,21 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
                 ],
             ),
+            CuratedAppDefinition(
+                app_id="classroom.group-seating-studio",
+                tool_id=curated_app_tool_id(app_id="classroom.group-seating-studio"),
+                app_version=app_version,
+                ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED,
+                title="Klassrumskartan",
+                summary=(
+                    "Planera elevplaceringar och grupper med drag-and-drop. "
+                    "Innehåller stöd för olika lektionslägen."
+                ),
+                min_role=Role.USER,
+                placements=[
+                    CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
+                ],
+            ),
         ]
 
         self._apps = apps

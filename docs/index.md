@@ -107,6 +107,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md`
 - `docs/adr/adr-0067-reagent-prep-chef-sds-markdown-first-offline-corpus.md`
 - `docs/adr/adr-0068-textbook-corpus-pristine-cleanup-and-rag-ingest-governance.md`
+- `docs/adr/adr-0069-group-seating-studio-domain-model.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -116,6 +117,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/prd/prd-script-hub-v0.2.md`
 - `docs/prd/prd-spa-frontend-v0.1.md`
 - `docs/prd/prd-tool-authoring-v0.1.md`
+- `docs/prd/prd-group-seating-studio-v0.1.md`
 
 ### Releases
 
@@ -146,6 +148,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`
 - `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`
 - `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
+- `docs/backlog/epics/epic-23-group-seating-studio.md`
 
 ### Backlog Reviews
 
@@ -471,6 +474,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md`
 - `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md`
 - `docs/backlog/stories/story-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md`
+- `docs/backlog/stories/story-23-01-group-seating-studio-skeleton.md`
+- `docs/backlog/stories/story-23-02-group-seating-studio-manual-planner.md`
+- `docs/backlog/stories/story-23-03-group-seating-studio-drag-drop-canvas.md`
+- `docs/backlog/stories/story-23-04-group-seating-studio-seat-canvas.md`
+- `docs/backlog/stories/story-23-05-group-seating-studio-sync-engine.md`
 
 ### Reference
 

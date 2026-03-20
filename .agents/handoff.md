@@ -12,13 +12,23 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-04
-- Branch: `main`
+- Date: 2026-03-20
+- Branch: `main` + local changes
 - Current sprint: N/A (no sprints)
 - Production: Full Vue SPA
-- Completed: ADR-0067 pivot + SDS PDF rendered from markdown + “säkerhetsdata” copy.
+- Completed: Epic-23 Planning / ADR-0069 for Klassrumskartan.
 
-## Current Session (2026-03-04)
+## Current Session (2026-03-20)
+
+- Klassrumskartan (Group Seating Studio) Document Architecture (Slice 1) Baseline approved.
+  - `docs/adr/adr-0069-group-seating-studio-domain-model.md`
+  - `docs/backlog/epics/epic-23-group-seating-studio.md`
+  - `docs/backlog/reviews/review-epic-23-group-seating-studio.md`
+  - Defined explicit Reducers and Domain Invariants separating Groups and Seats mapping to `student_id`.
+  - Splitted baseline into exact 6 PR-sized Stories (`ST-23-01` to `ST-23-06`).
+- Scaffolded frontend App shell `ClassroomPlannerView.vue` and normalized state stub `useClassroomState.ts`. Wait for `/bootstrap` prior to displaying layout.
+
+## Previous Sessions
 
 - Docs pivot to ADR-0067 (markdown-first offline SDS corpus):
   - `docs/adr/adr-0067-reagent-prep-chef-sds-markdown-first-offline-corpus.md`
@@ -83,7 +93,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
-- 2026-03-04: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run docs-validate`
+- 2026-03-20: `pdm run docs-validate` passed with zero errors breaking the docs-contract.- 2026-03-04: `pdm run format`, `pdm run lint`, `pdm run typecheck`, `pdm run test`, `pdm run docs-validate`
 - 2026-03-04: OpenAPI + SPA types: `pdm run openapi-export-v1`, `pdm run fe-gen-api-types`, `pdm run fe-type-check`
 - 2026-03-04: SDS index regeneration: `pdm run python scripts/build_reagent_prep_chef_sds_index.py`
 - 2026-03-04: SDS PDF unit checks:

@@ -25,6 +25,7 @@ const bespokeView = shallowRef<Component | null>(null);
 
 const bespokeRegistry: Record<string, () => Promise<{ default: Component }>> = {
   "chemistry.reagent_prep_chef": () => import("./apps/ReagentPrepChefView.vue"),
+  "classroom.group-seating-studio": () => import("./apps/ClassroomPlannerView.vue"),
 };
 
 function resolveBespokeView(appIdValue: string): void {
