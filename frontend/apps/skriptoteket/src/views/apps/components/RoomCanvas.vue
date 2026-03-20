@@ -63,7 +63,7 @@ const canvasStyle = computed(() => {
         <div
           v-for="student in state.unseatedStudents"
           :key="student.id"
-          class="bg-white border-2 border-navy p-3 text-sm font-bold shadow-brutal-xs hover:bg-mint hover:-translate-y-0.5 transition-all cursor-grab active:cursor-grabbing flex justify-between items-center"
+          class="bg-white border-2 border-navy p-3 text-sm font-bold shadow-brutal-xs hover:bg-mint transition-colors cursor-grab active:cursor-grabbing flex justify-between items-center"
           draggable="true"
           @dragstart="onDragStart($event, student.id)"
         >

@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { useClassroomState, type Student, type Seat } from './useClassroomState'
 import GroupBoard from './components/GroupBoard.vue'
 import RoomCanvas from './components/RoomCanvas.vue'
+import CreateRosterModal from './components/CreateRosterModal.vue'
+import CreateRoomTemplateModal from './components/CreateRoomTemplateModal.vue'
 
 interface LessonMode {
   id: string
@@ -33,6 +35,10 @@ const lessonModes = ref<LessonMode[]>([])
 const selectedLessonMode = ref<LessonMode | null>(null)
 const selectedRoster = ref<Roster | null>(null)
 const selectedTemplate = ref<RoomTemplate | null>(null)
+
+// Modal State
+const isCreateRosterModalOpen = ref(false)
+const isCreateRoomModalOpen = ref(false)
 
 // View State
 type PlannerView = 'groups' | 'seats'
@@ -65,8 +71,8 @@ onMounted(async () => {
     const res = await fetch('/api/v1/apps/classroom.group-seating-studio/bootstrap')
     if (!res.ok) {
       lessonModes.value = [
-        { id: 'standard', name: 'Standard Lektion' },
-        { id: 'test', name: 'Prov/Examination' }
+        { id: 'seating', name: 'Sittplatsschema' },
+        { id: 'group_work', name: 'Gruppering' }
       ]
     } else {
       const data = await res.json()
@@ -80,6 +86,17 @@ onMounted(async () => {
   }
 })
 
+function onRosterCreated(newRoster: Roster) {
+  isCreateRosterModalOpen.value = false
+  availableRosters.value.push(newRoster)
+  selectedRoster.value = newRoster
+}
+
+function onRoomCreated(newRoom: RoomTemplate) {
+  isCreateRoomModalOpen.value = false
+  availableTemplates.value.push(newRoom)
+  selectedTemplate.value = newRoom
+}
 const isReadyToStart = ref(false)
 
 async function startPlanning() {
@@ -162,8 +179,8 @@ function resetSelection() {
             <button
               v-for="mode in lessonModes"
               :key="mode.id"
-              class="px-8 py-4 border-2 border-navy transition-all font-black uppercase tracking-widest text-sm"
-              :class="selectedLessonMode?.id === mode.id ? 'bg-navy text-white shadow-none translate-y-1' : 'bg-white text-navy shadow-brutal hover:-translate-y-1'"
+              class="px-8 py-4 border-2 border-navy transition-colors font-black uppercase tracking-widest text-sm"
+              :class="selectedLessonMode?.id === mode.id ? 'bg-navy text-white shadow-none' : 'bg-white text-navy shadow-brutal hover:bg-navy/5'"
               @click="selectedLessonMode = mode"
             >
               {{ mode.name }}
@@ -174,9 +191,17 @@ function resetSelection() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
           <!-- Roster Selection -->
           <div class="space-y-6">
-            <h2 class="text-xl font-black text-navy uppercase tracking-widest border-b-2 border-navy/10 pb-2">
-              2. Välj Klasslista
-            </h2>
+            <div class="flex justify-between items-end border-b-2 border-navy/10 pb-2">
+              <h2 class="text-xl font-black text-navy uppercase tracking-widest">
+                2. Välj Klasslista
+              </h2>
+              <button
+                class="text-xs font-bold uppercase text-navy/60 hover:text-navy transition-colors underline decoration-2 underline-offset-4"
+                @click="isCreateRosterModalOpen = true"
+              >
+                Skapa ny
+              </button>
+            </div>
             <div
               v-if="isLoadingCatalog"
               class="animate-pulse text-navy/50 font-bold uppercase text-xs"
@@ -196,8 +221,8 @@ function resetSelection() {
               <button
                 v-for="roster in availableRosters"
                 :key="roster.id"
-                class="p-5 border-2 border-navy text-left transition-all font-black uppercase tracking-widest text-xs"
-                :class="selectedRoster?.id === roster.id ? 'bg-mint text-navy translate-x-1 shadow-none' : 'bg-white shadow-brutal-xs hover:bg-paper'"
+                class="p-5 border-2 border-navy text-left transition-colors font-black uppercase tracking-widest text-xs"
+                :class="selectedRoster?.id === roster.id ? 'bg-mint text-navy shadow-none' : 'bg-white shadow-brutal-xs hover:bg-paper'"
                 @click="selectedRoster = roster"
               >
                 {{ roster.name }}
@@ -208,9 +233,17 @@ function resetSelection() {
 
           <!-- Room Template Selection -->
           <div class="space-y-6">
-            <h2 class="text-xl font-black text-navy uppercase tracking-widest border-b-2 border-navy/10 pb-2">
-              3. Välj Klassrum
-            </h2>
+            <div class="flex justify-between items-end border-b-2 border-navy/10 pb-2">
+              <h2 class="text-xl font-black text-navy uppercase tracking-widest">
+                3. Välj Klassrum
+              </h2>
+              <button
+                class="text-xs font-bold uppercase text-navy/60 hover:text-navy transition-colors underline decoration-2 underline-offset-4"
+                @click="isCreateRoomModalOpen = true"
+              >
+                Skapa nytt
+              </button>
+            </div>
             <div
               v-if="isLoadingCatalog"
               class="animate-pulse text-navy/50 font-bold uppercase text-xs"
@@ -230,8 +263,8 @@ function resetSelection() {
               <button
                 v-for="tmpl in availableTemplates"
                 :key="tmpl.id"
-                class="p-5 border-2 border-navy text-left transition-all font-black uppercase tracking-widest text-xs"
-                :class="selectedTemplate?.id === tmpl.id ? 'bg-mint text-navy translate-x-1 shadow-none' : 'bg-white shadow-brutal-xs hover:bg-paper'"
+                class="p-5 border-2 border-navy text-left transition-colors font-black uppercase tracking-widest text-xs"
+                :class="selectedTemplate?.id === tmpl.id ? 'bg-mint text-navy shadow-none' : 'bg-white shadow-brutal-xs hover:bg-paper'"
                 @click="selectedTemplate = tmpl"
               >
                 {{ tmpl.name }}
@@ -243,8 +276,8 @@ function resetSelection() {
 
         <div class="pt-10 border-t-2 border-navy/10 flex justify-center">
           <button
-            class="px-16 py-8 border-4 border-navy font-black text-2xl uppercase transition-all tracking-widest"
-            :class="(selectedLessonMode && selectedRoster && selectedTemplate) ? 'bg-burgundy text-white shadow-brutal hover:-translate-y-1 hover:shadow-[12px_12px_0_0_rgba(15,23,42,1)]' : 'bg-navy/10 text-navy/20 cursor-not-allowed'"
+            class="px-16 py-8 border-4 border-navy font-black text-2xl uppercase transition-colors tracking-widest"
+            :class="(selectedLessonMode && selectedRoster && selectedTemplate) ? 'bg-burgundy text-white shadow-brutal hover:bg-burgundy/90' : 'bg-navy/10 text-navy/20 cursor-not-allowed'"
             :disabled="!(selectedLessonMode && selectedRoster && selectedTemplate)"
             @click="startPlanning"
           >
@@ -314,5 +347,18 @@ function resetSelection() {
         </div>
       </div>
     </div>
+
+    <!-- Modals -->
+    <CreateRosterModal
+      v-if="isCreateRosterModalOpen"
+      @close="isCreateRosterModalOpen = false"
+      @created="onRosterCreated"
+    />
+
+    <CreateRoomTemplateModal
+      v-if="isCreateRoomModalOpen"
+      @close="isCreateRoomModalOpen = false"
+      @created="onRoomCreated"
+    />
   </div>
 </template>

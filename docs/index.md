@@ -171,6 +171,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-20-curated-app-reagent-prep-chef.md`
 - `docs/backlog/reviews/review-epic-21-curated-app-conversion-hub.md`
 - `docs/backlog/reviews/review-epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
+- `docs/backlog/reviews/review-epic-23-group-seating-studio.md`
+- `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
 
 ### Backlog Sprints
 

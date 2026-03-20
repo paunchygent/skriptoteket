@@ -25,10 +25,8 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 # Standard presets (per ADR-0069 decision to bootstrap from catalog)
 LESSON_MODES = [
-    LessonModePreset(id="standard", name="Standard Lektion"),
-    LessonModePreset(id="test", name="Prov/Examination"),
-    LessonModePreset(id="group_work", name="Grupparbete"),
-    LessonModePreset(id="lab", name="Laboration"),
+    LessonModePreset(id="seating", name="Sittplatsschema"),
+    LessonModePreset(id="group_work", name="Gruppering"),
 ]
 
 
