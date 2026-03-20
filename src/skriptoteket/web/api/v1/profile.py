@@ -1,6 +1,5 @@
 from typing import Literal
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -20,6 +19,7 @@ from skriptoteket.protocols.identity import (
     UpdateProfileHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1/profile", tags=["profile"])
 

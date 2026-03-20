@@ -2,7 +2,7 @@
 type: story
 id: ST-23-02
 title: "Klassrumskartan — Roster/Room Persistence & Lesson Mode"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-20
 epic: "EPIC-23"

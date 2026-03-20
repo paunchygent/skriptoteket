@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Header, Request, Response, status
 from pydantic import BaseModel, ConfigDict
 
@@ -31,6 +30,7 @@ from skriptoteket.web.auth.dependencies import (
     get_current_user,
     get_session_id,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.request_metadata import (
     get_client_ip,
     get_correlation_id,

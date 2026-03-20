@@ -2,7 +2,6 @@
 
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, status
 
 from skriptoteket.application.suggestions.commands import (
@@ -36,6 +35,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1", tags=["suggestions"])
 

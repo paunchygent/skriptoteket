@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import cast
 from unittest.mock import AsyncMock
 
 import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
-from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
 from skriptoteket.application.catalog.queries import ListRecentToolsResult
@@ -21,6 +19,7 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
 )
 from skriptoteket.web.api.v1 import me as me_api
+from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_session, make_user
 
@@ -39,9 +38,9 @@ class MeApiProvider(Provider):
         *,
         settings: Settings,
         clock: ClockProtocol,
-        current_user_provider: AsyncMock,
-        sessions: AsyncMock,
-        list_handler: AsyncMock,
+        current_user_provider: CurrentUserProviderProtocol,
+        sessions: SessionRepositoryProtocol,
+        list_handler: ListRecentToolsHandlerProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -60,15 +59,15 @@ class MeApiProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return cast(CurrentUserProviderProtocol, self._current_user_provider)
+        return self._current_user_provider
 
     @provide(scope=Scope.REQUEST)
     def sessions(self) -> SessionRepositoryProtocol:
-        return cast(SessionRepositoryProtocol, self._sessions)
+        return self._sessions
 
     @provide(scope=Scope.REQUEST)
     def list_recent_tools_handler(self) -> ListRecentToolsHandlerProtocol:
-        return cast(ListRecentToolsHandlerProtocol, self._list_handler)
+        return self._list_handler
 
 
 @pytest.fixture

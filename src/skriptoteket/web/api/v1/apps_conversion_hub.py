@@ -11,7 +11,6 @@ Relationships:
 
 from uuid import uuid4
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import Response
 
@@ -31,6 +30,7 @@ from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertALotClientV2Protocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.request_metadata import get_correlation_id
 
 APP_ID = "documents.conversion_hub"

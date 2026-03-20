@@ -1,7 +1,6 @@
 from datetime import datetime
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 
 from skriptoteket.domain.catalog.models import Tool
@@ -16,6 +15,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.editor_support import (
     DEFAULT_ENTRYPOINT,
     STARTER_TEMPLATE,

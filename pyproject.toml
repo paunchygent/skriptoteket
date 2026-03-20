@@ -65,6 +65,7 @@ dependencies = [
     "weasyprint",
     "markdown>=3.6",
     "molmass>=2026.1.8",
+    "starlette-dishka>=1.0.2",
 ]
 
 [project.optional-dependencies]

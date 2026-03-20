@@ -1,7 +1,6 @@
 import mimetypes
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 
@@ -25,6 +24,7 @@ from skriptoteket.protocols.vault import (
     SaveVaultFileHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1/vault", tags=["vault"])
 

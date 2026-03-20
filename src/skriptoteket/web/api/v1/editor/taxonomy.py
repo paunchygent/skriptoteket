@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 
 from skriptoteket.application.catalog.commands import UpdateToolTaxonomyCommand
@@ -14,6 +13,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_admin_api,
     require_csrf_token,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 from .models.requests import ToolTaxonomyRequest
 from .models.responses import ToolTaxonomyResponse

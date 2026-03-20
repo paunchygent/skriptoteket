@@ -2,7 +2,7 @@
 type: story
 id: ST-23-01
 title: "Klassrumskartan — Registry, App Route, Bootstrap Endpoint"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-20
 epic: "EPIC-23"

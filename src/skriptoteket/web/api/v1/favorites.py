@@ -1,7 +1,6 @@
 from typing import Literal
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
@@ -15,6 +14,7 @@ from skriptoteket.protocols.favorites import (
     RemoveFavoriteHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1/favorites", tags=["favorites"])
 

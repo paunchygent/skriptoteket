@@ -11,28 +11,96 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from skriptoteket.infrastructure.db.base import Base
-from skriptoteket.infrastructure.db.models.category import CategoryModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.profession import ProfessionModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.profession_category import (  # noqa: F401
+from skriptoteket.infrastructure.db.models.category import CategoryModel
+from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
+    RoomTemplateModel,
+)
+from skriptoteket.infrastructure.db.models.classroom_planner_roster import (
+    RosterModel,
+)
+from skriptoteket.infrastructure.db.models.draft_lock import DraftLockModel
+from skriptoteket.infrastructure.db.models.email_verification_token import (
+    EmailVerificationTokenModel,
+)
+from skriptoteket.infrastructure.db.models.login_event import LoginEventModel
+from skriptoteket.infrastructure.db.models.profession import ProfessionModel
+from skriptoteket.infrastructure.db.models.profession_category import (
     ProfessionCategoryModel,
 )
+from skriptoteket.infrastructure.db.models.sandbox_snapshot import (
+    SandboxSnapshotModel,
+)
 from skriptoteket.infrastructure.db.models.script_suggestion import (
-    ScriptSuggestionModel,  # noqa: F401
+    ScriptSuggestionModel,
 )
 from skriptoteket.infrastructure.db.models.script_suggestion_decision import (
-    ScriptSuggestionDecisionModel,  # noqa: F401
+    ScriptSuggestionDecisionModel,
 )
-from skriptoteket.infrastructure.db.models.session import SessionModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.tool import ToolModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.tool_category import ToolCategoryModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.tool_profession import ToolProfessionModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.user import UserModel  # noqa: F401
-from skriptoteket.infrastructure.db.models.user_vault_file import (  # noqa: F401
+from skriptoteket.infrastructure.db.models.session import SessionModel
+from skriptoteket.infrastructure.db.models.tool import ToolModel
+from skriptoteket.infrastructure.db.models.tool_category import ToolCategoryModel
+from skriptoteket.infrastructure.db.models.tool_maintainer import (
+    ToolMaintainerModel,
+)
+from skriptoteket.infrastructure.db.models.tool_maintainer_audit_log import (
+    ToolMaintainerAuditLogModel,
+)
+from skriptoteket.infrastructure.db.models.tool_profession import ToolProfessionModel
+from skriptoteket.infrastructure.db.models.tool_run import ToolRunModel
+from skriptoteket.infrastructure.db.models.tool_run_job import ToolRunJobModel
+from skriptoteket.infrastructure.db.models.tool_session import ToolSessionModel
+from skriptoteket.infrastructure.db.models.tool_session_message import (
+    ToolSessionMessageModel,
+)
+from skriptoteket.infrastructure.db.models.tool_session_turn import (
+    ToolSessionTurnModel,
+)
+from skriptoteket.infrastructure.db.models.tool_version import ToolVersionModel
+from skriptoteket.infrastructure.db.models.user import UserModel
+from skriptoteket.infrastructure.db.models.user_favorite import (
+    UserFavoriteAppModel,
+    UserFavoriteToolModel,
+)
+from skriptoteket.infrastructure.db.models.user_profile import UserProfileModel
+from skriptoteket.infrastructure.db.models.user_vault_file import (
     UserVaultFileModel,
 )
-from skriptoteket.infrastructure.db.models.user_vault_usage import (  # noqa: F401
+from skriptoteket.infrastructure.db.models.user_vault_usage import (
     UserVaultUsageModel,
 )
+
+# Explicitly use models to satisfy linter and ensure they are registered on Base.metadata
+_MODELS = [
+    CategoryModel,
+    RoomTemplateModel,
+    RosterModel,
+    DraftLockModel,
+    EmailVerificationTokenModel,
+    LoginEventModel,
+    ProfessionModel,
+    ProfessionCategoryModel,
+    SandboxSnapshotModel,
+    ScriptSuggestionModel,
+    ScriptSuggestionDecisionModel,
+    SessionModel,
+    ToolModel,
+    ToolCategoryModel,
+    ToolMaintainerModel,
+    ToolMaintainerAuditLogModel,
+    ToolProfessionModel,
+    ToolRunModel,
+    ToolRunJobModel,
+    ToolSessionModel,
+    ToolSessionMessageModel,
+    ToolSessionTurnModel,
+    ToolVersionModel,
+    UserModel,
+    UserFavoriteAppModel,
+    UserFavoriteToolModel,
+    UserProfileModel,
+    UserVaultFileModel,
+    UserVaultUsageModel,
+]
 
 config = context.config
 

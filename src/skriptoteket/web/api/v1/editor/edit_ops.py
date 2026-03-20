@@ -1,4 +1,3 @@
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Header, Response
 
 from skriptoteket.config import Settings
@@ -20,6 +19,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_session_api,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.editor_support import require_tool_access
 
 from .models.common import EditorVirtualFiles

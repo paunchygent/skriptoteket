@@ -2,7 +2,6 @@ import json
 from typing import Annotated
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
@@ -45,6 +44,7 @@ from skriptoteket.protocols.tool_settings import (
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter(prefix="/api/v1/tools", tags=["tools"])

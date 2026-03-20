@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 
@@ -12,6 +11,7 @@ from skriptoteket.application.catalog.queries import CatalogItemKind, ListRecent
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListRecentToolsHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1/me", tags=["me"])
 

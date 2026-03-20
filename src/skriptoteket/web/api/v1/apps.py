@@ -2,7 +2,6 @@
 
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
@@ -12,6 +11,7 @@ from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1/apps", tags=["apps"])
 

@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 
 from skriptoteket.application.scripting.commands import (
@@ -22,6 +21,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_superuser_api,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 from .models.requests import PublishVersionRequest, RequestChangesRequest, SubmitReviewRequest
 from .models.responses import WorkflowActionResponse

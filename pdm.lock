@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:02da01a19f2a4e177143fbc90d0d45b597984d8169ed926fb21584f0f4848b02"
+content_hash = "sha256:84f44229b1c61feec9b34528902641c544eaa1c65615c0dd4c758075facf96a8"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -2665,6 +2665,21 @@ dependencies = [
 files = [
     {file = "starlette-0.52.1-py3-none-any.whl", hash = "sha256:0029d43eb3d273bc4f83a08720b4912ea4b071087a3b48db01b7c839f7954d74"},
     {file = "starlette-0.52.1.tar.gz", hash = "sha256:834edd1b0a23167694292e94f597773bc3f89f362be6effee198165a35d62933"},
+]
+
+[[package]]
+name = "starlette-dishka"
+version = "1.0.2"
+requires_python = ">=3.10"
+summary = "Starlette integration for dishka"
+groups = ["default"]
+dependencies = [
+    "dishka<2.0.0,>=1.7.1",
+    "starlette>=0.27.0",
+]
+files = [
+    {file = "starlette_dishka-1.0.2-py3-none-any.whl", hash = "sha256:e554ebc99c7a494c1084196871ccdb3f313f8430347d589576d688b5645fbbfe"},
+    {file = "starlette_dishka-1.0.2.tar.gz", hash = "sha256:f01054d9ca675e7778283b66bffaa5284a7e6e8cb3d895d103aba3f117dd715a"},
 ]
 
 [[package]]

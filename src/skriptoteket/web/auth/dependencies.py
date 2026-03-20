@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import Depends, Request
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import CurrentUserProviderProtocol, SessionRepositoryProtocol
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 
 def _parse_uuid(value: str | None) -> UUID | None:

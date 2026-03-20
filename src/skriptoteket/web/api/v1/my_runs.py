@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import PurePosixPath
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
@@ -16,6 +15,7 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1/my-runs", tags=["my-runs"])
 

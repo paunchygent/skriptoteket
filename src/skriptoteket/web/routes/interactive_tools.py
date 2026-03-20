@@ -1,7 +1,6 @@
 from pathlib import Path
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
@@ -38,6 +37,7 @@ from skriptoteket.protocols.interactive_tools import (
 )
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1")
 

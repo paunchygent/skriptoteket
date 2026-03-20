@@ -1,7 +1,6 @@
 from pathlib import Path
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
@@ -13,6 +12,7 @@ from skriptoteket.domain.scripting.models import ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 from .models.responses import ArtifactEntry, EditorRunDetails
 

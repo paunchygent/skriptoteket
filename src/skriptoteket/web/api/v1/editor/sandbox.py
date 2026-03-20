@@ -2,7 +2,6 @@ import json
 from typing import Annotated
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from pydantic import BaseModel, Field, JsonValue, ValidationError
 
@@ -38,6 +37,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.uploads import read_upload_files
 
 from .models.requests import StartSandboxActionRequest

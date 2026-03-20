@@ -4,7 +4,6 @@ This module exposes app-specific endpoints (prep, defaults, risk draft/export/sa
 and enforces app access + CSRF at the web boundary.
 """
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
@@ -45,6 +44,7 @@ from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefUpdateDefaultsHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 APP_ID = "chemistry.reagent_prep_chef"
 

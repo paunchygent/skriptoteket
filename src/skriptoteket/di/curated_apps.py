@@ -7,7 +7,12 @@ from pathlib import Path
 
 import httpx
 from dishka import Provider, Scope, provide
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.application.apps.classroom_planner.services import (
+    ClassroomPlannerBootstrapService,
+    ClassroomPlannerService,
+)
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
     ReagentPrepChefGetDefaultsHandler,
     ReagentPrepChefUpdateDefaultsHandler,
@@ -61,6 +66,14 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.risk_templa
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store import (
     FileSystemReagentPrepChefSdsStore,
+)
+from skriptoteket.infrastructure.repositories.classroom_planner import (
+    PostgreSQLRoomTemplateRepository,
+    PostgreSQLRosterRepository,
+)
+from skriptoteket.protocols.classroom_planner import (
+    RoomTemplateRepositoryProtocol,
+    RosterRepositoryProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -342,3 +355,34 @@ class CuratedAppsProvider(Provider):
             vault_files=vault_files,
             vault_storage=vault_storage,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def classroom_planner_bootstrap_service(
+        self,
+    ) -> ClassroomPlannerBootstrapService:
+        return ClassroomPlannerBootstrapService()
+
+    @provide(scope=Scope.REQUEST)
+    def classroom_planner_service(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ClassroomPlannerService:
+        return ClassroomPlannerService(
+            uow=uow,
+            rosters=rosters,
+            templates=templates,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def roster_repository(self, session: AsyncSession) -> RosterRepositoryProtocol:
+        return PostgreSQLRosterRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def room_template_repository(self, session: AsyncSession) -> RoomTemplateRepositoryProtocol:
+        return PostgreSQLRoomTemplateRepository(session=session)

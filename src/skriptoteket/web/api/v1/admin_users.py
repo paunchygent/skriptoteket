@@ -2,7 +2,6 @@
 
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 
@@ -16,6 +15,7 @@ from skriptoteket.protocols.identity import (
 )
 from skriptoteket.protocols.login_events import ListLoginEventsHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_superuser_api
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1", tags=["admin-users"])
 

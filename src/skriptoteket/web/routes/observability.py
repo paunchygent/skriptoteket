@@ -9,7 +9,6 @@ See .agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 import asyncio
 
 from dishka import FromDishka
-from dishka.integrations.fastapi import inject
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -22,6 +21,7 @@ from skriptoteket.observability.health import build_health_response, check_datab
 from skriptoteket.observability.metrics import get_metrics
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import SessionRepositoryProtocol, UserRepositoryProtocol
+from skriptoteket.web.dishka_compat import inject
 
 router = APIRouter(tags=["observability"])
 

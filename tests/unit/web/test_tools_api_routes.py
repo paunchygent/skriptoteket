@@ -8,7 +8,6 @@ from uuid import UUID, uuid4
 import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
-from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
 from skriptoteket.application.scripting.session_files import (
@@ -32,6 +31,7 @@ from skriptoteket.protocols.interactive_tools import ListSessionFilesHandlerProt
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.web.api.v1 import tools as tools_api
+from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from tests.fixtures.application_fixtures import FakeUow

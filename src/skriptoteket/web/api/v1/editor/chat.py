@@ -2,7 +2,6 @@ import json
 from collections.abc import AsyncIterator
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response, StreamingResponse
 
@@ -22,6 +21,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_session_api,
 )
+from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.editor_support import require_tool_access
 
 from .models.requests import EditorChatRequest

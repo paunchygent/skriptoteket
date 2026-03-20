@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import cast
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
-from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
 from skriptoteket.application.favorites.commands import FavoriteStatusResult
@@ -28,6 +26,7 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
 )
 from skriptoteket.web.api.v1 import favorites as favorites_api
+from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_session, make_user
 
@@ -46,11 +45,11 @@ class FavoritesApiProvider(Provider):
         *,
         settings: Settings,
         clock: ClockProtocol,
-        current_user_provider: AsyncMock,
-        sessions: AsyncMock,
-        add_handler: AsyncMock,
-        remove_handler: AsyncMock,
-        list_handler: AsyncMock,
+        current_user_provider: CurrentUserProviderProtocol,
+        sessions: SessionRepositoryProtocol,
+        add_handler: AddFavoriteHandlerProtocol,
+        remove_handler: RemoveFavoriteHandlerProtocol,
+        list_handler: ListFavoritesHandlerProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -71,23 +70,23 @@ class FavoritesApiProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def current_user_provider(self) -> CurrentUserProviderProtocol:
-        return cast(CurrentUserProviderProtocol, self._current_user_provider)
+        return self._current_user_provider
 
     @provide(scope=Scope.REQUEST)
     def sessions(self) -> SessionRepositoryProtocol:
-        return cast(SessionRepositoryProtocol, self._sessions)
+        return self._sessions
 
     @provide(scope=Scope.REQUEST)
     def add_favorite_handler(self) -> AddFavoriteHandlerProtocol:
-        return cast(AddFavoriteHandlerProtocol, self._add_handler)
+        return self._add_handler
 
     @provide(scope=Scope.REQUEST)
     def remove_favorite_handler(self) -> RemoveFavoriteHandlerProtocol:
-        return cast(RemoveFavoriteHandlerProtocol, self._remove_handler)
+        return self._remove_handler
 
     @provide(scope=Scope.REQUEST)
     def list_favorites_handler(self) -> ListFavoritesHandlerProtocol:
-        return cast(ListFavoritesHandlerProtocol, self._list_handler)
+        return self._list_handler
 
 
 @pytest.fixture

@@ -3,7 +3,6 @@
 from datetime import datetime
 from uuid import UUID
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
@@ -22,6 +21,7 @@ from skriptoteket.protocols.catalog import (
     PublishToolHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_admin_api, require_csrf_token
+from skriptoteket.web.dishka_compat import FromDishka, inject
 
 router = APIRouter(prefix="/api/v1", tags=["admin-tools"])
 
