@@ -16,34 +16,31 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: N/A (no sprints)
 - Production: Full Vue SPA
-- Completed: ST-23-02 (Roster/Template Persistence) for Klassrumskartan.
+- Completed: ST-23-01, ST-23-02, ST-23-03, ST-23-04, ST-23-05 (Klassrumskartan / Group Seating Studio).
 
 ## Current Session (2026-03-20)
 
-- Klassrumskartan (Group Seating Studio) Relational Persistence (Slice 1).
-  - Implemented `Roster` and `RoomTemplate` SQLAlchemy models in `src/skriptoteket/infrastructure/db/models/`.
-  - Created and applied Alembic migration `57a6ea32ef0a` for new tables.
-  - Implemented `PostgreSQLRosterRepository` and `PostgreSQLRoomTemplateRepository` in `src/skriptoteket/infrastructure/repositories/classroom_planner.py`.
-  - Added CRUD application services in `src/skriptoteket/application/apps/classroom_planner/services.py`.
-  - Added CRUD API endpoints in `src/skriptoteket/web/api/v1/apps_classroom_planner.py`.
-  - Updated `ClassroomPlannerView.vue` with a 3-step selection gate (Lesson Mode, Roster, Room).
-  - Added a REQUIRED database migration idempotency test using Testcontainers in `tests/integration/database/test_classroom_planner_migration.py`.
+- Klassrumskartan (Group Seating Studio) UI Implementation (Slice 1).
+  - Built `GroupBoard.vue` and `GroupCard.vue` for assigning students to groups via drag-and-drop.
+  - Built `RoomCanvas.vue` and `SeatNode.vue` for spatial seat assignments.
+  - Implemented normalized Pinia state in `useClassroomState.ts` with strict reducers to prevent destructive array mutations.
+  - Connected views via reactive computed properties to ensure cross-view synchronization without re-renders (ST-23-05).
+  - Addressed review feedback from ST-23-01/02 (ownership auth checks, expanded service unit tests, fixed DTO naming).
+  - Resolved `dishka` deprecation warnings by migrating to `starlette-dishka` and creating a compatibility layer.
 
 ## Previous Sessions
 
-- Klassrumskartan (Group Seating Studio) Backend Skeleton (ST-23-01).
-  - Bootstrap endpoint provisioning lesson modes and feature flags.
-- Klassrumskartan (Group Seating Studio) Planning (Slice 1).
-  - `docs/adr/adr-0069-group-seating-studio-domain-model.md`
-  - `docs/backlog/epics/epic-23-group-seating-studio.md`
+- Klassrumskartan (Group Seating Studio) Relational Persistence (Slice 1).
+  - Implemented `Roster` and `RoomTemplate` SQLAlchemy models.
+  - Created and applied Alembic migration `57a6ea32ef0a` for new tables.
+  - Added CRUD API endpoints in `src/skriptoteket/web/api/v1/apps_classroom_planner.py`.
 - Older history: see `.agents/readme-first.md` + `docs/`.
 
 ## Verification
 
-- 2026-03-20: `pdm run pytest tests/integration/database/test_classroom_planner_migration.py` (PASSED, verified upgrade/downgrade/upgrade idempotency).
-- 2026-03-20: `pdm run pytest tests/unit/application/apps/classroom_planner tests/unit/web/apps/classroom_planner` (PASSED 100%).
-- 2026-03-20: Live `curl` check: created test roster and room template, verified they persist and are listable.
-- 2026-03-20: `pdm run lint` and `pdm run docs-validate` PASSED.
+- 2026-03-20: `pdm run fe-test` (PASSED: all 256 frontend unit tests pass, verifying the Pinia store reducers).
+- 2026-03-20: `pdm run pytest tests/unit/application/apps/classroom_planner` (PASSED: verified expanded test coverage and ownership auth checks).
+- 2026-03-20: `pdm run lint` and `pdm run typecheck` (PASSED).
 
 ## How to Run
 
@@ -58,6 +55,7 @@ ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
 pdm run lint
 pdm run typecheck
 pdm run test
+pdm run fe-test
 ```
 
 ## Known Issues / Risks
@@ -67,5 +65,4 @@ pdm run test
 
 ## Next Steps
 
-- ST-23-03: Implement the Group Assignment Board (UI) where students can be dragged into groups.
-- ST-23-04: Implement the Seat Assignment Canvas (UI) for spatial placement.
+- ST-23-06: PlanDraft persistence and autosave (saving the workspace state to the database).
