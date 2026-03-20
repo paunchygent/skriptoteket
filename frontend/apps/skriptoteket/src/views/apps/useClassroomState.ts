@@ -30,6 +30,11 @@ export const useClassroomState = defineStore('classroom-state', () => {
   // studentId -> seatId
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({})
 
+  // Persistence State
+  const activeDraftId = ref<string | null>(null)
+  const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null
+
   // 3. Getters
   const ungroupedStudents = computed(() => {
     return Object.values(studentsById.value).filter(
@@ -100,18 +105,71 @@ export const useClassroomState = defineStore('classroom-state', () => {
     })
   }
 
-  // 5. Strict State Reducers
+  // 5. Draft Persistence API
+
+  async function createDraft(rosterId: string, templateId: string, lessonModeId: string) {
+    saveStatus.value = 'saving'
+    try {
+      const response = await fetch('/api/v1/apps/classroom.group-seating-studio/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roster_id: rosterId,
+          template_id: templateId,
+          lesson_mode_id: lessonModeId,
+          group_assignments: groupAssignmentsByStudentId.value,
+          seat_assignments: seatAssignmentsByStudentId.value
+        })
+      })
+      if (!response.ok) throw new Error('Failed to create draft')
+      const data = await response.json()
+      activeDraftId.value = data.id
+      saveStatus.value = 'saved'
+    } catch (e) {
+      saveStatus.value = 'error'
+      console.error(e)
+    }
+  }
+
+  function _triggerAutosave() {
+    if (!activeDraftId.value) return
+
+    saveStatus.value = 'saving'
+    if (saveTimeout) clearTimeout(saveTimeout)
+
+    saveTimeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/v1/apps/classroom.group-seating-studio/drafts/${activeDraftId.value}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            group_assignments: groupAssignmentsByStudentId.value,
+            seat_assignments: seatAssignmentsByStudentId.value
+          })
+        })
+        if (!response.ok) throw new Error('Failed to save draft')
+        saveStatus.value = 'saved'
+      } catch (e) {
+        saveStatus.value = 'error'
+        console.error(e)
+      }
+    }, 1000) // 1 second debounce
+  }
+
+  // 6. Strict State Reducers
 
   function assignStudentToGroup(studentId: string, groupId: string) {
     if (!studentsById.value[studentId]) return
     if (!groupsById.value[groupId]) return
 
     groupAssignmentsByStudentId.value[studentId] = groupId
+    _triggerAutosave()
   }
 
   function removeStudentFromGroup(studentId: string) {
     if (!studentsById.value[studentId]) return
     groupAssignmentsByStudentId.value[studentId] = null
+    _triggerAutosave()
   }
 
   function assignStudentToSeat(studentId: string, seatId: string) {
@@ -126,6 +184,7 @@ export const useClassroomState = defineStore('classroom-state', () => {
     })
 
     seatAssignmentsByStudentId.value[studentId] = seatId
+    _triggerAutosave()
   }
 
   function swapSeatAssignments(studentIdA: string, studentIdB: string) {
@@ -134,11 +193,13 @@ export const useClassroomState = defineStore('classroom-state', () => {
 
     seatAssignmentsByStudentId.value[studentIdA] = seatB || null
     seatAssignmentsByStudentId.value[studentIdB] = seatA || null
+    _triggerAutosave()
   }
 
   function clearSeatAssignment(studentId: string) {
     if (!studentsById.value[studentId]) return
     seatAssignmentsByStudentId.value[studentId] = null
+    _triggerAutosave()
   }
 
   return {
@@ -148,6 +209,8 @@ export const useClassroomState = defineStore('classroom-state', () => {
     seatsById,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
+    activeDraftId,
+    saveStatus,
 
     // Getters
     ungroupedStudents,
@@ -159,6 +222,7 @@ export const useClassroomState = defineStore('classroom-state', () => {
     initializeFromRoster,
     initializeGroups,
     initializeFromTemplate,
+    createDraft,
     assignStudentToGroup,
     removeStudentFromGroup,
     assignStudentToSeat,

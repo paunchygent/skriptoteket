@@ -7,6 +7,7 @@ from uuid import UUID
 from skriptoteket.domain.apps.classroom_planner.models import (
     ClassroomPlannerBootstrapPayload,
     LessonModePreset,
+    PlanDraft,
     RoomTemplate,
     Roster,
     Seat,
@@ -14,6 +15,7 @@ from skriptoteket.domain.apps.classroom_planner.models import (
 )
 from skriptoteket.domain.errors import not_found
 from skriptoteket.protocols.classroom_planner import (
+    PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
@@ -50,7 +52,7 @@ class ClassroomPlannerBootstrapService:
 
 
 class ClassroomPlannerService:
-    """Service for managing classroom planner entities (Rosters, Templates)."""
+    """Service for managing classroom planner entities (Rosters, Templates, Drafts)."""
 
     def __init__(
         self,
@@ -58,14 +60,80 @@ class ClassroomPlannerService:
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
         templates: RoomTemplateRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._uow = uow
         self._rosters = rosters
         self._templates = templates
+        self._drafts = drafts
         self._clock = clock
         self._id_generator = id_generator
+
+    # Draft CRUD
+
+    async def get_draft(self, *, draft_id: UUID, owner_user_id: UUID) -> PlanDraft:
+        draft = await self._drafts.get_by_id(draft_id=draft_id)
+        if not draft or draft.owner_user_id != owner_user_id:
+            raise not_found("PlanDraft", str(draft_id))
+        return draft
+
+    async def create_draft(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        template_id: UUID,
+        lesson_mode_id: str,
+        group_assignments: dict[str, str | None],
+        seat_assignments: dict[str, str | None],
+    ) -> PlanDraft:
+        now = self._clock.now()
+        draft = PlanDraft(
+            id=self._id_generator.new_uuid(),
+            owner_user_id=owner_user_id,
+            roster_id=roster_id,
+            template_id=template_id,
+            lesson_mode_id=lesson_mode_id,
+            group_assignments=group_assignments,
+            seat_assignments=seat_assignments,
+            created_at=now,
+            updated_at=now,
+        )
+        async with self._uow:
+            await self._drafts.save(draft=draft)
+        return draft
+
+    async def update_draft(
+        self,
+        *,
+        draft_id: UUID,
+        owner_user_id: UUID,
+        group_assignments: dict[str, str | None] | None = None,
+        seat_assignments: dict[str, str | None] | None = None,
+    ) -> PlanDraft:
+        draft = await self.get_draft(draft_id=draft_id, owner_user_id=owner_user_id)
+
+        updated = PlanDraft(
+            id=draft.id,
+            owner_user_id=draft.owner_user_id,
+            roster_id=draft.roster_id,
+            template_id=draft.template_id,
+            lesson_mode_id=draft.lesson_mode_id,
+            group_assignments=group_assignments
+            if group_assignments is not None
+            else draft.group_assignments,
+            seat_assignments=seat_assignments
+            if seat_assignments is not None
+            else draft.seat_assignments,
+            created_at=draft.created_at,
+            updated_at=self._clock.now(),
+        )
+
+        async with self._uow:
+            await self._drafts.save(draft=updated)
+        return updated
 
     # Roster CRUD
 

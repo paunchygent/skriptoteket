@@ -8,9 +8,16 @@ from skriptoteket.application.apps.classroom_planner.services import (
     ClassroomPlannerBootstrapService,
     ClassroomPlannerService,
 )
-from skriptoteket.domain.apps.classroom_planner.models import RoomTemplate, Roster, Seat, Student
+from skriptoteket.domain.apps.classroom_planner.models import (
+    PlanDraft,
+    RoomTemplate,
+    Roster,
+    Seat,
+    Student,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner import (
+    PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
@@ -35,6 +42,11 @@ def templates():
 
 
 @pytest.fixture
+def drafts():
+    return AsyncMock(spec=PlanDraftRepositoryProtocol)
+
+
+@pytest.fixture
 def now():
     return datetime(2025, 1, 1, tzinfo=timezone.utc)
 
@@ -55,9 +67,14 @@ def id_generator():
 
 
 @pytest.fixture
-def service(uow, rosters, templates, clock, id_generator):
+def service(uow, rosters, templates, drafts, clock, id_generator):
     return ClassroomPlannerService(
-        uow=uow, rosters=rosters, templates=templates, clock=clock, id_generator=id_generator
+        uow=uow,
+        rosters=rosters,
+        templates=templates,
+        drafts=drafts,
+        clock=clock,
+        id_generator=id_generator,
     )
 
 
@@ -287,3 +304,89 @@ async def test_delete_template_calls_repo_delete(service, templates, now):
     await service.delete_template(template_id=template_id, owner_user_id=owner_id)
 
     templates.delete.assert_awaited_once_with(template_id=template_id)
+
+
+# PlanDraft CRUD Tests
+
+
+@pytest.mark.asyncio
+async def test_create_draft_persists_and_returns_draft(service, drafts, clock, id_generator):
+    owner_id = uuid4()
+    draft_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    id_generator.new_uuid.side_effect = None
+    id_generator.new_uuid.return_value = draft_id
+
+    result = await service.create_draft(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+        lesson_mode_id="standard",
+        group_assignments={"s1": "g1"},
+        seat_assignments={"s2": "seat1"},
+    )
+
+    assert result.id == draft_id
+    assert result.owner_user_id == owner_id
+    assert result.roster_id == roster_id
+    assert result.template_id == template_id
+    assert result.lesson_mode_id == "standard"
+    assert result.group_assignments == {"s1": "g1"}
+    assert result.seat_assignments == {"s2": "seat1"}
+    assert result.created_at == clock.now()
+    drafts.save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_get_draft_returns_from_repo_if_owner_matches(service, drafts, now):
+    draft_id = uuid4()
+    owner_id = uuid4()
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="standard",
+        group_assignments={},
+        seat_assignments={},
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.return_value = draft
+
+    result = await service.get_draft(draft_id=draft_id, owner_user_id=owner_id)
+
+    assert result == draft
+
+
+@pytest.mark.asyncio
+async def test_update_draft_updates_and_saves(service, drafts, now, clock):
+    owner_id = uuid4()
+    draft_id = uuid4()
+    old_draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="standard",
+        group_assignments={"s1": "g1"},
+        seat_assignments={},
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.return_value = old_draft
+    new_now = datetime(2025, 1, 2, tzinfo=timezone.utc)
+    clock.now.return_value = new_now
+
+    result = await service.update_draft(
+        draft_id=draft_id,
+        owner_user_id=owner_id,
+        group_assignments={"s1": "g2"},
+        seat_assignments={"s1": "seat1"},
+    )
+
+    assert result.group_assignments == {"s1": "g2"}
+    assert result.seat_assignments == {"s1": "seat1"}
+    assert result.updated_at == new_now
+    drafts.save.assert_awaited_once()

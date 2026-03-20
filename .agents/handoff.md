@@ -16,15 +16,16 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: N/A (no sprints)
 - Production: Full Vue SPA
-- Completed: ST-23-01, ST-23-02, ST-23-03, ST-23-04, ST-23-05 (Klassrumskartan / Group Seating Studio).
+- Completed: ST-23-01, ST-23-02, ST-23-03, ST-23-04, ST-23-05, ST-23-06 (Epic 23 Slice 1 Fully Complete).
 
 ## Current Session (2026-03-20)
 
-- Klassrumskartan (Group Seating Studio) UI Implementation (Slice 1).
+- Klassrumskartan (Group Seating Studio) UI Implementation & Draft Persistence (Slice 1).
   - Built `GroupBoard.vue` and `GroupCard.vue` for assigning students to groups via drag-and-drop.
   - Built `RoomCanvas.vue` and `SeatNode.vue` for spatial seat assignments.
-  - Implemented normalized Pinia state in `useClassroomState.ts` with strict reducers to prevent destructive array mutations.
-  - Connected views via reactive computed properties to ensure cross-view synchronization without re-renders (ST-23-05).
+  - Implemented normalized Pinia state in `useClassroomState.ts` with strict reducers.
+  - Implemented `PlanDraft` persistence layer (SQLAlchemy model, repository, service methods, and API endpoints).
+  - Added debounced autosave (`_triggerAutosave`) directly into the strict state reducers, ensuring durable draft continuation (ST-23-06).
   - Addressed review feedback from ST-23-01/02 (ownership auth checks, expanded service unit tests, fixed DTO naming).
   - Resolved `dishka` deprecation warnings by migrating to `starlette-dishka` and creating a compatibility layer.
 

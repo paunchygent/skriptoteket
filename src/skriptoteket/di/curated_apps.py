@@ -68,10 +68,12 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store i
     FileSystemReagentPrepChefSdsStore,
 )
 from skriptoteket.infrastructure.repositories.classroom_planner import (
+    PostgreSQLPlanDraftRepository,
     PostgreSQLRoomTemplateRepository,
     PostgreSQLRosterRepository,
 )
 from skriptoteket.protocols.classroom_planner import (
+    PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
@@ -368,6 +370,7 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
         templates: RoomTemplateRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> ClassroomPlannerService:
@@ -375,9 +378,14 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             rosters=rosters,
             templates=templates,
+            drafts=drafts,
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def plan_draft_repository(self, session: AsyncSession) -> PlanDraftRepositoryProtocol:
+        return PostgreSQLPlanDraftRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
     def roster_repository(self, session: AsyncSession) -> RosterRepositoryProtocol:

@@ -3,7 +3,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.application.apps.classroom_planner.services import (
     ClassroomPlannerBootstrapService,
@@ -222,3 +222,79 @@ async def delete_template(
     user: User = Depends(require_user_api),
 ) -> None:
     await service.delete_template(template_id=template_id, owner_user_id=user.id)
+
+
+# PlanDraft DTOs
+
+
+class PlanDraftDto(BaseModel):
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    id: UUID
+    roster_id: UUID
+    template_id: UUID
+    lesson_mode_id: str
+    group_assignments: dict[str, str | None]
+    seat_assignments: dict[str, str | None]
+
+
+class CreatePlanDraftRequest(BaseModel):
+    roster_id: UUID
+    template_id: UUID
+    lesson_mode_id: str
+    group_assignments: dict[str, str | None] = Field(default_factory=dict)
+    seat_assignments: dict[str, str | None] = Field(default_factory=dict)
+
+
+class UpdatePlanDraftRequest(BaseModel):
+    group_assignments: dict[str, str | None] | None = None
+    seat_assignments: dict[str, str | None] | None = None
+
+
+# PlanDraft Endpoints
+
+
+@router.post("/drafts", response_model=PlanDraftDto, status_code=status.HTTP_201_CREATED)
+@inject
+async def create_draft(
+    request: CreatePlanDraftRequest,
+    service: FromDishka[ClassroomPlannerService],
+    user: User = Depends(require_user_api),
+) -> PlanDraftDto:
+    draft = await service.create_draft(
+        owner_user_id=user.id,
+        roster_id=request.roster_id,
+        template_id=request.template_id,
+        lesson_mode_id=request.lesson_mode_id,
+        group_assignments=request.group_assignments,
+        seat_assignments=request.seat_assignments,
+    )
+    return PlanDraftDto.model_validate(draft)
+
+
+@router.get("/drafts/{draft_id}", response_model=PlanDraftDto)
+@inject
+async def get_draft(
+    draft_id: UUID,
+    service: FromDishka[ClassroomPlannerService],
+    user: User = Depends(require_user_api),
+) -> PlanDraftDto:
+    draft = await service.get_draft(draft_id=draft_id, owner_user_id=user.id)
+    return PlanDraftDto.model_validate(draft)
+
+
+@router.patch("/drafts/{draft_id}", response_model=PlanDraftDto)
+@inject
+async def update_draft(
+    draft_id: UUID,
+    request: UpdatePlanDraftRequest,
+    service: FromDishka[ClassroomPlannerService],
+    user: User = Depends(require_user_api),
+) -> PlanDraftDto:
+    draft = await service.update_draft(
+        draft_id=draft_id,
+        owner_user_id=user.id,
+        group_assignments=request.group_assignments,
+        seat_assignments=request.seat_assignments,
+    )
+    return PlanDraftDto.model_validate(draft)

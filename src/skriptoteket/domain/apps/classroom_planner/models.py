@@ -70,3 +70,23 @@ class RoomTemplate(BaseModel):
     seats: list[Seat]
     created_at: datetime
     updated_at: datetime
+
+
+class PlanDraft(BaseModel):
+    """An active draft of a seating/grouping plan."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    id: UUID
+    owner_user_id: UUID
+    roster_id: UUID
+    template_id: UUID
+    lesson_mode_id: str
+
+    # student_id -> group_id
+    group_assignments: dict[str, str | None] = Field(default_factory=dict)
+    # student_id -> seat_id
+    seat_assignments: dict[str, str | None] = Field(default_factory=dict)
+
+    created_at: datetime
+    updated_at: datetime

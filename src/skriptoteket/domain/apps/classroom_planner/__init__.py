@@ -3,6 +3,7 @@
 from .models import (
     ClassroomPlannerBootstrapPayload,
     LessonModePreset,
+    PlanDraft,
     RoomTemplate,
     Roster,
     Seat,
@@ -12,6 +13,7 @@ from .models import (
 __all__ = [
     "ClassroomPlannerBootstrapPayload",
     "LessonModePreset",
+    "PlanDraft",
     "RoomTemplate",
     "Roster",
     "Seat",

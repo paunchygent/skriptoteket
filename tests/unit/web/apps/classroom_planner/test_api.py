@@ -11,6 +11,7 @@ from skriptoteket.application.apps.classroom_planner.services import (
 from skriptoteket.domain.apps.classroom_planner.models import (
     ClassroomPlannerBootstrapPayload,
     LessonModePreset,
+    PlanDraft,
     RoomTemplate,
     Roster,
     Seat,
@@ -321,3 +322,119 @@ async def test_delete_template_calls_service():
     )
 
     service.delete_template.assert_awaited_once_with(template_id=template_id, owner_user_id=user.id)
+
+
+# PlanDraft API Tests
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_draft_calls_service():
+    user = make_user(role=Role.USER)
+    service = AsyncMock(spec=ClassroomPlannerService)
+    req = api.CreatePlanDraftRequest(
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="standard",
+        group_assignments={"s1": "g1"},
+        seat_assignments={"s2": "seat1"},
+    )
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=user.id,
+        roster_id=req.roster_id,
+        template_id=req.template_id,
+        lesson_mode_id=req.lesson_mode_id,
+        group_assignments=req.group_assignments,
+        seat_assignments=req.seat_assignments,
+        created_at=now,
+        updated_at=now,
+    )
+    service.create_draft.return_value = draft
+
+    result = await _unwrap_dishka(api.create_draft)(
+        request=req,
+        service=service,
+        user=user,
+    )
+
+    assert result.id == draft.id
+    service.create_draft.assert_awaited_once_with(
+        owner_user_id=user.id,
+        roster_id=req.roster_id,
+        template_id=req.template_id,
+        lesson_mode_id=req.lesson_mode_id,
+        group_assignments=req.group_assignments,
+        seat_assignments=req.seat_assignments,
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_draft_returns_from_service():
+    user = make_user(role=Role.USER)
+    service = AsyncMock(spec=ClassroomPlannerService)
+    draft_id = uuid4()
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="standard",
+        group_assignments={},
+        seat_assignments={},
+        created_at=now,
+        updated_at=now,
+    )
+    service.get_draft.return_value = draft
+
+    result = await _unwrap_dishka(api.get_draft)(
+        draft_id=draft_id,
+        service=service,
+        user=user,
+    )
+
+    assert result.id == draft_id
+    service.get_draft.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_update_draft_calls_service():
+    user = make_user(role=Role.USER)
+    service = AsyncMock(spec=ClassroomPlannerService)
+    draft_id = uuid4()
+    req = api.UpdatePlanDraftRequest(
+        group_assignments={"s1": "g2"},
+        seat_assignments={"s1": "seat1"},
+    )
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="standard",
+        group_assignments=req.group_assignments,
+        seat_assignments=req.seat_assignments,
+        created_at=now,
+        updated_at=now,
+    )
+    service.update_draft.return_value = draft
+
+    result = await _unwrap_dishka(api.update_draft)(
+        draft_id=draft_id,
+        request=req,
+        service=service,
+        user=user,
+    )
+
+    assert result.group_assignments == {"s1": "g2"}
+    service.update_draft.assert_awaited_once_with(
+        draft_id=draft_id,
+        owner_user_id=user.id,
+        group_assignments=req.group_assignments,
+        seat_assignments=req.seat_assignments,
+    )

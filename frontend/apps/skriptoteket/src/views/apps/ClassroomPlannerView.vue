@@ -82,11 +82,19 @@ onMounted(async () => {
 
 const isReadyToStart = ref(false)
 
-function startPlanning() {
+async function startPlanning() {
   if (selectedLessonMode.value && selectedRoster.value && selectedTemplate.value) {
     classroomState.initializeFromRoster(selectedRoster.value.students)
     classroomState.initializeFromTemplate(selectedTemplate.value.seats)
     classroomState.initializeGroups(6) // Default to 6 groups for now
+
+    // Create the persistent draft
+    await classroomState.createDraft(
+      selectedRoster.value.id,
+      selectedTemplate.value.id,
+      selectedLessonMode.value.id
+    )
+
     isReadyToStart.value = true
     currentView.value = 'groups'
   }
@@ -270,12 +278,32 @@ function resetSelection() {
           </div>
 
           <div class="flex gap-4">
-            <button
-              class="px-6 py-3 border-2 border-navy bg-white text-navy font-black uppercase text-xs tracking-widest shadow-brutal-xs hover:-translate-y-0.5 transition-all opacity-50 cursor-not-allowed"
-              disabled
+            <div
+              class="px-6 py-3 border-2 border-navy bg-white text-xs tracking-widest shadow-brutal-xs flex items-center gap-2"
+              :class="{
+                'text-navy/50': classroomState.saveStatus === 'idle',
+                'text-blue-600 font-bold': classroomState.saveStatus === 'saving',
+                'text-mint-800 font-bold': classroomState.saveStatus === 'saved',
+                'text-burgundy font-black': classroomState.saveStatus === 'error'
+              }"
             >
-              Spara utkast
-            </button>
+              <span
+                v-if="classroomState.saveStatus === 'idle'"
+                class="uppercase"
+              >Utkast startat</span>
+              <span
+                v-else-if="classroomState.saveStatus === 'saving'"
+                class="uppercase animate-pulse"
+              >Sparar...</span>
+              <span
+                v-else-if="classroomState.saveStatus === 'saved'"
+                class="uppercase"
+              >Sparat ✔</span>
+              <span
+                v-else-if="classroomState.saveStatus === 'error'"
+                class="uppercase"
+              >Misslyckades att spara!</span>
+            </div>
           </div>
         </div>
 

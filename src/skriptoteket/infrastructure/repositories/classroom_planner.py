@@ -5,15 +5,67 @@ from uuid import UUID
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from skriptoteket.domain.apps.classroom_planner.models import RoomTemplate, Roster
+from skriptoteket.domain.apps.classroom_planner.models import PlanDraft, RoomTemplate, Roster
+from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_roster import RosterModel
 from skriptoteket.protocols.classroom_planner import (
+    PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
+
+
+class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
+    """PostgreSQL repository for classroom planner plan drafts."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def get_by_id(self, *, draft_id: UUID) -> PlanDraft | None:
+        result = await self._session.execute(
+            select(PlanDraftModel).where(PlanDraftModel.id == draft_id)
+        )
+        model = result.scalar_one_or_none()
+        return PlanDraft.model_validate(model) if model else None
+
+    async def list_by_owner(self, *, owner_user_id: UUID) -> list[PlanDraft]:
+        result = await self._session.execute(
+            select(PlanDraftModel)
+            .where(PlanDraftModel.owner_user_id == owner_user_id)
+            .order_by(PlanDraftModel.updated_at.desc())
+        )
+        return [PlanDraft.model_validate(model) for model in result.scalars().all()]
+
+    async def save(self, *, draft: PlanDraft) -> None:
+        model = await self._session.get(PlanDraftModel, draft.id)
+        if model:
+            model.roster_id = draft.roster_id
+            model.template_id = draft.template_id
+            model.lesson_mode_id = draft.lesson_mode_id
+            model.group_assignments = draft.group_assignments
+            model.seat_assignments = draft.seat_assignments
+            model.updated_at = draft.updated_at
+        else:
+            model = PlanDraftModel(
+                id=draft.id,
+                owner_user_id=draft.owner_user_id,
+                roster_id=draft.roster_id,
+                template_id=draft.template_id,
+                lesson_mode_id=draft.lesson_mode_id,
+                group_assignments=draft.group_assignments,
+                seat_assignments=draft.seat_assignments,
+                created_at=draft.created_at,
+                updated_at=draft.updated_at,
+            )
+            self._session.add(model)
+        await self._session.flush()
+
+    async def delete(self, *, draft_id: UUID) -> None:
+        await self._session.execute(delete(PlanDraftModel).where(PlanDraftModel.id == draft_id))
+        await self._session.flush()
 
 
 class PostgreSQLRosterRepository(RosterRepositoryProtocol):
