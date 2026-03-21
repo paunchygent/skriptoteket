@@ -20,6 +20,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UpdateRosterHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    DraftGroup,
+    DraftWorkspace,
     GroupAssignment,
     PlanDraft,
     RoomTemplate,
@@ -27,6 +29,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Seat,
     SeatAssignment,
     Student,
+    default_planning_profile,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner import (
@@ -227,11 +230,17 @@ async def test_create_template_persists_and_returns_template(uow, templates, clo
     id_generator.new_uuid.return_value = template_id
     seats = [Seat(id="seat1", x=0, y=0)]
 
-    result = await handler.handle(owner_user_id=owner_id, name="Room 101", seats=seats)
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        name="Room 101",
+        seats=seats,
+        fixtures=[],
+    )
 
     assert result.id == template_id
     assert result.name == "Room 101"
     assert result.seats == seats
+    assert result.fixtures == []
     assert result.created_at == clock.now()
     templates.save.assert_awaited_once()
 
@@ -246,6 +255,7 @@ async def test_get_template_returns_from_repo_if_owner_matches(templates, now):
         owner_user_id=owner_id,
         name="Test Template",
         seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -266,6 +276,7 @@ async def test_update_template_updates_and_saves(uow, templates, now, clock):
         owner_user_id=owner_id,
         name="Old Template",
         seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -275,7 +286,11 @@ async def test_update_template_updates_and_saves(uow, templates, now, clock):
     new_seats = [Seat(id="s2", x=1, y=1)]
 
     result = await handler.handle(
-        template_id=template_id, owner_user_id=owner_id, name="New Name", seats=new_seats
+        template_id=template_id,
+        owner_user_id=owner_id,
+        name="New Name",
+        seats=new_seats,
+        fixtures=[],
     )
 
     assert result.name == "New Name"
@@ -294,6 +309,7 @@ async def test_delete_template_calls_repo_delete(uow, templates, now):
         owner_user_id=owner_id,
         name="To Delete",
         seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -327,20 +343,19 @@ async def test_create_draft_persists_and_returns_draft(
         owner_user_id=owner_id,
         roster_id=roster_id,
         template_id=template_id,
-        lesson_mode_id="standard",
-        group_assignments=[GroupAssignment(student_id="s1", group_id="g1")],
-        seat_assignments=[SeatAssignment(student_id="s2", seat_id="seat1")],
+        lesson_mode_id="seating",
     )
 
     assert result.id == draft_id
     assert result.owner_user_id == owner_id
     assert result.roster_id == roster_id
     assert result.template_id == template_id
-    assert result.lesson_mode_id == "standard"
-    assert len(result.group_assignments) == 1
-    assert len(result.seat_assignments) == 1
+    assert result.lesson_mode_id == "seating"
     assert result.created_at == clock.now()
-    drafts.save.assert_awaited_once()
+    drafts.save_workspace.assert_awaited_once()
+    saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
+    assert len(saved_workspace.groups) == 6
+    assert saved_workspace.planning_profile == default_planning_profile()
 
 
 @pytest.mark.asyncio
@@ -353,9 +368,7 @@ async def test_get_draft_returns_from_repo_if_owner_matches(drafts, now):
         owner_user_id=owner_id,
         roster_id=uuid4(),
         template_id=uuid4(),
-        lesson_mode_id="standard",
-        group_assignments=[],
-        seat_assignments=[],
+        lesson_mode_id="seating",
         created_at=now,
         updated_at=now,
     )
@@ -367,23 +380,48 @@ async def test_get_draft_returns_from_repo_if_owner_matches(drafts, now):
 
 
 @pytest.mark.asyncio
-async def test_patch_draft_updates_and_saves(uow, drafts, now, clock):
-    handler = PatchDraftHandler(uow, drafts, clock)
+async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, now, clock):
+    handler = PatchDraftHandler(uow, drafts, rosters, templates, clock)
     owner_id = uuid4()
     draft_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
     old_draft = PlanDraft(
         id=draft_id,
         owner_user_id=owner_id,
-        roster_id=uuid4(),
-        template_id=uuid4(),
-        lesson_mode_id="standard",
+        roster_id=roster_id,
+        template_id=template_id,
+        lesson_mode_id="seating",
         revision=0,
-        group_assignments=[GroupAssignment(student_id="s1", group_id="g1")],
-        seat_assignments=[],
         created_at=now,
         updated_at=now,
     )
-    drafts.get_by_id.return_value = old_draft
+    drafts.get_workspace.return_value = DraftWorkspace(
+        draft=old_draft,
+        groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
+        group_assignments=[GroupAssignment(student_id="s1", group_id="group-1")],
+        seat_assignments=[],
+        student_planning_meta=[],
+        pair_constraints=[],
+        planning_profile=default_planning_profile(),
+    )
+    rosters.get_by_id.return_value = Roster(
+        id=roster_id,
+        owner_user_id=owner_id,
+        name="Klass",
+        students=[Student(id="s1", display_name="Student 1")],
+        created_at=now,
+        updated_at=now,
+    )
+    templates.get_by_id.return_value = RoomTemplate(
+        id=template_id,
+        owner_user_id=owner_id,
+        name="Rum",
+        seats=[Seat(id="seat1", x=0, y=0)],
+        fixtures=[],
+        created_at=now,
+        updated_at=now,
+    )
     new_now = datetime(2025, 1, 2, tzinfo=timezone.utc)
     clock.now.return_value = new_now
 
@@ -391,20 +429,27 @@ async def test_patch_draft_updates_and_saves(uow, drafts, now, clock):
         draft_id=draft_id,
         owner_user_id=owner_id,
         expected_revision=0,
-        group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
+        groups=[
+            DraftGroup(id="group-1", name="Grupp 1", sort_order=0),
+            DraftGroup(id="group-2", name="Grupp 2", sort_order=1),
+        ],
+        group_assignments=[GroupAssignment(student_id="s1", group_id="group-2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
     )
 
     assert result.revision == 1
-    assert len(result.group_assignments) == 1
-    assert result.group_assignments[0].group_id == "g2"
     assert result.updated_at == new_now
-    drafts.save.assert_awaited_once()
+    drafts.save_workspace.assert_awaited_once()
+    saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
+    assert saved_workspace.group_assignments[0].group_id == "group-2"
+    assert saved_workspace.seat_assignments[0].seat_id == "seat1"
 
 
 @pytest.mark.asyncio
-async def test_patch_draft_raises_conflict_if_revision_mismatch(uow, drafts, now, clock):
-    handler = PatchDraftHandler(uow, drafts, clock)
+async def test_patch_draft_raises_conflict_if_revision_mismatch(
+    uow, drafts, rosters, templates, now, clock
+):
+    handler = PatchDraftHandler(uow, drafts, rosters, templates, clock)
     owner_id = uuid4()
     draft_id = uuid4()
     old_draft = PlanDraft(
@@ -412,14 +457,20 @@ async def test_patch_draft_raises_conflict_if_revision_mismatch(uow, drafts, now
         owner_user_id=owner_id,
         roster_id=uuid4(),
         template_id=uuid4(),
-        lesson_mode_id="standard",
+        lesson_mode_id="seating",
         revision=5,
-        group_assignments=[],
-        seat_assignments=[],
         created_at=now,
         updated_at=now,
     )
-    drafts.get_by_id.return_value = old_draft
+    drafts.get_workspace.return_value = DraftWorkspace(
+        draft=old_draft,
+        groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
+        group_assignments=[],
+        seat_assignments=[],
+        student_planning_meta=[],
+        pair_constraints=[],
+        planning_profile=default_planning_profile(),
+    )
 
     with pytest.raises(DomainError) as exc:
         await handler.handle(

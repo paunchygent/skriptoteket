@@ -175,6 +175,14 @@ export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
   return await apiFetch<T>(path, { method: "PATCH", body });
 }
 
+export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  return await apiFetch<T>(path, { method: "PUT", body });
+}
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  return await apiFetch<T>(path, { method: "DELETE" });
+}
+
 export async function apiFetchBlob(path: string, options: ApiRequestOptions = {}): Promise<Blob> {
   const auth = useAuthStore();
 

@@ -1,113 +1,175 @@
 <script setup lang="ts">
-import { useClassroomState } from '../useClassroomState'
-import SeatNode from './SeatNode.vue'
-import { computed } from 'vue'
+/**
+ * Classroom seating canvas.
+ *
+ * This component renders the draft room template as a whiteboard-style
+ * classroom scene with fixtures, seats, and an unseated student pool. It keeps
+ * the drag-and-drop surface visually rich for later export stories while
+ * routing all state mutations through the planner store.
+ */
 
-const state = useClassroomState()
+import { computed } from "vue";
 
-const seats = computed(() => Object.values(state.seatsById))
+import SeatNode from "./SeatNode.vue";
+import { useClassroomState } from "../useClassroomState";
 
-function onDragStart(event: DragEvent, studentId: string) {
+const props = defineProps<{
+  selectedStudentId?: string | null;
+}>();
+
+const emit = defineEmits<{
+  (e: "student-selected", studentId: string): void;
+}>();
+
+const state = useClassroomState();
+
+function onDragStart(event: DragEvent, studentId: string): void {
   if (event.dataTransfer) {
-    event.dataTransfer.setData('studentId', studentId)
-    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData("studentId", studentId);
+    event.dataTransfer.effectAllowed = "move";
   }
 }
 
-function onDropToPool(event: DragEvent) {
-  event.preventDefault()
-  const studentId = event.dataTransfer?.getData('studentId')
+function onDropToPool(event: DragEvent): void {
+  event.preventDefault();
+  const studentId = event.dataTransfer?.getData("studentId");
   if (studentId) {
-    state.clearSeatAssignment(studentId)
+    state.clearSeatAssignment(studentId);
   }
 }
 
-function onDragOver(event: DragEvent) {
-  event.preventDefault()
+function onDragOver(event: DragEvent): void {
+  event.preventDefault();
   if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'move'
+    event.dataTransfer.dropEffect = "move";
   }
 }
 
-// Ensure the canvas is large enough to contain all seats
 const canvasStyle = computed(() => {
-  let maxX = 800 // Default min width
-  let maxY = 600 // Default min height
-
-  for (const seat of seats.value) {
-    if (seat.x + 100 > maxX) maxX = seat.x + 100
-    if (seat.y + 100 > maxY) maxY = seat.y + 100
+  let maxX = 960;
+  let maxY = 720;
+  for (const seat of state.seats) {
+    maxX = Math.max(maxX, seat.x + 120);
+    maxY = Math.max(maxY, seat.y + 120);
   }
-
+  for (const fixture of state.fixtures) {
+    maxX = Math.max(maxX, fixture.x + fixture.width + 48);
+    maxY = Math.max(maxY, fixture.y + fixture.height + 48);
+  }
   return {
     width: `${maxX}px`,
-    height: `${maxY}px`
-  }
-})
+    height: `${maxY}px`,
+  };
+});
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
-    <!-- Student Pool (Unseated) -->
-    <div
-      class="lg:col-span-1 border-2 border-navy p-6 bg-white shadow-brutal-sm flex flex-col max-h-[calc(100vh-250px)]"
+  <div class="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
+    <aside
+      class="flex min-h-[320px] flex-col border border-navy bg-white p-4 shadow-brutal-sm"
       @dragover="onDragOver"
       @drop="onDropToPool"
     >
-      <div class="flex justify-between items-center mb-6 border-b-2 border-navy/10 pb-2">
-        <h3 class="text-sm font-black uppercase tracking-widest text-navy">Ej placerade elever</h3>
-        <span class="text-xs font-bold uppercase bg-navy text-white px-2 py-1 shadow-brutal-xs">{{ state.unseatedStudents.length }}</span>
+      <div class="flex items-end justify-between gap-3 border-b border-navy/20 pb-3">
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Placering
+          </p>
+          <h3 class="font-serif text-xl text-navy">
+            Ej placerade
+          </h3>
+        </div>
+        <span class="border border-navy bg-canvas px-2 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70">
+          {{ state.unseatedStudents.length }}
+        </span>
       </div>
 
-      <div class="flex flex-col gap-2 overflow-y-auto flex-grow p-1">
-        <div
+      <div class="mt-4 flex flex-1 flex-col gap-2 overflow-y-auto">
+        <button
           v-for="student in state.unseatedStudents"
           :key="student.id"
-          class="bg-white border-2 border-navy p-3 text-sm font-bold shadow-brutal-xs hover:bg-mint transition-colors cursor-grab active:cursor-grabbing flex justify-between items-center"
+          type="button"
+          class="flex items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
+          :class="props.selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
           draggable="true"
+          @click="emit('student-selected', student.id)"
           @dragstart="onDragStart($event, student.id)"
         >
-          <span>{{ student.display_name }}</span>
-          <span
-            v-if="state.groupAssignmentsByStudentId[student.id]"
-            class="text-[10px] font-black uppercase text-navy/50 bg-navy/5 px-1.5 py-0.5 ml-2"
-          >
-            {{ state.groupsById[state.groupAssignmentsByStudentId[student.id]!]?.name }}
-          </span>
-        </div>
+          <div class="min-w-0">
+            <div class="truncate text-sm font-semibold">
+              {{ student.display_name }}
+            </div>
+            <div
+              v-if="state.groupAssignmentsByStudentId[student.id]"
+              class="mt-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+            >
+              {{ state.groupsById[state.groupAssignmentsByStudentId[student.id] ?? '']?.name }}
+            </div>
+          </div>
+        </button>
 
         <div
           v-if="state.unseatedStudents.length === 0"
-          class="flex-grow flex items-center justify-center text-xs font-black uppercase tracking-widest text-navy/20 italic text-center p-8"
+          class="flex flex-1 items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
         >
-          Alla elever är placerade
+          Alla elever har fått plats
         </div>
       </div>
-    </div>
+    </aside>
 
-    <!-- Room Canvas -->
-    <div class="lg:col-span-3 border-2 border-navy bg-paper overflow-auto shadow-brutal-sm max-h-[calc(100vh-250px)] relative">
-      <!-- Background Grid -->
-      <div
-        class="absolute inset-0 pointer-events-none opacity-20"
-        style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 20px 20px;"
-      />
-
-      <!-- Canvas Area -->
-      <div
-        class="relative"
-        :style="canvasStyle"
-      >
-        <SeatNode
-          v-for="seat in seats"
-          :key="seat.id"
-          :seat="seat"
-          :student="state.studentBySeatId[seat.id]"
-          @student-dropped="state.assignStudentToSeat"
-          @student-removed="state.clearSeatAssignment"
-          @swap-requested="state.swapSeatAssignments"
-        />
+    <section class="border border-navy bg-white p-4 shadow-brutal-sm">
+      <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Klassrumsyta
+          </p>
+          <h3 class="font-serif text-xl text-navy">
+            Whiteboard-läge
+          </h3>
+        </div>
+        <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
+          Dragga elever till en plats eller byt två elevers placering genom att släppa ovanpå en upptagen stol.
+        </p>
       </div>
-    </div>
+
+      <div class="mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
+        <div
+          class="relative"
+          :style="canvasStyle"
+        >
+          <div
+            class="absolute inset-0 opacity-15"
+            style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 24px 24px;"
+          />
+
+          <div
+            v-for="fixture in state.fixtures"
+            :key="fixture.id"
+            class="absolute flex items-center justify-center border px-2 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
+            :class="{
+              'border-navy bg-warning/20 text-navy': fixture.type === 'whiteboard',
+              'border-burgundy bg-burgundy/10 text-burgundy': fixture.type === 'teacher_desk',
+              'border-navy bg-white text-navy/70': fixture.type === 'window',
+              'border-success bg-success/20 text-navy': fixture.type === 'door',
+            }"
+            :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
+          >
+            {{ fixture.label ?? fixture.type }}
+          </div>
+
+          <SeatNode
+            v-for="seat in state.seats"
+            :key="seat.id"
+            :seat="seat"
+            :student="state.studentBySeatId[seat.id]"
+            :selected="props.selectedStudentId === state.studentBySeatId[seat.id]?.id"
+            @student-dropped="state.assignStudentToSeat"
+            @student-removed="state.clearSeatAssignment"
+            @swap-requested="state.swapSeatAssignments"
+            @student-selected="emit('student-selected', $event)"
+          />
+        </div>
+      </div>
+    </section>
   </div>
 </template>

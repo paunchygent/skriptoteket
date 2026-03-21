@@ -1,7 +1,14 @@
+"""SQLAlchemy model exports for metadata discovery and Alembic imports."""
+
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
+    ArrangementSnapshotModel,
+    DraftGroupModel,
     GroupAssignmentModel,
+    PairConstraintModel,
     PlanDraftModel,
+    PlanningProfileModel,
     SeatAssignmentModel,
+    StudentPlanningMetaModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -15,11 +22,16 @@ from skriptoteket.infrastructure.db.models.user_favorite import (
 )
 
 __all__ = [
+    "ArrangementSnapshotModel",
+    "DraftGroupModel",
     "GroupAssignmentModel",
+    "PairConstraintModel",
     "PlanDraftModel",
+    "PlanningProfileModel",
     "RoomTemplateModel",
     "RosterModel",
     "SeatAssignmentModel",
+    "StudentPlanningMetaModel",
     "UserFavoriteAppModel",
     "UserFavoriteToolModel",
 ]

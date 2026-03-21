@@ -108,6 +108,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0067-reagent-prep-chef-sds-markdown-first-offline-corpus.md`
 - `docs/adr/adr-0068-textbook-corpus-pristine-cleanup-and-rag-ingest-governance.md`
 - `docs/adr/adr-0069-group-seating-studio-domain-model.md`
+- `docs/adr/adr-0070-group-seating-studio-slice-2-engine-and-snapshots.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -149,6 +150,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`
 - `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/epics/epic-23-group-seating-studio.md`
+- `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
 
 ### Backlog Reviews
 

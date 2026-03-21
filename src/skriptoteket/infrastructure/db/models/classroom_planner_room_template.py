@@ -1,3 +1,5 @@
+"""SQLAlchemy model for reusable classroom room templates."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -12,6 +14,8 @@ from skriptoteket.infrastructure.db.base import Base
 
 
 class RoomTemplateModel(Base):
+    """Persist a teacher-owned room template with seats and fixtures."""
+
     __tablename__ = "classroom_planner_room_templates"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -23,6 +27,7 @@ class RoomTemplateModel(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     seats: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, server_default="[]")
+    fixtures: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, server_default="[]")
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

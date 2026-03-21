@@ -1,128 +1,200 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Student, Roster } from '../useClassroomState'
+/**
+ * Roster create/edit modal.
+ *
+ * This modal owns the CRUD surface for reusable class lists used by the
+ * classroom planner. It keeps roster editing outside the draft workspace so the
+ * selection gate can manage class assets without leaking that responsibility
+ * into the planner canvas components.
+ */
+
+import { computed, ref, watch } from "vue";
+
+import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import type { Roster, Student } from "../classroomPlannerTypes";
+
+const props = defineProps<{
+  roster?: Roster | null;
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'created', roster: Roster): void
-}>()
+  (e: "close"): void;
+  (e: "saved", roster: Roster): void;
+  (e: "deleted", rosterId: string): void;
+}>();
 
-const name = ref('')
-const rawStudents = ref('')
-const isSubmitting = ref(false)
-const error = ref<string | null>(null)
+const name = ref("");
+const rawStudents = ref("");
+const isSubmitting = ref(false);
+const isDeleting = ref(false);
+const error = ref<string | null>(null);
+
+const isEditing = computed(() => Boolean(props.roster));
+
+watch(
+  () => props.roster,
+  (roster) => {
+    name.value = roster?.name ?? "";
+    rawStudents.value = roster?.students.map((student) => student.display_name).join("\n") ?? "";
+    error.value = null;
+  },
+  { immediate: true },
+);
 
 const parsedStudents = computed<Student[]>(() => {
-  return rawStudents.value
-    .split('\n')
-    .map(name => name.trim())
-    .filter(name => name.length > 0)
-    .map(name => ({
-      id: crypto.randomUUID(),
-      display_name: name
-    }))
-})
+  const lines = rawStudents.value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const existingStudents = props.roster?.students ?? [];
+
+  return lines.map((displayName, index) => ({
+    id: existingStudents[index]?.id ?? crypto.randomUUID(),
+    display_name: displayName,
+  }));
+});
 
 const isValid = computed(() => {
-  return name.value.trim().length > 0 && parsedStudents.value.length > 0
-})
+  return name.value.trim().length > 0 && parsedStudents.value.length > 0;
+});
 
-async function submit() {
-  if (!isValid.value) return
+async function submit(): Promise<void> {
+  if (!isValid.value) {
+    return;
+  }
 
-  isSubmitting.value = true
-  error.value = null
+  isSubmitting.value = true;
+  error.value = null;
 
   try {
-    const response = await fetch('/api/v1/apps/classroom.group-seating-studio/rosters', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.value.trim(),
-        students: parsedStudents.value
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error('Kunde inte spara klasslistan.')
-    }
-
-    const data = await response.json()
-    emit('created', data)
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      error.value = e.message
-    } else {
-      error.value = 'Ett okänt fel uppstod.'
-    }
+    const payload = {
+      name: name.value.trim(),
+      students: parsedStudents.value,
+    };
+    const response = isEditing.value && props.roster
+      ? await apiPut<Roster>(
+          `/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`,
+          payload,
+        )
+      : await apiPost<Roster>("/api/v1/apps/classroom.group-seating-studio/rosters", payload);
+    emit("saved", response);
+  } catch (submitError: unknown) {
+    error.value = submitError instanceof Error ? submitError.message : "Kunde inte spara klasslistan.";
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
+  }
+}
+
+async function removeRoster(): Promise<void> {
+  if (!props.roster) {
+    return;
+  }
+
+  isDeleting.value = true;
+  error.value = null;
+
+  try {
+    await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`);
+    emit("deleted", props.roster.id);
+  } catch (deleteError: unknown) {
+    error.value = deleteError instanceof Error ? deleteError.message : "Kunde inte radera klasslistan.";
+  } finally {
+    isDeleting.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-navy/80 backdrop-blur-sm p-4">
-    <div class="bg-white border-4 border-navy shadow-[16px_16px_0_0_rgba(15,23,42,1)] max-w-lg w-full p-8 relative">
-      <button
-        class="absolute top-4 right-4 text-navy/50 hover:text-navy font-black text-2xl leading-none"
-        @click="emit('close')"
-      >
-        &times;
-      </button>
-
-      <h2 class="text-2xl font-black uppercase tracking-widest text-navy mb-6 border-b-4 border-navy/10 pb-2">
-        Skapa Klasslista
-      </h2>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-navy/70 p-4">
+    <div class="w-full max-w-2xl border border-navy bg-white p-6 shadow-brutal md:p-8">
+      <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
+        <div class="min-w-0 space-y-1">
+          <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Klasslistor
+          </p>
+          <h2 class="font-serif text-2xl text-navy">
+            {{ isEditing ? "Redigera klasslista" : "Ny klasslista" }}
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="btn-ghost h-[32px] w-[32px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
+          @click="emit('close')"
+        >
+          ×
+        </button>
+      </div>
 
       <div
         v-if="error"
-        class="mb-6 p-4 border-2 border-burgundy bg-burgundy/10 text-burgundy font-bold text-sm"
+        class="system-message system-message-error mt-4"
       >
-        {{ error }}
+        <div class="system-message-content">
+          {{ error }}
+        </div>
       </div>
 
-      <div class="space-y-6">
-        <div>
-          <label class="block text-sm font-bold uppercase tracking-widest text-navy mb-2">Klassens namn</label>
+      <div class="mt-6 space-y-5">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+            Klassens namn
+          </label>
           <input
             v-model="name"
             type="text"
-            placeholder="T.ex. Klass 9A"
-            class="w-full border-2 border-navy p-3 text-lg font-bold placeholder:font-normal focus:outline-none focus:ring-4 focus:ring-navy/20"
+            placeholder="Till exempel Klass 9A"
+            class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
           >
         </div>
 
-        <div>
-          <div class="flex justify-between items-end mb-2">
-            <label class="block text-sm font-bold uppercase tracking-widest text-navy">Elever</label>
-            <span class="text-xs font-bold text-navy/60">{{ parsedStudents.length }} upptäckta</span>
+        <div class="space-y-2">
+          <div class="flex items-end justify-between gap-3">
+            <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Elever
+            </label>
+            <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+              {{ parsedStudents.length }} namn
+            </span>
           </div>
-          <p class="text-xs text-navy/60 mb-2">Klistra in en lista med namn, ett per rad.</p>
           <textarea
             v-model="rawStudents"
-            rows="8"
-            placeholder="Anna Andersson&#10;Björn Borg&#10;Cecilia Ceder"
-            class="w-full border-2 border-navy p-3 text-sm font-mono whitespace-pre focus:outline-none focus:ring-4 focus:ring-navy/20 resize-y"
+            rows="12"
+            placeholder="Anna Andersson&#10;Bilal Berg&#10;Cecilia Ceder"
+            class="min-h-[280px] w-full resize-y border border-navy bg-white px-3 py-3 font-mono text-sm text-navy shadow-brutal-sm"
           />
+          <p class="text-[11px] leading-relaxed text-navy/60">
+            Klistra in ett namn per rad. Vid redigering återanvänder verktyget befintliga elev-ID:n rad för rad så länge listan behåller sin ordning.
+          </p>
         </div>
+      </div>
 
-        <div class="pt-4 flex justify-end gap-4 border-t-2 border-navy/10">
+      <div class="mt-6 flex flex-col gap-3 border-t border-navy/20 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <button
+            v-if="isEditing"
+            type="button"
+            class="btn-ghost border-burgundy/40 bg-white text-burgundy"
+            :disabled="isDeleting"
+            @click="removeRoster"
+          >
+            {{ isDeleting ? "Raderar..." : "Radera klasslista" }}
+          </button>
+        </div>
+        <div class="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            class="px-6 py-3 font-bold uppercase tracking-widest text-navy hover:bg-navy/5 transition-colors"
+            class="btn-ghost border-navy/30 bg-canvas shadow-none"
             @click="emit('close')"
           >
             Avbryt
           </button>
           <button
             type="button"
-            class="px-8 py-3 border-2 border-navy font-black uppercase tracking-widest transition-colors"
-            :class="isValid && !isSubmitting ? 'bg-mint text-navy hover:bg-mint-400' : 'bg-navy/10 text-navy/30 cursor-not-allowed'"
+            class="btn-primary"
             :disabled="!isValid || isSubmitting"
             @click="submit"
           >
-            {{ isSubmitting ? 'Sparar...' : 'Spara Lista' }}
+            {{ isSubmitting ? "Sparar..." : isEditing ? "Spara ändringar" : "Skapa klasslista" }}
           </button>
         </div>
       </div>

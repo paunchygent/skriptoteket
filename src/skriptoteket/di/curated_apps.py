@@ -10,20 +10,28 @@ from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.classroom_planner import (
+    ApplySuggestionHandler,
     CreateDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
+    FinalizeDraftHandler,
+    GenerateSuggestionsHandler,
     GetBootstrapHandler,
     GetDraftHandler,
+    GetDraftWorkspaceHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
+    GetSnapshotHandler,
     ListRoomTemplatesHandler,
     ListRostersHandler,
+    ListSnapshotsHandler,
     PatchDraftHandler,
+    RandomizeDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
+    ValidateDraftHandler,
 )
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
     ReagentPrepChefGetDefaultsHandler,
@@ -80,11 +88,13 @@ from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef.sds_store i
     FileSystemReagentPrepChefSdsStore,
 )
 from skriptoteket.infrastructure.repositories.classroom_planner import (
+    PostgreSQLArrangementSnapshotRepository,
     PostgreSQLPlanDraftRepository,
     PostgreSQLRoomTemplateRepository,
     PostgreSQLRosterRepository,
 )
 from skriptoteket.protocols.classroom_planner import (
+    ArrangementSnapshotRepositoryProtocol,
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
@@ -470,13 +480,129 @@ class CuratedAppsProvider(Provider):
         return GetDraftHandler(drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
+    def get_draft_workspace_handler(
+        self,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+    ) -> GetDraftWorkspaceHandler:
+        return GetDraftWorkspaceHandler(drafts=drafts, rosters=rosters, templates=templates)
+
+    @provide(scope=Scope.REQUEST)
     def patch_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
         drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
         clock: ClockProtocol,
     ) -> PatchDraftHandler:
-        return PatchDraftHandler(uow=uow, drafts=drafts, clock=clock)
+        return PatchDraftHandler(
+            uow=uow,
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def validate_draft_handler(
+        self,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+    ) -> ValidateDraftHandler:
+        return ValidateDraftHandler(drafts=drafts, rosters=rosters, templates=templates)
+
+    @provide(scope=Scope.REQUEST)
+    def generate_suggestions_handler(
+        self,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> GenerateSuggestionsHandler:
+        return GenerateSuggestionsHandler(
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def apply_suggestion_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> ApplySuggestionHandler:
+        return ApplySuggestionHandler(
+            uow=uow,
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def randomize_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RandomizeDraftHandler:
+        return RandomizeDraftHandler(
+            uow=uow,
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def finalize_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        snapshots: ArrangementSnapshotRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> FinalizeDraftHandler:
+        return FinalizeDraftHandler(
+            uow=uow,
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            snapshots=snapshots,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def list_snapshots_handler(
+        self, snapshots: ArrangementSnapshotRepositoryProtocol
+    ) -> ListSnapshotsHandler:
+        return ListSnapshotsHandler(snapshots=snapshots)
+
+    @provide(scope=Scope.REQUEST)
+    def get_snapshot_handler(
+        self, snapshots: ArrangementSnapshotRepositoryProtocol
+    ) -> GetSnapshotHandler:
+        return GetSnapshotHandler(snapshots=snapshots)
+
+    @provide(scope=Scope.REQUEST)
+    def arrangement_snapshot_repository(
+        self, session: AsyncSession
+    ) -> ArrangementSnapshotRepositoryProtocol:
+        return PostgreSQLArrangementSnapshotRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
     def plan_draft_repository(self, session: AsyncSession) -> PlanDraftRepositoryProtocol:

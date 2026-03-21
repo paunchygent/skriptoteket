@@ -484,6 +484,10 @@ Note: `docker compose restart` does **not** re-read `.env`. For env var changes 
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
 ```
 
+Important: updating the env file is not enough on its own. `compose.prod.yaml` must also pass the variable through to
+the target service. Conversion Hub, for example, requires `SIR_CONVERT_A_LOT_V2_BASE_URL` and
+`SIR_CONVERT_A_LOT_V2_API_KEY` to be wired into the `web` service environment.
+
 If the change affects worker configuration, recreate worker too:
 
 ```bash
@@ -601,14 +605,48 @@ ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
 
 ## Deploy
 
+### Production Env Checklist
+
+Before deploying, confirm the production env file includes the keys that `compose.prod.yaml` forwards into the
+containers.
+
+- `SKRIPTOTEKET_DB_PASSWORD`
+- `SECRET_KEY`
+- SMTP / email keys as needed
+- LLM provider keys as needed
+- `SIR_CONVERT_A_LOT_V2_BASE_URL`
+- `SIR_CONVERT_A_LOT_V2_API_KEY`
+
+Hemma reference values for Conversion Hub:
+
+- `SIR_CONVERT_A_LOT_V2_BASE_URL=https://convert.hule.education`
+- `SIR_CONVERT_A_LOT_V2_API_KEY=<same secret used by Sir Convert-a-Lot v2>`
+
+Why the public URL: Sir Convert-a-Lot is published on Hemma as `127.0.0.1:28085` on the host. That loopback-only
+binding is not reachable from inside `skriptoteket-web` via `host.docker.internal:28085`, so the curated app must use
+the public domain (or another container-reachable address).
+
+Validation:
+
+```bash
+ssh hemma "sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_'"
+ssh hemma "sudo docker exec skriptoteket-web getent hosts host.docker.internal"
+```
+
 ### Standard Deploy (Code Changes)
 
 ```bash
 # Build runner image (required for tool/editor sandbox runs)
 ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml --profile build-only build runner"
 
-# Deploy web (app container)
+# Deploy web + worker (app + queue consumer)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build"
+```
+
+If you only changed Conversion Hub env vars, recreating `web` is sufficient:
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
 ```
 
 If migrations are needed:

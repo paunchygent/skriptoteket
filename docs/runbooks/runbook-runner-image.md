@@ -30,8 +30,8 @@ Reference: `docs/reference/ref-ai-script-generation-kb.md`.
 ### 1) Build the runner image (local)
 
 ```bash
-# Build runner image
-docker build -f Dockerfile.runner -t skriptoteket-runner:latest .
+# Build runner image with BuildKit via Compose
+docker compose -f compose.prod.yaml --profile build-only build runner
 ```
 
 ### 2) Build the runner image (home server / production)
@@ -67,6 +67,8 @@ pdm run precommit-run
   - Dev compose: `compose.dev.yaml`
   - Prod compose: `compose.prod.yaml`
 - Verify `RUNNER_IMAGE` points to an image that exists on the Docker host.
+- If logs show `docker.errors.ImageNotFound: No such image: skriptoteket-runner:latest`, rebuild the runner image on
+  that same host and then recreate the prod stack.
 
 ### Settings are not applied in the runner
 

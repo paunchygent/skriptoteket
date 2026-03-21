@@ -220,6 +220,7 @@ async def test_list_templates_returns_from_handler():
         owner_user_id=user.id,
         name="Room 1",
         seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -247,6 +248,7 @@ async def test_get_template_returns_from_handler():
         owner_user_id=user.id,
         name="Room 1",
         seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -274,6 +276,7 @@ async def test_create_template_calls_handler():
         owner_user_id=user.id,
         name="Room 101",
         seats=[Seat(id="s1", x=0, y=0)],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -286,7 +289,12 @@ async def test_create_template_calls_handler():
     )
 
     assert result.id == template.id
-    handler.handle.assert_awaited_once_with(owner_user_id=user.id, name="Room 101", seats=req.seats)
+    handler.handle.assert_awaited_once_with(
+        owner_user_id=user.id,
+        name="Room 101",
+        seats=req.seats,
+        fixtures=[],
+    )
 
 
 @pytest.mark.unit
@@ -302,6 +310,7 @@ async def test_update_template_calls_handler():
         owner_user_id=user.id,
         name="Updated Room",
         seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -316,7 +325,11 @@ async def test_update_template_calls_handler():
 
     assert result.name == "Updated Room"
     handler.handle.assert_awaited_once_with(
-        template_id=template_id, owner_user_id=user.id, name="Updated Room", seats=[]
+        template_id=template_id,
+        owner_user_id=user.id,
+        name="Updated Room",
+        seats=[],
+        fixtures=[],
     )
 
 
@@ -347,9 +360,7 @@ async def test_create_draft_calls_handler():
     req = api.CreatePlanDraftRequest(
         roster_id=uuid4(),
         template_id=uuid4(),
-        lesson_mode_id="standard",
-        group_assignments=[api.GroupAssignmentDto(student_id="s1", group_id="g1")],
-        seat_assignments=[api.SeatAssignmentDto(student_id="s2", seat_id="seat1")],
+        lesson_mode_id="seating",
     )
     now = datetime.now(timezone.utc)
     draft = PlanDraft(
@@ -359,9 +370,6 @@ async def test_create_draft_calls_handler():
         template_id=req.template_id,
         lesson_mode_id=req.lesson_mode_id,
         revision=0,
-        group_count=6,
-        group_assignments=[GroupAssignment(student_id="s1", group_id="g1")],
-        seat_assignments=[SeatAssignment(student_id="s2", seat_id="seat1")],
         created_at=now,
         updated_at=now,
     )
@@ -379,8 +387,6 @@ async def test_create_draft_calls_handler():
         roster_id=req.roster_id,
         template_id=req.template_id,
         lesson_mode_id=req.lesson_mode_id,
-        group_assignments=[GroupAssignment(student_id="s1", group_id="g1")],
-        seat_assignments=[SeatAssignment(student_id="s2", seat_id="seat1")],
     )
 
 
@@ -396,11 +402,8 @@ async def test_get_draft_returns_from_handler():
         owner_user_id=user.id,
         roster_id=uuid4(),
         template_id=uuid4(),
-        lesson_mode_id="standard",
+        lesson_mode_id="seating",
         revision=0,
-        group_count=6,
-        group_assignments=[],
-        seat_assignments=[],
         created_at=now,
         updated_at=now,
     )
@@ -433,11 +436,8 @@ async def test_update_draft_calls_handler():
         owner_user_id=user.id,
         roster_id=uuid4(),
         template_id=uuid4(),
-        lesson_mode_id="standard",
+        lesson_mode_id="seating",
         revision=1,
-        group_count=6,
-        group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
-        seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         created_at=now,
         updated_at=now,
     )
@@ -455,7 +455,11 @@ async def test_update_draft_calls_handler():
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=0,
-        group_count=None,
+        lesson_mode_id=None,
+        groups=None,
         group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
+        student_planning_meta=None,
+        pair_constraints=None,
+        planning_profile=None,
     )

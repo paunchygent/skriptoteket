@@ -1,79 +1,88 @@
 ---
 type: review
 id: REV-EPIC-24
-title: "Review: Klassrumskartan Slice 1 Assessment & Slice 2 Planning"
-status: pending
+title: "Review: Klassrumskartan Slice 2 Planning"
+status: approved
 owners: "agents"
 created: 2026-03-20
+updated: 2026-03-20
 reviewer: "external-architect"
 epic: EPIC-24
 adrs:
   - ADR-0069
+  - ADR-0070
 stories: []
 ---
 
 ## TL;DR
 
-Epic 23 (Slice 1 of the Group Seating Studio) has been successfully implemented and packaged into `repomix-epic-23-implementation.xml`. We are requesting a review of the implementation against our architectural rules, and seeking guidance for planning Epic 24 (Slice 2) which introduces the suggestion engine, constraints, and snapshot finalization.
+Slice 2 should build on the approved Slice 1 review record in `REV-EPIC-23` and move Klassrumskartan toward a backend-authoritative planning engine. The implementation direction is approved: typed draft-scoped constraints, explicit validate/suggest/randomize/finalize endpoints, immutable deep-copy snapshots, richer room fixtures, and responsive teacher-first planner UI.
 
-## Problem Statement
+## Scope of this review
 
-To seamlessly transition from the manual planning foundation (Slice 1) to the intelligent recommendation phase (Slice 2), we need architectural validation of the current baseline and structural decisions on how the suggestion engine will operate without violating our "no vibe-coding / explicit rules" and "teacher-first" mandates.
+This document is intentionally forward-looking. Slice 1 retrospective findings and closure context live in:
 
-## Proposed Solution / Review Focus
+- [REV-EPIC-23](review-epic-23-group-seating-studio.md)
+- [review-epic-23-vertical-slice.md](review-epic-23-vertical-slice.md)
 
-1. **Implementation Assessment (Slice 1)**: Review the provided XML package to ensure the `ClassroomPlannerView.vue` shell, the normalized Pinia state (`useClassroomState.ts`), and the SQLAlchemy persistence models (`Roster`, `RoomTemplate`, `PlanDraft`) adhere to ADR-0069.
-2. **Slice 2 Planning Guidance**: Provide direction on the architectural patterns for:
-   - The Constraint / Scoring Engine (where should rules live? Client-side or Server-side?)
-   - Snapshot Finalization (deep copy immutability implementation)
+## Approved architectural guidance
 
-## Artifacts to Review
+### 1. Suggestion engine location
 
-| File/Artifact | Focus | Time |
-|------|-------|------|
-| `repomix-epic-23-implementation.xml` | Codebase structural compliance, DI wiring, Pinia state normalization | 30 min |
-| `docs/adr/adr-0069-group-seating-studio-domain-model.md` | Baseline rules for persistence vs assignments | 10 min |
-| `docs/prd/prd-group-seating-studio-v0.1.md` | Product rules for Slice 2 features | 5 min |
+Approved: authoritative rule evaluation lives server-side in Python.
 
-**Total estimated time:** ~45 minutes
+- Domain layer owns pure scoring/evaluation logic.
+- Application layer loads draft, roster, template, and constraint context.
+- Web layer exposes bespoke planner endpoints only.
+- Frontend renders results and applies chosen suggestions back into the draft.
 
-## Key Decisions Needed for Slice 2
+### 2. Constraint model
 
-| Decision | Context | Guidance Needed |
-|----------|-----------|----------|
-| **Suggestion Engine Location** | Will the solver run purely in the browser (TS) using the normalized state, or remotely (Python) requiring round-trips? | [ ] |
-| **Constraint Model** | How should teacher constraints (e.g., "keep apart", "needs focus") be modeled in the database and mapped to students? | [ ] |
-| **Validation UX** | Real-time warnings vs. explicit "Validate" button? | [ ] |
+Approved: draft-scoped typed constraint aggregate separated from roster identity and student card presentation.
 
-## Review Checklist
+- `StudentPlanningMeta`
+- `PairConstraint`
+- `PlanningProfile`
 
-- [ ] Implementation of Slice 1 adheres to ADR-0069
-- [ ] Code quality meets `skriptoteket` standards (<500 LOC, Protocol-first DI)
-- [ ] Clear path established for Epic 24 (Slice 2) architecture
-- [ ] Constraints and scoring rules align with "suggest and explain" product boundaries
+Dedicated persistence is preferred and now considered the canonical Slice 2 direction.
 
----
+### 3. Validation UX
 
-## Review Feedback
+Approved: hybrid.
 
-**Reviewer:** @external-architect
-**Date:** YYYY-MM-DD
-**Verdict:** [pending | approved | changes_requested | rejected]
+- Cheap immediate client hints for local drag/drop ergonomics.
+- Authoritative backend `validate` pass for hard/soft findings.
+- `finalize` must re-run the same authoritative validation before snapshot creation.
 
-### Assessment of Slice 1
+### 4. Snapshot finalization
 
-[Feedback on the provided `repomix` implementation package]
+Approved: transactional backend finalization that deep-copies the full arrangement context into immutable `ArrangementSnapshot` records.
 
-### Architectural Guidance for Slice 2
+Snapshots must include copied roster/template content, groups, assignments, constraints, planning profile, and engine metadata, rather than pointing at mutable assets as historical truth.
 
-[Specific direction on how to architect the Suggestion Engine and Snapshot Finalization]
+### 5. Random assignment and future rule toggles
 
-### Recommendations / Requirements for EPIC-24
+Approved: an explicit `Slumpa` action may randomize all current students into groups and seats as a fast teacher starting point. Future sorting rules should remain explicit toggles on `PlanningProfile`, allowing each rule family to be switched on or off independently.
 
-[High-level list of technical requirements to seed the EPIC-24 stories]
+### 6. Responsive whiteboard UI
 
-### Decision Approvals
+Approved: the planner should follow the existing HuleEdu brutalist academic design rules, use responsive breakpoint-aware composition, and render room fixtures that make later PDF/XLSX export stories visually credible.
 
-- [ ] Suggestion Engine Location
-- [ ] Constraint Model
-- [ ] Validation UX
+## Requirements for EPIC-24
+
+- Add workspace hydration and same-session draft restore.
+- Persist draft groups instead of relying on `group_count`.
+- Add teacher-only metadata editing surfaces.
+- Add edit/delete flows for reusable classes and classrooms.
+- Add fixtures for `whiteboard`, `teacher_desk`, `window`, and `door`.
+- Add backend validation, suggestions, suggestion apply, randomize, finalize, and snapshot read endpoints.
+- Keep optimistic concurrency and conflict reload UX intact as the planner surface expands.
+
+## Decision approvals
+
+- [x] Suggestion Engine Location
+- [x] Constraint Model
+- [x] Validation UX
+- [x] Snapshot Finalization Contract
+- [x] Randomizer + Future Rule Toggles
+- [x] Responsive Whiteboard UI Direction

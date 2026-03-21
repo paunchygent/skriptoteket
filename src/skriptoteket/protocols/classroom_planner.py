@@ -1,9 +1,18 @@
+"""Protocols for classroom planner persistence seams.
+
+These protocols let application handlers depend on typed planner aggregates
+without coupling to SQLAlchemy. They cover teacher-owned reusable assets,
+mutable draft workspaces, and immutable arrangement snapshots.
+"""
+
 from __future__ import annotations
 
 from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ArrangementSnapshot,
+    DraftWorkspace,
     PlanDraft,
     RoomTemplate,
     Roster,
@@ -11,60 +20,84 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 
 
 class PlanDraftRepositoryProtocol(Protocol):
-    """Protocol for PlanDraft persistence."""
+    """Persist mutable planner drafts and their workspace state."""
 
     async def get_by_id(self, *, draft_id: UUID) -> PlanDraft | None:
-        """Loads a draft by its unique ID."""
+        """Load a draft root by its unique id."""
+        ...
+
+    async def get_workspace(self, *, draft_id: UUID) -> DraftWorkspace | None:
+        """Load a draft and all draft-scoped planning state."""
         ...
 
     async def list_by_owner(self, *, owner_user_id: UUID) -> list[PlanDraft]:
-        """Lists all drafts owned by a specific user."""
+        """List draft roots owned by a specific user."""
         ...
 
     async def save(self, *, draft: PlanDraft) -> None:
-        """Saves or updates a draft."""
+        """Save or update a draft root record."""
+        ...
+
+    async def save_workspace(self, *, workspace: DraftWorkspace) -> None:
+        """Save or update a full draft workspace aggregate."""
         ...
 
     async def delete(self, *, draft_id: UUID) -> None:
-        """Deletes a draft."""
+        """Delete a draft root and cascade its workspace state."""
+        ...
+
+
+class ArrangementSnapshotRepositoryProtocol(Protocol):
+    """Persist immutable arrangement snapshots."""
+
+    async def get_by_id(self, *, snapshot_id: UUID) -> ArrangementSnapshot | None:
+        """Load a snapshot by its unique id."""
+        ...
+
+    async def list_by_owner(self, *, owner_user_id: UUID) -> list[ArrangementSnapshot]:
+        """List snapshots owned by a specific user."""
+        ...
+
+    async def save(self, *, snapshot: ArrangementSnapshot) -> None:
+        """Persist a new snapshot."""
         ...
 
 
 class RosterRepositoryProtocol(Protocol):
-    """Protocol for Roster persistence."""
+    """Persist reusable rosters."""
 
     async def get_by_id(self, *, roster_id: UUID) -> Roster | None:
-        """Loads a roster by its unique ID."""
+        """Load a roster by its unique id."""
         ...
 
     async def list_by_owner(self, *, owner_user_id: UUID) -> list[Roster]:
-        """Lists all rosters owned by a specific user."""
+        """List all rosters owned by a specific user."""
         ...
 
     async def save(self, *, roster: Roster) -> None:
-        """Saves or updates a roster."""
+        """Save or update a roster."""
         ...
 
     async def delete(self, *, roster_id: UUID) -> None:
-        """Deletes a roster."""
+        """Delete a roster."""
         ...
 
 
 class RoomTemplateRepositoryProtocol(Protocol):
-    """Protocol for RoomTemplate persistence."""
+    """Persist reusable room templates."""
 
     async def get_by_id(self, *, template_id: UUID) -> RoomTemplate | None:
-        """Loads a room template by its unique ID."""
+        """Load a room template by its unique id."""
         ...
 
     async def list_by_owner(self, *, owner_user_id: UUID) -> list[RoomTemplate]:
-        """Lists all room templates owned by a specific user."""
+        """List all room templates owned by a specific user."""
         ...
 
     async def save(self, *, template: RoomTemplate) -> None:
-        """Saves or updates a room template."""
+        """Save or update a room template."""
         ...
 
     async def delete(self, *, template_id: UUID) -> None:
-        """Deletes a room template."""
+        """Delete a room template."""
         ...

@@ -1,297 +1,481 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { apiPost, apiPatch } from '../../api/client'
+/**
+ * Classroom planner Pinia store.
+ *
+ * This store owns the mutable Klassrumskartan draft workspace used by the
+ * planner SPA. It hydrates the backend workspace contract, exposes normalized
+ * lookup maps for the drag-and-drop UI, schedules optimistic autosave patches,
+ * and coordinates validation, suggestions, randomization, and snapshot
+ * finalization without duplicating the backend rule engine in TypeScript.
+ */
 
-export interface Student {
-  id: string
-  display_name: string
-}
+import { computed, ref } from "vue";
+import { defineStore } from "pinia";
 
-export interface Group {
-  id: string
-  name: string
-}
+import { ApiError, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
+import {
+  CLASSROOM_PLANNER_DRAFT_SESSION_KEY,
+  defaultPlanningProfile,
+  type ArrangementSnapshot,
+  type DraftGroup,
+  type DraftWorkspaceResponse,
+  type GroupAssignment,
+  type PairConstraint,
+  type PlanDraft,
+  type PlanningProfile,
+  type RoomTemplate,
+  type Roster,
+  type SaveStatus,
+  type SeatAssignment,
+  type Student,
+  type StudentPlanningMeta,
+  type SuggestionPlan,
+  type SuggestionListResponse,
+  type ValidationFinding,
+  type ValidationResultResponse,
+} from "./classroomPlannerTypes";
+import {
+  buildFixtureMap,
+  buildGroupMap,
+  buildSeatMap,
+  buildStudentMap,
+  createPlannerMutationActions,
+  normalizeAssignments,
+  reindexGroups,
+} from "./classroomPlannerStoreMutations";
 
-export interface Seat {
-  id: string
-  x: number
-  y: number
-  zone?: string | null
-}
+const AUTOSAVE_DELAY_MS = 900;
 
-export interface GroupAssignment {
-  student_id: string
-  group_id: string
-}
+export const useClassroomState = defineStore("classroom-state", () => {
+  const draft = ref<PlanDraft | null>(null);
+  const roster = ref<Roster | null>(null);
+  const template = ref<RoomTemplate | null>(null);
+  const groups = ref<DraftGroup[]>([]);
+  const groupAssignmentsByStudentId = ref<Record<string, string | null>>({});
+  const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
+  const studentPlanningMetaByStudentId = ref<Record<string, StudentPlanningMeta>>({});
+  const pairConstraints = ref<PairConstraint[]>([]);
+  const planningProfile = ref<PlanningProfile>(defaultPlanningProfile());
+  const validationFindings = ref<ValidationFinding[]>([]);
+  const suggestions = ref<SuggestionPlan[]>([]);
+  const snapshots = ref<ArrangementSnapshot[]>([]);
+  const saveStatus = ref<SaveStatus>("idle");
+  const saveMessage = ref<string | null>(null);
 
-export interface SeatAssignment {
-  student_id: string
-  seat_id: string
-}
+  let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+  let saveInFlight = false;
+  let saveQueued = false;
 
-export interface PlanDraft {
-  id: string
-  roster_id: string
-  template_id: string
-  lesson_mode_id: string
-  revision: number
-  group_count: number
-  group_assignments: GroupAssignment[]
-  seat_assignments: SeatAssignment[]
-}
+  const hasWorkspace = computed(() => {
+    return draft.value !== null && roster.value !== null && template.value !== null;
+  });
 
-export const useClassroomState = defineStore('classroom-state', () => {
-  // 1. Normalized Draft Entities
-  const studentsById = ref<Record<string, Student>>({})
-  const groupsById = ref<Record<string, Group>>({})
-  const seatsById = ref<Record<string, Seat>>({})
+  const students = computed(() => roster.value?.students ?? []);
+  const seats = computed(() => template.value?.seats ?? []);
+  const fixtures = computed(() => template.value?.fixtures ?? []);
 
-  // 2. Separate Assignment Axes
-  // studentId -> groupId
-  const groupAssignmentsByStudentId = ref<Record<string, string | null>>({})
-  // studentId -> seatId
-  const seatAssignmentsByStudentId = ref<Record<string, string | null>>({})
+  const studentsById = computed(() => buildStudentMap(students.value));
+  const seatsById = computed(() => buildSeatMap(seats.value));
+  const fixturesById = computed(() => buildFixtureMap(fixtures.value));
+  const groupsById = computed(() => buildGroupMap(groups.value));
 
-  // Persistence State
-  const activeDraftId = ref<string | null>(null)
-  const currentRevision = ref(0)
-  const groupCount = ref(6)
-  const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  let saveTimeout: ReturnType<typeof setTimeout> | null = null
+  const studentPlanningMeta = computed(() => {
+    return students.value
+      .map((student) => studentPlanningMetaByStudentId.value[student.id] ?? null)
+      .filter((meta): meta is StudentPlanningMeta => meta !== null);
+  });
 
-  // 3. Getters
+  const groupAssignments = computed<GroupAssignment[]>(() => {
+    return Object.entries(groupAssignmentsByStudentId.value)
+      .filter((entry) => typeof entry[1] === "string" && entry[1].length > 0)
+      .map(([studentId, groupId]) => ({ student_id: studentId, group_id: groupId as string }));
+  });
+
+  const seatAssignments = computed<SeatAssignment[]>(() => {
+    return Object.entries(seatAssignmentsByStudentId.value)
+      .filter((entry) => typeof entry[1] === "string" && entry[1].length > 0)
+      .map(([studentId, seatId]) => ({ student_id: studentId, seat_id: seatId as string }));
+  });
+
   const ungroupedStudents = computed(() => {
-    return Object.values(studentsById.value).filter(
-      s => !groupAssignmentsByStudentId.value[s.id]
-    )
-  })
+    return students.value.filter((student) => !groupAssignmentsByStudentId.value[student.id]);
+  });
 
   const unseatedStudents = computed(() => {
-    return Object.values(studentsById.value).filter(
-      s => !seatAssignmentsByStudentId.value[s.id]
-    )
-  })
+    return students.value.filter((student) => !seatAssignmentsByStudentId.value[student.id]);
+  });
 
-  const studentsByGroupId = computed(() => {
-    const map: Record<string, Student[]> = {}
-    Object.keys(groupsById.value).forEach(groupId => {
-      map[groupId] = []
-    })
-
-    Object.entries(groupAssignmentsByStudentId.value).forEach(([studentId, groupId]) => {
-      if (groupId && map[groupId] && studentsById.value[studentId]) {
-        map[groupId].push(studentsById.value[studentId])
+  const studentsByGroupId = computed<Record<string, Student[]>>(() => {
+    const grouped: Record<string, Student[]> = {};
+    for (const group of groups.value) {
+      grouped[group.id] = [];
+    }
+    for (const student of students.value) {
+      const groupId = groupAssignmentsByStudentId.value[student.id];
+      if (groupId && grouped[groupId]) {
+        grouped[groupId].push(student);
       }
-    })
-    return map
-  })
+    }
+    return grouped;
+  });
 
-  const studentBySeatId = computed(() => {
-    const map: Record<string, Student | null> = {}
-    Object.keys(seatsById.value).forEach(seatId => {
-      map[seatId] = null
-    })
-
-    Object.entries(seatAssignmentsByStudentId.value).forEach(([studentId, seatId]) => {
-      if (seatId && studentsById.value[studentId]) {
-        map[seatId] = studentsById.value[studentId]
+  const studentBySeatId = computed<Record<string, Student | null>>(() => {
+    const placed: Record<string, Student | null> = {};
+    for (const seat of seats.value) {
+      placed[seat.id] = null;
+    }
+    for (const student of students.value) {
+      const seatId = seatAssignmentsByStudentId.value[student.id];
+      if (seatId && placed[seatId] !== undefined) {
+        placed[seatId] = student;
       }
-    })
-    return map
-  })
+    }
+    return placed;
+  });
 
-  // 4. Initialization
+  const zones = computed(() => {
+    return Array.from(
+      new Set(
+        seats.value
+          .map((seat) => seat.zone ?? null)
+          .filter((zone): zone is string => typeof zone === "string" && zone.length > 0),
+      ),
+    ).sort();
+  });
 
-  function initializeFromRoster(students: Student[]) {
-    studentsById.value = {}
-    groupAssignmentsByStudentId.value = {}
-    seatAssignmentsByStudentId.value = {}
+  const hardFindings = computed(() =>
+    validationFindings.value.filter((finding) => finding.severity === "hard"),
+  );
 
-    students.forEach(s => {
-      studentsById.value[s.id] = s
-      groupAssignmentsByStudentId.value[s.id] = null
-      seatAssignmentsByStudentId.value[s.id] = null
-    })
-  }
+  const softFindings = computed(() =>
+    validationFindings.value.filter((finding) => finding.severity === "soft"),
+  );
 
-  function initializeGroups(count: number) {
-    groupCount.value = count
-    groupsById.value = {}
-    for (let i = 1; i <= count; i++) {
-      const id = `group-${i}`
-      groupsById.value[id] = { id, name: `Grupp ${i}` }
+  function clearAutosaveTimer(): void {
+    if (autosaveTimer) {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = null;
     }
   }
 
-  function initializeFromTemplate(seats: Seat[]) {
-    seatsById.value = {}
-    seats.forEach(s => {
-      seatsById.value[s.id] = s
-    })
+  function storeDraftId(draftId: string | null): void {
+    if (draftId) {
+      sessionStorage.setItem(CLASSROOM_PLANNER_DRAFT_SESSION_KEY, draftId);
+      return;
+    }
+    sessionStorage.removeItem(CLASSROOM_PLANNER_DRAFT_SESSION_KEY);
   }
 
-  function hydrate(draft: PlanDraft) {
-    activeDraftId.value = draft.id
-    currentRevision.value = draft.revision
-    groupCount.value = draft.group_count
-
-    initializeGroups(draft.group_count)
-
-    // Clear existing assignments
-    Object.keys(studentsById.value).forEach(id => {
-      groupAssignmentsByStudentId.value[id] = null
-      seatAssignmentsByStudentId.value[id] = null
-    })
-
-    // Apply draft assignments
-    draft.group_assignments.forEach((ga: GroupAssignment) => {
-      groupAssignmentsByStudentId.value[ga.student_id] = ga.group_id
-    })
-    draft.seat_assignments.forEach((sa: SeatAssignment) => {
-      seatAssignmentsByStudentId.value[sa.student_id] = sa.seat_id
-    })
-
-    saveStatus.value = 'saved'
+  function resetTransientPanels(): void {
+    validationFindings.value = [];
+    suggestions.value = [];
   }
 
-  // 5. Draft Persistence API
+  function markDirty(): void {
+    resetTransientPanels();
+    scheduleAutosave();
+  }
 
-  async function createDraft(rosterId: string, templateId: string, lessonModeId: string) {
-    saveStatus.value = 'saving'
+  function applyWorkspace(workspace: DraftWorkspaceResponse): void {
+    draft.value = workspace.draft;
+    roster.value = workspace.roster;
+    template.value = workspace.template;
+    groups.value = reindexGroups(workspace.groups);
+    groupAssignmentsByStudentId.value = normalizeAssignments(workspace.group_assignments, "group_id");
+    seatAssignmentsByStudentId.value = normalizeAssignments(workspace.seat_assignments, "seat_id");
+    studentPlanningMetaByStudentId.value = Object.fromEntries(
+      workspace.student_planning_meta.map((meta) => [meta.student_id, meta]),
+    );
+    pairConstraints.value = [...workspace.pair_constraints];
+    planningProfile.value = workspace.planning_profile;
+    validationFindings.value = [];
+    suggestions.value = [];
+    saveStatus.value = "saved";
+    saveMessage.value = null;
+    storeDraftId(workspace.draft.id);
+  }
+
+  function serializeWorkspacePatch(): Record<string, unknown> {
+    return {
+      expected_revision: draft.value?.revision ?? null,
+      groups: groups.value,
+      group_assignments: groupAssignments.value,
+      seat_assignments: seatAssignments.value,
+      student_planning_meta: studentPlanningMeta.value,
+      pair_constraints: pairConstraints.value,
+      planning_profile: planningProfile.value,
+    };
+  }
+
+  function normalizeMutationError(error: unknown, fallbackMessage: string): string {
+    if (isApiError(error)) {
+      return error.message || fallbackMessage;
+    }
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return fallbackMessage;
+  }
+
+  async function persistWorkspace(): Promise<void> {
+    if (!draft.value) {
+      return;
+    }
+    if (saveInFlight) {
+      saveQueued = true;
+      return;
+    }
+
+    saveInFlight = true;
     try {
-      const data = await apiPost<PlanDraft>('/api/v1/apps/classroom.group-seating-studio/drafts', {
-        roster_id: rosterId,
-        template_id: templateId,
-        lesson_mode_id: lessonModeId,
-        group_assignments: [],
-        seat_assignments: []
-      })
-      activeDraftId.value = data.id
-      currentRevision.value = data.revision
-      saveStatus.value = 'saved'
-
-      // Persist draft ID for resume
-      sessionStorage.setItem('classroom_planner_active_draft_id', data.id)
-    } catch (e) {
-      saveStatus.value = 'error'
-      console.error(e)
+      const updatedDraft = await apiPatch<PlanDraft>(
+        `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}`,
+        serializeWorkspacePatch(),
+      );
+      draft.value = updatedDraft;
+      saveStatus.value = "saved";
+      saveMessage.value = null;
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 409) {
+        saveStatus.value = "conflict";
+        saveMessage.value = "Utkastet har ändrats i en annan flik. Ladda om arbetsytan innan du fortsätter.";
+      } else {
+        saveStatus.value = "error";
+        saveMessage.value = normalizeMutationError(error, "Kunde inte spara planeringen.");
+      }
+    } finally {
+      saveInFlight = false;
+      if (saveQueued && saveStatus.value !== "conflict") {
+        saveQueued = false;
+        await persistWorkspace();
+      }
     }
   }
 
-  function _triggerAutosave() {
-    if (!activeDraftId.value) return
-
-    saveStatus.value = 'saving'
-    if (saveTimeout) clearTimeout(saveTimeout)
-
-    saveTimeout = setTimeout(async () => {
-      try {
-        const groupAssignments: GroupAssignment[] = []
-        Object.entries(groupAssignmentsByStudentId.value).forEach(([sid, gid]) => {
-          if (gid) groupAssignments.push({ student_id: sid, group_id: gid })
-        })
-
-        const seatAssignments: SeatAssignment[] = []
-        Object.entries(seatAssignmentsByStudentId.value).forEach(([sid, sid_seat]) => {
-          if (sid_seat) seatAssignments.push({ student_id: sid, seat_id: sid_seat })
-        })
-
-        const data = await apiPatch<PlanDraft>(`/api/v1/apps/classroom.group-seating-studio/drafts/${activeDraftId.value}`, {
-          expected_revision: currentRevision.value,
-          group_count: groupCount.value,
-          group_assignments: groupAssignments,
-          seat_assignments: seatAssignments
-        })
-        currentRevision.value = data.revision
-        saveStatus.value = 'saved'
-      } catch (e) {
-        saveStatus.value = 'error'
-        console.error(e)
-      }
-    }, 1000)
+  function scheduleAutosave(): void {
+    if (!draft.value) {
+      return;
+    }
+    clearAutosaveTimer();
+    saveStatus.value = "saving";
+    autosaveTimer = setTimeout(() => {
+      void persistWorkspace();
+    }, AUTOSAVE_DELAY_MS);
   }
 
-  // 6. Strict State Reducers
-
-  function assignStudentToGroup(studentId: string, groupId: string) {
-    if (!studentsById.value[studentId]) return
-    if (!groupsById.value[groupId]) return
-
-    groupAssignmentsByStudentId.value[studentId] = groupId
-    _triggerAutosave()
+  function clearWorkspace(): void {
+    clearAutosaveTimer();
+    draft.value = null;
+    roster.value = null;
+    template.value = null;
+    groups.value = [];
+    groupAssignmentsByStudentId.value = {};
+    seatAssignmentsByStudentId.value = {};
+    studentPlanningMetaByStudentId.value = {};
+    pairConstraints.value = [];
+    planningProfile.value = defaultPlanningProfile();
+    validationFindings.value = [];
+    suggestions.value = [];
+    snapshots.value = [];
+    saveStatus.value = "idle";
+    saveMessage.value = null;
+    storeDraftId(null);
   }
 
-  function removeStudentFromGroup(studentId: string) {
-    if (!studentsById.value[studentId]) return
-    groupAssignmentsByStudentId.value[studentId] = null
-    _triggerAutosave()
+  async function createDraft(rosterId: string, templateId: string, lessonModeId: string): Promise<void> {
+    saveStatus.value = "saving";
+    saveMessage.value = null;
+    const newDraft = await apiPost<PlanDraft>("/api/v1/apps/classroom.group-seating-studio/drafts", {
+      roster_id: rosterId,
+      template_id: templateId,
+      lesson_mode_id: lessonModeId,
+    });
+    await loadWorkspace(newDraft.id);
   }
 
-  function assignStudentToSeat(studentId: string, seatId: string) {
-    if (!studentsById.value[studentId]) return
-    if (!seatsById.value[seatId]) return
-
-    // Ensure seat is not already taken by another student
-    Object.entries(seatAssignmentsByStudentId.value).forEach(([sid, targetSeatId]) => {
-      if (targetSeatId === seatId) {
-        seatAssignmentsByStudentId.value[sid] = null
-      }
-    })
-
-    seatAssignmentsByStudentId.value[studentId] = seatId
-    _triggerAutosave()
+  async function loadWorkspace(draftId: string): Promise<void> {
+    const workspace = await apiGet<DraftWorkspaceResponse>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${draftId}/workspace`,
+    );
+    applyWorkspace(workspace);
   }
 
-  function swapSeatAssignments(studentIdA: string, studentIdB: string) {
-    const seatA = seatAssignmentsByStudentId.value[studentIdA]
-    const seatB = seatAssignmentsByStudentId.value[studentIdB]
-
-    seatAssignmentsByStudentId.value[studentIdA] = seatB || null
-    seatAssignmentsByStudentId.value[studentIdB] = seatA || null
-    _triggerAutosave()
+  async function reloadActiveWorkspace(): Promise<void> {
+    if (!draft.value) {
+      return;
+    }
+    await loadWorkspace(draft.value.id);
   }
 
-  function clearSeatAssignment(studentId: string) {
-    if (!studentsById.value[studentId]) return
-    seatAssignmentsByStudentId.value[studentId] = null
-    _triggerAutosave()
+  function getStoredDraftId(): string | null {
+    return sessionStorage.getItem(CLASSROOM_PLANNER_DRAFT_SESSION_KEY);
   }
 
-  function setGroupCount(count: number) {
-    if (count < 1) return
-    groupCount.value = count
-    initializeGroups(count)
-    _triggerAutosave()
-  }
-
-  return {
-    // State
-    studentsById,
-    groupsById,
-    seatsById,
-    groupAssignmentsByStudentId,
-    seatAssignmentsByStudentId,
-    activeDraftId,
-    saveStatus,
-    groupCount,
-
-    // Getters
-    ungroupedStudents,
-    unseatedStudents,
-    studentsByGroupId,
-    studentBySeatId,
-
-    // Actions
-    initializeFromRoster,
-    initializeGroups,
-    initializeFromTemplate,
-    createDraft,
-    hydrate,
+  const {
     assignStudentToGroup,
     removeStudentFromGroup,
     assignStudentToSeat,
     swapSeatAssignments,
     clearSeatAssignment,
-    setGroupCount
+    addGroup,
+    renameGroup,
+    moveGroup,
+    removeGroup,
+    updatePlanningProfile,
+    setStudentPlanningMeta,
+    resetStudentPlanningMeta,
+    setPairConstraint,
+  } = createPlannerMutationActions({
+    studentsById,
+    seatsById,
+    groupsById,
+    groups,
+    groupAssignmentsByStudentId,
+    seatAssignmentsByStudentId,
+    studentPlanningMetaByStudentId,
+    pairConstraints,
+    planningProfile,
+    markDirty,
+  });
+
+  async function validateDraft(): Promise<ValidationFinding[]> {
+    if (!draft.value) {
+      return [];
+    }
+    const result = await apiPost<ValidationResultResponse>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/validate`,
+    );
+    validationFindings.value = result.findings;
+    return result.findings;
   }
-})
+
+  async function loadSuggestions(): Promise<SuggestionPlan[]> {
+    if (!draft.value) {
+      return [];
+    }
+    const result = await apiPost<SuggestionListResponse>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/suggestions`,
+    );
+    suggestions.value = result.suggestions;
+    return result.suggestions;
+  }
+
+  async function applySuggestion(suggestionId: string): Promise<void> {
+    if (!draft.value) {
+      return;
+    }
+    const response = await apiPost<PlanDraft>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/suggestions/${suggestionId}/apply`,
+      { expected_revision: draft.value.revision },
+    );
+    draft.value = response;
+    const selectedSuggestion = suggestions.value.find(
+      (suggestion) => suggestion.suggestion_id === suggestionId,
+    );
+    if (selectedSuggestion) {
+      groups.value = reindexGroups(selectedSuggestion.groups);
+      groupAssignmentsByStudentId.value = normalizeAssignments(
+        selectedSuggestion.group_assignments,
+        "group_id",
+      );
+      seatAssignmentsByStudentId.value = normalizeAssignments(
+        selectedSuggestion.seat_assignments,
+        "seat_id",
+      );
+      validationFindings.value = selectedSuggestion.findings;
+    } else {
+      await reloadActiveWorkspace();
+    }
+    saveStatus.value = "saved";
+    saveMessage.value = null;
+  }
+
+  async function randomizeDraft(): Promise<void> {
+    if (!draft.value) {
+      return;
+    }
+    const response = await apiPost<PlanDraft>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/randomize`,
+      { expected_revision: draft.value.revision },
+    );
+    draft.value = response;
+    await reloadActiveWorkspace();
+  }
+
+  async function finalizeDraft(): Promise<ArrangementSnapshot> {
+    if (!draft.value) {
+      throw new Error("Det finns inget aktivt utkast att fastställa.");
+    }
+    const snapshot = await apiPost<ArrangementSnapshot>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/finalize`,
+    );
+    snapshots.value = [snapshot, ...snapshots.value.filter((entry) => entry.id !== snapshot.id)];
+    return snapshot;
+  }
+
+  async function loadSnapshots(): Promise<ArrangementSnapshot[]> {
+    const result = await apiGet<ArrangementSnapshot[]>(
+      "/api/v1/apps/classroom.group-seating-studio/snapshots",
+    );
+    snapshots.value = result;
+    return result;
+  }
+
+  return {
+    draft,
+    roster,
+    template,
+    groups,
+    pairConstraints,
+    planningProfile,
+    validationFindings,
+    suggestions,
+    snapshots,
+    saveStatus,
+    saveMessage,
+    hasWorkspace,
+    students,
+    seats,
+    fixtures,
+    studentsById,
+    seatsById,
+    fixturesById,
+    groupsById,
+    groupAssignmentsByStudentId,
+    seatAssignmentsByStudentId,
+    studentPlanningMetaByStudentId,
+    studentPlanningMeta,
+    groupAssignments,
+    seatAssignments,
+    ungroupedStudents,
+    unseatedStudents,
+    studentsByGroupId,
+    studentBySeatId,
+    zones,
+    hardFindings,
+    softFindings,
+    getStoredDraftId,
+    clearWorkspace,
+    createDraft,
+    loadWorkspace,
+    reloadActiveWorkspace,
+    assignStudentToGroup,
+    removeStudentFromGroup,
+    assignStudentToSeat,
+    swapSeatAssignments,
+    clearSeatAssignment,
+    addGroup,
+    renameGroup,
+    moveGroup,
+    removeGroup,
+    updatePlanningProfile,
+    setStudentPlanningMeta,
+    resetStudentPlanningMeta,
+    setPairConstraint,
+    validateDraft,
+    loadSuggestions,
+    applySuggestion,
+    randomizeDraft,
+    finalizeDraft,
+    loadSnapshots,
+  };
+});

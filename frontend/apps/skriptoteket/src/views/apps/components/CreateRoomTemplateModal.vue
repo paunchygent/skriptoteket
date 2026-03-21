@@ -1,160 +1,465 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Seat, RoomTemplate } from '../useClassroomState'
+/**
+ * Room template create/edit modal.
+ *
+ * This modal manages reusable classroom layouts for the planner. It lets the
+ * teacher place seats and room fixtures on a coarse grid so the live planner
+ * canvas, future PDF exports, and classroom snapshots share one visual source
+ * of truth.
+ */
+
+import { computed, ref, watch } from "vue";
+
+import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import {
+  roomFixturePalette,
+  type RoomFixture,
+  type RoomFixtureType,
+  type RoomTemplate,
+  type Seat,
+} from "../classroomPlannerTypes";
+
+type BuilderTool = "seat" | "erase" | RoomFixtureType;
+
+type FixturePlacement = {
+  id: string;
+  type: RoomFixtureType;
+  col: number;
+  row: number;
+  width: number;
+  height: number;
+  label: string;
+};
+
+const GRID_COLS = 14;
+const GRID_ROWS = 9;
+const GRID_UNIT = 96;
+
+const props = defineProps<{
+  template?: RoomTemplate | null;
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'created', template: RoomTemplate): void
-}>()
+  (e: "close"): void;
+  (e: "saved", template: RoomTemplate): void;
+  (e: "deleted", templateId: string): void;
+}>();
 
-const name = ref('')
-const isSubmitting = ref(false)
-const error = ref<string | null>(null)
+const name = ref("");
+const selectedTool = ref<BuilderTool>("seat");
+const seatCells = ref<string[]>([]);
+const fixtures = ref<FixturePlacement[]>([]);
+const isSubmitting = ref(false);
+const isDeleting = ref(false);
+const error = ref<string | null>(null);
 
-// Grid representation for building a room
-const GRID_COLS = 15
-const GRID_ROWS = 10
-const SEAT_SIZE = 80 // pixels
-const grid = ref<boolean[][]>(
-  Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(false))
-)
+const isEditing = computed(() => Boolean(props.template));
 
-function toggleSeat(row: number, col: number) {
-  grid.value[row][col] = !grid.value[row][col]
+function seatKey(row: number, col: number): string {
+  return `${row}:${col}`;
 }
 
-const parsedSeats = computed<Seat[]>(() => {
-  const seats: Seat[] = []
-  let seatCounter = 1
+function isSeatAt(row: number, col: number): boolean {
+  return seatCells.value.includes(seatKey(row, col));
+}
 
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      if (grid.value[row][col]) {
-        seats.push({
-          id: `seat-${seatCounter++}`,
-          x: col * SEAT_SIZE,
-          y: row * SEAT_SIZE
-        })
+function findFixtureAt(row: number, col: number): FixturePlacement | null {
+  return (
+    fixtures.value.find((fixture) => {
+      return (
+        row >= fixture.row &&
+        row < fixture.row + fixture.height &&
+        col >= fixture.col &&
+        col < fixture.col + fixture.width
+      );
+    }) ?? null
+  );
+}
+
+function fixturePaletteEntry(type: RoomFixtureType) {
+  return roomFixturePalette.find((entry) => entry.type === type);
+}
+
+function buildFixtureLabel(type: RoomFixtureType): string {
+  return fixturePaletteEntry(type)?.label ?? type;
+}
+
+function fixtureFits(row: number, col: number, width: number, height: number): boolean {
+  if (col + width > GRID_COLS || row + height > GRID_ROWS) {
+    return false;
+  }
+  for (let currentRow = row; currentRow < row + height; currentRow += 1) {
+    for (let currentCol = col; currentCol < col + width; currentCol += 1) {
+      if (isSeatAt(currentRow, currentCol) || findFixtureAt(currentRow, currentCol)) {
+        return false;
       }
     }
   }
-  return seats
-})
+  return true;
+}
+
+function removeFixtureById(fixtureId: string): void {
+  fixtures.value = fixtures.value.filter((fixture) => fixture.id !== fixtureId);
+}
+
+function toggleGridCell(row: number, col: number): void {
+  error.value = null;
+  const occupiedFixture = findFixtureAt(row, col);
+
+  if (selectedTool.value === "erase") {
+    if (occupiedFixture) {
+      removeFixtureById(occupiedFixture.id);
+      return;
+    }
+    seatCells.value = seatCells.value.filter((value) => value !== seatKey(row, col));
+    return;
+  }
+
+  if (selectedTool.value === "seat") {
+    if (occupiedFixture) {
+      error.value = "Ta bort fixturen först om du vill lägga en plats där.";
+      return;
+    }
+    const key = seatKey(row, col);
+    seatCells.value = isSeatAt(row, col)
+      ? seatCells.value.filter((value) => value !== key)
+      : [...seatCells.value, key];
+    return;
+  }
+
+  const paletteItem = fixturePaletteEntry(selectedTool.value);
+  if (!paletteItem) {
+    return;
+  }
+  if (!fixtureFits(row, col, paletteItem.width, paletteItem.height)) {
+    error.value = "Fixturen får inte plats där eller krockar med befintlig möblering.";
+    return;
+  }
+
+  fixtures.value = [
+    ...fixtures.value,
+    {
+      id: `${selectedTool.value}-${crypto.randomUUID().slice(0, 8)}`,
+      type: selectedTool.value,
+      row,
+      col,
+      width: paletteItem.width,
+      height: paletteItem.height,
+      label: paletteItem.label,
+    },
+  ];
+}
+
+watch(
+  () => props.template,
+  (template) => {
+    name.value = template?.name ?? "";
+    seatCells.value =
+      template?.seats.map((seat) => seatKey(Math.round(seat.y / GRID_UNIT), Math.round(seat.x / GRID_UNIT))) ??
+      [];
+    fixtures.value =
+      template?.fixtures.map((fixture) => ({
+        id: fixture.id,
+        type: fixture.type,
+        row: Math.round(fixture.y / GRID_UNIT),
+        col: Math.round(fixture.x / GRID_UNIT),
+        width: Math.max(1, Math.round(fixture.width / GRID_UNIT)),
+        height: Math.max(1, Math.round(fixture.height / GRID_UNIT)),
+        label: fixture.label ?? buildFixtureLabel(fixture.type),
+      })) ?? [];
+    error.value = null;
+    selectedTool.value = "seat";
+  },
+  { immediate: true },
+);
+
+const parsedSeats = computed<Seat[]>(() => {
+  return seatCells.value
+    .map((value) => {
+      const [row, col] = value.split(":").map(Number);
+      return { row, col };
+    })
+    .sort((left, right) => (left.row - right.row) || (left.col - right.col))
+    .map((cell, index) => ({
+      id: `seat-${index + 1}`,
+      x: cell.col * GRID_UNIT,
+      y: cell.row * GRID_UNIT,
+      zone: null,
+    }));
+});
+
+const parsedFixtures = computed<RoomFixture[]>(() => {
+  return fixtures.value.map((fixture) => ({
+    id: fixture.id,
+    type: fixture.type,
+    x: fixture.col * GRID_UNIT,
+    y: fixture.row * GRID_UNIT,
+    width: fixture.width * GRID_UNIT,
+    height: fixture.height * GRID_UNIT,
+    label: fixture.label,
+  }));
+});
 
 const isValid = computed(() => {
-  return name.value.trim().length > 0 && parsedSeats.value.length > 0
-})
+  return name.value.trim().length > 0 && parsedSeats.value.length > 0;
+});
 
-async function submit() {
-  if (!isValid.value) return
+async function submit(): Promise<void> {
+  if (!isValid.value) {
+    return;
+  }
 
-  isSubmitting.value = true
-  error.value = null
+  isSubmitting.value = true;
+  error.value = null;
 
   try {
-    const response = await fetch('/api/v1/apps/classroom.group-seating-studio/templates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.value.trim(),
-        seats: parsedSeats.value
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error('Kunde inte spara klassrummet.')
-    }
-
-    const data = await response.json()
-    emit('created', data)
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      error.value = e.message
-    } else {
-      error.value = 'Ett okänt fel uppstod.'
-    }
+    const payload = {
+      name: name.value.trim(),
+      seats: parsedSeats.value,
+      fixtures: parsedFixtures.value,
+    };
+    const response = isEditing.value && props.template
+      ? await apiPut<RoomTemplate>(
+          `/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`,
+          payload,
+        )
+      : await apiPost<RoomTemplate>(
+          "/api/v1/apps/classroom.group-seating-studio/templates",
+          payload,
+        );
+    emit("saved", response);
+  } catch (submitError: unknown) {
+    error.value = submitError instanceof Error ? submitError.message : "Kunde inte spara klassrummet.";
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
+  }
+}
+
+async function removeTemplate(): Promise<void> {
+  if (!props.template) {
+    return;
+  }
+
+  isDeleting.value = true;
+  error.value = null;
+
+  try {
+    await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`);
+    emit("deleted", props.template.id);
+  } catch (deleteError: unknown) {
+    error.value = deleteError instanceof Error ? deleteError.message : "Kunde inte radera klassrummet.";
+  } finally {
+    isDeleting.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-navy/80 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="bg-white border-4 border-navy shadow-[16px_16px_0_0_rgba(15,23,42,1)] max-w-2xl w-full p-8 relative my-auto">
-      <button
-        class="absolute top-4 right-4 text-navy/50 hover:text-navy font-black text-2xl leading-none"
-        @click="emit('close')"
-      >
-        &times;
-      </button>
-
-      <h2 class="text-2xl font-black uppercase tracking-widest text-navy mb-6 border-b-4 border-navy/10 pb-2">
-        Skapa Klassrum
-      </h2>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-navy/70 p-4">
+    <div class="w-full max-w-6xl border border-navy bg-white p-6 shadow-brutal md:p-8">
+      <div class="flex flex-col gap-4 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-1">
+          <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Klassrumsmallar
+          </p>
+          <h2 class="font-serif text-2xl text-navy">
+            {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
+          </h2>
+          <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
+            Placera ut elevplatser och viktiga rumsdetaljer så planeringen får en tydlig whiteboard-liknande översikt redan nu och en bättre exportyta senare.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn-ghost h-[32px] w-[32px] self-start px-0 py-0 shadow-none border-navy/30 bg-canvas lg:self-auto"
+          @click="emit('close')"
+        >
+          ×
+        </button>
+      </div>
 
       <div
         v-if="error"
-        class="mb-6 p-4 border-2 border-burgundy bg-burgundy/10 text-burgundy font-bold text-sm"
+        class="system-message system-message-error mt-4"
       >
-        {{ error }}
+        <div class="system-message-content">
+          {{ error }}
+        </div>
       </div>
 
-      <div class="space-y-6">
-        <div>
-          <label class="block text-sm font-bold uppercase tracking-widest text-navy mb-2">Klassrummets namn</label>
-          <input
-            v-model="name"
-            type="text"
-            placeholder="T.ex. Sal 304"
-            class="w-full border-2 border-navy p-3 text-lg font-bold placeholder:font-normal focus:outline-none focus:ring-4 focus:ring-navy/20"
-          >
-        </div>
-
-        <div>
-          <div class="flex justify-between items-end mb-2">
-            <label class="block text-sm font-bold uppercase tracking-widest text-navy">Karta</label>
-            <span class="text-xs font-bold text-navy/60">{{ parsedSeats.length }} platser utplacerade</span>
+      <div class="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+        <aside class="space-y-5">
+          <div class="space-y-1">
+            <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+              Klassrummets namn
+            </label>
+            <input
+              v-model="name"
+              type="text"
+              placeholder="Till exempel Sal 304"
+              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+            >
           </div>
-          <p class="text-xs text-navy/60 mb-2">Klicka i rutnätet för att placera ut bord/stolar.</p>
 
-          <div class="border-2 border-navy bg-paper p-4 flex justify-start overflow-x-auto">
+          <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
+            <div class="mb-3 flex items-end justify-between gap-3">
+              <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                Verktyg
+              </h3>
+              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                {{ parsedSeats.length }} platser
+              </span>
+            </div>
+
+            <div class="grid gap-2">
+              <button
+                type="button"
+                class="btn-ghost justify-start shadow-none"
+                :class="selectedTool === 'seat' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+                @click="selectedTool = 'seat'"
+              >
+                Placera plats
+              </button>
+              <button
+                v-for="fixture in roomFixturePalette"
+                :key="fixture.type"
+                type="button"
+                class="btn-ghost justify-start shadow-none"
+                :class="selectedTool === fixture.type ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+                @click="selectedTool = fixture.type"
+              >
+                {{ fixture.label }}
+              </button>
+              <button
+                type="button"
+                class="btn-ghost justify-start shadow-none"
+                :class="selectedTool === 'erase' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+                @click="selectedTool = 'erase'"
+              >
+                Sudda
+              </button>
+            </div>
+          </div>
+
+          <div class="border border-navy bg-white p-4 shadow-brutal-sm">
+            <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+              Lägesnotering
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-navy/70">
+              Välj ett verktyg och klicka i rutnätet. Fixturer upptar flera rutor och kan inte överlappa platser eller andra fixturer.
+            </p>
+          </div>
+        </aside>
+
+        <section class="space-y-4">
+          <div class="overflow-auto border border-navy bg-canvas p-4 shadow-brutal-sm">
             <div
-              class="grid gap-1 shrink-0"
-              :style="{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))` }"
+              class="relative grid gap-1"
+              :style="{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, minWidth: `${GRID_COLS * 52}px` }"
             >
               <template
                 v-for="row in GRID_ROWS"
                 :key="`row-${row}`"
               >
-                <div
+                <button
                   v-for="col in GRID_COLS"
                   :key="`cell-${row}-${col}`"
-                  class="w-8 h-8 sm:w-10 sm:h-10 border-2 transition-colors cursor-pointer"
-                  :class="grid[row-1][col-1] ? 'bg-navy border-navy' : 'bg-white border-navy/20 hover:border-navy/50'"
-                  @click="toggleSeat(row-1, col-1)"
-                />
+                  type="button"
+                  class="relative aspect-square border text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] transition-colors"
+                  :class="{
+                    'border-navy/20 bg-white hover:border-navy/50': !isSeatAt(row - 1, col - 1) && !findFixtureAt(row - 1, col - 1),
+                    'border-navy bg-navy text-canvas': isSeatAt(row - 1, col - 1),
+                    'border-burgundy bg-burgundy/15 text-burgundy': findFixtureAt(row - 1, col - 1)?.type === 'teacher_desk',
+                    'border-navy bg-warning/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'whiteboard',
+                    'border-navy bg-canvas text-navy/70': findFixtureAt(row - 1, col - 1)?.type === 'window',
+                    'border-navy bg-success/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'door',
+                  }"
+                  @click="toggleGridCell(row - 1, col - 1)"
+                >
+                  <span v-if="findFixtureAt(row - 1, col - 1) && findFixtureAt(row - 1, col - 1)?.row === row - 1 && findFixtureAt(row - 1, col - 1)?.col === col - 1">
+                    {{ findFixtureAt(row - 1, col - 1)?.label }}
+                  </span>
+                </button>
               </template>
             </div>
           </div>
-        </div>
 
-        <div class="pt-4 flex justify-end gap-4 border-t-2 border-navy/10">
+          <div class="border border-navy bg-white p-4 shadow-brutal-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-navy/20 pb-3">
+              <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                Förhandsvisning
+              </h3>
+              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                {{ parsedFixtures.length }} fixturer
+              </span>
+            </div>
+
+            <div class="relative mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
+              <div
+                class="relative"
+                :style="{ width: `${GRID_COLS * GRID_UNIT}px`, height: `${GRID_ROWS * GRID_UNIT}px` }"
+              >
+                <div
+                  class="absolute inset-0 opacity-15"
+                  style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 24px 24px;"
+                />
+
+                <div
+                  v-for="fixture in parsedFixtures"
+                  :key="fixture.id"
+                  class="absolute flex items-center justify-center border text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
+                  :class="{
+                    'border-navy bg-warning/25 text-navy': fixture.type === 'whiteboard',
+                    'border-burgundy bg-burgundy/10 text-burgundy': fixture.type === 'teacher_desk',
+                    'border-navy bg-white text-navy/70': fixture.type === 'window',
+                    'border-success bg-success/20 text-navy': fixture.type === 'door',
+                  }"
+                  :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
+                >
+                  {{ fixture.label }}
+                </div>
+
+                <div
+                  v-for="seat in parsedSeats"
+                  :key="seat.id"
+                  class="absolute flex h-[72px] w-[72px] items-center justify-center border border-navy bg-white text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] shadow-brutal-sm"
+                  :style="{ left: `${seat.x + 12}px`, top: `${seat.y + 12}px` }"
+                >
+                  {{ seat.id }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="mt-6 flex flex-col gap-3 border-t border-navy/20 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <button
+            v-if="isEditing"
+            type="button"
+            class="btn-ghost border-burgundy/40 bg-white text-burgundy"
+            :disabled="isDeleting"
+            @click="removeTemplate"
+          >
+            {{ isDeleting ? "Raderar..." : "Radera klassrum" }}
+          </button>
+        </div>
+        <div class="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            class="px-6 py-3 font-bold uppercase tracking-widest text-navy hover:bg-navy/5 transition-colors"
+            class="btn-ghost border-navy/30 bg-canvas shadow-none"
             @click="emit('close')"
           >
             Avbryt
           </button>
           <button
             type="button"
-            class="px-8 py-3 border-2 border-navy font-black uppercase tracking-widest transition-colors"
-            :class="isValid && !isSubmitting ? 'bg-mint text-navy hover:bg-mint-400' : 'bg-navy/10 text-navy/30 cursor-not-allowed'"
+            class="btn-primary"
             :disabled="!isValid || isSubmitting"
             @click="submit"
           >
-            {{ isSubmitting ? 'Sparar...' : 'Spara Klassrum' }}
+            {{ isSubmitting ? "Sparar..." : isEditing ? "Spara klassrum" : "Skapa klassrum" }}
           </button>
         </div>
       </div>
