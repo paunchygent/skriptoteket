@@ -141,6 +141,13 @@ class PlanDraftKind(StrEnum):
     SEATING = "seating"
 
 
+class ClassroomSelectionMode(StrEnum):
+    """Describe how a draft kind relates to classroom selection at entry time."""
+
+    OPTIONAL = "optional"
+    REQUIRED = "required"
+
+
 class PlanDraft(BaseModel):
     """Represent the mutable root draft record."""
 
@@ -192,3 +199,61 @@ class ResumablePlanDraft(BaseModel):
     draft: PlanDraft
     roster_name: str
     template_name: str | None = None
+
+
+class TaskEntryOption(BaseModel):
+    """Represent one task-entry rule surfaced by the class workspace contract."""
+
+    model_config = ConfigDict(frozen=True)
+
+    draft_kind: PlanDraftKind
+    classroom_selection_mode: ClassroomSelectionMode
+
+
+class PlanDraftSummary(BaseModel):
+    """Represent a compact draft summary for class-workspace read models."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    draft_kind: PlanDraftKind
+    template_id: UUID | None = None
+    template_name: str | None = None
+    status: PlanDraftStatus
+    revision: int
+    last_opened_at: datetime
+    updated_at: datetime
+
+
+class ClassWorkspaceRosterSummary(BaseModel):
+    """Represent compact class identity details for the class workspace."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    name: str
+    student_count: int
+
+
+class ClassWorkspaceDraftSummary(BaseModel):
+    """Represent active and historical draft summaries for one class."""
+
+    model_config = ConfigDict(frozen=True)
+
+    active_grouping_draft: PlanDraftSummary | None = None
+    active_seating_draft: PlanDraftSummary | None = None
+    grouping_history: list[PlanDraftSummary] = Field(default_factory=list)
+    seating_history: list[PlanDraftSummary] = Field(default_factory=list)
+
+
+class ClassWorkspaceSummary(BaseModel):
+    """Represent the class-first workspace summary returned to the frontend."""
+
+    model_config = ConfigDict(frozen=True)
+
+    roster: ClassWorkspaceRosterSummary
+    task_entry_options: list[TaskEntryOption] = Field(default_factory=list)
+    active_grouping_draft: PlanDraftSummary | None = None
+    active_seating_draft: PlanDraftSummary | None = None
+    grouping_history: list[PlanDraftSummary] = Field(default_factory=list)
+    seating_history: list[PlanDraftSummary] = Field(default_factory=list)

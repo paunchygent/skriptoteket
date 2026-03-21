@@ -16,12 +16,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassWorkspaceDraftSummary,
     DraftGroup,
     DraftWorkspace,
     GroupAssignment,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
+    PlanDraftSummary,
     ResumablePlanDraft,
     RoomFixture,
     RoomFixtureType,
@@ -117,6 +119,25 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             ],
         )
 
+    def _to_draft_summary(
+        self,
+        model: PlanDraftModel,
+        *,
+        template_name: str | None,
+    ) -> PlanDraftSummary:
+        """Map one draft row plus template label to the compact summary model."""
+
+        return PlanDraftSummary(
+            id=model.id,
+            draft_kind=PlanDraftKind(model.draft_kind),
+            template_id=model.template_id,
+            template_name=template_name,
+            status=PlanDraftStatus(model.status),
+            revision=model.revision,
+            last_opened_at=model.last_opened_at,
+            updated_at=model.updated_at,
+        )
+
     async def get_by_id(self, *, draft_id: UUID) -> PlanDraft | None:
         model = await self._session.get(PlanDraftModel, draft_id)
         return self._to_draft(model) if model else None
@@ -199,6 +220,95 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             draft=self._to_draft(model),
             roster_name=roster_name,
             template_name=template_name,
+        )
+
+    async def _get_latest_summary_for_kind_and_status(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        draft_kind: PlanDraftKind,
+        status: PlanDraftStatus,
+    ) -> PlanDraftSummary | None:
+        """Load the latest compact summary for one class, task, and lifecycle status."""
+
+        result = await self._session.execute(
+            select(PlanDraftModel, RoomTemplateModel.name)
+            .outerjoin(RoomTemplateModel, RoomTemplateModel.id == PlanDraftModel.template_id)
+            .where(
+                PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.roster_id == roster_id,
+                PlanDraftModel.draft_kind == draft_kind.value,
+                PlanDraftModel.status == status.value,
+            )
+            .order_by(PlanDraftModel.last_opened_at.desc(), PlanDraftModel.updated_at.desc())
+            .limit(1)
+        )
+        row = result.first()
+        if row is None:
+            return None
+        model, template_name = row
+        return self._to_draft_summary(model, template_name=template_name)
+
+    async def _list_history_summaries_for_kind(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        draft_kind: PlanDraftKind,
+        limit: int,
+    ) -> list[PlanDraftSummary]:
+        """Load compact history summaries for one class and task kind."""
+
+        result = await self._session.execute(
+            select(PlanDraftModel, RoomTemplateModel.name)
+            .outerjoin(RoomTemplateModel, RoomTemplateModel.id == PlanDraftModel.template_id)
+            .where(
+                PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.roster_id == roster_id,
+                PlanDraftModel.draft_kind == draft_kind.value,
+                PlanDraftModel.status != PlanDraftStatus.ACTIVE.value,
+            )
+            .order_by(PlanDraftModel.last_opened_at.desc(), PlanDraftModel.updated_at.desc())
+            .limit(limit)
+        )
+        return [
+            self._to_draft_summary(model, template_name=template_name)
+            for model, template_name in result.all()
+        ]
+
+    async def get_class_workspace_draft_summary(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        history_limit_per_kind: int = 5,
+    ) -> ClassWorkspaceDraftSummary:
+        return ClassWorkspaceDraftSummary(
+            active_grouping_draft=await self._get_latest_summary_for_kind_and_status(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                draft_kind=PlanDraftKind.GROUPING,
+                status=PlanDraftStatus.ACTIVE,
+            ),
+            active_seating_draft=await self._get_latest_summary_for_kind_and_status(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                draft_kind=PlanDraftKind.SEATING,
+                status=PlanDraftStatus.ACTIVE,
+            ),
+            grouping_history=await self._list_history_summaries_for_kind(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                draft_kind=PlanDraftKind.GROUPING,
+                limit=history_limit_per_kind,
+            ),
+            seating_history=await self._list_history_summaries_for_kind(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                draft_kind=PlanDraftKind.SEATING,
+                limit=history_limit_per_kind,
+            ),
         )
 
     async def has_active_for_roster(self, *, owner_user_id: UUID, roster_id: UUID) -> bool:

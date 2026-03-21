@@ -16,11 +16,13 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: N/A (no sprints)
 - Production: Full Vue SPA
-- Completed: `ST-24-01` implemented locally across `PR-0079` to `PR-0081`; `ST-24-05` implemented locally across `PR-0082` to `PR-0085`.
+- Completed: `ST-24-01` implemented locally across `PR-0079` to `PR-0081`; `ST-24-05` implemented locally across `PR-0082` to `PR-0085`; `PR-0086` implemented locally for `ST-24-02`.
 
 ## Current Session (2026-03-21)
 
 - Klassrumskartan fundamentals rollback / UX repair:
+  - `src/skriptoteket/domain/curated_apps/classroom_planner/models.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/workspace_summary.py`, `src/skriptoteket/protocols/classroom_planner.py`, `src/skriptoteket/infrastructure/repositories/classroom_planner.py`, `src/skriptoteket/web/api/v1/apps_classroom_planner.py`, `src/skriptoteket/web/api/v1/apps_classroom_planner_summary.py`, and `src/skriptoteket/di/curated_apps.py`: `PR-0086` is now implemented locally; the backend exposes a compact class-workspace summary with explicit `TaskEntryOption` rules, separate active grouping/seating summaries, and separate grouping/seating history without inflating the contract with template catalogs or reviving owner-global draft semantics.
+  - Added focused coverage for `PR-0086` in `tests/unit/application/apps/classroom_planner/test_class_workspace_summary.py`, `tests/unit/web/apps/classroom_planner/test_class_workspace_summary_api.py`, and `tests/integration/infrastructure/repositories/test_classroom_planner_repository.py` to verify roster ownership, summary serialization, task-separated history ordering, template labels, and roster scoping against the real SQLAlchemy repository.
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`, `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`, and `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStoreMutations.ts`: `PR-0083` is now implemented locally; the active frontend planner contract no longer carries lesson modes, planning profiles, pair constraints, validation findings, suggestions, snapshots, or their related store methods/payload fields, and the remaining workspace DTO/store surface is fundamentals-only.
   - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue`, `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.spec.ts`, `frontend/apps/skriptoteket/src/views/apps/components/PlannerSelectionGate.spec.ts`, and `frontend/apps/skriptoteket/src/views/apps/useClassroomState.spec.ts`: the obsolete classroom-planner bootstrap round-trip is removed from the SPA entry flow, resumable draft fixtures match the reduced draft contract, and the store specs now assert that `resolveDraft()` and autosave no longer send removed planner-era fields.
   - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue`: default lesson mode now auto-selects from bootstrap so class + classroom is enough to open the planner.
@@ -77,6 +79,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Verification
 
 - 2026-03-21: `pdm run docs-validate` (PASSED).
+- 2026-03-21: `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/__init__.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/workspace_summary.py src/skriptoteket/di/curated_apps.py src/skriptoteket/domain/curated_apps/classroom_planner/models.py src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/protocols/classroom_planner.py src/skriptoteket/web/api/v1/apps_classroom_planner.py src/skriptoteket/web/api/v1/apps_classroom_planner_summary.py tests/unit/application/apps/classroom_planner/test_class_workspace_summary.py tests/unit/web/apps/classroom_planner/test_class_workspace_summary_api.py tests/integration/infrastructure/repositories/test_classroom_planner_repository.py`; `pdm run mypy src/skriptoteket/domain/curated_apps/classroom_planner/models.py src/skriptoteket/application/curated_apps/classroom_planner/__init__.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/workspace_summary.py src/skriptoteket/protocols/classroom_planner.py src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/web/api/v1/apps_classroom_planner.py src/skriptoteket/web/api/v1/apps_classroom_planner_summary.py src/skriptoteket/di/curated_apps.py`; `pdm run pytest tests/unit/application/apps/classroom_planner/test_class_workspace_summary.py tests/unit/web/apps/classroom_planner/test_class_workspace_summary_api.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q`; `pdm run pytest tests/integration/infrastructure/repositories/test_classroom_planner_repository.py -q` after `PR-0086` class-workspace summary contract work (PASSED).
 - 2026-03-21: `pdm run skills-validate` after tightening the repo-local `playwright-testing` skill workflow (PASSED).
 - 2026-03-21: `pdm run docs-validate` after the Playwright rule/skill + `AGENTS.md` cleanup (PASSED).
 - 2026-03-21: `pdm run docs-validate` after ADR-0071 + EPIC-24/review/story refinements + `PRD-group-seating-studio-v0.2` + `PR-0078` (PASSED).
@@ -191,6 +194,6 @@ pdm run pytest tests/integration/database/test_classroom_planner_migration.py -q
 
 ## Next Steps
 
-- Start `ST-24-02` now that the remediation gate `ST-24-05` is complete locally.
+- Continue `ST-24-02` through the planned `PR-0087` to `PR-0089` slice chain, beginning with `PR-0087` class-first landing and workspace state-machine work.
 - Keep future work fundamentals-only: route-level mode separation, no new visible advanced semantics, and no blended grouping/seating surfaces.
 - Reintroduce `Slumpa` only through the later split task-specific stories: grouping randomize in `ST-24-03` and seating randomize in `ST-24-04`, not as a new global planner action.

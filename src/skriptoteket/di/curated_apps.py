@@ -15,6 +15,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
+    GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
     GetResumableDraftHandler,
@@ -453,6 +454,14 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_draft_handler(self, drafts: PlanDraftRepositoryProtocol) -> GetDraftHandler:
         return GetDraftHandler(drafts=drafts)
+
+    @provide(scope=Scope.REQUEST)
+    def get_class_workspace_summary_handler(
+        self,
+        rosters: RosterRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+    ) -> GetClassWorkspaceSummaryHandler:
+        return GetClassWorkspaceSummaryHandler(rosters=rosters, drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
     def resolve_draft_handler(

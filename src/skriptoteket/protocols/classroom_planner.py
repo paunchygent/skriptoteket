@@ -12,6 +12,7 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassWorkspaceDraftSummary,
     DraftWorkspace,
     PlanDraft,
     PlanDraftKind,
@@ -59,6 +60,16 @@ class PlanDraftRepositoryProtocol(Protocol):
 
     async def get_latest_resumable(self, *, owner_user_id: UUID) -> ResumablePlanDraft | None:
         """Load the latest resumable draft plus landing-page display labels."""
+        ...
+
+    async def get_class_workspace_draft_summary(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        history_limit_per_kind: int = 5,
+    ) -> ClassWorkspaceDraftSummary:
+        """Load active and historical draft summaries for one class."""
         ...
 
     async def has_active_for_roster(self, *, owner_user_id: UUID, roster_id: UUID) -> bool:

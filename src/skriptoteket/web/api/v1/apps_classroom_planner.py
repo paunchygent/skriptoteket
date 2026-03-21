@@ -18,6 +18,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
+    GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
     GetResumableDraftHandler,
@@ -46,6 +47,10 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     StudentPlanningMeta,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
+    ClassWorkspaceSummaryDto,
+    serialize_class_workspace_summary,
+)
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 from skriptoteket.web.dishka_compat import FromDishka, inject
 
@@ -354,6 +359,18 @@ async def get_roster(
     user: User = Depends(require_user_api),
 ) -> RosterDto:
     return _serialize_roster(await handler.handle(roster_id=roster_id, owner_user_id=user.id))
+
+
+@router.get("/rosters/{roster_id}/workspace-summary", response_model=ClassWorkspaceSummaryDto)
+@inject
+async def get_class_workspace_summary(
+    roster_id: UUID,
+    handler: FromDishka[GetClassWorkspaceSummaryHandler],
+    user: User = Depends(require_user_api),
+) -> ClassWorkspaceSummaryDto:
+    return serialize_class_workspace_summary(
+        await handler.handle(roster_id=roster_id, owner_user_id=user.id)
+    )
 
 
 @router.post("/rosters", response_model=RosterDto, status_code=status.HTTP_201_CREATED)

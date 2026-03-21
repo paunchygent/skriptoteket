@@ -22,6 +22,7 @@ from .handlers.templates import (
     ListRoomTemplatesHandler,
     UpdateRoomTemplateHandler,
 )
+from .handlers.workspace_summary import GetClassWorkspaceSummaryHandler
 
 __all__ = [
     "AbandonDraftHandler",
@@ -29,6 +30,7 @@ __all__ = [
     "CreateRosterHandler",
     "DeleteRoomTemplateHandler",
     "DeleteRosterHandler",
+    "GetClassWorkspaceSummaryHandler",
     "GetDraftHandler",
     "GetDraftWorkspaceHandler",
     "GetResumableDraftHandler",
