@@ -45,7 +45,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 ## Stories
 
 - [x] [ST-24-01: Landing page fundamentals](../stories/story-24-01-group-seating-studio-landing-page-fundamentals.md)
-- [ ] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md) _(active remediation gate)_
+- [x] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md)
 - [ ] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
 - [ ] [ST-24-03: Grouping fundamentals + saved groupings](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
 - [ ] [ST-24-04: Seating fundamentals + saved seating arrangements](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
@@ -61,6 +61,11 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - A remediation gate now precedes the later stories:
   - `ST-24-05` removes superseded solver-first contracts from the active codebase
   - later stories must build on a cleaned planner contract rather than preserve legacy planner state, APIs, or persistence seams
+- `ST-24-05` is now implemented locally across `PR-0082` to `PR-0085`:
+  - visible legacy planner surfaces are removed
+  - frontend store/types no longer encode superseded planner semantics
+  - backend/domain/persistence no longer expose lesson-mode/suggestion/snapshot/global-randomize contracts
+  - draft lifecycle is now class-scoped by draft kind (`grouping` / `seating`) instead of owner-global
 - ST-24-01 shipped locally across PR-0079 to PR-0081 as a recovery slice:
   - landing page no longer exposes lesson mode as part of the default teacher workflow
   - planner start currently depends on class + classroom only and returns cleanly to the landing page

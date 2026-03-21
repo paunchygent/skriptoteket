@@ -2,7 +2,7 @@
 type: pr
 id: PR-0082
 title: "Klassrumskartan: frontend visible legacy removal and surface decoupling"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-21
@@ -39,13 +39,13 @@ fundamentals.
 
 ## Checklist
 
-- [ ] Remove `PlannerSuggestionsPanel.vue` and any unused imports, references, or dead tests connected to it.
-- [ ] Remove the default-shell `Placeringprofil` entry point and any other prominently visible advanced planner controls that are not part of the approved near-term workflow.
-- [ ] Remove seat-context leakage from grouping surfaces.
-- [ ] Remove group-context leakage from seating surfaces.
-- [ ] Keep grouping and seating focused on their own task language and default affordances.
-- [ ] Move static room-grid presentation out of inline strings and into design-system-aligned class or CSS-variable-backed styling.
-- [ ] Update frontend tests so they assert the cleaned default surface instead of preserving old planner controls.
+- [x] Remove `PlannerSuggestionsPanel.vue` and any unused imports, references, or dead tests connected to it.
+- [x] Remove the default-shell `Placeringprofil` entry point and any other prominently visible advanced planner controls that are not part of the approved near-term workflow.
+- [x] Remove seat-context leakage from grouping surfaces.
+- [x] Remove group-context leakage from seating surfaces.
+- [x] Keep grouping and seating focused on their own task language and default affordances.
+- [x] Move static room-grid presentation out of inline strings and into design-system-aligned class or CSS-variable-backed styling.
+- [x] Update frontend tests so they assert the cleaned default surface instead of preserving old planner controls.
 
 ## Implementation plan
 

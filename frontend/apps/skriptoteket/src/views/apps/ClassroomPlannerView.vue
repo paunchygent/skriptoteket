@@ -2,9 +2,9 @@
 /**
  * Klassrumskartan planner root view.
  *
- * This view bootstraps the classroom planner, hydrates reusable catalog assets,
- * offers an explicit resume CTA for the current active draft, and switches
- * between the selection gate and the live planner workspace shell.
+ * This view loads the planner catalog, offers an explicit resume CTA for the
+ * current active draft, and switches between the selection gate and the live
+ * planner workspace shell.
  */
 
 import { computed, onMounted, ref } from "vue";
@@ -15,7 +15,6 @@ import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
 import PlannerSelectionGate from "./components/PlannerSelectionGate.vue";
 import PlannerWorkspaceShell from "./components/PlannerWorkspaceShell.vue";
 import {
-  type PlannerBootstrapResponse,
   type ResumablePlanDraft,
   type RoomTemplate,
   type Roster,
@@ -78,7 +77,8 @@ async function resumeDraft(): Promise<void> {
   try {
     await plannerState.resolveDraft(
       resumableDraft.value.draft.roster_id,
-      resumableDraft.value.draft.template_id,
+      resumableDraft.value.draft.template_id ?? null,
+      resumableDraft.value.draft.draft_kind,
     );
     syncSelectionFromWorkspace();
     isPlannerOpen.value = true;
@@ -93,7 +93,6 @@ async function resumeDraft(): Promise<void> {
 onMounted(async () => {
   try {
     await Promise.all([
-      apiGet<PlannerBootstrapResponse>("/api/v1/apps/classroom.group-seating-studio/bootstrap"),
       fetchCatalog(),
       plannerState.getResumableDraft().then((draft) => {
         resumableDraft.value = draft;
@@ -113,7 +112,7 @@ async function startPlanning(): Promise<void> {
 
   plannerActionError.value = null;
   try {
-    await plannerState.resolveDraft(selectedRoster.value.id, selectedTemplate.value.id);
+    await plannerState.resolveDraft(selectedRoster.value.id, selectedTemplate.value.id, "seating");
     resumableDraft.value = await plannerState.getResumableDraft();
     isPlannerOpen.value = true;
   } catch (error: unknown) {

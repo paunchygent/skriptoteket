@@ -48,15 +48,14 @@ describe("ClassroomPlannerView", () => {
 
   it("shows resume CTA on the landing page instead of auto-opening the planner", async () => {
     clientMocks.apiGet
-      .mockResolvedValueOnce({ lesson_modes: [], feature_flags: {} })
       .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [] }])
       .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
     stateMocks.plannerState.getResumableDraft.mockResolvedValue({
       draft: {
         id: "draft-1",
         roster_id: "roster-1",
+        draft_kind: "seating",
         template_id: "template-1",
-        lesson_mode_id: "group_work",
         status: "active",
         revision: 3,
         last_opened_at: "2026-03-21T10:00:00Z",

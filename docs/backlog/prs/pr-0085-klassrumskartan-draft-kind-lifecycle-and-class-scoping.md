@@ -2,7 +2,7 @@
 type: pr
 id: PR-0085
 title: "Klassrumskartan: draft-kind lifecycle and class-scoped invariants"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-21
@@ -37,13 +37,13 @@ structurally aligned before the class-first workspace story ships.
 
 ## Checklist
 
-- [ ] Introduce explicit planner draft kinds for grouping and seating.
-- [ ] Make seating drafts classroom-bound and grouping drafts classroom-optional in the active contract.
-- [ ] Replace the owner-global single-active-draft invariant with one active draft per class per draft kind.
-- [ ] Update resolve/resume semantics so starting a new draft of the same class and kind demotes the previous active draft of that same class and kind to history.
-- [ ] Remove owner-global lifecycle locks, repository methods, schema constraints, and tests that encode the superseded invariant.
-- [ ] Update delete guards and resumable-draft logic so they reason about class-scoped draft kinds instead of one owner-global active draft.
-- [ ] Add migration coverage for the new invariant and lifecycle transition behavior.
+- [x] Introduce explicit planner draft kinds for grouping and seating.
+- [x] Make seating drafts classroom-bound and grouping drafts classroom-optional in the active contract.
+- [x] Replace the owner-global single-active-draft invariant with one active draft per class per draft kind.
+- [x] Update resolve/resume semantics so starting a new draft of the same class and kind demotes the previous active draft of that same class and kind to history.
+- [x] Remove owner-global lifecycle locks, repository methods, schema constraints, and tests that encode the superseded invariant.
+- [x] Update delete guards and resumable-draft logic so they reason about class-scoped draft kinds instead of one owner-global active draft.
+- [x] Add migration coverage for the new invariant and lifecycle transition behavior.
 
 ## Implementation plan
 

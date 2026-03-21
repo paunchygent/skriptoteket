@@ -9,7 +9,16 @@
 
 import type { ComputedRef, Ref } from "vue";
 
-import { emptyStudentPlanningMeta, type DraftGroup, type GroupAssignment, type PairConstraint, type PairConstraintKind, type PlanningProfile, type RoomFixture, type Seat, type SeatAssignment, type Student, type StudentPlanningMeta } from "./classroomPlannerTypes";
+import {
+  emptyStudentPlanningMeta,
+  type DraftGroup,
+  type GroupAssignment,
+  type RoomFixture,
+  type Seat,
+  type SeatAssignment,
+  type Student,
+  type StudentPlanningMeta,
+} from "./classroomPlannerTypes";
 
 export function buildStudentMap(students: Student[]): Record<string, Student> {
   return Object.fromEntries(students.map((student) => [student.id, student]));
@@ -49,10 +58,6 @@ export function reindexGroups(groups: DraftGroup[]): DraftGroup[] {
   return sortedGroups(groups).map((group, index) => ({ ...group, sort_order: index }));
 }
 
-export function normalizePairIds(studentIdA: string, studentIdB: string): [string, string] {
-  return studentIdA <= studentIdB ? [studentIdA, studentIdB] : [studentIdB, studentIdA];
-}
-
 export function createGroupId(): string {
   return `group-${crypto.randomUUID().slice(0, 8)}`;
 }
@@ -65,8 +70,6 @@ type MutationContext = {
   groupAssignmentsByStudentId: Ref<Record<string, string | null>>;
   seatAssignmentsByStudentId: Ref<Record<string, string | null>>;
   studentPlanningMetaByStudentId: Ref<Record<string, StudentPlanningMeta>>;
-  pairConstraints: Ref<PairConstraint[]>;
-  planningProfile: Ref<PlanningProfile>;
   markDirty: () => void;
 };
 
@@ -176,14 +179,6 @@ export function createPlannerMutationActions(context: MutationContext) {
     context.markDirty();
   }
 
-  function updatePlanningProfile(patch: Partial<PlanningProfile>): void {
-    context.planningProfile.value = {
-      ...context.planningProfile.value,
-      ...patch,
-    };
-    context.markDirty();
-  }
-
   function setStudentPlanningMeta(studentId: string, patch: Partial<StudentPlanningMeta>): void {
     if (!context.studentsById.value[studentId]) {
       return;
@@ -207,49 +202,6 @@ export function createPlannerMutationActions(context: MutationContext) {
     context.markDirty();
   }
 
-  function setPairConstraint(
-    studentIdA: string,
-    studentIdB: string,
-    kind: PairConstraintKind,
-    enabled: boolean,
-    strength = 1,
-  ): void {
-    const [normalizedA, normalizedB] = normalizePairIds(studentIdA, studentIdB);
-    const existingIndex = context.pairConstraints.value.findIndex(
-      (constraint) =>
-        constraint.student_id_a === normalizedA &&
-        constraint.student_id_b === normalizedB &&
-        constraint.kind === kind,
-    );
-
-    if (!enabled) {
-      if (existingIndex < 0) {
-        return;
-      }
-      context.pairConstraints.value = context.pairConstraints.value.filter(
-        (_, index) => index !== existingIndex,
-      );
-      context.markDirty();
-      return;
-    }
-
-    const nextConstraint: PairConstraint = {
-      student_id_a: normalizedA,
-      student_id_b: normalizedB,
-      kind,
-      strength,
-    };
-
-    if (existingIndex < 0) {
-      context.pairConstraints.value = [...context.pairConstraints.value, nextConstraint];
-    } else {
-      context.pairConstraints.value = context.pairConstraints.value.map((constraint, index) =>
-        index === existingIndex ? nextConstraint : constraint,
-      );
-    }
-    context.markDirty();
-  }
-
   return {
     assignStudentToGroup,
     removeStudentFromGroup,
@@ -260,9 +212,7 @@ export function createPlannerMutationActions(context: MutationContext) {
     renameGroup,
     moveGroup,
     removeGroup,
-    updatePlanningProfile,
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
-    setPairConstraint,
   };
 }

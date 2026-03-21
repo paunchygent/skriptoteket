@@ -3,12 +3,12 @@
  * Planner workspace shell.
  *
  * This component renders the active classroom-planning workspace after a draft
- * has been created or resumed. It keeps the default surface focused on manual
- * grouping and seating, while advanced planning tools stay hidden until the
- * teacher explicitly opens them.
+ * has been created or resumed. It keeps the default surface focused on one
+ * teacher task at a time so grouping and seating do not teach a shared
+ * whole-workspace mental model.
  */
 
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import GroupBoard from "./GroupBoard.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
@@ -27,8 +27,19 @@ const currentView = ref<PlannerView>("groups");
 const selectedStudentId = ref<string | null>(null);
 const isMetadataDrawerOpen = ref(false);
 
+const currentViewHint = computed(() => {
+  if (currentView.value === "groups") {
+    return "Bygg arbetsgrupper genom att dra elever till rätt grupp och justera grupperna efter behov.";
+  }
+  return "Dra elever till platser och klicka på en elev när du vill öppna elevanteckningar.";
+});
+
 function selectStudent(studentId: string): void {
   selectedStudentId.value = studentId;
+  if (currentView.value !== "seats") {
+    isMetadataDrawerOpen.value = false;
+    return;
+  }
   isMetadataDrawerOpen.value = true;
 }
 
@@ -36,9 +47,6 @@ async function reloadAfterConflict(): Promise<void> {
   await plannerState.reloadActiveWorkspace();
 }
 
-async function runRandomize(): Promise<void> {
-  await plannerState.randomizeDraft();
-}
 </script>
 
 <template>
@@ -78,7 +86,10 @@ async function runRandomize(): Promise<void> {
             type="button"
             class="btn-ghost"
             :class="currentView === 'groups' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-canvas shadow-none'"
-            @click="currentView = 'groups'"
+            @click="
+              currentView = 'groups';
+              isMetadataDrawerOpen = false;
+            "
           >
             Gruppvy
           </button>
@@ -86,16 +97,12 @@ async function runRandomize(): Promise<void> {
             type="button"
             class="btn-ghost"
             :class="currentView === 'seats' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-canvas shadow-none'"
-            @click="currentView = 'seats'"
+            @click="
+              currentView = 'seats';
+              isMetadataDrawerOpen = false;
+            "
           >
             Sittplatser
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-canvas shadow-none"
-            @click="runRandomize"
-          >
-            Slumpa
           </button>
           <button
             type="button"
@@ -113,13 +120,11 @@ async function runRandomize(): Promise<void> {
           {{ plannerState.saveStatus }}
           <span v-if="plannerState.saveMessage"> · {{ plannerState.saveMessage }}</span>
         </div>
-        <button
-          type="button"
-          class="btn-ghost border-navy/30 bg-canvas shadow-none justify-self-start xl:justify-self-end"
-          @click="isMetadataDrawerOpen = true"
+        <div
+          class="border border-navy/20 bg-canvas px-3 py-3 text-sm text-navy/70 xl:max-w-[26rem]"
         >
-          Placeringprofil
-        </button>
+          {{ currentViewHint }}
+        </div>
       </div>
     </article>
 

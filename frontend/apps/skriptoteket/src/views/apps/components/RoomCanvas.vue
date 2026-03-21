@@ -61,6 +61,21 @@ const canvasStyle = computed(() => {
     height: `${maxY}px`,
   };
 });
+
+function fixtureToneClass(type: string): string {
+  switch (type) {
+    case "whiteboard":
+      return "border-navy bg-warning/20 text-navy";
+    case "teacher_desk":
+      return "border-burgundy bg-burgundy/10 text-burgundy";
+    case "window":
+      return "border-navy bg-white text-navy/70";
+    case "door":
+      return "border-success bg-success/20 text-navy";
+    default:
+      return "border-navy bg-white text-navy";
+  }
+}
 </script>
 
 <template>
@@ -99,12 +114,6 @@ const canvasStyle = computed(() => {
             <div class="truncate text-sm font-semibold">
               {{ student.display_name }}
             </div>
-            <div
-              v-if="state.groupAssignmentsByStudentId[student.id]"
-              class="mt-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
-            >
-              {{ state.groupsById[state.groupAssignmentsByStudentId[student.id] ?? '']?.name }}
-            </div>
           </div>
         </button>
 
@@ -124,7 +133,7 @@ const canvasStyle = computed(() => {
             Klassrumsyta
           </p>
           <h3 class="font-serif text-xl text-navy">
-            Whiteboard-läge
+            Sittkarta
           </h3>
         </div>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
@@ -134,24 +143,16 @@ const canvasStyle = computed(() => {
 
       <div class="mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
         <div
-          class="relative"
+          class="relative room-canvas-surface"
           :style="canvasStyle"
         >
-          <div
-            class="absolute inset-0 opacity-15"
-            style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 24px 24px;"
-          />
+          <div class="room-canvas-grid absolute inset-0 opacity-15" />
 
           <div
             v-for="fixture in state.fixtures"
             :key="fixture.id"
             class="absolute flex items-center justify-center border px-2 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
-            :class="{
-              'border-navy bg-warning/20 text-navy': fixture.type === 'whiteboard',
-              'border-burgundy bg-burgundy/10 text-burgundy': fixture.type === 'teacher_desk',
-              'border-navy bg-white text-navy/70': fixture.type === 'window',
-              'border-success bg-success/20 text-navy': fixture.type === 'door',
-            }"
+            :class="fixtureToneClass(fixture.type)"
             :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
           >
             {{ fixture.label ?? fixture.type }}
@@ -173,3 +174,16 @@ const canvasStyle = computed(() => {
     </section>
   </div>
 </template>
+
+<style scoped>
+.room-canvas-surface {
+  --planner-grid-size: 24px;
+}
+
+.room-canvas-grid {
+  background-image:
+    linear-gradient(var(--huleedu-navy) 1px, transparent 1px),
+    linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px);
+  background-size: var(--planner-grid-size) var(--planner-grid-size);
+}
+</style>

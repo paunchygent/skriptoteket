@@ -10,6 +10,7 @@ scope: "testing"
 ## Defaults (REQUIRED)
 
 - REQUIRED: Use Playwright for new browser automation (Python).
+- REQUIRED: Load the `playwright-testing` skill before planning, writing, running, or reviewing Playwright work.
 - REQUIRED: Put scripts in `scripts/` and run them via `pdm run python -m scripts.<module>`.
 - REQUIRED: Write artifacts (screenshots, traces) under `.artifacts/<script-name>/`.
 - REQUIRED: Never hardcode or print credentials. Provide them via env vars or a gitignored dotenv file.
@@ -29,6 +30,8 @@ scope: "testing"
 ## Playwright Strategy (REQUIRED)
 
 - Maintain **one script per operational validation**; avoid overlapping flows between scripts.
+- Inspect the closest existing Playwright scripts in `scripts/` before inventing a new flow, and reuse established
+  helpers, selectors, login patterns, and artifact structure unless the new validation clearly needs something else.
 - Prefer extending existing scripts rather than adding new ones unless the flow is distinct and reusable.
 - Keep scripts passing; update selectors and steps when UI changes (no stale/aspirational flows).
 - Use `scripts._playwright_config.get_config()` for base URL + credentials.

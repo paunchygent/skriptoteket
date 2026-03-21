@@ -1,25 +1,35 @@
-"""Classroom Planner domain models."""
+"""Classroom Planner domain model exports."""
 
 from .models import (
-    ClassroomPlannerBootstrapPayload,
+    ClassroomPlannerWorkspace,
+    DraftGroup,
+    DraftWorkspace,
     GroupAssignment,
-    LessonModePreset,
     PlanDraft,
+    ResumablePlanDraft,
+    RoomFixture,
+    RoomFixtureType,
     RoomTemplate,
     Roster,
     Seat,
     SeatAssignment,
     Student,
+    StudentPlanningMeta,
 )
 
 __all__ = [
-    "ClassroomPlannerBootstrapPayload",
+    "ClassroomPlannerWorkspace",
+    "DraftGroup",
+    "DraftWorkspace",
     "GroupAssignment",
-    "LessonModePreset",
     "PlanDraft",
+    "ResumablePlanDraft",
+    "RoomFixture",
+    "RoomFixtureType",
     "RoomTemplate",
     "Roster",
     "Seat",
     "SeatAssignment",
     "Student",
+    "StudentPlanningMeta",
 ]

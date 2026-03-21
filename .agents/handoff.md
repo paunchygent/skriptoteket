@@ -16,21 +16,32 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: N/A (no sprints)
 - Production: Full Vue SPA
-- Completed: `ST-24-01` implemented locally across `PR-0079` to `PR-0081`; landing page fundamentals, explicit resume, and safe asset delete now match the narrowed teacher-first direction.
+- Completed: `ST-24-01` implemented locally across `PR-0079` to `PR-0081`; `ST-24-05` implemented locally across `PR-0082` to `PR-0085`.
 
 ## Current Session (2026-03-21)
 
 - Klassrumskartan fundamentals rollback / UX repair:
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`, `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`, and `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStoreMutations.ts`: `PR-0083` is now implemented locally; the active frontend planner contract no longer carries lesson modes, planning profiles, pair constraints, validation findings, suggestions, snapshots, or their related store methods/payload fields, and the remaining workspace DTO/store surface is fundamentals-only.
+  - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue`, `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.spec.ts`, `frontend/apps/skriptoteket/src/views/apps/components/PlannerSelectionGate.spec.ts`, and `frontend/apps/skriptoteket/src/views/apps/useClassroomState.spec.ts`: the obsolete classroom-planner bootstrap round-trip is removed from the SPA entry flow, resumable draft fixtures match the reduced draft contract, and the store specs now assert that `resolveDraft()` and autosave no longer send removed planner-era fields.
   - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue`: default lesson mode now auto-selects from bootstrap so class + classroom is enough to open the planner.
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSelectionGate.vue`: removed dead promo/start cards, made roster/template cards selectable as full cards, surfaced simple capacity text, and kept the gate focused on choosing class + room.
-  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`: stripped the always-visible advanced controls from the default workspace, kept `Slumpa`, and moved the teacher drawer behind an explicit `Placeringprofil` action.
-  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerMetadataDrawer.vue`: reduced the visible model to teacher-authored placement observations; removed pair-constraint UI and zone-preference UI from the current teacher surface.
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`: stripped the visible legacy planner entry points from the default workspace and made the student drawer seating-only instead of a shared shell control.
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerMetadataDrawer.vue`: renamed the visible drawer surface to `Elevanteckningar` and kept it scoped to seating interactions instead of the old `Placeringprofil` framing.
+  - `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue`, `frontend/apps/skriptoteket/src/views/apps/components/GroupCard.vue`, and `frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue`: removed opposite-axis leakage from the default grouping/seating surfaces, deleted `PlannerSuggestionsPanel.vue`, and moved the static room-grid styling out of inline strings into component CSS.
   - `frontend/apps/skriptoteket/src/views/apps/components/CreateRosterModal.vue` and `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue`: fixed oversized modal behavior with viewport-bounded dialogs, scrollable bodies, sticky footers, and outside-click close via a dedicated backdrop target.
+  - Added focused frontend coverage for `PR-0082` in `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`, `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.spec.ts`, and `frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.spec.ts`.
+  - `AGENTS.md`, `.agents/rules/075-browser-automation.md`, and `.claude/skills/playwright-testing/SKILL.md`: Playwright process now explicitly requires loading the Playwright skill first; the “inspect older scripts first” guidance lives in the Playwright skill/rule layer instead of `AGENTS.md`.
+  - `src/skriptoteket/web/api/v1/apps_classroom_planner.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py`, `src/skriptoteket/domain/curated_apps/classroom_planner/models.py`, `src/skriptoteket/infrastructure/repositories/classroom_planner.py`, `src/skriptoteket/infrastructure/db/models/classroom_planner_plan_draft.py`, `src/skriptoteket/protocols/classroom_planner.py`, and `src/skriptoteket/di/curated_apps.py`: `PR-0084` is now implemented locally; the active backend contract no longer exposes lesson-mode bootstrap, validate/suggestions/apply/finalize/snapshots, or the superseded whole-workspace randomize API, and the remaining domain/persistence surface is fundamentals-only.
+  - `migrations/versions/9f1a6c4d2e7b_classroom_planner_prune_superseded_.py`: drops superseded planner tables/columns and removes `independent_focus_support` while retaining the still-meaningful teacher metadata concepts (`teacher_proximity`, `stability_preference`, `preferred_zone`, `avoid_zone`).
+  - `scripts/playwright_classroom_planner_smoke.py`: added a reusable repo-pattern Playwright smoke for Klassrumskartan that reuses the existing launch/login helpers, enters through the protected app route, creates a real roster/template via UI, and opens the planner workspace so future PR-specific checks can extend a stable app-specific baseline instead of guessing the setup flow again.
+  - `src/skriptoteket/domain/curated_apps/classroom_planner/models.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py`, `src/skriptoteket/infrastructure/repositories/classroom_planner.py`, `src/skriptoteket/infrastructure/db/models/classroom_planner_plan_draft.py`, `src/skriptoteket/protocols/classroom_planner.py`, `src/skriptoteket/web/api/v1/apps_classroom_planner.py`, `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`, and `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`: `PR-0085` is now implemented locally; active drafts are class-scoped by draft kind, `draft_kind` is part of the active contract, seating drafts remain classroom-bound, grouping drafts are classroom-optional, and the current SPA launcher now uses the transitional seating-draft path explicitly.
+  - `migrations/versions/6b44e9b5d3c1_classroom_planner_draft_kind_and_.py` and `scripts/classroom_planner_draft_kind_api_smoke.py`: added the class-scoped draft-kind migration plus a request-level live smoke that proves seating and grouping drafts can coexist per class/kind without reviving the owner-global invariant.
+  - `docs/backlog/stories/story-24-02-group-seating-studio-class-first-workspace.md`: tightened the future class-first workspace contract so leaving the planner back to the class workspace without implicit discard is now explicit story scope instead of only ADR guidance.
 - ST-24-01 implementation:
   - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue`: landing page is now always the default first screen; start-planning uses server-backed resolve; auto-resume on mount is removed; explicit resumable CTA data is loaded from the backend.
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSelectionGate.vue`: default-surface lesson mode is gone; planner launch depends on selected class + classroom only; explicit `Fortsätt senaste utkastet` CTA is rendered on the landing page.
   - `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts` and `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`: removed the legacy draft session key / direct-create path, added `resolveDraft()`, `getResumableDraft()`, and `abandonDraft()`, and made `Byt klass / rum` retire the server-side draft instead of only clearing local state.
-  - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py`, `src/skriptoteket/infrastructure/repositories/classroom_planner.py`, `src/skriptoteket/protocols/classroom_planner.py`, and `src/skriptoteket/domain/curated_apps/classroom_planner/models.py`: added draft lifecycle fields (`status`, `last_opened_at`), removed `CreateDraftHandler`, added `ResolveDraftHandler` + `AbandonDraftHandler`, enforced one active draft per owner, and added owner-scoped lifecycle locking so resolve cannot duplicate active drafts under overlap.
+  - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py`, `src/skriptoteket/infrastructure/repositories/classroom_planner.py`, `src/skriptoteket/protocols/classroom_planner.py`, and `src/skriptoteket/domain/curated_apps/classroom_planner/models.py`: the original landing-page recovery slice introduced `ResolveDraftHandler` + `AbandonDraftHandler`; `PR-0085` later replaced the old owner-global invariant with class-scoped draft kinds.
   - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/rosters.py` and `src/skriptoteket/application/curated_apps/classroom_planner/handlers/templates.py`: block delete when an active draft depends on the asset and return a teacher-readable conflict.
   - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/planning.py` and `src/skriptoteket/web/api/v1/apps_classroom_planner.py`: mutating planner flows now reject inactive drafts; `POST /drafts` is removed; the public lifecycle contract is `POST /drafts/resolve`, `GET /drafts/resumable`, and `POST /drafts/{id}/abandon`.
   - `migrations/versions/c2a6b2f4d91e_classroom_planner_draft_lifecycle_and_.py` and `migrations/versions/d8f0d0ef2b6d_classroom_planner_single_active_draft_.py`: add lifecycle fields plus a partial unique index enforcing at most one active planner draft per owner, with migration-time dedupe of older active drafts.
@@ -66,8 +77,53 @@ Keep this file updated so the next session can pick up work quickly.
 ## Verification
 
 - 2026-03-21: `pdm run docs-validate` (PASSED).
+- 2026-03-21: `pdm run skills-validate` after tightening the repo-local `playwright-testing` skill workflow (PASSED).
+- 2026-03-21: `pdm run docs-validate` after the Playwright rule/skill + `AGENTS.md` cleanup (PASSED).
 - 2026-03-21: `pdm run docs-validate` after ADR-0071 + EPIC-24/review/story refinements + `PRD-group-seating-studio-v0.2` + `PR-0078` (PASSED).
 - 2026-03-21: `pdm run docs-validate` after PRD v0.3 + ADR-0072 + EPIC-24/story/PR rewrites for the class-first workspace direction (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerSelectionGate.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/useClassroomState.spec.ts` (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` after `PR-0082` frontend cleanup (PASSED).
+- 2026-03-21: `pdm run fe-lint` after `PR-0082` frontend cleanup (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerSelectionGate.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/useClassroomState.spec.ts` after `PR-0083` contract cleanup (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` after `PR-0083` contract cleanup (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa build` after `PR-0083` contract cleanup (PASSED).
+- 2026-03-21: `pdm run pytest tests/unit/web/apps/classroom_planner/test_api.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py` after `PR-0084` backend pruning (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerSelectionGate.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/useClassroomState.spec.ts` after `PR-0084` backend pruning (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` after `PR-0084` backend pruning (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa build` after `PR-0084` backend pruning (PASSED).
+- 2026-03-21: `pdm run pytest -m 'integration and docker' tests/integration/database/test_classroom_planner_migration.py` after `PR-0084` migration changes (PASSED).
+- 2026-03-21: `pdm run ruff check src/skriptoteket/web/api/v1/apps_classroom_planner.py src/skriptoteket/application/curated_apps/classroom_planner src/skriptoteket/domain/curated_apps/classroom_planner src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/infrastructure/db/models/classroom_planner_plan_draft.py src/skriptoteket/di/curated_apps.py src/skriptoteket/protocols/classroom_planner.py tests/unit/web/apps/classroom_planner/test_api.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/integration/database/test_classroom_planner_migration.py scripts/playwright_classroom_planner_smoke.py` after `PR-0084` backend pruning (PASSED).
+- 2026-03-21: `pdm run db-upgrade` against the local dev DB after adding `9f1a6c4d2e7b_classroom_planner_prune_superseded_.py` (PASSED).
+- 2026-03-21: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` after loading the Playwright skill and checking existing repo scripts (`scripts/_playwright_config.py`, `scripts/playwright_ui_smoke.py`, `scripts/playwright_st_11_09_curated_app_e2e.py`, `scripts/playwright_ui_runtime_smoke.py`, `scripts/playwright_nav_transitions_smoke.py`) (PASSED). Verified:
+  - login works through the protected Klassrumskartan app route
+  - a real roster and classroom can still be created and opened into the planner
+  - grouping and seating workspace entry points render
+  - student metadata drawer opens from the seating surface
+  - screenshot saved under `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
+- 2026-03-21: `pdm run docs-validate` after tightening `ST-24-02` planner-leave semantics and marking `PR-0084` done (PASSED).
+- 2026-03-21: `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/web/apps/classroom_planner/test_api.py -q` after `PR-0085` draft-kind lifecycle changes (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerSelectionGate.spec.ts` after `PR-0085` frontend contract adaptation (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` after `PR-0085` frontend contract adaptation (PASSED).
+- 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa build` after `PR-0085` draft-kind lifecycle changes (PASSED).
+- 2026-03-21: `pdm run pytest -m 'integration and docker' tests/integration/database/test_classroom_planner_migration.py -q` after `PR-0085` migration changes (PASSED).
+- 2026-03-21: `pdm run ruff check src/skriptoteket/web/api/v1/apps_classroom_planner.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py src/skriptoteket/domain/curated_apps/classroom_planner/models.py src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/infrastructure/db/models/classroom_planner_plan_draft.py src/skriptoteket/protocols/classroom_planner.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/web/apps/classroom_planner/test_api.py tests/integration/database/test_classroom_planner_migration.py migrations/versions/6b44e9b5d3c1_classroom_planner_draft_kind_and_.py scripts/classroom_planner_draft_kind_api_smoke.py` after `PR-0085` draft-kind lifecycle changes (PASSED).
+- 2026-03-21: `pdm run db-upgrade` against the local dev DB after adding `6b44e9b5d3c1_classroom_planner_draft_kind_and_.py` (PASSED).
+- 2026-03-21: `pdm run python -m scripts.classroom_planner_draft_kind_api_smoke --base-url http://127.0.0.1:5173` after `PR-0085` draft-kind lifecycle changes (PASSED). Verified:
+  - seating drafts can stay active across different classes for the same owner
+  - grouping and seating drafts can coexist for the same class without superseding each other
+  - re-resolving the same class and kind returns the existing active draft
+  - summary saved under `.artifacts/pr-0085-live-check/draft-kind-summary.json`
+- 2026-03-21: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` after `PR-0085` draft-kind lifecycle changes (PASSED). Verified:
+  - the current launcher still opens the planner cleanly after the new `draft_kind` contract
+  - the reusable Klassrumskartan smoke still reaches the live workspace
+  - screenshot saved under `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
+- 2026-03-21: `pdm run python -u - <<'PY' ...` local Playwright/request smoke against `http://127.0.0.1:5173/apps/classroom.group-seating-studio` using `scripts._playwright_config.get_config()`, `scripts.playwright_ui_smoke._launch_chromium`, and the bootstrap superuser via the protected-route login modal (PASSED). Verified:
+  - default active planner shell no longer exposes `Placeringprofil`
+  - grouping view shows the new task hint and does not leak assigned seat IDs
+  - clicking a student in grouping does not open the seating notes drawer
+  - seating view does not leak the group badge/id text
+  - clicking a student in seating opens `Elevanteckningar`
+  - screenshot saved under `.artifacts/pr-0082-live-check/planner-cleaned-surface.png`
 - 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts` (PASSED).
 - 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-21: `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
@@ -96,7 +152,7 @@ Keep this file updated so the next session can pick up work quickly.
   - delete is blocked for both class and classroom when an active draft depends on them
   - screenshots saved under `.artifacts/st-24-01-live-check/`
 - 2026-03-21: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local` + headless local browser checks (PARTIAL/PASSED where noted):
-  - planner entry smoke PASSED: selected seeded class + room, opened planner, and confirmed the default workspace no longer shows `Elevmetadata i regelmotor` or `Historikregler`, while `Placeringprofil` is present.
+  - planner entry smoke PASSED at that earlier checkpoint: selected seeded class + room, opened planner, and confirmed the default workspace no longer showed `Elevmetadata i regelmotor` or `Historikregler`.
   - class/classroom modal smoke PASSED: opened `Redigera klasslista` and `Redigera klassrum`, verified `Spara klassrum` is reachable, and confirmed outside-corner clicks close both dialogs after the dedicated backdrop fix.
 - 2026-03-20: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts` (PASSED).
 - 2026-03-20: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
@@ -127,13 +183,14 @@ pdm run pytest tests/integration/database/test_classroom_planner_migration.py -q
 
 ## Known Issues / Risks
 
-- The backend Slice 2 APIs still exist behind the UI, but the user has explicitly asked for a much narrower, teacher-first feature rollout before exposing more of them.
 - Broader repo-wide lint/typecheck/test suites have still not been rerun after the ST-24-01 implementation slice.
 - The ad hoc live smokes created several dev-only roster/template rows in the local database; they are harmless but noisy.
 - `PlannerWorkspaceShell.vue` still uses local tab state (`Gruppvy` / `Sittplatser`) rather than route-level mode separation; that belongs to `ST-24-02`.
+- The planner currently has no visible randomize button because the old global `Slumpa` contract has been pruned, while the future split randomizers belong to `ST-24-03` and `ST-24-04`.
+- The planner still returns to the landing-page launcher rather than a final class workspace; explicit leave/back-to-class-workspace behavior belongs to `ST-24-02`.
 
 ## Next Steps
 
-- Start `ST-24-05` before any new Klassrumskartan feature work; remove superseded planner contracts first.
+- Start `ST-24-02` now that the remediation gate `ST-24-05` is complete locally.
 - Keep future work fundamentals-only: route-level mode separation, no new visible advanced semantics, and no blended grouping/seating surfaces.
-- Treat validation/suggestions/snapshots/pair rules/zone rules as hidden backend groundwork until each concept is explicitly approved and named.
+- Reintroduce `Slumpa` only through the later split task-specific stories: grouping randomize in `ST-24-03` and seating randomize in `ST-24-04`, not as a new global planner action.

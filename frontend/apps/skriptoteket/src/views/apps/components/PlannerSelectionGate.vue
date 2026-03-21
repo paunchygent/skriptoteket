@@ -103,7 +103,7 @@ function capacityLabel(template: RoomTemplate): string | null {
             Fortsätt senaste utkastet
           </div>
           <div class="text-navy/70">
-            {{ resumableDraft.roster_name }} · {{ resumableDraft.template_name }}
+            {{ resumableDraft.roster_name }} · {{ resumableDraft.template_name ?? "Utan klassrum" }}
           </div>
         </div>
         <div class="flex flex-wrap gap-2 md:justify-end">

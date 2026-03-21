@@ -2,7 +2,7 @@
 type: pr
 id: PR-0083
 title: "Klassrumskartan: frontend store and types contract cleanup"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-21
@@ -34,12 +34,12 @@ grouping, and seating work do not inherit solver-era baggage.
 
 ## Checklist
 
-- [ ] Remove `LessonMode`, `PlanningProfile`, `PairConstraint`, `SuggestionPlan`, `ArrangementSnapshot`, `SuggestionEngineMetadata`, and related planner-only label helpers from the active frontend planner contract.
-- [ ] Reduce `PlanDraft`, workspace DTOs, and related request/response typing to approved fundamentals only.
-- [ ] Remove advanced planner state, methods, and autosave payload fields from `useClassroomState.ts`.
-- [ ] Simplify or split `classroomPlannerStoreMutations.ts` so it no longer owns removed planner concepts.
-- [ ] Delete tests that preserve removed advanced planner state instead of converting them into compatibility coverage.
-- [ ] Update remaining tests to assert the reduced fundamentals-first contract.
+- [x] Remove `LessonMode`, `PlanningProfile`, `PairConstraint`, `SuggestionPlan`, `ArrangementSnapshot`, `SuggestionEngineMetadata`, and related planner-only label helpers from the active frontend planner contract.
+- [x] Reduce `PlanDraft`, workspace DTOs, and related request/response typing to approved fundamentals only.
+- [x] Remove advanced planner state, methods, and autosave payload fields from `useClassroomState.ts`.
+- [x] Simplify or split `classroomPlannerStoreMutations.ts` so it no longer owns removed planner concepts.
+- [x] Delete tests that preserve removed advanced planner state instead of converting them into compatibility coverage.
+- [x] Update remaining tests to assert the reduced fundamentals-first contract.
 
 ## Implementation plan
 

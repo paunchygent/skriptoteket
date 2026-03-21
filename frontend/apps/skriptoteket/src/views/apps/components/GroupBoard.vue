@@ -84,12 +84,6 @@ function onDragOver(event: DragEvent): void {
             <div class="truncate text-sm font-semibold">
               {{ student.display_name }}
             </div>
-            <div
-              v-if="state.seatAssignmentsByStudentId[student.id]"
-              class="mt-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
-            >
-              Plats {{ state.seatAssignmentsByStudentId[student.id] }}
-            </div>
           </div>
         </button>
 

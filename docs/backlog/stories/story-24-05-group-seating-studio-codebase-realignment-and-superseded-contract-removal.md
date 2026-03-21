@@ -2,7 +2,7 @@
 type: story
 id: ST-24-05
 title: "Klassrumskartan — Codebase Realignment and Superseded Contract Removal"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-21

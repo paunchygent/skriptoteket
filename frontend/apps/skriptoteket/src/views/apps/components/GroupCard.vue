@@ -9,8 +9,6 @@
  */
 
 import { ref, watch } from "vue";
-
-import { useClassroomState } from "../useClassroomState";
 import type { DraftGroup, Student } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -30,7 +28,6 @@ const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
 }>();
 
-const state = useClassroomState();
 const editableName = ref(props.group.name);
 
 watch(
@@ -138,12 +135,6 @@ function commitName(): void {
         >
           <div class="truncate text-sm font-semibold">
             {{ student.display_name }}
-          </div>
-          <div
-            v-if="state.seatAssignmentsByStudentId[student.id]"
-            class="mt-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
-          >
-            Plats {{ state.seatAssignmentsByStudentId[student.id] }}
           </div>
         </button>
         <button

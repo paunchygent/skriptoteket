@@ -32,7 +32,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "d8f0d0ef2b6d"
+    target_revision = "6b44e9b5d3c1"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
@@ -64,7 +64,9 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             )
             return {row[0] for row in result.fetchall()}
 
-    async def seed_pre_slice_two_draft(async_engine: AsyncEngine) -> tuple[str, str, str]:
+    async def seed_pre_slice_two_draft(
+        async_engine: AsyncEngine,
+    ) -> tuple[str, str, str, str, str]:
         owner_id = str(uuid4())
         roster_id = str(uuid4())
         template_id = str(uuid4())
@@ -221,7 +223,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                 {"draft_id": draft_id},
             )
 
-        return draft_id, second_draft_id, owner_id
+        return draft_id, second_draft_id, owner_id, roster_id, template_id
 
     async def get_backfilled_group_rows(draft_id: str) -> list[tuple[str, str, int]]:
         async with engine.connect() as conn:
@@ -284,7 +286,13 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
 
     try:
         run_alembic_cmd(command.upgrade, pre_slice_two_revision)
-        draft_id, second_draft_id, owner_id = await seed_pre_slice_two_draft(engine)
+        (
+            draft_id,
+            second_draft_id,
+            owner_id,
+            roster_id,
+            template_id,
+        ) = await seed_pre_slice_two_draft(engine)
 
         run_alembic_cmd(command.upgrade, target_revision)
 
@@ -297,17 +305,27 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             "classroom_planner_seat_assignments",
             "classroom_planner_draft_groups",
             "classroom_planner_student_planning_meta",
-            "classroom_planner_pair_constraints",
-            "classroom_planner_planning_profiles",
-            "classroom_planner_arrangement_snapshots",
         }.issubset(tables)
+        assert "classroom_planner_pair_constraints" not in tables
+        assert "classroom_planner_planning_profiles" not in tables
+        assert "classroom_planner_arrangement_snapshots" not in tables
 
         assert "fixtures" in await get_columns("classroom_planner_room_templates")
-        assert "engine_metadata" in await get_columns("classroom_planner_plan_drafts")
         assert "status" in await get_columns("classroom_planner_plan_drafts")
+        assert "draft_kind" in await get_columns("classroom_planner_plan_drafts")
         assert "last_opened_at" in await get_columns("classroom_planner_plan_drafts")
+        assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
+        assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
         assert "group_count" not in await get_columns("classroom_planner_plan_drafts")
-        assert "uq_cp_active_draft_owner" in await get_index_names("classroom_planner_plan_drafts")
+        assert "independent_focus_support" not in await get_columns(
+            "classroom_planner_student_planning_meta"
+        )
+        assert "uq_cp_active_draft_roster_kind" in await get_index_names(
+            "classroom_planner_plan_drafts"
+        )
+        assert "uq_cp_active_draft_owner" not in await get_index_names(
+            "classroom_planner_plan_drafts"
+        )
 
         backfilled_groups = await get_backfilled_group_rows(draft_id)
         assert backfilled_groups == [
@@ -325,21 +343,121 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         assert owner_statuses.count("active") == 1
         assert "superseded" in owner_statuses
 
-        run_alembic_cmd(command.upgrade, "head")
-        assert backfilled_groups == await get_backfilled_group_rows(draft_id)
-
-        async with engine.connect() as conn:
-            snapshot_tables = await conn.execute(
+        second_roster_id = str(uuid4())
+        async with engine.begin() as conn:
+            await conn.execute(
                 text(
                     """
-                    SELECT COUNT(*)
-                    FROM classroom_planner_arrangement_snapshots
-                    WHERE owner_user_id = :owner_user_id
+                    INSERT INTO classroom_planner_rosters (id, owner_user_id, name, students)
+                    VALUES (:id, :owner_user_id, 'Klass 7B', CAST(:students AS jsonb))
                     """
                 ),
-                {"owner_user_id": owner_id},
+                {
+                    "id": second_roster_id,
+                    "owner_user_id": owner_id,
+                    "students": json.dumps([{"id": "s3", "display_name": "Cia"}]),
+                },
             )
-            assert snapshot_tables.scalar_one() == 0
+            await conn.execute(
+                text(
+                    """
+                    INSERT INTO classroom_planner_plan_drafts (
+                        id,
+                        owner_user_id,
+                        roster_id,
+                        draft_kind,
+                        template_id,
+                        status,
+                        revision,
+                        last_opened_at
+                    )
+                    VALUES (
+                        :id,
+                        :owner_user_id,
+                        :roster_id,
+                        'seating',
+                        :template_id,
+                        'active',
+                        0,
+                        now()
+                    )
+                    """
+                ),
+                {
+                    "id": str(uuid4()),
+                    "owner_user_id": owner_id,
+                    "roster_id": second_roster_id,
+                    "template_id": template_id,
+                },
+            )
+            await conn.execute(
+                text(
+                    """
+                    INSERT INTO classroom_planner_plan_drafts (
+                        id,
+                        owner_user_id,
+                        roster_id,
+                        draft_kind,
+                        template_id,
+                        status,
+                        revision,
+                        last_opened_at
+                    )
+                    VALUES (
+                        :id,
+                        :owner_user_id,
+                        :roster_id,
+                        'grouping',
+                        NULL,
+                        'active',
+                        0,
+                        now()
+                    )
+                    """
+                ),
+                {
+                    "id": str(uuid4()),
+                    "owner_user_id": owner_id,
+                    "roster_id": roster_id,
+                },
+            )
+
+        with pytest.raises(Exception):
+            async with engine.begin() as conn:
+                await conn.execute(
+                    text(
+                        """
+                        INSERT INTO classroom_planner_plan_drafts (
+                            id,
+                            owner_user_id,
+                            roster_id,
+                            draft_kind,
+                            template_id,
+                            status,
+                            revision,
+                            last_opened_at
+                        )
+                        VALUES (
+                            :id,
+                            :owner_user_id,
+                            :roster_id,
+                            'grouping',
+                            NULL,
+                            'active',
+                            0,
+                            now()
+                        )
+                        """
+                    ),
+                    {
+                        "id": str(uuid4()),
+                        "owner_user_id": owner_id,
+                        "roster_id": roster_id,
+                    },
+                )
+
+        run_alembic_cmd(command.upgrade, "head")
+        assert backfilled_groups == await get_backfilled_group_rows(draft_id)
 
         run_alembic_cmd(command.downgrade, base_revision)
         tables_after_downgrade = await get_tables()
@@ -351,7 +469,12 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         run_alembic_cmd(command.upgrade, target_revision)
         tables_after_reupgrade = await get_tables()
         assert "classroom_planner_draft_groups" in tables_after_reupgrade
-        assert "classroom_planner_arrangement_snapshots" in tables_after_reupgrade
+        assert "classroom_planner_arrangement_snapshots" not in tables_after_reupgrade
+        assert "classroom_planner_pair_constraints" not in tables_after_reupgrade
+        assert "classroom_planner_planning_profiles" not in tables_after_reupgrade
         assert "fixtures" in await get_columns("classroom_planner_room_templates")
+        assert "draft_kind" in await get_columns("classroom_planner_plan_drafts")
+        assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
+        assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
     finally:
         await engine.dispose()

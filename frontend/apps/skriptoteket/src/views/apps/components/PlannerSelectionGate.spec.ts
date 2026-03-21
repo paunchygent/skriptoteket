@@ -32,8 +32,8 @@ describe("PlannerSelectionGate", () => {
           draft: {
             id: "draft-1",
             roster_id: "roster-1",
+            draft_kind: "seating",
             template_id: "template-1",
-            lesson_mode_id: "group_work",
             status: "active",
             revision: 2,
             last_opened_at: "2026-03-21T10:00:00Z",

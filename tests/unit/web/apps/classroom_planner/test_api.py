@@ -10,7 +10,6 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
-    GetBootstrapHandler,
     GetDraftHandler,
     GetResumableDraftHandler,
     GetRoomTemplateHandler,
@@ -23,10 +22,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UpdateRosterHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
-    ClassroomPlannerBootstrapPayload,
     GroupAssignment,
-    LessonModePreset,
     PlanDraft,
+    PlanDraftKind,
     PlanDraftStatus,
     ResumablePlanDraft,
     RoomTemplate,
@@ -43,33 +41,6 @@ from tests.fixtures.identity_fixtures import make_user
 def _unwrap_dishka(fn):
     """Extract original function from Dishka-wrapped handlers."""
     return getattr(fn, "__dishka_orig_func__", fn)
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_get_bootstrap_returns_payload_from_handler():
-    # Arrange
-    user = make_user(role=Role.USER)
-    handler = AsyncMock(spec=GetBootstrapHandler)
-    handler.handle.return_value = ClassroomPlannerBootstrapPayload(
-        lesson_modes=[
-            LessonModePreset(id="mode1", name="Mode 1"),
-            LessonModePreset(id="mode2", name="Mode 2"),
-        ],
-        feature_flags={"flag1": True},
-    )
-
-    # Act
-    result = await _unwrap_dishka(api.get_bootstrap)(
-        handler=handler,
-        user=user,
-    )
-
-    # Assert
-    assert len(result.lesson_modes) == 2
-    assert result.lesson_modes[0].id == "mode1"
-    assert result.feature_flags["flag1"] is True
-    handler.handle.assert_awaited_once_with(owner_user_id=user.id)
 
 
 # Roster API Tests
@@ -367,8 +338,8 @@ async def test_get_draft_returns_from_handler():
         id=draft_id,
         owner_user_id=user.id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="seating",
         status=PlanDraftStatus.ACTIVE,
         revision=0,
         last_opened_at=now,
@@ -403,8 +374,8 @@ async def test_update_draft_calls_handler():
         id=draft_id,
         owner_user_id=user.id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="seating",
         status=PlanDraftStatus.ACTIVE,
         revision=1,
         last_opened_at=now,
@@ -425,13 +396,10 @@ async def test_update_draft_calls_handler():
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=0,
-        lesson_mode_id=None,
         groups=None,
         group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         student_planning_meta=None,
-        pair_constraints=None,
-        planning_profile=None,
     )
 
 
@@ -442,6 +410,7 @@ async def test_resolve_draft_calls_handler():
     handler = AsyncMock(spec=ResolveDraftHandler)
     req = api.ResolvePlanDraftRequest(
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
     )
     now = datetime.now(timezone.utc)
@@ -449,8 +418,8 @@ async def test_resolve_draft_calls_handler():
         id=uuid4(),
         owner_user_id=user.id,
         roster_id=req.roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=req.template_id,
-        lesson_mode_id="group_work",
         status=PlanDraftStatus.ACTIVE,
         revision=0,
         last_opened_at=now,
@@ -469,8 +438,8 @@ async def test_resolve_draft_calls_handler():
     handler.handle.assert_awaited_once_with(
         owner_user_id=user.id,
         roster_id=req.roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=req.template_id,
-        lesson_mode_id=None,
     )
 
 
@@ -485,8 +454,8 @@ async def test_abandon_draft_calls_handler():
         id=draft_id,
         owner_user_id=user.id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="group_work",
         status=PlanDraftStatus.ABANDONED,
         revision=1,
         last_opened_at=now,
@@ -516,8 +485,8 @@ async def test_get_resumable_draft_returns_serialized_payload():
         id=uuid4(),
         owner_user_id=user.id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="group_work",
         status=PlanDraftStatus.ACTIVE,
         revision=3,
         last_opened_at=now,

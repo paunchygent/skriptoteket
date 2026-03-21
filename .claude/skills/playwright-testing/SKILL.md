@@ -10,6 +10,14 @@ description: Browser automation with Playwright for Python. Recommended for visu
 - Visual testing, screenshots, UI verification
 - Mentions: "playwright", "screenshot", "visual test"
 
+## Required Workflow
+
+- Load this skill before you plan Playwright work, write a Playwright script, run a Playwright script, or review a
+  Playwright script.
+- Inspect the closest existing Playwright scripts in `scripts/` before inventing a new flow. Reuse their browser
+  launch helpers, login patterns, selectors, and artifact structure unless the new case clearly requires a new path.
+- Treat `.agents/rules/075-browser-automation.md` as the authoritative repo rulebook for Playwright behavior.
+
 ## Canonical Repo Rules
 
 For Skriptoteket-specific setup (login env vars, SPA dev server vs built assets, macOS Intel vs Apple Silicon), follow:

@@ -4,8 +4,8 @@
  * This store owns the mutable Klassrumskartan draft workspace used by the
  * planner SPA. It hydrates the backend workspace contract, exposes normalized
  * lookup maps for the drag-and-drop UI, schedules optimistic autosave patches,
- * and coordinates validation, suggestions, randomization, and snapshot
- * finalization without duplicating the backend rule engine in TypeScript.
+ * and coordinates the shipped grouping, seating, and student-note workflow
+ * without carrying superseded solver-era planner state.
  */
 
 import { computed, ref } from "vue";
@@ -13,14 +13,11 @@ import { defineStore } from "pinia";
 
 import { ApiError, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
 import {
-  defaultPlanningProfile,
-  type ArrangementSnapshot,
   type DraftGroup,
   type DraftWorkspaceResponse,
   type GroupAssignment,
-  type PairConstraint,
   type PlanDraft,
-  type PlanningProfile,
+  type PlanDraftKind,
   type ResumablePlanDraft,
   type RoomTemplate,
   type Roster,
@@ -28,10 +25,6 @@ import {
   type SeatAssignment,
   type Student,
   type StudentPlanningMeta,
-  type SuggestionPlan,
-  type SuggestionListResponse,
-  type ValidationFinding,
-  type ValidationResultResponse,
 } from "./classroomPlannerTypes";
 import {
   buildFixtureMap,
@@ -53,11 +46,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
   const groupAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const studentPlanningMetaByStudentId = ref<Record<string, StudentPlanningMeta>>({});
-  const pairConstraints = ref<PairConstraint[]>([]);
-  const planningProfile = ref<PlanningProfile>(defaultPlanningProfile());
-  const validationFindings = ref<ValidationFinding[]>([]);
-  const suggestions = ref<SuggestionPlan[]>([]);
-  const snapshots = ref<ArrangementSnapshot[]>([]);
   const saveStatus = ref<SaveStatus>("idle");
   const saveMessage = ref<string | null>(null);
 
@@ -142,14 +130,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     ).sort();
   });
 
-  const hardFindings = computed(() =>
-    validationFindings.value.filter((finding) => finding.severity === "hard"),
-  );
-
-  const softFindings = computed(() =>
-    validationFindings.value.filter((finding) => finding.severity === "soft"),
-  );
-
   function clearAutosaveTimer(): void {
     if (autosaveTimer) {
       clearTimeout(autosaveTimer);
@@ -157,30 +137,20 @@ export const useClassroomState = defineStore("classroom-state", () => {
     }
   }
 
-  function resetTransientPanels(): void {
-    validationFindings.value = [];
-    suggestions.value = [];
-  }
-
   function markDirty(): void {
-    resetTransientPanels();
     scheduleAutosave();
   }
 
   function applyWorkspace(workspace: DraftWorkspaceResponse): void {
     draft.value = workspace.draft;
     roster.value = workspace.roster;
-    template.value = workspace.template;
+    template.value = workspace.template ?? null;
     groups.value = reindexGroups(workspace.groups);
     groupAssignmentsByStudentId.value = normalizeAssignments(workspace.group_assignments, "group_id");
     seatAssignmentsByStudentId.value = normalizeAssignments(workspace.seat_assignments, "seat_id");
     studentPlanningMetaByStudentId.value = Object.fromEntries(
       workspace.student_planning_meta.map((meta) => [meta.student_id, meta]),
     );
-    pairConstraints.value = [...workspace.pair_constraints];
-    planningProfile.value = workspace.planning_profile;
-    validationFindings.value = [];
-    suggestions.value = [];
     saveStatus.value = "saved";
     saveMessage.value = null;
   }
@@ -192,8 +162,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
       group_assignments: groupAssignments.value,
       seat_assignments: seatAssignments.value,
       student_planning_meta: studentPlanningMeta.value,
-      pair_constraints: pairConstraints.value,
-      planning_profile: planningProfile.value,
     };
   }
 
@@ -263,11 +231,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupAssignmentsByStudentId.value = {};
     seatAssignmentsByStudentId.value = {};
     studentPlanningMetaByStudentId.value = {};
-    pairConstraints.value = [];
-    planningProfile.value = defaultPlanningProfile();
-    validationFindings.value = [];
-    suggestions.value = [];
-    snapshots.value = [];
     saveStatus.value = "idle";
     saveMessage.value = null;
   }
@@ -280,8 +243,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
   async function resolveDraft(
     rosterId: string,
-    templateId: string,
-    lessonModeId?: string | null,
+    templateId: string | null,
+    draftKind: PlanDraftKind = "seating",
   ): Promise<void> {
     saveStatus.value = "saving";
     saveMessage.value = null;
@@ -289,8 +252,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
       "/api/v1/apps/classroom.group-seating-studio/drafts/resolve",
       {
         roster_id: rosterId,
+        draft_kind: draftKind,
         template_id: templateId,
-        lesson_mode_id: lessonModeId ?? null,
       },
     );
     await loadWorkspace(resolvedDraft.id);
@@ -343,10 +306,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     renameGroup,
     moveGroup,
     removeGroup,
-    updatePlanningProfile,
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
-    setPairConstraint,
   } = createPlannerMutationActions({
     studentsById,
     seatsById,
@@ -355,104 +316,14 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
     studentPlanningMetaByStudentId,
-    pairConstraints,
-    planningProfile,
     markDirty,
   });
-
-  async function validateDraft(): Promise<ValidationFinding[]> {
-    if (!draft.value) {
-      return [];
-    }
-    const result = await apiPost<ValidationResultResponse>(
-      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/validate`,
-    );
-    validationFindings.value = result.findings;
-    return result.findings;
-  }
-
-  async function loadSuggestions(): Promise<SuggestionPlan[]> {
-    if (!draft.value) {
-      return [];
-    }
-    const result = await apiPost<SuggestionListResponse>(
-      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/suggestions`,
-    );
-    suggestions.value = result.suggestions;
-    return result.suggestions;
-  }
-
-  async function applySuggestion(suggestionId: string): Promise<void> {
-    if (!draft.value) {
-      return;
-    }
-    const response = await apiPost<PlanDraft>(
-      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/suggestions/${suggestionId}/apply`,
-      { expected_revision: draft.value.revision },
-    );
-    draft.value = response;
-    const selectedSuggestion = suggestions.value.find(
-      (suggestion) => suggestion.suggestion_id === suggestionId,
-    );
-    if (selectedSuggestion) {
-      groups.value = reindexGroups(selectedSuggestion.groups);
-      groupAssignmentsByStudentId.value = normalizeAssignments(
-        selectedSuggestion.group_assignments,
-        "group_id",
-      );
-      seatAssignmentsByStudentId.value = normalizeAssignments(
-        selectedSuggestion.seat_assignments,
-        "seat_id",
-      );
-      validationFindings.value = selectedSuggestion.findings;
-    } else {
-      await reloadActiveWorkspace();
-    }
-    saveStatus.value = "saved";
-    saveMessage.value = null;
-  }
-
-  async function randomizeDraft(): Promise<void> {
-    if (!draft.value) {
-      return;
-    }
-    const response = await apiPost<PlanDraft>(
-      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/randomize`,
-      { expected_revision: draft.value.revision },
-    );
-    draft.value = response;
-    await reloadActiveWorkspace();
-  }
-
-  async function finalizeDraft(): Promise<ArrangementSnapshot> {
-    if (!draft.value) {
-      throw new Error("Det finns inget aktivt utkast att fastställa.");
-    }
-    const snapshot = await apiPost<ArrangementSnapshot>(
-      `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/finalize`,
-    );
-    snapshots.value = [snapshot, ...snapshots.value.filter((entry) => entry.id !== snapshot.id)];
-    return snapshot;
-  }
-
-  async function loadSnapshots(): Promise<ArrangementSnapshot[]> {
-    const result = await apiGet<ArrangementSnapshot[]>(
-      "/api/v1/apps/classroom.group-seating-studio/snapshots",
-    );
-    snapshots.value = result;
-    return result;
-  }
 
   return {
     draft,
     roster,
     template,
     groups,
-    pairConstraints,
-    planningProfile,
-    validationFindings,
-    suggestions,
-    snapshots,
     saveStatus,
     saveMessage,
     hasWorkspace,
@@ -474,8 +345,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     studentsByGroupId,
     studentBySeatId,
     zones,
-    hardFindings,
-    softFindings,
     clearWorkspace,
     resolveDraft,
     loadWorkspace,
@@ -491,15 +360,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     renameGroup,
     moveGroup,
     removeGroup,
-    updatePlanningProfile,
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
-    setPairConstraint,
-    validateDraft,
-    loadSuggestions,
-    applySuggestion,
-    randomizeDraft,
-    finalizeDraft,
-    loadSnapshots,
   };
 });

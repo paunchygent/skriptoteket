@@ -1,9 +1,10 @@
 """Draft and workspace handlers for the classroom planner.
 
-This module owns mutable planner workspace flows: resolving the single active
-teacher draft, retiring drafts when the teacher leaves planning, hydrating the
-workspace for the SPA, and patching draft-scoped planning state with
-optimistic concurrency plus structural validation.
+This module owns the mutable planner workspace flows that remain in the active
+fundamentals contract: resolving one active draft per class and draft kind,
+hydrating that workspace for the SPA, abandoning drafts, and patching
+draft-scoped grouping, seating, and student-note state with optimistic
+concurrency.
 """
 
 from __future__ import annotations
@@ -15,20 +16,15 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
     DraftWorkspace,
     GroupAssignment,
-    PairConstraint,
     PlanDraft,
+    PlanDraftKind,
     PlanDraftStatus,
-    PlanningProfile,
     ResumablePlanDraft,
     RoomTemplate,
     Roster,
     SeatAssignment,
     StudentPlanningMeta,
-    default_planning_profile,
-    get_default_lesson_mode_id,
-    is_valid_lesson_mode_id,
 )
-from skriptoteket.domain.curated_apps.classroom_planner.validation import validate_workspace
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
@@ -39,30 +35,14 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-_STRUCTURAL_FINDING_CODES = {
-    "invalid_lesson_mode",
-    "duplicate_roster_student",
-    "duplicate_template_seat",
-    "duplicate_group_id",
-    "duplicate_group_sort_order",
-    "unknown_group_assignment_student",
-    "unknown_group_assignment_group",
-    "duplicate_group_assignment_student",
-    "unknown_seat_assignment_student",
-    "unknown_seat_assignment_seat",
-    "duplicate_seat_assignment_student",
-    "duplicate_seat_assignment_seat",
-    "unknown_student_meta_student",
-    "unknown_pair_constraint_student",
-    "invalid_pair_constraint_self",
-}
-
 
 def _build_default_groups(
     *,
     id_generator: IdGeneratorProtocol,
     count: int = 6,
 ) -> list[DraftGroup]:
+    """Create the default group buckets for a new draft."""
+
     return [
         DraftGroup(
             id=f"group-{index}-{id_generator.new_uuid().hex[:8]}",
@@ -73,13 +53,65 @@ def _build_default_groups(
     ]
 
 
-def _resolve_lesson_mode_id(*, lesson_mode_id: str | None) -> str:
-    """Return an explicit lesson mode or the hidden fundamentals default."""
+def _ensure_unique(values: list[str], *, label: str) -> None:
+    """Raise a validation error when a collection repeats stable identifiers."""
 
-    candidate = lesson_mode_id or get_default_lesson_mode_id()
-    if not is_valid_lesson_mode_id(lesson_mode_id=candidate):
-        raise validation_error("Lesson mode must exist in bootstrap presets.")
-    return candidate
+    if len(values) == len(set(values)):
+        return
+    raise validation_error(f"{label} must be unique within the planner workspace.")
+
+
+def _validate_workspace_structure(
+    *,
+    workspace: DraftWorkspace,
+    roster: Roster,
+    template: RoomTemplate | None,
+) -> None:
+    """Validate that draft references stay inside the selected class and room."""
+
+    student_ids = [student.id for student in roster.students]
+    seat_ids = [seat.id for seat in template.seats] if template else []
+    group_ids = [group.id for group in workspace.groups]
+    group_sort_orders = [str(group.sort_order) for group in workspace.groups]
+    meta_student_ids = [meta.student_id for meta in workspace.student_planning_meta]
+    group_assignment_student_ids = [
+        assignment.student_id for assignment in workspace.group_assignments
+    ]
+    seat_assignment_student_ids = [
+        assignment.student_id for assignment in workspace.seat_assignments
+    ]
+    seat_assignment_seat_ids = [assignment.seat_id for assignment in workspace.seat_assignments]
+
+    _ensure_unique(student_ids, label="Roster student IDs")
+    _ensure_unique(seat_ids, label="Room seat IDs")
+    _ensure_unique(group_ids, label="Group IDs")
+    _ensure_unique(group_sort_orders, label="Group sort orders")
+    _ensure_unique(meta_student_ids, label="Student metadata rows")
+    _ensure_unique(group_assignment_student_ids, label="Group assignment students")
+    _ensure_unique(seat_assignment_student_ids, label="Seat assignment students")
+    _ensure_unique(seat_assignment_seat_ids, label="Seat assignment seats")
+
+    valid_student_ids = set(student_ids)
+    valid_seat_ids = set(seat_ids)
+    valid_group_ids = set(group_ids)
+
+    for group_assignment in workspace.group_assignments:
+        if group_assignment.student_id not in valid_student_ids:
+            raise validation_error("Group assignments must reference roster students.")
+        if group_assignment.group_id not in valid_group_ids:
+            raise validation_error("Group assignments must reference existing groups.")
+
+    for seat_assignment in workspace.seat_assignments:
+        if template is None:
+            raise validation_error("Seat assignments require a classroom context.")
+        if seat_assignment.student_id not in valid_student_ids:
+            raise validation_error("Seat assignments must reference roster students.")
+        if seat_assignment.seat_id not in valid_seat_ids:
+            raise validation_error("Seat assignments must reference room seats.")
+
+    for meta in workspace.student_planning_meta:
+        if meta.student_id not in valid_student_ids:
+            raise validation_error("Student notes must reference roster students.")
 
 
 def _build_workspace(
@@ -87,7 +119,7 @@ def _build_workspace(
     draft: PlanDraft,
     id_generator: IdGeneratorProtocol,
 ) -> DraftWorkspace:
-    """Create the initial workspace payload for a new draft."""
+    """Create the initial fundamentals workspace payload for a new draft."""
 
     return DraftWorkspace(
         draft=draft,
@@ -95,9 +127,18 @@ def _build_workspace(
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        pair_constraints=[],
-        planning_profile=default_planning_profile(),
     )
+
+
+def _validate_resolve_template_requirement(
+    *,
+    draft_kind: PlanDraftKind,
+    template: RoomTemplate | None,
+) -> None:
+    """Enforce classroom requirements for the requested draft kind."""
+
+    if draft_kind == PlanDraftKind.SEATING and template is None:
+        raise validation_error("Sittplatser kräver att ett klassrum väljs.")
 
 
 def _ensure_active_draft(*, draft: PlanDraft) -> None:
@@ -120,7 +161,7 @@ def _ensure_active_draft(*, draft: PlanDraft) -> None:
 
 
 class ResolveDraftHandler:
-    """Resolve the single active mutable draft for a teacher."""
+    """Resolve the active mutable draft for one class and draft kind."""
 
     def __init__(
         self,
@@ -143,24 +184,34 @@ class ResolveDraftHandler:
         *,
         owner_user_id: UUID,
         roster_id: UUID,
-        template_id: UUID,
-        lesson_mode_id: str | None = None,
+        draft_kind: PlanDraftKind,
+        template_id: UUID | None = None,
     ) -> PlanDraft:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(roster_id))
 
-        template = await self._templates.get_by_id(template_id=template_id)
-        if not template or template.owner_user_id != owner_user_id:
-            raise not_found("RoomTemplate", str(template_id))
+        template = None
+        if template_id is not None:
+            template = await self._templates.get_by_id(template_id=template_id)
+            if not template or template.owner_user_id != owner_user_id:
+                raise not_found("RoomTemplate", str(template_id))
+        _validate_resolve_template_requirement(draft_kind=draft_kind, template=template)
 
         now = self._clock.now()
-        resolved_lesson_mode_id = _resolve_lesson_mode_id(lesson_mode_id=lesson_mode_id)
         async with self._uow:
-            await self._drafts.acquire_owner_lifecycle_lock(owner_user_id=owner_user_id)
-            existing = await self._drafts.get_active_by_owner(owner_user_id=owner_user_id)
+            await self._drafts.acquire_roster_kind_lifecycle_lock(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                draft_kind=draft_kind,
+            )
+            existing = await self._drafts.get_active_by_roster_and_kind(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                draft_kind=draft_kind,
+            )
             if existing is not None:
-                if existing.roster_id == roster_id and existing.template_id == template_id:
+                if existing.template_id == template_id:
                     updated = existing.model_copy(update={"last_opened_at": now, "updated_at": now})
                     await self._drafts.save(draft=updated)
                     return updated
@@ -175,8 +226,8 @@ class ResolveDraftHandler:
                 id=self._id_generator.new_uuid(),
                 owner_user_id=owner_user_id,
                 roster_id=roster_id,
+                draft_kind=draft_kind,
                 template_id=template_id,
-                lesson_mode_id=resolved_lesson_mode_id,
                 status=PlanDraftStatus.ACTIVE,
                 revision=0,
                 last_opened_at=now,
@@ -213,15 +264,25 @@ class AbandonDraftHandler:
         self._clock = clock
 
     async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> PlanDraft:
+        draft = await self._drafts.get_by_id(draft_id=draft_id)
+        if not draft or draft.owner_user_id != owner_user_id:
+            raise not_found("PlanDraft", str(draft_id))
+        if draft.status != PlanDraftStatus.ACTIVE:
+            return draft
+
         now = self._clock.now()
         async with self._uow:
-            await self._drafts.acquire_owner_lifecycle_lock(owner_user_id=owner_user_id)
-            draft = await self._drafts.get_by_id(draft_id=draft_id)
-            if not draft or draft.owner_user_id != owner_user_id:
+            await self._drafts.acquire_roster_kind_lifecycle_lock(
+                owner_user_id=owner_user_id,
+                roster_id=draft.roster_id,
+                draft_kind=draft.draft_kind,
+            )
+            current = await self._drafts.get_by_id(draft_id=draft_id)
+            if current is None or current.owner_user_id != owner_user_id:
                 raise not_found("PlanDraft", str(draft_id))
-            if draft.status != PlanDraftStatus.ACTIVE:
-                return draft
-            abandoned = draft.model_copy(
+            if current.status != PlanDraftStatus.ACTIVE:
+                return current
+            abandoned = current.model_copy(
                 update={"status": PlanDraftStatus.ABANDONED, "updated_at": now}
             )
             await self._drafts.save(draft=abandoned)
@@ -272,8 +333,6 @@ class GetDraftWorkspaceHandler:
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
-            pair_constraints=workspace.pair_constraints,
-            planning_profile=workspace.planning_profile,
         )
 
     async def _load_workspace_context(
@@ -281,16 +340,18 @@ class GetDraftWorkspaceHandler:
         *,
         draft_id: UUID,
         owner_user_id: UUID,
-    ) -> tuple[DraftWorkspace, Roster, RoomTemplate]:
+    ) -> tuple[DraftWorkspace, Roster, RoomTemplate | None]:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
             raise not_found("PlanDraft", str(draft_id))
         roster = await self._rosters.get_by_id(roster_id=workspace.draft.roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(workspace.draft.roster_id))
-        template = await self._templates.get_by_id(template_id=workspace.draft.template_id)
-        if not template or template.owner_user_id != owner_user_id:
-            raise not_found("RoomTemplate", str(workspace.draft.template_id))
+        template = None
+        if workspace.draft.template_id is not None:
+            template = await self._templates.get_by_id(template_id=workspace.draft.template_id)
+            if not template or template.owner_user_id != owner_user_id:
+                raise not_found("RoomTemplate", str(workspace.draft.template_id))
         return workspace, roster, template
 
 
@@ -317,13 +378,10 @@ class PatchDraftHandler:
         draft_id: UUID,
         owner_user_id: UUID,
         expected_revision: int | None = None,
-        lesson_mode_id: str | None = None,
         groups: list[DraftGroup] | None = None,
         group_assignments: list[GroupAssignment] | None = None,
         seat_assignments: list[SeatAssignment] | None = None,
         student_planning_meta: list[StudentPlanningMeta] | None = None,
-        pair_constraints: list[PairConstraint] | None = None,
-        planning_profile: PlanningProfile | None = None,
     ) -> PlanDraft:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
@@ -338,18 +396,13 @@ class PatchDraftHandler:
                 ),
             )
 
-        next_lesson_mode_id = lesson_mode_id or workspace.draft.lesson_mode_id
-        _resolve_lesson_mode_id(lesson_mode_id=next_lesson_mode_id)
-
-        updated_draft = workspace.draft.model_copy(
-            update={
-                "lesson_mode_id": next_lesson_mode_id,
-                "revision": workspace.draft.revision + 1,
-                "updated_at": self._clock.now(),
-            }
-        )
         updated_workspace = DraftWorkspace(
-            draft=updated_draft,
+            draft=workspace.draft.model_copy(
+                update={
+                    "revision": workspace.draft.revision + 1,
+                    "updated_at": self._clock.now(),
+                }
+            ),
             groups=groups if groups is not None else workspace.groups,
             group_assignments=(
                 group_assignments if group_assignments is not None else workspace.group_assignments
@@ -362,41 +415,25 @@ class PatchDraftHandler:
                 if student_planning_meta is not None
                 else workspace.student_planning_meta
             ),
-            pair_constraints=(
-                pair_constraints if pair_constraints is not None else workspace.pair_constraints
-            ),
-            planning_profile=planning_profile or workspace.planning_profile,
         )
         roster = await self._rosters.get_by_id(roster_id=updated_workspace.draft.roster_id)
-        template = await self._templates.get_by_id(template_id=updated_workspace.draft.template_id)
+        template = None
+        if updated_workspace.draft.template_id is not None:
+            template = await self._templates.get_by_id(
+                template_id=updated_workspace.draft.template_id
+            )
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(updated_workspace.draft.roster_id))
-        if not template or template.owner_user_id != owner_user_id:
+        if updated_workspace.draft.template_id is not None and (
+            not template or template.owner_user_id != owner_user_id
+        ):
             raise not_found("RoomTemplate", str(updated_workspace.draft.template_id))
 
-        validation_result = validate_workspace(
-            workspace=ClassroomPlannerWorkspace(
-                draft=updated_workspace.draft,
-                roster=roster,
-                template=template,
-                groups=updated_workspace.groups,
-                group_assignments=updated_workspace.group_assignments,
-                seat_assignments=updated_workspace.seat_assignments,
-                student_planning_meta=updated_workspace.student_planning_meta,
-                pair_constraints=updated_workspace.pair_constraints,
-                planning_profile=updated_workspace.planning_profile,
-            )
+        _validate_workspace_structure(
+            workspace=updated_workspace,
+            roster=roster,
+            template=template,
         )
-        structural_findings = [
-            finding.model_dump(mode="json")
-            for finding in validation_result.findings
-            if finding.code in _STRUCTURAL_FINDING_CODES
-        ]
-        if structural_findings:
-            raise validation_error(
-                "Draft workspace contains invalid references or duplicate assignments.",
-                details={"findings": structural_findings},
-            )
 
         async with self._uow:
             await self._drafts.save_workspace(workspace=updated_workspace)

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0084
 title: "Klassrumskartan: backend contract pruning and domain cleanup"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-21
@@ -43,12 +43,12 @@ match the approved fundamentals direction instead of preserving the abandoned so
 
 ## Checklist
 
-- [ ] Remove lesson-mode bootstrap metadata from the classroom planner public contract if it is no longer part of the approved workflow.
-- [ ] Remove superseded planner endpoints for validation, suggestions, suggestion apply, finalize, snapshots, and whole-workspace randomize.
-- [ ] Delete the corresponding handlers, DTOs, DI providers, and router wiring instead of leaving unused registration behind.
-- [ ] Remove superseded planner concepts from the active domain model, including planning-profile, pair-constraint, suggestion, snapshot, and suggestion-engine metadata types that no longer belong to the approved fundamentals contract.
-- [ ] Remove obsolete persistence seams, ORM models, and database columns/tables tied only to removed planner concepts, with a forward migration that leaves no dead contract surface.
-- [ ] Update backend tests so they cover the reduced fundamentals contract rather than preserving removed APIs.
+- [x] Remove lesson-mode bootstrap metadata from the classroom planner public contract if it is no longer part of the approved workflow.
+- [x] Remove superseded planner endpoints for validation, suggestions, suggestion apply, finalize, snapshots, and whole-workspace randomize.
+- [x] Delete the corresponding handlers, DTOs, DI providers, and router wiring instead of leaving unused registration behind.
+- [x] Remove superseded planner concepts from the active domain model, including planning-profile, pair-constraint, suggestion, snapshot, and suggestion-engine metadata types that no longer belong to the approved fundamentals contract.
+- [x] Remove obsolete persistence seams, ORM models, and database columns/tables tied only to removed planner concepts, with a forward migration that leaves no dead contract surface.
+- [x] Update backend tests so they cover the reduced fundamentals contract rather than preserving removed APIs.
 
 ## Implementation plan
 

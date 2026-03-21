@@ -1,11 +1,10 @@
 <script setup lang="ts">
 /**
- * Student planning metadata drawer.
+ * Student notes drawer.
  *
- * This component hosts teacher-authored placement notes for the active
- * student. It intentionally keeps the current UI limited to concrete
- * classroom-management observations instead of exposing speculative rule-engine
- * controls before they are product-defined.
+ * This component hosts teacher-authored notes for the active student inside
+ * the seating workflow. It keeps the UI anchored in concrete teacher
+ * observations instead of exposing speculative rule-engine controls.
  */
 
 import { computed } from "vue";
@@ -51,7 +50,7 @@ const currentMeta = computed(() => {
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0">
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Placeringprofil
+            Elevanteckningar
           </p>
           <h3 class="font-serif text-xl text-navy">
             {{ selectedStudent?.display_name ?? "Välj en elev" }}
@@ -70,7 +69,7 @@ const currentMeta = computed(() => {
         v-if="!selectedStudent || !currentMeta"
         class="flex flex-1 items-center justify-center p-6 text-center text-sm leading-relaxed text-navy/60"
       >
-        Klicka på en elev i grupp- eller sittplatsvyn för att öppna lärarens placeringsprofil.
+        Klicka på en elev i sittkartan för att öppna lärarens elevanteckningar.
       </div>
 
       <div
@@ -94,21 +93,6 @@ const currentMeta = computed(() => {
               step="1"
               class="w-full"
               @input="state.setStudentPlanningMeta(selectedStudent.id, { teacher_proximity: Number(($event.target as HTMLInputElement).value) })"
-            >
-          </label>
-
-          <label class="block space-y-1">
-            <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Behöver lugn och fokusstöd
-            </span>
-            <input
-              :value="currentMeta.independent_focus_support"
-              type="range"
-              min="0"
-              max="3"
-              step="1"
-              class="w-full"
-              @input="state.setStudentPlanningMeta(selectedStudent.id, { independent_focus_support: Number(($event.target as HTMLInputElement).value) })"
             >
           </label>
 
@@ -144,7 +128,7 @@ const currentMeta = computed(() => {
             class="btn-ghost border-navy/30 bg-white shadow-none"
             @click="state.resetStudentPlanningMeta(selectedStudent.id)"
           >
-            Återställ placeringsprofil
+            Återställ elevanteckningar
           </button>
         </section>
       </div>

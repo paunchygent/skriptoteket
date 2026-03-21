@@ -117,6 +117,8 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 ### Browser Automation
 
 Playwright is the default for new browser automation (see `.agents/rules/075-browser-automation.md`).
+Always load and follow the `playwright-testing` skill before planning Playwright work, writing a Playwright script,
+running a Playwright script, or reviewing a Playwright script.
 Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`, or ad-hoc scripts via
 `pdm run python -m scripts.<module>`.
 HMR probe (Playwright; may need escalation on macOS): `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`).

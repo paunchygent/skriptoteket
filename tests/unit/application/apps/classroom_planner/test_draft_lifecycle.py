@@ -11,6 +11,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
+    PlanDraftKind,
     PlanDraftStatus,
     ResumablePlanDraft,
     RoomTemplate,
@@ -77,8 +78,8 @@ async def test_resolve_draft_returns_existing_active_draft(
         id=uuid4(),
         owner_user_id=owner_id,
         roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=template_id,
-        lesson_mode_id="group_work",
         status=PlanDraftStatus.ACTIVE,
         revision=3,
         last_opened_at=now,
@@ -87,16 +88,21 @@ async def test_resolve_draft_returns_existing_active_draft(
     )
     rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
     templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
-    drafts.get_active_by_owner.return_value = existing
+    drafts.get_active_by_roster_and_kind.return_value = existing
 
     result = await handler.handle(
         owner_user_id=owner_id,
         roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=template_id,
     )
 
     assert result.id == existing.id
-    drafts.acquire_owner_lifecycle_lock.assert_awaited_once_with(owner_user_id=owner_id)
+    drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+    )
     drafts.save.assert_awaited_once()
     drafts.save_workspace.assert_not_called()
 
@@ -114,21 +120,23 @@ async def test_resolve_draft_creates_new_draft_when_none_exists(
     id_generator.new_uuid.return_value = draft_id
     rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
     templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
-    drafts.get_active_by_owner.return_value = None
+    drafts.get_active_by_roster_and_kind.return_value = None
 
     result = await handler.handle(
         owner_user_id=owner_id,
         roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=template_id,
     )
 
     assert result.id == draft_id
+    assert result.draft_kind == PlanDraftKind.SEATING
     assert result.status == PlanDraftStatus.ACTIVE
     drafts.save_workspace.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_resolve_draft_supersedes_previous_active_draft_for_owner(
+async def test_resolve_draft_supersedes_previous_active_draft_for_same_class_and_kind(
     uow, rosters, templates, drafts, clock, id_generator, now
 ):
     handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
@@ -138,9 +146,9 @@ async def test_resolve_draft_supersedes_previous_active_draft_for_owner(
     existing = PlanDraft(
         id=uuid4(),
         owner_user_id=owner_id,
-        roster_id=uuid4(),
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="group_work",
         status=PlanDraftStatus.ACTIVE,
         revision=2,
         last_opened_at=now,
@@ -149,11 +157,12 @@ async def test_resolve_draft_supersedes_previous_active_draft_for_owner(
     )
     rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
     templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
-    drafts.get_active_by_owner.return_value = existing
+    drafts.get_active_by_roster_and_kind.return_value = existing
 
     await handler.handle(
         owner_user_id=owner_id,
         roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=template_id,
     )
 
@@ -175,8 +184,8 @@ async def test_abandon_draft_marks_active_draft_abandoned(uow, drafts, clock, no
         id=draft_id,
         owner_user_id=owner_id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="group_work",
         status=PlanDraftStatus.ACTIVE,
         revision=1,
         last_opened_at=now,
@@ -188,8 +197,52 @@ async def test_abandon_draft_marks_active_draft_abandoned(uow, drafts, clock, no
     result = await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
 
     assert result.status == PlanDraftStatus.ABANDONED
-    drafts.acquire_owner_lifecycle_lock.assert_awaited_once_with(owner_user_id=owner_id)
+    drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=draft.roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+    )
     drafts.save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_resolve_grouping_draft_allows_missing_template(
+    uow, rosters, drafts, clock, id_generator
+):
+    templates = AsyncMock(spec=RoomTemplateRepositoryProtocol)
+    handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    drafts.get_active_by_roster_and_kind.return_value = None
+
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+    )
+
+    assert result.draft_kind == PlanDraftKind.GROUPING
+    assert result.template_id is None
+    drafts.save_workspace.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_resolve_seating_draft_requires_template(uow, rosters, drafts, clock, id_generator):
+    templates = AsyncMock(spec=RoomTemplateRepositoryProtocol)
+    handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+
+    with pytest.raises(Exception, match="klassrum"):
+        await handler.handle(
+            owner_user_id=owner_id,
+            roster_id=roster_id,
+            draft_kind=PlanDraftKind.SEATING,
+            template_id=None,
+        )
 
 
 @pytest.mark.asyncio
@@ -201,8 +254,8 @@ async def test_get_resumable_draft_returns_repo_payload(drafts, now):
             id=uuid4(),
             owner_user_id=owner_id,
             roster_id=uuid4(),
+            draft_kind=PlanDraftKind.SEATING,
             template_id=uuid4(),
-            lesson_mode_id="group_work",
             status=PlanDraftStatus.ACTIVE,
             revision=1,
             last_opened_at=now,

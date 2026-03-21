@@ -10,6 +10,7 @@ epic: "EPIC-24"
 acceptance_criteria:
   - "Given the teacher opens Klassrumskartan, when the main view loads, then classes are the prominent first-step objects and classrooms are presented as secondary supporting assets."
   - "Given the teacher chooses a class, when the class workspace opens, then the teacher can see active seating work, active grouping work, and secondary class-owned history without being forced straight into one planner surface."
+  - "Given the teacher is inside an active grouping draft or seating draft, when they choose to leave that planner surface, then they can return to the class workspace without discarding the active work by default."
   - "Given the teacher wants to start seating work for a class, when they create a new seating draft, then choosing a classroom is required before the seating planner opens."
   - "Given the teacher wants to start grouping work for a class, when they create a new grouping draft, then they can either continue without a classroom or optionally choose a classroom-aware grouping context."
   - "Given the class already has an active seating draft or active grouping draft, when the teacher returns to the class workspace, then they can continue that active work explicitly instead of losing it or replacing it silently."
@@ -28,6 +29,7 @@ continuing or starting seating/grouping work inside that class.
 - This story starts only after `ST-24-05` has removed superseded solver-first planner contracts from the active codebase.
 - This story replaces the transitional symmetric launch model from `ST-24-01`.
 - The class workspace should make active work prominent and history secondary.
+- Leaving active work, discarding a draft, and saving a teacher-approved result are different actions and must stay distinct in the UI.
 - `GroupingDraft` and `SeatingDraft` are separate units of work even if the persistence layer shares normalized concepts underneath.
 - `Sittplatser` is classroom-bound; `Grupper` may be classroom-aware or classroom-agnostic.
 - The next stories (`ST-24-03` and `ST-24-04`) build on this class-first workspace rather than bypassing it.

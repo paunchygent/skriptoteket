@@ -1,8 +1,8 @@
 """Protocols for classroom planner persistence seams.
 
 These protocols let application handlers depend on typed planner aggregates
-without coupling to SQLAlchemy. They cover teacher-owned reusable assets,
-mutable draft workspaces, and immutable arrangement snapshots.
+without coupling to SQLAlchemy. They cover teacher-owned reusable assets and
+mutable draft workspaces for the active grouping, seating, and note workflow.
 """
 
 from __future__ import annotations
@@ -12,9 +12,9 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
-    ArrangementSnapshot,
     DraftWorkspace,
     PlanDraft,
+    PlanDraftKind,
     PlanDraftStatus,
     ResumablePlanDraft,
     RoomTemplate,
@@ -37,12 +37,24 @@ class PlanDraftRepositoryProtocol(Protocol):
         """List draft roots owned by a specific user."""
         ...
 
-    async def get_active_by_owner(self, *, owner_user_id: UUID) -> PlanDraft | None:
-        """Load the current active draft owned by a specific user."""
+    async def get_active_by_roster_and_kind(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        draft_kind: PlanDraftKind,
+    ) -> PlanDraft | None:
+        """Load the current active draft for one class and draft kind."""
         ...
 
-    async def acquire_owner_lifecycle_lock(self, *, owner_user_id: UUID) -> None:
-        """Serialize draft lifecycle transitions for a specific owner."""
+    async def acquire_roster_kind_lifecycle_lock(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        draft_kind: PlanDraftKind,
+    ) -> None:
+        """Serialize lifecycle transitions for one class and draft kind."""
         ...
 
     async def get_latest_resumable(self, *, owner_user_id: UUID) -> ResumablePlanDraft | None:
@@ -78,22 +90,6 @@ class PlanDraftRepositoryProtocol(Protocol):
 
     async def delete(self, *, draft_id: UUID) -> None:
         """Delete a draft root and cascade its workspace state."""
-        ...
-
-
-class ArrangementSnapshotRepositoryProtocol(Protocol):
-    """Persist immutable arrangement snapshots."""
-
-    async def get_by_id(self, *, snapshot_id: UUID) -> ArrangementSnapshot | None:
-        """Load a snapshot by its unique id."""
-        ...
-
-    async def list_by_owner(self, *, owner_user_id: UUID) -> list[ArrangementSnapshot]:
-        """List snapshots owned by a specific user."""
-        ...
-
-    async def save(self, *, snapshot: ArrangementSnapshot) -> None:
-        """Persist a new snapshot."""
         ...
 
 

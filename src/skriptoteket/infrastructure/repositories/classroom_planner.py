@@ -1,13 +1,14 @@
 """PostgreSQL repositories for classroom planner aggregates.
 
-This module maps SQLAlchemy models to the typed classroom planner domain models.
-It persists reusable teacher assets, mutable draft workspaces, and immutable
-arrangement snapshots without leaking ORM details into the application layer.
+This module maps SQLAlchemy models to the active classroom-planner domain
+models. It persists reusable teacher assets plus the mutable draft workspace
+for grouping, seating, and teacher-note fundamentals.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
+from hashlib import blake2b
 from uuid import UUID
 
 from sqlalchemy import delete, exists, select, text
@@ -15,16 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
-    ArrangementSnapshot,
     DraftGroup,
     DraftWorkspace,
     GroupAssignment,
-    PairConstraint,
-    PairConstraintKind,
     PlanDraft,
+    PlanDraftKind,
     PlanDraftStatus,
-    PlanningProfile,
-    PlanningProfileKind,
     ResumablePlanDraft,
     RoomFixture,
     RoomFixtureType,
@@ -34,16 +31,11 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    SuggestionEngineMetadata,
-    default_planning_profile,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
-    ArrangementSnapshotModel,
     DraftGroupModel,
     GroupAssignmentModel,
-    PairConstraintModel,
     PlanDraftModel,
-    PlanningProfileModel,
     SeatAssignmentModel,
     StudentPlanningMetaModel,
 )
@@ -52,7 +44,6 @@ from skriptoteket.infrastructure.db.models.classroom_planner_room_template impor
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_roster import RosterModel
 from skriptoteket.protocols.classroom_planner import (
-    ArrangementSnapshotRepositoryProtocol,
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
@@ -60,7 +51,7 @@ from skriptoteket.protocols.classroom_planner import (
 
 
 class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
-    """Persist draft roots and draft-scoped workspace state in PostgreSQL."""
+    """Persist draft roots and fundamentals workspace state in PostgreSQL."""
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -73,69 +64,32 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         new_items: list[object],
     ) -> None:
         """Replace child rows without tripping natural-key uniqueness constraints."""
+
         existing_items = list(getattr(model, attribute_name))
         if existing_items:
             getattr(model, attribute_name).clear()
             await self._session.flush()
         getattr(model, attribute_name).extend(new_items)
 
-    def _upsert_planning_profile(
-        self,
-        *,
-        model: PlanDraftModel,
-        profile: PlanningProfile,
-    ) -> None:
-        """Update the single draft planning profile in place when present."""
-        if model.planning_profile is None:
-            model.planning_profile = PlanningProfileModel()
-        model.planning_profile.profile_kind = profile.profile_kind.value
-        model.planning_profile.enable_student_meta = profile.enable_student_meta
-        model.planning_profile.enable_pair_constraints = profile.enable_pair_constraints
-        model.planning_profile.enable_zone_preferences = profile.enable_zone_preferences
-        model.planning_profile.enable_history_rules = profile.enable_history_rules
-        model.planning_profile.teacher_proximity_weight = profile.teacher_proximity_weight
-        model.planning_profile.focus_support_weight = profile.focus_support_weight
-        model.planning_profile.stability_weight = profile.stability_weight
-        model.planning_profile.balance_weight = profile.balance_weight
-        model.planning_profile.rotation_weight = profile.rotation_weight
-
     def _to_draft(self, model: PlanDraftModel) -> PlanDraft:
-        engine_metadata = (
-            SuggestionEngineMetadata.model_validate(model.engine_metadata)
-            if model.engine_metadata
-            else None
-        )
+        """Map one draft ORM row to the active domain aggregate."""
+
         return PlanDraft(
             id=model.id,
             owner_user_id=model.owner_user_id,
             roster_id=model.roster_id,
+            draft_kind=PlanDraftKind(model.draft_kind),
             template_id=model.template_id,
-            lesson_mode_id=model.lesson_mode_id,
             status=PlanDraftStatus(model.status),
             revision=model.revision,
-            engine_metadata=engine_metadata,
             last_opened_at=model.last_opened_at,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
 
     def _to_workspace(self, model: PlanDraftModel) -> DraftWorkspace:
-        planning_profile = (
-            PlanningProfile(
-                profile_kind=PlanningProfileKind(model.planning_profile.profile_kind),
-                enable_student_meta=model.planning_profile.enable_student_meta,
-                enable_pair_constraints=model.planning_profile.enable_pair_constraints,
-                enable_zone_preferences=model.planning_profile.enable_zone_preferences,
-                enable_history_rules=model.planning_profile.enable_history_rules,
-                teacher_proximity_weight=model.planning_profile.teacher_proximity_weight,
-                focus_support_weight=model.planning_profile.focus_support_weight,
-                stability_weight=model.planning_profile.stability_weight,
-                balance_weight=model.planning_profile.balance_weight,
-                rotation_weight=model.planning_profile.rotation_weight,
-            )
-            if model.planning_profile
-            else default_planning_profile()
-        )
+        """Map one hydrated draft ORM row to the active workspace aggregate."""
+
         return DraftWorkspace(
             draft=self._to_draft(model),
             groups=[
@@ -154,7 +108,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 StudentPlanningMeta(
                     student_id=meta.student_id,
                     teacher_proximity=meta.teacher_proximity,
-                    independent_focus_support=meta.independent_focus_support,
                     stability_preference=meta.stability_preference,
                     preferred_zone=meta.preferred_zone,
                     avoid_zone=meta.avoid_zone,
@@ -162,16 +115,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 )
                 for meta in model.student_planning_meta
             ],
-            pair_constraints=[
-                PairConstraint(
-                    student_id_a=constraint.student_id_a,
-                    student_id_b=constraint.student_id_b,
-                    kind=PairConstraintKind(constraint.kind),
-                    strength=constraint.strength,
-                )
-                for constraint in model.pair_constraints
-            ],
-            planning_profile=planning_profile,
         )
 
     async def get_by_id(self, *, draft_id: UUID) -> PlanDraft | None:
@@ -186,8 +129,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.pair_constraints),
-                selectinload(PlanDraftModel.planning_profile),
             )
             .where(PlanDraftModel.id == draft_id)
         )
@@ -202,11 +143,19 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
         return [self._to_draft(model) for model in result.scalars().all()]
 
-    async def get_active_by_owner(self, *, owner_user_id: UUID) -> PlanDraft | None:
+    async def get_active_by_roster_and_kind(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        draft_kind: PlanDraftKind,
+    ) -> PlanDraft | None:
         result = await self._session.execute(
             select(PlanDraftModel)
             .where(
                 PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.roster_id == roster_id,
+                PlanDraftModel.draft_kind == draft_kind.value,
                 PlanDraftModel.status == PlanDraftStatus.ACTIVE.value,
             )
             .order_by(PlanDraftModel.last_opened_at.desc(), PlanDraftModel.updated_at.desc())
@@ -215,8 +164,16 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         model = result.scalar_one_or_none()
         return self._to_draft(model) if model else None
 
-    async def acquire_owner_lifecycle_lock(self, *, owner_user_id: UUID) -> None:
-        lock_key = owner_user_id.int & 0x7FFFFFFFFFFFFFFF
+    async def acquire_roster_kind_lifecycle_lock(
+        self,
+        *,
+        owner_user_id: UUID,
+        roster_id: UUID,
+        draft_kind: PlanDraftKind,
+    ) -> None:
+        lock_source = f"{owner_user_id}:{roster_id}:{draft_kind.value}".encode("utf-8")
+        lock_key = int.from_bytes(blake2b(lock_source, digest_size=8).digest(), "big")
+        lock_key &= 0x7FFFFFFFFFFFFFFF
         await self._session.execute(
             text("SELECT pg_advisory_xact_lock(:lock_key)"),
             {"lock_key": lock_key},
@@ -226,7 +183,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         result = await self._session.execute(
             select(PlanDraftModel, RosterModel.name, RoomTemplateModel.name)
             .join(RosterModel, RosterModel.id == PlanDraftModel.roster_id)
-            .join(RoomTemplateModel, RoomTemplateModel.id == PlanDraftModel.template_id)
+            .outerjoin(RoomTemplateModel, RoomTemplateModel.id == PlanDraftModel.template_id)
             .where(
                 PlanDraftModel.owner_user_id == owner_user_id,
                 PlanDraftModel.status == PlanDraftStatus.ACTIVE.value,
@@ -272,13 +229,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         model = await self._session.get(PlanDraftModel, draft.id)
         if model:
             model.roster_id = draft.roster_id
+            model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
-            model.lesson_mode_id = draft.lesson_mode_id
             model.status = draft.status.value
             model.revision = draft.revision
-            model.engine_metadata = (
-                draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
-            )
             model.last_opened_at = draft.last_opened_at
             model.updated_at = draft.updated_at
         else:
@@ -286,13 +240,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 id=draft.id,
                 owner_user_id=draft.owner_user_id,
                 roster_id=draft.roster_id,
+                draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
-                lesson_mode_id=draft.lesson_mode_id,
                 status=draft.status.value,
                 revision=draft.revision,
-                engine_metadata=(
-                    draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
-                ),
                 last_opened_at=draft.last_opened_at,
                 created_at=draft.created_at,
                 updated_at=draft.updated_at,
@@ -310,8 +261,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.pair_constraints),
-                selectinload(PlanDraftModel.planning_profile),
             ),
         )
         if model is None:
@@ -319,13 +268,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 id=draft.id,
                 owner_user_id=draft.owner_user_id,
                 roster_id=draft.roster_id,
+                draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
-                lesson_mode_id=draft.lesson_mode_id,
                 status=draft.status.value,
                 revision=draft.revision,
-                engine_metadata=(
-                    draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
-                ),
                 last_opened_at=draft.last_opened_at,
                 created_at=draft.created_at,
                 updated_at=draft.updated_at,
@@ -333,13 +279,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             self._session.add(model)
         else:
             model.roster_id = draft.roster_id
+            model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
-            model.lesson_mode_id = draft.lesson_mode_id
             model.status = draft.status.value
             model.revision = draft.revision
-            model.engine_metadata = (
-                draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
-            )
             model.last_opened_at = draft.last_opened_at
             model.updated_at = draft.updated_at
 
@@ -374,7 +317,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 StudentPlanningMetaModel(
                     student_id=meta.student_id,
                     teacher_proximity=meta.teacher_proximity,
-                    independent_focus_support=meta.independent_focus_support,
                     stability_preference=meta.stability_preference,
                     preferred_zone=meta.preferred_zone,
                     avoid_zone=meta.avoid_zone,
@@ -383,20 +325,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 for meta in workspace.student_planning_meta
             ],
         )
-        await self._replace_related_collection(
-            model=model,
-            attribute_name="pair_constraints",
-            new_items=[
-                PairConstraintModel(
-                    student_id_a=constraint.student_id_a,
-                    student_id_b=constraint.student_id_b,
-                    kind=constraint.kind.value,
-                    strength=constraint.strength,
-                )
-                for constraint in workspace.pair_constraints
-            ],
-        )
-        self._upsert_planning_profile(model=model, profile=workspace.planning_profile)
         await self._session.flush()
 
     async def mark_status(
@@ -417,50 +345,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
 
     async def delete(self, *, draft_id: UUID) -> None:
         await self._session.execute(delete(PlanDraftModel).where(PlanDraftModel.id == draft_id))
-        await self._session.flush()
-
-
-class PostgreSQLArrangementSnapshotRepository(ArrangementSnapshotRepositoryProtocol):
-    """Persist immutable arrangement snapshots in PostgreSQL."""
-
-    def __init__(self, session: AsyncSession) -> None:
-        self._session = session
-
-    def _to_domain(self, model: ArrangementSnapshotModel) -> ArrangementSnapshot:
-        return ArrangementSnapshot(
-            id=model.id,
-            owner_user_id=model.owner_user_id,
-            source_draft_id=model.source_draft_id,
-            lesson_mode_id=model.lesson_mode_id,
-            snapshot_schema_version=model.snapshot_schema_version,
-            payload=model.payload,
-            created_at=model.created_at,
-        )
-
-    async def get_by_id(self, *, snapshot_id: UUID) -> ArrangementSnapshot | None:
-        model = await self._session.get(ArrangementSnapshotModel, snapshot_id)
-        return self._to_domain(model) if model else None
-
-    async def list_by_owner(self, *, owner_user_id: UUID) -> list[ArrangementSnapshot]:
-        result = await self._session.execute(
-            select(ArrangementSnapshotModel)
-            .where(ArrangementSnapshotModel.owner_user_id == owner_user_id)
-            .order_by(ArrangementSnapshotModel.created_at.desc())
-        )
-        return [self._to_domain(model) for model in result.scalars().all()]
-
-    async def save(self, *, snapshot: ArrangementSnapshot) -> None:
-        self._session.add(
-            ArrangementSnapshotModel(
-                id=snapshot.id,
-                owner_user_id=snapshot.owner_user_id,
-                source_draft_id=snapshot.source_draft_id,
-                lesson_mode_id=snapshot.lesson_mode_id,
-                snapshot_schema_version=snapshot.snapshot_schema_version,
-                payload=snapshot.payload,
-                created_at=snapshot.created_at,
-            )
-        )
         await self._session.flush()
 
 

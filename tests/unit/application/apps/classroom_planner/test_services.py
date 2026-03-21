@@ -9,7 +9,6 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
-    GetBootstrapHandler,
     GetDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
@@ -23,13 +22,13 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftWorkspace,
     GroupAssignment,
     PlanDraft,
+    PlanDraftKind,
     PlanDraftStatus,
     RoomTemplate,
     Roster,
     Seat,
     SeatAssignment,
     Student,
-    default_planning_profile,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner import (
@@ -80,20 +79,6 @@ def id_generator():
     # Default to returning a new UUID each time
     mock.new_uuid.side_effect = lambda: uuid4()
     return mock
-
-
-# Bootstrap Handler Tests
-
-
-@pytest.mark.asyncio
-async def test_bootstrap_handler_returns_payload():
-    handler = GetBootstrapHandler()
-    owner_id = uuid4()
-
-    payload = await handler.handle(owner_user_id=owner_id)
-
-    assert len(payload.lesson_modes) > 0
-    assert "solver_v1" in payload.feature_flags
 
 
 # Roster Handler Tests
@@ -337,8 +322,8 @@ async def test_get_draft_returns_from_repo_if_owner_matches(drafts, now):
         id=draft_id,
         owner_user_id=owner_id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="seating",
         status=PlanDraftStatus.ACTIVE,
         last_opened_at=now,
         created_at=now,
@@ -362,8 +347,8 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
         id=draft_id,
         owner_user_id=owner_id,
         roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
         template_id=template_id,
-        lesson_mode_id="seating",
         status=PlanDraftStatus.ACTIVE,
         revision=0,
         last_opened_at=now,
@@ -376,8 +361,6 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
         group_assignments=[GroupAssignment(student_id="s1", group_id="group-1")],
         seat_assignments=[],
         student_planning_meta=[],
-        pair_constraints=[],
-        planning_profile=default_planning_profile(),
     )
     rosters.get_by_id.return_value = Roster(
         id=roster_id,
@@ -429,8 +412,8 @@ async def test_patch_draft_rejects_inactive_draft(uow, drafts, rosters, template
             id=draft_id,
             owner_user_id=owner_id,
             roster_id=uuid4(),
+            draft_kind=PlanDraftKind.SEATING,
             template_id=uuid4(),
-            lesson_mode_id="seating",
             status=PlanDraftStatus.ABANDONED,
             revision=5,
             last_opened_at=now,
@@ -441,8 +424,6 @@ async def test_patch_draft_rejects_inactive_draft(uow, drafts, rosters, template
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        pair_constraints=[],
-        planning_profile=default_planning_profile(),
     )
 
     with pytest.raises(DomainError) as exc:
@@ -463,8 +444,8 @@ async def test_patch_draft_raises_conflict_if_revision_mismatch(
         id=draft_id,
         owner_user_id=owner_id,
         roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
         template_id=uuid4(),
-        lesson_mode_id="seating",
         status=PlanDraftStatus.ACTIVE,
         revision=5,
         last_opened_at=now,
@@ -477,8 +458,6 @@ async def test_patch_draft_raises_conflict_if_revision_mismatch(
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        pair_constraints=[],
-        planning_profile=default_planning_profile(),
     )
 
     with pytest.raises(DomainError) as exc:
