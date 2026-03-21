@@ -3,8 +3,8 @@
  * Klassrumskartan planner root view.
  *
  * This view bootstraps the classroom planner, hydrates reusable catalog assets,
- * restores the active draft when available, and switches between the selection
- * gate and the live Slice 2 workspace shell.
+ * offers an explicit resume CTA for the current active draft, and switches
+ * between the selection gate and the live planner workspace shell.
  */
 
 import { computed, onMounted, ref } from "vue";
@@ -15,8 +15,8 @@ import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
 import PlannerSelectionGate from "./components/PlannerSelectionGate.vue";
 import PlannerWorkspaceShell from "./components/PlannerWorkspaceShell.vue";
 import {
-  type LessonMode,
   type PlannerBootstrapResponse,
+  type ResumablePlanDraft,
   type RoomTemplate,
   type Roster,
 } from "./classroomPlannerTypes";
@@ -24,24 +24,20 @@ import { useClassroomState } from "./useClassroomState";
 
 const plannerState = useClassroomState();
 
-const lessonModes = ref<LessonMode[]>([]);
 const availableRosters = ref<Roster[]>([]);
 const availableTemplates = ref<RoomTemplate[]>([]);
-const selectedLessonModeId = ref<string | null>(null);
 const selectedRosterId = ref<string | null>(null);
 const selectedTemplateId = ref<string | null>(null);
 const isBootstrapping = ref(true);
 const isLoadingCatalog = ref(false);
 const bootstrapError = ref<string | null>(null);
+const plannerActionError = ref<string | null>(null);
+const resumableDraft = ref<ResumablePlanDraft | null>(null);
 const isPlannerOpen = ref(false);
 const isRosterModalOpen = ref(false);
 const isTemplateModalOpen = ref(false);
 const activeRosterModal = ref<Roster | null>(null);
 const activeTemplateModal = ref<RoomTemplate | null>(null);
-
-const selectedLessonMode = computed(() => {
-  return lessonModes.value.find((mode) => mode.id === selectedLessonModeId.value) ?? null;
-});
 
 const selectedRoster = computed(() => {
   return availableRosters.value.find((roster) => roster.id === selectedRosterId.value) ?? null;
@@ -52,7 +48,7 @@ const selectedTemplate = computed(() => {
 });
 
 const canStartPlanning = computed(() => {
-  return Boolean(selectedLessonMode.value && selectedRoster.value && selectedTemplate.value);
+  return Boolean(selectedRoster.value && selectedTemplate.value);
 });
 
 async function fetchCatalog(): Promise<void> {
@@ -72,32 +68,37 @@ async function fetchCatalog(): Promise<void> {
 function syncSelectionFromWorkspace(): void {
   selectedRosterId.value = plannerState.roster?.id ?? null;
   selectedTemplateId.value = plannerState.template?.id ?? null;
-  selectedLessonModeId.value = plannerState.draft?.lesson_mode_id ?? null;
 }
 
-async function resumeDraft(draftId: string): Promise<void> {
+async function resumeDraft(): Promise<void> {
+  if (!resumableDraft.value) {
+    return;
+  }
+  plannerActionError.value = null;
   try {
-    await plannerState.loadWorkspace(draftId);
+    await plannerState.resolveDraft(
+      resumableDraft.value.draft.roster_id,
+      resumableDraft.value.draft.template_id,
+    );
     syncSelectionFromWorkspace();
     isPlannerOpen.value = true;
   } catch (error: unknown) {
     plannerState.clearWorkspace();
+    plannerActionError.value =
+      error instanceof Error ? error.message : "Kunde inte fortsätta utkastet just nu.";
     console.error("Failed to resume classroom planner draft", error);
   }
 }
 
 onMounted(async () => {
   try {
-    const bootstrap = await apiGet<PlannerBootstrapResponse>(
-      "/api/v1/apps/classroom.group-seating-studio/bootstrap",
-    );
-    lessonModes.value = bootstrap.lesson_modes;
-    await fetchCatalog();
-
-    const storedDraftId = plannerState.getStoredDraftId();
-    if (storedDraftId) {
-      await resumeDraft(storedDraftId);
-    }
+    await Promise.all([
+      apiGet<PlannerBootstrapResponse>("/api/v1/apps/classroom.group-seating-studio/bootstrap"),
+      fetchCatalog(),
+      plannerState.getResumableDraft().then((draft) => {
+        resumableDraft.value = draft;
+      }),
+    ]);
   } catch (error: unknown) {
     bootstrapError.value = error instanceof Error ? error.message : "Kunde inte ladda Klassrumskartan.";
   } finally {
@@ -106,21 +107,45 @@ onMounted(async () => {
 });
 
 async function startPlanning(): Promise<void> {
-  if (!selectedRoster.value || !selectedTemplate.value || !selectedLessonMode.value) {
+  if (!selectedRoster.value || !selectedTemplate.value) {
     return;
   }
 
-  await plannerState.createDraft(
-    selectedRoster.value.id,
-    selectedTemplate.value.id,
-    selectedLessonMode.value.id,
-  );
-  isPlannerOpen.value = true;
+  plannerActionError.value = null;
+  try {
+    await plannerState.resolveDraft(selectedRoster.value.id, selectedTemplate.value.id);
+    resumableDraft.value = await plannerState.getResumableDraft();
+    isPlannerOpen.value = true;
+  } catch (error: unknown) {
+    plannerActionError.value =
+      error instanceof Error ? error.message : "Kunde inte öppna planeringen just nu.";
+  }
 }
 
-function resetToSelection(): void {
-  isPlannerOpen.value = false;
-  plannerState.clearWorkspace();
+async function resetToSelection(): Promise<void> {
+  plannerActionError.value = null;
+  try {
+    await plannerState.abandonDraft();
+    resumableDraft.value = await plannerState.getResumableDraft();
+    isPlannerOpen.value = false;
+  } catch (error: unknown) {
+    plannerActionError.value =
+      error instanceof Error ? error.message : "Kunde inte lämna planeringen just nu.";
+  }
+}
+
+async function discardResumableDraft(): Promise<void> {
+  if (!resumableDraft.value) {
+    return;
+  }
+  plannerActionError.value = null;
+  try {
+    await plannerState.abandonDraft(resumableDraft.value.draft.id);
+    resumableDraft.value = await plannerState.getResumableDraft();
+  } catch (error: unknown) {
+    plannerActionError.value =
+      error instanceof Error ? error.message : "Kunde inte avsluta utkastet just nu.";
+  }
 }
 
 function upsertRoster(roster: Roster): void {
@@ -189,7 +214,7 @@ function openTemplateEdit(template: RoomTemplate): void {
           Klassrumskartan
         </h1>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Planera grupper och sittplatser, slumpa fram en första version, och bygg vidare med regler som kan togglas på eller av när den regelstyrda motorn växer i kommande stories.
+          Välj klass och klassrum, öppna planeringen direkt, och jobba vidare med grupper eller sittplatser utan att behöva ta ställning till alla avancerade funktioner först.
         </p>
       </div>
     </header>
@@ -210,17 +235,24 @@ function openTemplateEdit(template: RoomTemplate): void {
       </div>
     </div>
 
+    <div
+      v-else-if="plannerActionError"
+      class="system-message system-message-error"
+    >
+      <div class="system-message-content">
+        {{ plannerActionError }}
+      </div>
+    </div>
+
     <PlannerSelectionGate
-      v-else-if="!isPlannerOpen"
-      :lesson-modes="lessonModes"
+      v-if="!isBootstrapping && !bootstrapError && !isPlannerOpen"
       :available-rosters="availableRosters"
       :available-templates="availableTemplates"
-      :selected-lesson-mode-id="selectedLessonModeId"
       :selected-roster-id="selectedRosterId"
       :selected-template-id="selectedTemplateId"
+      :resumable-draft="resumableDraft"
       :is-loading-catalog="isLoadingCatalog"
       :can-start-planning="canStartPlanning"
-      @select-lesson-mode="selectedLessonModeId = $event"
       @select-roster="selectedRosterId = $event"
       @select-template="selectedTemplateId = $event"
       @create-roster="openRosterCreate"
@@ -228,11 +260,12 @@ function openTemplateEdit(template: RoomTemplate): void {
       @create-template="openTemplateCreate"
       @edit-template="openTemplateEdit"
       @start-planning="startPlanning"
+      @resume-draft="resumeDraft"
+      @discard-resumable-draft="discardResumableDraft"
     />
 
     <PlannerWorkspaceShell
-      v-else
-      :selected-lesson-mode-name="selectedLessonMode?.name ?? plannerState.draft?.lesson_mode_id ?? ''"
+      v-if="!isBootstrapping && !bootstrapError && isPlannerOpen"
       @reset-selection="resetToSelection"
     />
 

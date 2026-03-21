@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     DraftWorkspace,
     PlanDraft,
+    PlanDraftStatus,
     SuggestionList,
     ValidationResult,
 )
@@ -43,10 +44,24 @@ async def _load_workspace_context(
     drafts: PlanDraftRepositoryProtocol,
     rosters: RosterRepositoryProtocol,
     templates: RoomTemplateRepositoryProtocol,
+    require_active: bool = False,
 ) -> tuple[DraftWorkspace, ClassroomPlannerWorkspace]:
     workspace = await drafts.get_workspace(draft_id=draft_id)
     if not workspace or workspace.draft.owner_user_id != owner_user_id:
         raise not_found("PlanDraft", str(draft_id))
+    if require_active and workspace.draft.status != PlanDraftStatus.ACTIVE:
+        raise DomainError(
+            code=ErrorCode.CONFLICT,
+            message=(
+                "Det här utkastet är inte längre aktivt. "
+                "Gå tillbaka till startsidan och öppna planeringen igen."
+            ),
+            details={
+                "draft_id": str(workspace.draft.id),
+                "status": workspace.draft.status.value,
+                "reason": "inactive_draft",
+            },
+        )
     roster = await rosters.get_by_id(roster_id=workspace.draft.roster_id)
     if not roster or roster.owner_user_id != owner_user_id:
         raise not_found("Roster", str(workspace.draft.roster_id))
@@ -86,6 +101,7 @@ class ValidateDraftHandler:
             drafts=self._drafts,
             rosters=self._rosters,
             templates=self._templates,
+            require_active=True,
         )
         return validate_workspace(workspace=workspace)
 
@@ -112,6 +128,7 @@ class GenerateSuggestionsHandler:
             drafts=self._drafts,
             rosters=self._rosters,
             templates=self._templates,
+            require_active=True,
         )
         return build_profile_suggestions(workspace=workspace, generated_at=self._clock.now())
 
@@ -147,6 +164,7 @@ class ApplySuggestionHandler:
             drafts=self._drafts,
             rosters=self._rosters,
             templates=self._templates,
+            require_active=True,
         )
         if expected_revision is not None and workspace.draft.revision != expected_revision:
             raise DomainError(
@@ -215,6 +233,7 @@ class RandomizeDraftHandler:
             drafts=self._drafts,
             rosters=self._rosters,
             templates=self._templates,
+            require_active=True,
         )
         if expected_revision is not None and workspace.draft.revision != expected_revision:
             raise DomainError(
@@ -277,6 +296,7 @@ class FinalizeDraftHandler:
             drafts=self._drafts,
             rosters=self._rosters,
             templates=self._templates,
+            require_active=True,
         )
         validation = validate_workspace(workspace=workspace)
         hard_findings = [

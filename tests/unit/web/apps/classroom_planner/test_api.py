@@ -5,18 +5,20 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner import (
-    CreateDraftHandler,
+    AbandonDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
     GetBootstrapHandler,
     GetDraftHandler,
+    GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    ResolveDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
 )
@@ -25,6 +27,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     GroupAssignment,
     LessonModePreset,
     PlanDraft,
+    PlanDraftStatus,
+    ResumablePlanDraft,
     RoomTemplate,
     Roster,
     Seat,
@@ -354,44 +358,6 @@ async def test_delete_template_calls_handler():
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_draft_calls_handler():
-    user = make_user(role=Role.USER)
-    handler = AsyncMock(spec=CreateDraftHandler)
-    req = api.CreatePlanDraftRequest(
-        roster_id=uuid4(),
-        template_id=uuid4(),
-        lesson_mode_id="seating",
-    )
-    now = datetime.now(timezone.utc)
-    draft = PlanDraft(
-        id=uuid4(),
-        owner_user_id=user.id,
-        roster_id=req.roster_id,
-        template_id=req.template_id,
-        lesson_mode_id=req.lesson_mode_id,
-        revision=0,
-        created_at=now,
-        updated_at=now,
-    )
-    handler.handle.return_value = draft
-
-    result = await _unwrap_dishka(api.create_draft)(
-        request=req,
-        handler=handler,
-        user=user,
-    )
-
-    assert result.id == draft.id
-    handler.handle.assert_awaited_once_with(
-        owner_user_id=user.id,
-        roster_id=req.roster_id,
-        template_id=req.template_id,
-        lesson_mode_id=req.lesson_mode_id,
-    )
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
 async def test_get_draft_returns_from_handler():
     user = make_user(role=Role.USER)
     handler = AsyncMock(spec=GetDraftHandler)
@@ -403,7 +369,9 @@ async def test_get_draft_returns_from_handler():
         roster_id=uuid4(),
         template_id=uuid4(),
         lesson_mode_id="seating",
+        status=PlanDraftStatus.ACTIVE,
         revision=0,
+        last_opened_at=now,
         created_at=now,
         updated_at=now,
     )
@@ -437,7 +405,9 @@ async def test_update_draft_calls_handler():
         roster_id=uuid4(),
         template_id=uuid4(),
         lesson_mode_id="seating",
+        status=PlanDraftStatus.ACTIVE,
         revision=1,
+        last_opened_at=now,
         created_at=now,
         updated_at=now,
     )
@@ -463,3 +433,110 @@ async def test_update_draft_calls_handler():
         pair_constraints=None,
         planning_profile=None,
     )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_resolve_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=ResolveDraftHandler)
+    req = api.ResolvePlanDraftRequest(
+        roster_id=uuid4(),
+        template_id=uuid4(),
+    )
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=user.id,
+        roster_id=req.roster_id,
+        template_id=req.template_id,
+        lesson_mode_id="group_work",
+        status=PlanDraftStatus.ACTIVE,
+        revision=0,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = draft
+
+    result = await _unwrap_dishka(api.resolve_draft)(
+        request=req,
+        handler=handler,
+        user=user,
+    )
+
+    assert result.id == draft.id
+    handler.handle.assert_awaited_once_with(
+        owner_user_id=user.id,
+        roster_id=req.roster_id,
+        template_id=req.template_id,
+        lesson_mode_id=None,
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_abandon_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=AbandonDraftHandler)
+    draft_id = uuid4()
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="group_work",
+        status=PlanDraftStatus.ABANDONED,
+        revision=1,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = draft
+
+    result = await _unwrap_dishka(api.abandon_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        user=user,
+    )
+
+    assert result.id == draft_id
+    assert result.status == PlanDraftStatus.ABANDONED.value
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_resumable_draft_returns_serialized_payload():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=GetResumableDraftHandler)
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="group_work",
+        status=PlanDraftStatus.ACTIVE,
+        revision=3,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = ResumablePlanDraft(
+        draft=draft,
+        roster_name="SA24D",
+        template_name="Sal 101",
+    )
+
+    result = await _unwrap_dishka(api.get_resumable_draft)(
+        handler=handler,
+        user=user,
+    )
+
+    assert result is not None
+    assert result.draft.id == draft.id
+    assert result.roster_name == "SA24D"
+    assert result.template_name == "Sal 101"
+    handler.handle.assert_awaited_once_with(owner_user_id=user.id)

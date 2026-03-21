@@ -7,8 +7,6 @@
  * vocabulary for hydration, autosave, suggestions, randomization, and snapshots.
  */
 
-export const CLASSROOM_PLANNER_DRAFT_SESSION_KEY = "classroom_planner_active_draft_id";
-
 export type LessonMode = {
   id: string;
   name: string;
@@ -118,8 +116,16 @@ export type PlanDraft = {
   roster_id: string;
   template_id: string;
   lesson_mode_id: string;
+  status: "active" | "abandoned" | "superseded";
   revision: number;
   engine_metadata?: SuggestionEngineMetadata | null;
+  last_opened_at: string;
+};
+
+export type ResumablePlanDraft = {
+  draft: PlanDraft;
+  roster_name: string;
+  template_name: string;
 };
 
 export type DraftWorkspaceResponse = {

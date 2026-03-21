@@ -2,11 +2,13 @@
 type: adr
 id: ADR-0070
 title: "Klassrumskartan Slice 2 Engine, Constraints, and Snapshot Contract"
-status: accepted
+status: superseded
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-20
-links: ["ADR-0069", "EPIC-23", "EPIC-24", "REV-EPIC-24"]
+updated: 2026-03-21
+links: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23", "EPIC-24", "REV-EPIC-24"]
+superseded_by: ["ADR-0071", "ADR-0072"]
 ---
 
 ## Context
@@ -14,6 +16,12 @@ links: ["ADR-0069", "EPIC-23", "EPIC-24", "REV-EPIC-24"]
 Slice 1 established Klassrumskartan as a manual planner with reusable rosters and room templates, draft persistence, and synchronized group/seat views. Slice 2 adds teacher-only planning metadata, rule toggles, randomization, explainable suggestion generation, authoritative validation, and immutable snapshot finalization.
 
 We need one contract that keeps the backend as the rule authority, preserves draft-scoped planning inputs separately from roster identity, and keeps future export stories aligned with the same room/fixture model.
+
+This ADR is superseded as the governing teacher-facing direction. Its advanced engine/snapshot
+material remains useful as backend groundwork, but the visible product direction is now defined by:
+
+- ADR-0071 for fundamentals-first workflow and saved artifacts
+- ADR-0072 for class-first workspace hierarchy and separate draft kinds
 
 ## Decision
 

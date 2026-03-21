@@ -6,11 +6,17 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-20
-links: ["PRD-group-seating-studio-v0.1", "ADR-0023", "EPIC-23"]
+updated: 2026-03-21
+links: ["PRD-group-seating-studio-v0.3", "ADR-0023", "ADR-0071", "ADR-0072", "EPIC-23", "EPIC-24"]
 ---
 
 ## Context
 The "Klassrumskartan" (Group Seating Studio) app requires a complex planning model that typical scripts lack. We need a domain model that separates *drafting* from *final records*, and decouples *seating* from *grouping*. The data requires explicit invariants and relational boundaries.
+
+Later product-direction work in ADR-0071 and ADR-0072 refines the teacher-facing workflow into a
+class-first model with separate grouping and seating draft kinds. That later workflow update does
+not invalidate the normalized persistence principles in this ADR; it refines how the teacher uses
+them.
 
 ## Decision
 
@@ -35,7 +41,10 @@ Reusable assets (Rosters, RoomTemplates) will utilize proper backend CRUD. Lesso
 - A seat has **at most one** student **within a draft/snapshot context**.
 
 ### 3. Decouple Groups from Seats
-**Decision**: `GroupAssignment` and `SeatAssignment` are distinct assignment models. Dragging in the UI targets one explicit assignment axis at a time. The room view and group view are just two projections of the same normalized draft state.
+**Decision**: `GroupAssignment` and `SeatAssignment` are distinct assignment models. Dragging in the
+UI targets one explicit assignment axis at a time. Later workflow slices may expose those
+assignments through separate grouping and seating draft kinds, but the underlying assignment axes
+remain distinct and normalized.
 
 ### 4. Separate View Models
 **Decision**:

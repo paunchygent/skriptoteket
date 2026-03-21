@@ -7,21 +7,21 @@
  * points, and responsive onboarding copy outside the live planner workspace.
  */
 
-import type { LessonMode, RoomTemplate, Roster } from "../classroomPlannerTypes";
+import { computed } from "vue";
 
-defineProps<{
-  lessonModes: LessonMode[];
+import type { ResumablePlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
+
+const props = defineProps<{
   availableRosters: Roster[];
   availableTemplates: RoomTemplate[];
-  selectedLessonModeId: string | null;
   selectedRosterId: string | null;
   selectedTemplateId: string | null;
+  resumableDraft: ResumablePlanDraft | null;
   isLoadingCatalog: boolean;
   canStartPlanning: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "select-lesson-mode", lessonModeId: string): void;
   (e: "select-roster", rosterId: string): void;
   (e: "select-template", templateId: string): void;
   (e: "create-roster"): void;
@@ -29,74 +29,101 @@ const emit = defineEmits<{
   (e: "create-template"): void;
   (e: "edit-template", template: RoomTemplate): void;
   (e: "start-planning"): void;
+  (e: "resume-draft"): void;
+  (e: "discard-resumable-draft"): void;
 }>();
+
+const selectedRoster = computed(() => {
+  return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;
+});
+
+const selectedTemplate = computed(() => {
+  return props.availableTemplates.find((template) => template.id === props.selectedTemplateId) ?? null;
+});
+
+function capacityLabel(template: RoomTemplate): string | null {
+  if (!selectedRoster.value) {
+    return null;
+  }
+
+  const seatCount = template.seats.length;
+  const studentCount = selectedRoster.value.students.length;
+  if (seatCount >= studentCount) {
+    return `${studentCount} elever passar i ${seatCount} platser`;
+  }
+  return `${studentCount} elever men bara ${seatCount} platser`;
+}
 </script>
 
 <template>
   <section class="space-y-6">
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-      <article class="space-y-4 border border-navy bg-white p-5 shadow-brutal-sm">
-        <div class="border-b border-navy/20 pb-3">
+    <article class="space-y-4 border border-navy bg-white p-5 shadow-brutal-sm">
+      <div class="flex flex-col gap-3 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
             Startyta
           </p>
           <h2 class="font-serif text-2xl text-navy">
-            Välj planeringsläge
+            Välj klass och klassrum
           </h2>
         </div>
+        <div class="text-sm text-navy/70">
+          Planeringen öppnas så snart du har valt båda.
+        </div>
+      </div>
 
-        <div class="flex flex-wrap gap-3">
+      <div
+        v-if="selectedRoster && selectedTemplate"
+        class="grid gap-3 border border-success/30 bg-success/10 p-4 text-sm text-navy md:grid-cols-[minmax(0,1fr)_auto]"
+      >
+        <div class="space-y-1">
+          <div class="font-semibold">
+            {{ selectedRoster.name }} · {{ selectedTemplate.name }}
+          </div>
+          <div class="text-navy/70">
+            {{ selectedRoster.students.length }} elever · {{ selectedTemplate.seats.length }} platser
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-cta"
+          :disabled="!canStartPlanning"
+          @click="emit('start-planning')"
+        >
+          Öppna planeringen
+        </button>
+      </div>
+
+      <div
+        v-if="resumableDraft"
+        class="grid gap-3 border border-navy/20 bg-canvas p-4 text-sm text-navy md:grid-cols-[minmax(0,1fr)_auto]"
+      >
+        <div class="space-y-1">
+          <div class="font-semibold">
+            Fortsätt senaste utkastet
+          </div>
+          <div class="text-navy/70">
+            {{ resumableDraft.roster_name }} · {{ resumableDraft.template_name }}
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 md:justify-end">
           <button
-            v-for="mode in lessonModes"
-            :key="mode.id"
             type="button"
-            class="btn-ghost"
-            :class="selectedLessonModeId === mode.id ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-canvas shadow-none'"
-            @click="emit('select-lesson-mode', mode.id)"
+            class="btn-ghost border-navy/30 bg-white shadow-none"
+            @click="emit('discard-resumable-draft')"
           >
-            {{ mode.name }}
+            Avsluta utkast
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none"
+            @click="emit('resume-draft')"
+          >
+            Fortsätt
           </button>
         </div>
-
-        <div class="grid gap-3 md:grid-cols-2">
-          <div class="border border-navy/20 bg-canvas p-3">
-            <div class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Slumpa
-            </div>
-            <div class="mt-1 text-sm leading-relaxed text-navy/80">
-              Första utkast via slumpmässig grupp- och sittplatsfördelning.
-            </div>
-          </div>
-          <div class="border border-navy/20 bg-canvas p-3">
-            <div class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Regelmotor
-            </div>
-            <div class="mt-1 text-sm leading-relaxed text-navy/80">
-              Aktivera eller stäng av elevmetadata, parregler, zonpreferenser och historikregler per utkast.
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="space-y-4 border border-navy bg-white p-5 shadow-brutal-sm">
-        <div class="border-b border-navy/20 pb-3">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Slice 2
-          </p>
-          <h2 class="font-serif text-2xl text-navy">
-            Responsiv whiteboard-planering
-          </h2>
-        </div>
-        <div class="grid gap-3 md:grid-cols-2">
-          <div class="border border-navy/20 bg-canvas p-3 text-sm leading-relaxed text-navy/80">
-            Klassrumsmallar stöder nu whiteboard, lärarbord, fönster och dörr för snyggare visuella planer.
-          </div>
-          <div class="border border-navy/20 bg-canvas p-3 text-sm leading-relaxed text-navy/80">
-            Klasslistor och klassrum kan skapas, redigeras och raderas direkt från startytan.
-          </div>
-        </div>
-      </article>
-    </div>
+      </div>
+    </article>
 
     <div class="grid gap-6 xl:grid-cols-2">
       <article class="space-y-4 border border-navy bg-white p-5 shadow-brutal-sm">
@@ -139,26 +166,27 @@ const emit = defineEmits<{
           <article
             v-for="roster in availableRosters"
             :key="roster.id"
-            class="border p-4 transition-shadow"
+            class="cursor-pointer border p-4 transition-shadow"
             :class="selectedRosterId === roster.id ? 'border-burgundy bg-burgundy/10 shadow-brutal-sm' : 'border-navy/20 bg-white hover:shadow-brutal-sm'"
+            role="button"
+            tabindex="0"
+            @click="emit('select-roster', roster.id)"
+            @keydown.enter.prevent="emit('select-roster', roster.id)"
+            @keydown.space.prevent="emit('select-roster', roster.id)"
           >
             <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <button
-                type="button"
-                class="min-w-0 text-left"
-                @click="emit('select-roster', roster.id)"
-              >
+              <div class="min-w-0 text-left">
                 <h3 class="truncate text-lg font-semibold text-navy">
                   {{ roster.name }}
                 </h3>
                 <p class="mt-1 text-sm text-navy/70">
                   {{ roster.students.length }} elever
                 </p>
-              </button>
+              </div>
               <button
                 type="button"
                 class="btn-ghost border-navy/30 bg-canvas shadow-none"
-                @click="emit('edit-roster', roster)"
+                @click.stop="emit('edit-roster', roster)"
               >
                 Redigera
               </button>
@@ -207,26 +235,33 @@ const emit = defineEmits<{
           <article
             v-for="template in availableTemplates"
             :key="template.id"
-            class="border p-4 transition-shadow"
+            class="cursor-pointer border p-4 transition-shadow"
             :class="selectedTemplateId === template.id ? 'border-burgundy bg-burgundy/10 shadow-brutal-sm' : 'border-navy/20 bg-white hover:shadow-brutal-sm'"
+            role="button"
+            tabindex="0"
+            @click="emit('select-template', template.id)"
+            @keydown.enter.prevent="emit('select-template', template.id)"
+            @keydown.space.prevent="emit('select-template', template.id)"
           >
             <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <button
-                type="button"
-                class="min-w-0 text-left"
-                @click="emit('select-template', template.id)"
-              >
+              <div class="min-w-0 text-left">
                 <h3 class="truncate text-lg font-semibold text-navy">
                   {{ template.name }}
                 </h3>
                 <p class="mt-1 text-sm text-navy/70">
                   {{ template.seats.length }} platser · {{ template.fixtures.length }} fixturer
                 </p>
-              </button>
+                <p
+                  v-if="capacityLabel(template)"
+                  class="mt-1 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55"
+                >
+                  {{ capacityLabel(template) }}
+                </p>
+              </div>
               <button
                 type="button"
                 class="btn-ghost border-navy/30 bg-canvas shadow-none"
-                @click="emit('edit-template', template)"
+                @click.stop="emit('edit-template', template)"
               >
                 Redigera
               </button>
@@ -234,17 +269,6 @@ const emit = defineEmits<{
           </article>
         </div>
       </article>
-    </div>
-
-    <div class="flex justify-center border-t border-navy/20 pt-4">
-      <button
-        type="button"
-        class="btn-cta px-8 py-4 text-sm"
-        :disabled="!canStartPlanning"
-        @click="emit('start-planning')"
-      >
-        Öppna planeringsytan
-      </button>
     </div>
   </section>
 </template>

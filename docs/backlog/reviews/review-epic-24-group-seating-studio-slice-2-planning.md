@@ -5,18 +5,25 @@ title: "Review: Klassrumskartan Slice 2 Planning"
 status: approved
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-20
+updated: 2026-03-21
 reviewer: "external-architect"
 epic: EPIC-24
 adrs:
   - ADR-0069
   - ADR-0070
+  - ADR-0071
+  - ADR-0072
 stories: []
 ---
 
 ## TL;DR
 
-Slice 2 should build on the approved Slice 1 review record in `REV-EPIC-23` and move Klassrumskartan toward a backend-authoritative planning engine. The implementation direction is approved: typed draft-scoped constraints, explicit validate/suggest/randomize/finalize endpoints, immutable deep-copy snapshots, richer room fixtures, and responsive teacher-first planner UI.
+The codebase is salvageable because ADR-0069 already established the right normalized core. EPIC-24
+should therefore not reset the domain. It should reset the visible UX, draft lifecycle, and
+saved-output model so the teacher workflow becomes clear again before more advanced planning logic
+is exposed. The later refinement is class-first: classes become the teacher anchor, classrooms
+become secondary context, and grouping/seating become separate draft kinds rather than one blended
+planner task.
 
 ## Scope of this review
 
@@ -27,9 +34,40 @@ This document is intentionally forward-looking. Slice 1 retrospective findings a
 
 ## Approved architectural guidance
 
+### Preserve current strengths
+
+Approved: the current normalized draft core and most of the backend layering are worth keeping.
+
+- domain rule logic remains pure
+- application handlers continue to orchestrate repositories and UoW
+- curated-app bespoke endpoints remain the right web boundary
+- repositories continue to flush rather than commit
+
+### 0. Fundamentals-first reset
+
+Approved: EPIC-24 is a fundamentals-recovery epic, not a “show the whole solver surface” epic.
+
+- Landing page first
+- class first, classroom secondary
+- separate grouping and seating modes
+- explicit teacher-owned saved outputs
+- hidden advanced controls until separately approved
+
+### 0b. Class-first anchor and draft kinds
+
+Approved: the teacher-facing workflow should be class-first, with separate grouping and seating
+draft kinds.
+
+- `Class` becomes the primary workspace anchor.
+- `Classroom` becomes secondary reusable context.
+- Seating is classroom-bound.
+- Grouping may be classroom-aware or classroom-agnostic.
+- One active draft exists per class per draft kind.
+- Starting a new draft of the same kind demotes the previous one to history automatically.
+
 ### 1. Suggestion engine location
 
-Approved: authoritative rule evaluation lives server-side in Python.
+Approved with changed priority: authoritative rule evaluation may live server-side in Python, but it is no longer part of the default visible workflow for the fundamentals stories.
 
 - Domain layer owns pure scoring/evaluation logic.
 - Application layer loads draft, roster, template, and constraint context.
@@ -38,45 +76,64 @@ Approved: authoritative rule evaluation lives server-side in Python.
 
 ### 2. Constraint model
 
-Approved: draft-scoped typed constraint aggregate separated from roster identity and student card presentation.
+Approved long-term: draft-scoped typed constraint aggregate separated from roster identity and student card presentation.
 
 - `StudentPlanningMeta`
 - `PairConstraint`
 - `PlanningProfile`
 
-Dedicated persistence is preferred and now considered the canonical Slice 2 direction.
+Dedicated persistence remains preferred, but the default teacher UI must not expose these concepts until later approved stories.
 
 ### 3. Validation UX
 
-Approved: hybrid.
+Approved long-term: hybrid.
 
-- Cheap immediate client hints for local drag/drop ergonomics.
-- Authoritative backend `validate` pass for hard/soft findings.
-- `finalize` must re-run the same authoritative validation before snapshot creation.
+- Cheap immediate client hints remain acceptable.
+- Authoritative backend validation can remain as advanced groundwork.
+- Mode-specific save flows must not be blocked by unrelated opposite-axis findings in the fundamentals stories.
 
 ### 4. Snapshot finalization
 
-Approved: transactional backend finalization that deep-copies the full arrangement context into immutable `ArrangementSnapshot` records.
+Approved as a separate advanced concern, not as the teacher-facing save model for groupings and seating arrangements.
 
-Snapshots must include copied roster/template content, groups, assignments, constraints, planning profile, and engine metadata, rather than pointing at mutable assets as historical truth.
+For EPIC-24 fundamentals, teacher-facing saved outputs should instead become named artifacts with immutable revisions.
 
 ### 5. Random assignment and future rule toggles
 
-Approved: an explicit `Slumpa` action may randomize all current students into groups and seats as a fast teacher starting point. Future sorting rules should remain explicit toggles on `PlanningProfile`, allowing each rule family to be switched on or off independently.
+Approved with changed semantics:
+
+- `Slumpa` remains valuable, but it should operate inside the active teacher mode.
+- In grouping mode, it randomizes groups.
+- In seating mode, it randomizes seats.
+- Future sorting rules remain possible, but they belong in separate settings, not in the main view.
 
 ### 6. Responsive whiteboard UI
 
-Approved: the planner should follow the existing HuleEdu brutalist academic design rules, use responsive breakpoint-aware composition, and render room fixtures that make later PDF/XLSX export stories visually credible.
+Approved: the planner should follow the existing HuleEdu brutalist academic design rules, use responsive breakpoint-aware composition, and render room fixtures that make later PDF/XLSX export stories visually credible. The visible workflow, however, must remain simpler than the earlier Slice 2 shell.
 
 ## Requirements for EPIC-24
 
-- Add workspace hydration and same-session draft restore.
-- Persist draft groups instead of relying on `group_count`.
-- Add teacher-only metadata editing surfaces.
-- Add edit/delete flows for reusable classes and classrooms.
-- Add fixtures for `whiteboard`, `teacher_desk`, `window`, and `door`.
-- Add backend validation, suggestions, suggestion apply, randomize, finalize, and snapshot read endpoints.
-- Keep optimistic concurrency and conflict reload UX intact as the planner surface expands.
+- Keep the normalized draft core from ADR-0069.
+- Preserve the existing domain/application/UoW/repository layering strengths while the workflow contract is reshaped.
+- Reassert the landing page as the default first interaction and make resume explicit.
+- Split the visible planner into separate grouping and seating modes.
+- Add draft lifecycle semantics so old drafts are not silently orphaned.
+- Make the class, not the class/classroom pair, the primary teacher entry point.
+- Separate grouping drafts from seating drafts in the teacher-facing workflow.
+- Split randomize/save flows by teacher mode.
+- Introduce named saved outputs for groupings and seating arrangements, with edit/delete behavior and vault projection.
+- Attach active work and saved history to the class.
+- Prefer saved seating history over abandoned drafts as future smart-placement input.
+- Keep advanced validation/suggestions/finalization hidden from the default fundamentals workflow until later approved stories.
+- Carry the remaining implementation-shaping directives through technical backlog items:
+  - class-first workspace
+  - route-level planner modes
+  - workspace/store split by teacher task
+  - narrow dirty-slice autosave patches
+  - atomic compare-and-swap revision checks
+  - mode-specific grouping/seating endpoints
+  - deletion safeguards for assets backing active drafts
+  - router/web-layer standards cleanup
 
 ## Decision approvals
 

@@ -7,6 +7,7 @@ mutable draft workspaces, and immutable arrangement snapshots.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -14,6 +15,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ArrangementSnapshot,
     DraftWorkspace,
     PlanDraft,
+    PlanDraftStatus,
+    ResumablePlanDraft,
     RoomTemplate,
     Roster,
 )
@@ -34,12 +37,43 @@ class PlanDraftRepositoryProtocol(Protocol):
         """List draft roots owned by a specific user."""
         ...
 
+    async def get_active_by_owner(self, *, owner_user_id: UUID) -> PlanDraft | None:
+        """Load the current active draft owned by a specific user."""
+        ...
+
+    async def acquire_owner_lifecycle_lock(self, *, owner_user_id: UUID) -> None:
+        """Serialize draft lifecycle transitions for a specific owner."""
+        ...
+
+    async def get_latest_resumable(self, *, owner_user_id: UUID) -> ResumablePlanDraft | None:
+        """Load the latest resumable draft plus landing-page display labels."""
+        ...
+
+    async def has_active_for_roster(self, *, owner_user_id: UUID, roster_id: UUID) -> bool:
+        """Return whether an active draft still depends on a roster."""
+        ...
+
+    async def has_active_for_template(self, *, owner_user_id: UUID, template_id: UUID) -> bool:
+        """Return whether an active draft still depends on a room template."""
+        ...
+
     async def save(self, *, draft: PlanDraft) -> None:
         """Save or update a draft root record."""
         ...
 
     async def save_workspace(self, *, workspace: DraftWorkspace) -> None:
         """Save or update a full draft workspace aggregate."""
+        ...
+
+    async def mark_status(
+        self,
+        *,
+        draft_id: UUID,
+        owner_user_id: UUID,
+        status: PlanDraftStatus,
+        updated_at: datetime,
+    ) -> PlanDraft | None:
+        """Update the lifecycle status for one owner-scoped draft."""
         ...
 
     async def delete(self, *, draft_id: UUID) -> None:

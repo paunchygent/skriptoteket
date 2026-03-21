@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -23,6 +23,14 @@ class PlanDraftModel(Base):
     """Persist the mutable root draft record."""
 
     __tablename__ = "classroom_planner_plan_drafts"
+    __table_args__ = (
+        Index(
+            "uq_cp_active_draft_owner",
+            "owner_user_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     owner_user_id: Mapped[UUID] = mapped_column(
@@ -42,8 +50,19 @@ class PlanDraftModel(Base):
         nullable=False,
     )
     lesson_mode_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(32),
+        server_default="active",
+        nullable=False,
+        index=True,
+    )
     revision: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)
     engine_metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    last_opened_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
 
     groups: Mapped[list[DraftGroupModel]] = relationship(
         "DraftGroupModel",

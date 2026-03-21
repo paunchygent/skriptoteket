@@ -15,8 +15,11 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RoomTemplate,
     Seat,
 )
-from skriptoteket.domain.errors import not_found, validation_error
-from skriptoteket.protocols.classroom_planner import RoomTemplateRepositoryProtocol
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
+from skriptoteket.protocols.classroom_planner import (
+    PlanDraftRepositoryProtocol,
+    RoomTemplateRepositoryProtocol,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -147,14 +150,32 @@ class UpdateRoomTemplateHandler:
 class DeleteRoomTemplateHandler:
     """Delete a reusable room template asset."""
 
-    def __init__(self, uow: UnitOfWorkProtocol, templates: RoomTemplateRepositoryProtocol) -> None:
+    def __init__(
+        self,
+        uow: UnitOfWorkProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+    ) -> None:
         self._uow = uow
         self._templates = templates
+        self._drafts = drafts
 
     async def handle(self, *, template_id: UUID, owner_user_id: UUID) -> None:
         template = await self._templates.get_by_id(template_id=template_id)
         if not template or template.owner_user_id != owner_user_id:
             raise not_found("RoomTemplate", str(template_id))
+        if await self._drafts.has_active_for_template(
+            owner_user_id=owner_user_id,
+            template_id=template_id,
+        ):
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message=(
+                    "Du kan inte radera klassrummet eftersom ett aktivt utkast "
+                    "fortfarande använder det."
+                ),
+                details={"template_id": str(template_id), "reason": "active_draft_dependency"},
+            )
 
         async with self._uow:
             await self._templates.delete(template_id=template_id)

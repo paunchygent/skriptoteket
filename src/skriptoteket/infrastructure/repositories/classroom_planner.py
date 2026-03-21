@@ -7,9 +7,10 @@ arrangement snapshots without leaking ORM details into the application layer.
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, exists, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -21,8 +22,10 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PairConstraint,
     PairConstraintKind,
     PlanDraft,
+    PlanDraftStatus,
     PlanningProfile,
     PlanningProfileKind,
+    ResumablePlanDraft,
     RoomFixture,
     RoomFixtureType,
     RoomTemplate,
@@ -108,8 +111,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             roster_id=model.roster_id,
             template_id=model.template_id,
             lesson_mode_id=model.lesson_mode_id,
+            status=PlanDraftStatus(model.status),
             revision=model.revision,
             engine_metadata=engine_metadata,
+            last_opened_at=model.last_opened_at,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -197,16 +202,84 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
         return [self._to_draft(model) for model in result.scalars().all()]
 
+    async def get_active_by_owner(self, *, owner_user_id: UUID) -> PlanDraft | None:
+        result = await self._session.execute(
+            select(PlanDraftModel)
+            .where(
+                PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.status == PlanDraftStatus.ACTIVE.value,
+            )
+            .order_by(PlanDraftModel.last_opened_at.desc(), PlanDraftModel.updated_at.desc())
+            .limit(1)
+        )
+        model = result.scalar_one_or_none()
+        return self._to_draft(model) if model else None
+
+    async def acquire_owner_lifecycle_lock(self, *, owner_user_id: UUID) -> None:
+        lock_key = owner_user_id.int & 0x7FFFFFFFFFFFFFFF
+        await self._session.execute(
+            text("SELECT pg_advisory_xact_lock(:lock_key)"),
+            {"lock_key": lock_key},
+        )
+
+    async def get_latest_resumable(self, *, owner_user_id: UUID) -> ResumablePlanDraft | None:
+        result = await self._session.execute(
+            select(PlanDraftModel, RosterModel.name, RoomTemplateModel.name)
+            .join(RosterModel, RosterModel.id == PlanDraftModel.roster_id)
+            .join(RoomTemplateModel, RoomTemplateModel.id == PlanDraftModel.template_id)
+            .where(
+                PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.status == PlanDraftStatus.ACTIVE.value,
+            )
+            .order_by(PlanDraftModel.last_opened_at.desc(), PlanDraftModel.updated_at.desc())
+            .limit(1)
+        )
+        row = result.first()
+        if row is None:
+            return None
+        model, roster_name, template_name = row
+        return ResumablePlanDraft(
+            draft=self._to_draft(model),
+            roster_name=roster_name,
+            template_name=template_name,
+        )
+
+    async def has_active_for_roster(self, *, owner_user_id: UUID, roster_id: UUID) -> bool:
+        result = await self._session.execute(
+            select(
+                exists().where(
+                    PlanDraftModel.owner_user_id == owner_user_id,
+                    PlanDraftModel.roster_id == roster_id,
+                    PlanDraftModel.status == PlanDraftStatus.ACTIVE.value,
+                )
+            )
+        )
+        return bool(result.scalar())
+
+    async def has_active_for_template(self, *, owner_user_id: UUID, template_id: UUID) -> bool:
+        result = await self._session.execute(
+            select(
+                exists().where(
+                    PlanDraftModel.owner_user_id == owner_user_id,
+                    PlanDraftModel.template_id == template_id,
+                    PlanDraftModel.status == PlanDraftStatus.ACTIVE.value,
+                )
+            )
+        )
+        return bool(result.scalar())
+
     async def save(self, *, draft: PlanDraft) -> None:
         model = await self._session.get(PlanDraftModel, draft.id)
         if model:
             model.roster_id = draft.roster_id
             model.template_id = draft.template_id
             model.lesson_mode_id = draft.lesson_mode_id
+            model.status = draft.status.value
             model.revision = draft.revision
             model.engine_metadata = (
                 draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
             )
+            model.last_opened_at = draft.last_opened_at
             model.updated_at = draft.updated_at
         else:
             model = PlanDraftModel(
@@ -215,10 +288,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 template_id=draft.template_id,
                 lesson_mode_id=draft.lesson_mode_id,
+                status=draft.status.value,
                 revision=draft.revision,
                 engine_metadata=(
                     draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
                 ),
+                last_opened_at=draft.last_opened_at,
                 created_at=draft.created_at,
                 updated_at=draft.updated_at,
             )
@@ -246,10 +321,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 template_id=draft.template_id,
                 lesson_mode_id=draft.lesson_mode_id,
+                status=draft.status.value,
                 revision=draft.revision,
                 engine_metadata=(
                     draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
                 ),
+                last_opened_at=draft.last_opened_at,
                 created_at=draft.created_at,
                 updated_at=draft.updated_at,
             )
@@ -258,10 +335,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.roster_id = draft.roster_id
             model.template_id = draft.template_id
             model.lesson_mode_id = draft.lesson_mode_id
+            model.status = draft.status.value
             model.revision = draft.revision
             model.engine_metadata = (
                 draft.engine_metadata.model_dump(mode="json") if draft.engine_metadata else None
             )
+            model.last_opened_at = draft.last_opened_at
             model.updated_at = draft.updated_at
 
         await self._replace_related_collection(
@@ -319,6 +398,22 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
         self._upsert_planning_profile(model=model, profile=workspace.planning_profile)
         await self._session.flush()
+
+    async def mark_status(
+        self,
+        *,
+        draft_id: UUID,
+        owner_user_id: UUID,
+        status: PlanDraftStatus,
+        updated_at: datetime,
+    ) -> PlanDraft | None:
+        model = await self._session.get(PlanDraftModel, draft_id)
+        if model is None or model.owner_user_id != owner_user_id:
+            return None
+        model.status = status.value
+        model.updated_at = updated_at
+        await self._session.flush()
+        return self._to_draft(model)
 
     async def delete(self, *, draft_id: UUID) -> None:
         await self._session.execute(delete(PlanDraftModel).where(PlanDraftModel.id == draft_id))

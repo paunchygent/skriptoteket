@@ -10,8 +10,8 @@ from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.classroom_planner import (
+    AbandonDraftHandler,
     ApplySuggestionHandler,
-    CreateDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
@@ -21,6 +21,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetBootstrapHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
+    GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
     GetSnapshotHandler,
@@ -29,6 +30,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ListSnapshotsHandler,
     PatchDraftHandler,
     RandomizeDraftHandler,
+    ResolveDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
     ValidateDraftHandler,
@@ -413,9 +415,12 @@ class CuratedAppsProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def delete_roster_handler(
-        self, uow: UnitOfWorkProtocol, rosters: RosterRepositoryProtocol
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
     ) -> DeleteRosterHandler:
-        return DeleteRosterHandler(uow=uow, rosters=rosters)
+        return DeleteRosterHandler(uow=uow, rosters=rosters, drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
     def list_room_templates_handler(
@@ -452,12 +457,19 @@ class CuratedAppsProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def delete_room_template_handler(
-        self, uow: UnitOfWorkProtocol, templates: RoomTemplateRepositoryProtocol
+        self,
+        uow: UnitOfWorkProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
     ) -> DeleteRoomTemplateHandler:
-        return DeleteRoomTemplateHandler(uow=uow, templates=templates)
+        return DeleteRoomTemplateHandler(uow=uow, templates=templates, drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
-    def create_draft_handler(
+    def get_draft_handler(self, drafts: PlanDraftRepositoryProtocol) -> GetDraftHandler:
+        return GetDraftHandler(drafts=drafts)
+
+    @provide(scope=Scope.REQUEST)
+    def resolve_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
@@ -465,8 +477,8 @@ class CuratedAppsProvider(Provider):
         drafts: PlanDraftRepositoryProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> CreateDraftHandler:
-        return CreateDraftHandler(
+    ) -> ResolveDraftHandler:
+        return ResolveDraftHandler(
             uow=uow,
             rosters=rosters,
             templates=templates,
@@ -476,8 +488,19 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
-    def get_draft_handler(self, drafts: PlanDraftRepositoryProtocol) -> GetDraftHandler:
-        return GetDraftHandler(drafts=drafts)
+    def get_resumable_draft_handler(
+        self, drafts: PlanDraftRepositoryProtocol
+    ) -> GetResumableDraftHandler:
+        return GetResumableDraftHandler(drafts=drafts)
+
+    @provide(scope=Scope.REQUEST)
+    def abandon_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> AbandonDraftHandler:
+        return AbandonDraftHandler(uow=uow, drafts=drafts, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def get_draft_workspace_handler(

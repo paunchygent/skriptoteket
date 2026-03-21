@@ -32,7 +32,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "8a1d4c7b32ef"
+    target_revision = "d8f0d0ef2b6d"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
@@ -64,11 +64,12 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             )
             return {row[0] for row in result.fetchall()}
 
-    async def seed_pre_slice_two_draft(async_engine: AsyncEngine) -> tuple[str, str]:
+    async def seed_pre_slice_two_draft(async_engine: AsyncEngine) -> tuple[str, str, str]:
         owner_id = str(uuid4())
         roster_id = str(uuid4())
         template_id = str(uuid4())
         draft_id = str(uuid4())
+        second_draft_id = str(uuid4())
 
         async with async_engine.begin() as conn:
             await conn.execute(
@@ -173,6 +174,46 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             await conn.execute(
                 text(
                     """
+                    INSERT INTO classroom_planner_plan_drafts (
+                        id,
+                        owner_user_id,
+                        roster_id,
+                        template_id,
+                        lesson_mode_id,
+                        revision,
+                        group_count
+                    )
+                    VALUES (
+                        :id,
+                        :owner_user_id,
+                        :roster_id,
+                        :template_id,
+                        'group_work',
+                        0,
+                        1
+                    )
+                    """
+                ),
+                {
+                    "id": second_draft_id,
+                    "owner_user_id": owner_id,
+                    "roster_id": roster_id,
+                    "template_id": template_id,
+                },
+            )
+            await conn.execute(
+                text(
+                    """
+                    UPDATE classroom_planner_plan_drafts
+                    SET updated_at = now() + interval '1 minute'
+                    WHERE id = :draft_id
+                    """
+                ),
+                {"draft_id": second_draft_id},
+            )
+            await conn.execute(
+                text(
+                    """
                     INSERT INTO classroom_planner_group_assignments (draft_id, student_id, group_id)
                     VALUES (:draft_id, 's1', 'group-1'), (:draft_id, 's2', 'group-2')
                     """
@@ -180,7 +221,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                 {"draft_id": draft_id},
             )
 
-        return draft_id, owner_id
+        return draft_id, second_draft_id, owner_id
 
     async def get_backfilled_group_rows(draft_id: str) -> list[tuple[str, str, int]]:
         async with engine.connect() as conn:
@@ -212,9 +253,38 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             )
             return [row[0] for row in result.fetchall()]
 
+    async def get_owner_draft_statuses(owner_id: str) -> list[str]:
+        async with engine.connect() as conn:
+            result = await conn.execute(
+                text(
+                    """
+                    SELECT status
+                    FROM classroom_planner_plan_drafts
+                    WHERE owner_user_id = :owner_user_id
+                    ORDER BY updated_at DESC, created_at DESC
+                    """
+                ),
+                {"owner_user_id": owner_id},
+            )
+            return [row[0] for row in result.fetchall()]
+
+    async def get_index_names(table_name: str) -> set[str]:
+        async with engine.connect() as conn:
+            result = await conn.execute(
+                text(
+                    """
+                    SELECT indexname
+                    FROM pg_indexes
+                    WHERE schemaname = 'public' AND tablename = :table_name
+                    """
+                ),
+                {"table_name": table_name},
+            )
+            return {row[0] for row in result.fetchall()}
+
     try:
         run_alembic_cmd(command.upgrade, pre_slice_two_revision)
-        draft_id, owner_id = await seed_pre_slice_two_draft(engine)
+        draft_id, second_draft_id, owner_id = await seed_pre_slice_two_draft(engine)
 
         run_alembic_cmd(command.upgrade, target_revision)
 
@@ -234,7 +304,10 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
 
         assert "fixtures" in await get_columns("classroom_planner_room_templates")
         assert "engine_metadata" in await get_columns("classroom_planner_plan_drafts")
+        assert "status" in await get_columns("classroom_planner_plan_drafts")
+        assert "last_opened_at" in await get_columns("classroom_planner_plan_drafts")
         assert "group_count" not in await get_columns("classroom_planner_plan_drafts")
+        assert "uq_cp_active_draft_owner" in await get_index_names("classroom_planner_plan_drafts")
 
         backfilled_groups = await get_backfilled_group_rows(draft_id)
         assert backfilled_groups == [
@@ -245,6 +318,12 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             f"group-1-{draft_id.replace('-', '')[:8]}",
             f"group-2-{draft_id.replace('-', '')[:8]}",
         ]
+        assert await get_backfilled_group_rows(second_draft_id) == [
+            (f"group-1-{second_draft_id.replace('-', '')[:8]}", "Grupp 1", 0),
+        ]
+        owner_statuses = await get_owner_draft_statuses(owner_id)
+        assert owner_statuses.count("active") == 1
+        assert "superseded" in owner_statuses
 
         run_alembic_cmd(command.upgrade, "head")
         assert backfilled_groups == await get_backfilled_group_rows(draft_id)

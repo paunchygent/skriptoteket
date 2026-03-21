@@ -5,7 +5,6 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner import (
-    CreateDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
@@ -24,6 +23,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftWorkspace,
     GroupAssignment,
     PlanDraft,
+    PlanDraftStatus,
     RoomTemplate,
     Roster,
     Seat,
@@ -200,7 +200,9 @@ async def test_update_roster_updates_and_saves(uow, rosters, now, clock):
 
 @pytest.mark.asyncio
 async def test_delete_roster_calls_repo_delete(uow, rosters, now):
-    handler = DeleteRosterHandler(uow, rosters)
+    drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
+    drafts.has_active_for_roster.return_value = False
+    handler = DeleteRosterHandler(uow, rosters, drafts=drafts)
     owner_id = uuid4()
     roster_id = uuid4()
     roster = Roster(
@@ -301,7 +303,13 @@ async def test_update_template_updates_and_saves(uow, templates, now, clock):
 
 @pytest.mark.asyncio
 async def test_delete_template_calls_repo_delete(uow, templates, now):
-    handler = DeleteRoomTemplateHandler(uow, templates)
+    drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
+    drafts.has_active_for_template.return_value = False
+    handler = DeleteRoomTemplateHandler(
+        uow,
+        templates,
+        drafts=drafts,
+    )
     owner_id = uuid4()
     template_id = uuid4()
     template = RoomTemplate(
@@ -320,44 +328,6 @@ async def test_delete_template_calls_repo_delete(uow, templates, now):
     templates.delete.assert_awaited_once_with(template_id=template_id)
 
 
-# PlanDraft Handler Tests
-
-
-@pytest.mark.asyncio
-async def test_create_draft_persists_and_returns_draft(
-    uow, rosters, templates, drafts, clock, id_generator
-):
-    handler = CreateDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
-    owner_id = uuid4()
-    draft_id = uuid4()
-    roster_id = uuid4()
-    template_id = uuid4()
-    id_generator.new_uuid.side_effect = None
-    id_generator.new_uuid.return_value = draft_id
-
-    # Mock dependencies existence
-    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
-    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
-
-    result = await handler.handle(
-        owner_user_id=owner_id,
-        roster_id=roster_id,
-        template_id=template_id,
-        lesson_mode_id="seating",
-    )
-
-    assert result.id == draft_id
-    assert result.owner_user_id == owner_id
-    assert result.roster_id == roster_id
-    assert result.template_id == template_id
-    assert result.lesson_mode_id == "seating"
-    assert result.created_at == clock.now()
-    drafts.save_workspace.assert_awaited_once()
-    saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
-    assert len(saved_workspace.groups) == 6
-    assert saved_workspace.planning_profile == default_planning_profile()
-
-
 @pytest.mark.asyncio
 async def test_get_draft_returns_from_repo_if_owner_matches(drafts, now):
     handler = GetDraftHandler(drafts)
@@ -369,6 +339,8 @@ async def test_get_draft_returns_from_repo_if_owner_matches(drafts, now):
         roster_id=uuid4(),
         template_id=uuid4(),
         lesson_mode_id="seating",
+        status=PlanDraftStatus.ACTIVE,
+        last_opened_at=now,
         created_at=now,
         updated_at=now,
     )
@@ -392,7 +364,9 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
         roster_id=roster_id,
         template_id=template_id,
         lesson_mode_id="seating",
+        status=PlanDraftStatus.ACTIVE,
         revision=0,
+        last_opened_at=now,
         created_at=now,
         updated_at=now,
     )
@@ -446,6 +420,39 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
 
 
 @pytest.mark.asyncio
+async def test_patch_draft_rejects_inactive_draft(uow, drafts, rosters, templates, now, clock):
+    handler = PatchDraftHandler(uow, drafts, rosters, templates, clock)
+    owner_id = uuid4()
+    draft_id = uuid4()
+    drafts.get_workspace.return_value = DraftWorkspace(
+        draft=PlanDraft(
+            id=draft_id,
+            owner_user_id=owner_id,
+            roster_id=uuid4(),
+            template_id=uuid4(),
+            lesson_mode_id="seating",
+            status=PlanDraftStatus.ABANDONED,
+            revision=5,
+            last_opened_at=now,
+            created_at=now,
+            updated_at=now,
+        ),
+        groups=[],
+        group_assignments=[],
+        seat_assignments=[],
+        student_planning_meta=[],
+        pair_constraints=[],
+        planning_profile=default_planning_profile(),
+    )
+
+    with pytest.raises(DomainError) as exc:
+        await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+
+    assert exc.value.code == ErrorCode.CONFLICT
+    drafts.save_workspace.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_patch_draft_raises_conflict_if_revision_mismatch(
     uow, drafts, rosters, templates, now, clock
 ):
@@ -458,7 +465,9 @@ async def test_patch_draft_raises_conflict_if_revision_mismatch(
         roster_id=uuid4(),
         template_id=uuid4(),
         lesson_mode_id="seating",
+        status=PlanDraftStatus.ACTIVE,
         revision=5,
+        last_opened_at=now,
         created_at=now,
         updated_at=now,
     )

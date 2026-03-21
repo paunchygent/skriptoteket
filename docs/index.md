@@ -13,6 +13,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - PRD (Frontend): `docs/prd/prd-spa-frontend-v0.1.md`
 - PRD (Editor Sandbox): `docs/prd/prd-editor-sandbox-v0.1.md`
 - PRD (Tool Authoring): `docs/prd/prd-tool-authoring-v0.1.md`
+- PRD (Klassrumskartan current): `docs/prd/prd-group-seating-studio-v0.3.md`
+- Product direction (Klassrumskartan): `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
 - Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
@@ -109,11 +111,15 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0068-textbook-corpus-pristine-cleanup-and-rag-ingest-governance.md`
 - `docs/adr/adr-0069-group-seating-studio-domain-model.md`
 - `docs/adr/adr-0070-group-seating-studio-slice-2-engine-and-snapshots.md`
+- `docs/adr/adr-0071-group-seating-studio-fundamentals-workflow-and-saved-artifacts.md`
+- `docs/adr/adr-0072-group-seating-studio-class-first-workspace-and-draft-kinds.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
 
 - `docs/prd/prd-editor-sandbox-v0.1.md`
+- `docs/prd/prd-group-seating-studio-v0.3.md`
+- `docs/prd/prd-group-seating-studio-v0.2.md`
 - `docs/prd/prd-script-hub-v0.1.md`
 - `docs/prd/prd-script-hub-v0.2.md`
 - `docs/prd/prd-spa-frontend-v0.1.md`
@@ -151,6 +157,21 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/epics/epic-23-group-seating-studio.md`
 - `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
+
+### Backlog Stories
+
+- `docs/backlog/stories/story-23-01-group-seating-studio-skeleton.md`
+- `docs/backlog/stories/story-23-02-group-seating-studio-manual-planner.md`
+- `docs/backlog/stories/story-23-03-group-seating-studio-drag-drop-canvas.md`
+- `docs/backlog/stories/story-23-04-group-seating-studio-seat-canvas.md`
+- `docs/backlog/stories/story-23-05-group-seating-studio-sync-engine.md`
+- `docs/backlog/stories/story-23-06-group-seating-studio-draft-persistence.md`
+- `docs/backlog/stories/story-23-07-group-seating-studio-management-modals.md`
+- `docs/backlog/stories/story-24-01-group-seating-studio-landing-page-fundamentals.md`
+- `docs/backlog/stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md`
+- `docs/backlog/stories/story-24-02-group-seating-studio-class-first-workspace.md`
+- `docs/backlog/stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md`
+- `docs/backlog/stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md`
 
 ### Backlog Reviews
 
@@ -243,6 +264,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0064-conversion-hub-backend-sir-convert-a-lot-v2-client-and-api.md`
 - `docs/backlog/prs/pr-0065-conversion-hub-spa-ui-batch-and-preview.md`
 - `docs/backlog/prs/pr-0066-migrate-e2e-tests-disable-html-to-pdf-preview-seeding.md`
+- `docs/backlog/prs/pr-0079-klassrumskartan-landing-page-ui-and-start-contract.md`
+- `docs/backlog/prs/pr-0080-klassrumskartan-draft-resolve-and-explicit-resume-cta.md`
+- `docs/backlog/prs/pr-0081-klassrumskartan-safe-asset-delete-and-landing-page-error-hardening.md`
+- `docs/backlog/prs/pr-0078-klassrumskartan-fundamentals-contract-split-and-draft-lifecycle.md`
+- `docs/backlog/prs/pr-0082-klassrumskartan-frontend-visible-legacy-removal.md`
+- `docs/backlog/prs/pr-0083-klassrumskartan-frontend-store-and-types-contract-cleanup.md`
+- `docs/backlog/prs/pr-0084-klassrumskartan-backend-contract-and-domain-pruning.md`
+- `docs/backlog/prs/pr-0085-klassrumskartan-draft-kind-lifecycle-and-class-scoping.md`
 - `docs/backlog/prs/pr-0067-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/prs/pr-0068-reagent-prep-chef-sds-pdfs-manual-download.md`
 - `docs/backlog/prs/pr-0069-reagent-prep-chef-sds-index-available-in-docker.md`
@@ -494,6 +523,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-codemirror-integration.md`
 - `docs/reference/ref-editor-sandbox-preview-plan.md`
 - `docs/reference/ref-frontend-test-gaps-2025-12-29.md`
+- `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
 - `docs/reference/ref-home-server-architecture.md`
 - `docs/reference/ref-home-server-cleanup-timers.md`
 - `docs/reference/ref-home-server-cli-tools.md`

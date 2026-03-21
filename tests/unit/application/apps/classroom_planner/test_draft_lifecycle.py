@@ -1,0 +1,220 @@
+from datetime import datetime, timezone
+from unittest.mock import AsyncMock, Mock
+from uuid import uuid4
+
+import pytest
+
+from skriptoteket.application.curated_apps.classroom_planner import (
+    AbandonDraftHandler,
+    GetResumableDraftHandler,
+    ResolveDraftHandler,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    PlanDraft,
+    PlanDraftStatus,
+    ResumablePlanDraft,
+    RoomTemplate,
+    Roster,
+)
+from skriptoteket.protocols.classroom_planner import (
+    PlanDraftRepositoryProtocol,
+    RoomTemplateRepositoryProtocol,
+    RosterRepositoryProtocol,
+)
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from tests.fixtures.application_fixtures import FakeUow
+
+
+@pytest.fixture
+def uow():
+    return FakeUow()
+
+
+@pytest.fixture
+def rosters():
+    return AsyncMock(spec=RosterRepositoryProtocol)
+
+
+@pytest.fixture
+def templates():
+    return AsyncMock(spec=RoomTemplateRepositoryProtocol)
+
+
+@pytest.fixture
+def drafts():
+    return AsyncMock(spec=PlanDraftRepositoryProtocol)
+
+
+@pytest.fixture
+def now():
+    return datetime(2025, 1, 1, tzinfo=timezone.utc)
+
+
+@pytest.fixture
+def clock(now):
+    mock = Mock(spec=ClockProtocol)
+    mock.now.return_value = now
+    return mock
+
+
+@pytest.fixture
+def id_generator():
+    mock = Mock(spec=IdGeneratorProtocol)
+    mock.new_uuid.side_effect = lambda: uuid4()
+    return mock
+
+
+@pytest.mark.asyncio
+async def test_resolve_draft_returns_existing_active_draft(
+    uow, rosters, templates, drafts, clock, id_generator, now
+):
+    handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    existing = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+        lesson_mode_id="group_work",
+        status=PlanDraftStatus.ACTIVE,
+        revision=3,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+    drafts.get_active_by_owner.return_value = existing
+
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+
+    assert result.id == existing.id
+    drafts.acquire_owner_lifecycle_lock.assert_awaited_once_with(owner_user_id=owner_id)
+    drafts.save.assert_awaited_once()
+    drafts.save_workspace.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_resolve_draft_creates_new_draft_when_none_exists(
+    uow, rosters, templates, drafts, clock, id_generator
+):
+    handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    draft_id = uuid4()
+    id_generator.new_uuid.side_effect = None
+    id_generator.new_uuid.return_value = draft_id
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+    drafts.get_active_by_owner.return_value = None
+
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+
+    assert result.id == draft_id
+    assert result.status == PlanDraftStatus.ACTIVE
+    drafts.save_workspace.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_resolve_draft_supersedes_previous_active_draft_for_owner(
+    uow, rosters, templates, drafts, clock, id_generator, now
+):
+    handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    existing = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="group_work",
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+    drafts.get_active_by_owner.return_value = existing
+
+    await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+
+    drafts.mark_status.assert_awaited_once_with(
+        draft_id=existing.id,
+        owner_user_id=owner_id,
+        status=PlanDraftStatus.SUPERSEDED,
+        updated_at=now,
+    )
+    drafts.save_workspace.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_abandon_draft_marks_active_draft_abandoned(uow, drafts, clock, now):
+    owner_id = uuid4()
+    draft_id = uuid4()
+    handler = AbandonDraftHandler(uow, drafts, clock)
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        lesson_mode_id="group_work",
+        status=PlanDraftStatus.ACTIVE,
+        revision=1,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.return_value = draft
+
+    result = await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+
+    assert result.status == PlanDraftStatus.ABANDONED
+    drafts.acquire_owner_lifecycle_lock.assert_awaited_once_with(owner_user_id=owner_id)
+    drafts.save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_get_resumable_draft_returns_repo_payload(drafts, now):
+    handler = GetResumableDraftHandler(drafts)
+    owner_id = uuid4()
+    resumable = ResumablePlanDraft(
+        draft=PlanDraft(
+            id=uuid4(),
+            owner_user_id=owner_id,
+            roster_id=uuid4(),
+            template_id=uuid4(),
+            lesson_mode_id="group_work",
+            status=PlanDraftStatus.ACTIVE,
+            revision=1,
+            last_opened_at=now,
+            created_at=now,
+            updated_at=now,
+        ),
+        roster_name="SA24D",
+        template_name="Sal 101",
+    )
+    drafts.get_latest_resumable.return_value = resumable
+
+    result = await handler.handle(owner_user_id=owner_id)
+
+    assert result == resumable
+    drafts.get_latest_resumable.assert_awaited_once_with(owner_user_id=owner_id)

@@ -1,8 +1,9 @@
 """Draft and workspace handlers for the classroom planner.
 
-This module owns mutable planner workspace flows: creating a new draft,
-hydrating the full workspace for the SPA, and patching draft-scoped planning
-state with optimistic concurrency and structural validation.
+This module owns mutable planner workspace flows: resolving the single active
+teacher draft, retiring drafts when the teacher leaves planning, hydrating the
+workspace for the SPA, and patching draft-scoped planning state with
+optimistic concurrency plus structural validation.
 """
 
 from __future__ import annotations
@@ -16,12 +17,15 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     GroupAssignment,
     PairConstraint,
     PlanDraft,
+    PlanDraftStatus,
     PlanningProfile,
+    ResumablePlanDraft,
     RoomTemplate,
     Roster,
     SeatAssignment,
     StudentPlanningMeta,
     default_planning_profile,
+    get_default_lesson_mode_id,
     is_valid_lesson_mode_id,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.validation import validate_workspace
@@ -69,8 +73,54 @@ def _build_default_groups(
     ]
 
 
-class CreateDraftHandler:
-    """Create a new mutable planner draft and initialize its workspace."""
+def _resolve_lesson_mode_id(*, lesson_mode_id: str | None) -> str:
+    """Return an explicit lesson mode or the hidden fundamentals default."""
+
+    candidate = lesson_mode_id or get_default_lesson_mode_id()
+    if not is_valid_lesson_mode_id(lesson_mode_id=candidate):
+        raise validation_error("Lesson mode must exist in bootstrap presets.")
+    return candidate
+
+
+def _build_workspace(
+    *,
+    draft: PlanDraft,
+    id_generator: IdGeneratorProtocol,
+) -> DraftWorkspace:
+    """Create the initial workspace payload for a new draft."""
+
+    return DraftWorkspace(
+        draft=draft,
+        groups=_build_default_groups(id_generator=id_generator),
+        group_assignments=[],
+        seat_assignments=[],
+        student_planning_meta=[],
+        pair_constraints=[],
+        planning_profile=default_planning_profile(),
+    )
+
+
+def _ensure_active_draft(*, draft: PlanDraft) -> None:
+    """Reject mutations against drafts that are no longer active."""
+
+    if draft.status == PlanDraftStatus.ACTIVE:
+        return
+    raise DomainError(
+        code=ErrorCode.CONFLICT,
+        message=(
+            "Det här utkastet är inte längre aktivt. "
+            "Gå tillbaka till startsidan och öppna planeringen igen."
+        ),
+        details={
+            "draft_id": str(draft.id),
+            "status": draft.status.value,
+            "reason": "inactive_draft",
+        },
+    )
+
+
+class ResolveDraftHandler:
+    """Resolve the single active mutable draft for a teacher."""
 
     def __init__(
         self,
@@ -94,7 +144,7 @@ class CreateDraftHandler:
         owner_user_id: UUID,
         roster_id: UUID,
         template_id: UUID,
-        lesson_mode_id: str,
+        lesson_mode_id: str | None = None,
     ) -> PlanDraft:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
@@ -104,32 +154,78 @@ class CreateDraftHandler:
         if not template or template.owner_user_id != owner_user_id:
             raise not_found("RoomTemplate", str(template_id))
 
-        if not is_valid_lesson_mode_id(lesson_mode_id=lesson_mode_id):
-            raise validation_error("Lesson mode must exist in bootstrap presets.")
-
         now = self._clock.now()
-        draft = PlanDraft(
-            id=self._id_generator.new_uuid(),
-            owner_user_id=owner_user_id,
-            roster_id=roster_id,
-            template_id=template_id,
-            lesson_mode_id=lesson_mode_id,
-            revision=0,
-            created_at=now,
-            updated_at=now,
-        )
-        workspace = DraftWorkspace(
-            draft=draft,
-            groups=_build_default_groups(id_generator=self._id_generator),
-            group_assignments=[],
-            seat_assignments=[],
-            student_planning_meta=[],
-            pair_constraints=[],
-            planning_profile=default_planning_profile(),
-        )
+        resolved_lesson_mode_id = _resolve_lesson_mode_id(lesson_mode_id=lesson_mode_id)
         async with self._uow:
-            await self._drafts.save_workspace(workspace=workspace)
-        return draft
+            await self._drafts.acquire_owner_lifecycle_lock(owner_user_id=owner_user_id)
+            existing = await self._drafts.get_active_by_owner(owner_user_id=owner_user_id)
+            if existing is not None:
+                if existing.roster_id == roster_id and existing.template_id == template_id:
+                    updated = existing.model_copy(update={"last_opened_at": now, "updated_at": now})
+                    await self._drafts.save(draft=updated)
+                    return updated
+                await self._drafts.mark_status(
+                    draft_id=existing.id,
+                    owner_user_id=owner_user_id,
+                    status=PlanDraftStatus.SUPERSEDED,
+                    updated_at=now,
+                )
+
+            draft = PlanDraft(
+                id=self._id_generator.new_uuid(),
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+                template_id=template_id,
+                lesson_mode_id=resolved_lesson_mode_id,
+                status=PlanDraftStatus.ACTIVE,
+                revision=0,
+                last_opened_at=now,
+                created_at=now,
+                updated_at=now,
+            )
+            await self._drafts.save_workspace(
+                workspace=_build_workspace(draft=draft, id_generator=self._id_generator)
+            )
+            return draft
+
+
+class GetResumableDraftHandler:
+    """Return the latest resumable draft for the landing page."""
+
+    def __init__(self, drafts: PlanDraftRepositoryProtocol) -> None:
+        self._drafts = drafts
+
+    async def handle(self, *, owner_user_id: UUID) -> ResumablePlanDraft | None:
+        return await self._drafts.get_latest_resumable(owner_user_id=owner_user_id)
+
+
+class AbandonDraftHandler:
+    """Mark the current teacher draft as intentionally abandoned."""
+
+    def __init__(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> None:
+        self._uow = uow
+        self._drafts = drafts
+        self._clock = clock
+
+    async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> PlanDraft:
+        now = self._clock.now()
+        async with self._uow:
+            await self._drafts.acquire_owner_lifecycle_lock(owner_user_id=owner_user_id)
+            draft = await self._drafts.get_by_id(draft_id=draft_id)
+            if not draft or draft.owner_user_id != owner_user_id:
+                raise not_found("PlanDraft", str(draft_id))
+            if draft.status != PlanDraftStatus.ACTIVE:
+                return draft
+            abandoned = draft.model_copy(
+                update={"status": PlanDraftStatus.ABANDONED, "updated_at": now}
+            )
+            await self._drafts.save(draft=abandoned)
+            return abandoned
 
 
 class GetDraftHandler:
@@ -232,6 +328,7 @@ class PatchDraftHandler:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
             raise not_found("PlanDraft", str(draft_id))
+        _ensure_active_draft(draft=workspace.draft)
         if expected_revision is not None and workspace.draft.revision != expected_revision:
             raise DomainError(
                 code=ErrorCode.CONFLICT,
@@ -242,8 +339,7 @@ class PatchDraftHandler:
             )
 
         next_lesson_mode_id = lesson_mode_id or workspace.draft.lesson_mode_id
-        if not is_valid_lesson_mode_id(lesson_mode_id=next_lesson_mode_id):
-            raise validation_error("Lesson mode must exist in bootstrap presets.")
+        _resolve_lesson_mode_id(lesson_mode_id=next_lesson_mode_id)
 
         updated_draft = workspace.draft.model_copy(
             update={

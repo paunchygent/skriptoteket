@@ -2,14 +2,15 @@
 /**
  * Student planning metadata drawer.
  *
- * This component hosts teacher-only planning inputs for the active student. It
- * edits draft-scoped metadata and pair constraints directly through the planner
- * store while keeping those fields out of the draggable roster card surface.
+ * This component hosts teacher-authored placement notes for the active
+ * student. It intentionally keeps the current UI limited to concrete
+ * classroom-management observations instead of exposing speculative rule-engine
+ * controls before they are product-defined.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 
-import { pairConstraintLabels, type PairConstraintKind } from "../classroomPlannerTypes";
+import { emptyStudentPlanningMeta } from "../classroomPlannerTypes";
 import { useClassroomState } from "../useClassroomState";
 
 const props = defineProps<{
@@ -22,7 +23,6 @@ const emit = defineEmits<{
 }>();
 
 const state = useClassroomState();
-const peerStudentId = ref<string | null>(null);
 
 const selectedStudent = computed(() => {
   if (!props.selectedStudentId) {
@@ -35,89 +35,23 @@ const currentMeta = computed(() => {
   if (!props.selectedStudentId) {
     return null;
   }
-  return (
-    state.studentPlanningMetaByStudentId[props.selectedStudentId] ?? {
-      student_id: props.selectedStudentId,
-      teacher_proximity: 0,
-      independent_focus_support: 0,
-      stability_preference: 0,
-      preferred_zone: null,
-      avoid_zone: null,
-      notes: null,
-    }
-  );
+  return state.studentPlanningMetaByStudentId[props.selectedStudentId] ?? emptyStudentPlanningMeta(props.selectedStudentId);
 });
-
-const peerOptions = computed(() => {
-  if (!props.selectedStudentId) {
-    return [];
-  }
-  return state.students.filter((student) => student.id !== props.selectedStudentId);
-});
-
-watch(
-  [() => props.selectedStudentId, peerOptions],
-  ([studentId, peers]) => {
-    if (!studentId) {
-      peerStudentId.value = null;
-      return;
-    }
-    if (peerStudentId.value && peers.some((student) => student.id === peerStudentId.value)) {
-      return;
-    }
-    peerStudentId.value = peers[0]?.id ?? null;
-  },
-  { immediate: true },
-);
-
-function constraintFor(kind: PairConstraintKind) {
-  if (!props.selectedStudentId || !peerStudentId.value) {
-    return null;
-  }
-  const [studentIdA, studentIdB] =
-    props.selectedStudentId <= peerStudentId.value
-      ? [props.selectedStudentId, peerStudentId.value]
-      : [peerStudentId.value, props.selectedStudentId];
-  return (
-    state.pairConstraints.find(
-      (constraint) =>
-        constraint.student_id_a === studentIdA &&
-        constraint.student_id_b === studentIdB &&
-        constraint.kind === kind,
-    ) ?? null
-  );
-}
-
-function toggleConstraint(kind: PairConstraintKind, enabled: boolean): void {
-  if (!props.selectedStudentId || !peerStudentId.value) {
-    return;
-  }
-  state.setPairConstraint(props.selectedStudentId, peerStudentId.value, kind, enabled, 1);
-}
-
-function updateConstraintStrength(kind: PairConstraintKind, strength: number): void {
-  if (!props.selectedStudentId || !peerStudentId.value) {
-    return;
-  }
-  state.setPairConstraint(props.selectedStudentId, peerStudentId.value, kind, true, strength);
-}
 </script>
 
 <template>
-  <div>
+  <div v-if="open">
     <div
-      v-if="open"
-      class="fixed inset-0 z-40 bg-navy/40 lg:hidden"
+      class="fixed inset-0 z-40 bg-navy/40"
       @click="emit('close')"
     />
     <aside
-      class="flex h-full flex-col border border-navy bg-white shadow-brutal lg:shadow-brutal-sm"
-      :class="open ? 'fixed inset-y-0 right-0 z-50 w-full max-w-[28rem] lg:static lg:w-auto' : 'hidden lg:flex'"
+      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[28rem] flex-col border border-navy bg-white shadow-brutal"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0">
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Planeringsmetadata
+            Placeringprofil
           </p>
           <h3 class="font-serif text-xl text-navy">
             {{ selectedStudent?.display_name ?? "Välj en elev" }}
@@ -125,7 +59,7 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
         </div>
         <button
           type="button"
-          class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas lg:hidden"
+          class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
           @click="emit('close')"
         >
           ×
@@ -136,7 +70,7 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
         v-if="!selectedStudent || !currentMeta"
         class="flex flex-1 items-center justify-center p-6 text-center text-sm leading-relaxed text-navy/60"
       >
-        Klicka på en elev i grupp- eller sittplatsvyn för att redigera lärarens planeringsnoteringar.
+        Klicka på en elev i grupp- eller sittplatsvyn för att öppna lärarens placeringsprofil.
       </div>
 
       <div
@@ -145,12 +79,12 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
       >
         <section class="space-y-3 border border-navy/20 bg-canvas p-4">
           <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Individuell profil
+            Lärarens observationer
           </h4>
 
           <label class="block space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Lärarnärhet
+              Behöver sitta nära läraren
             </span>
             <input
               :value="currentMeta.teacher_proximity"
@@ -165,7 +99,7 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
 
           <label class="block space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Fokusstöd
+              Behöver lugn och fokusstöd
             </span>
             <input
               :value="currentMeta.independent_focus_support"
@@ -180,7 +114,7 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
 
           <label class="block space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Stabilitetsbehov
+              Mår bra av stabil placering
             </span>
             <input
               :value="currentMeta.stability_preference"
@@ -192,52 +126,6 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
               @input="state.setStudentPlanningMeta(selectedStudent.id, { stability_preference: Number(($event.target as HTMLInputElement).value) })"
             >
           </label>
-
-          <div class="grid gap-3 md:grid-cols-2">
-            <label class="space-y-1">
-              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                Föredragen zon
-              </span>
-              <select
-                :value="currentMeta.preferred_zone ?? ''"
-                class="w-full border border-navy/30 bg-white px-3 py-2 text-sm text-navy"
-                @change="state.setStudentPlanningMeta(selectedStudent.id, { preferred_zone: ($event.target as HTMLSelectElement).value || null })"
-              >
-                <option value="">
-                  Ingen
-                </option>
-                <option
-                  v-for="zone in state.zones"
-                  :key="zone"
-                  :value="zone"
-                >
-                  {{ zone }}
-                </option>
-              </select>
-            </label>
-
-            <label class="space-y-1">
-              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                Undvik zon
-              </span>
-              <select
-                :value="currentMeta.avoid_zone ?? ''"
-                class="w-full border border-navy/30 bg-white px-3 py-2 text-sm text-navy"
-                @change="state.setStudentPlanningMeta(selectedStudent.id, { avoid_zone: ($event.target as HTMLSelectElement).value || null })"
-              >
-                <option value="">
-                  Ingen
-                </option>
-                <option
-                  v-for="zone in state.zones"
-                  :key="zone"
-                  :value="zone"
-                >
-                  {{ zone }}
-                </option>
-              </select>
-            </label>
-          </div>
 
           <label class="block space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
@@ -256,68 +144,8 @@ function updateConstraintStrength(kind: PairConstraintKind, strength: number): v
             class="btn-ghost border-navy/30 bg-white shadow-none"
             @click="state.resetStudentPlanningMeta(selectedStudent.id)"
           >
-            Återställ elevdata
+            Återställ placeringsprofil
           </button>
-        </section>
-
-        <section class="space-y-3 border border-navy/20 bg-white p-4">
-          <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Parrelationer
-          </h4>
-
-          <label class="block space-y-1">
-            <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Jämför med elev
-            </span>
-            <select
-              v-model="peerStudentId"
-              class="w-full border border-navy/30 bg-canvas px-3 py-2 text-sm text-navy"
-            >
-              <option
-                v-for="student in peerOptions"
-                :key="student.id"
-                :value="student.id"
-              >
-                {{ student.display_name }}
-              </option>
-            </select>
-          </label>
-
-          <div
-            v-for="kind in (Object.keys(pairConstraintLabels) as PairConstraintKind[])"
-            :key="kind"
-            class="space-y-2 border border-navy/20 bg-canvas p-3"
-          >
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-sm font-semibold text-navy">
-                {{ pairConstraintLabels[kind] }}
-              </span>
-              <input
-                :checked="Boolean(constraintFor(kind))"
-                type="checkbox"
-                class="h-4 w-4"
-                @change="toggleConstraint(kind, ($event.target as HTMLInputElement).checked)"
-              >
-            </label>
-
-            <div
-              v-if="constraintFor(kind)"
-              class="space-y-1"
-            >
-              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                Styrka
-              </span>
-              <input
-                :value="constraintFor(kind)?.strength ?? 1"
-                type="range"
-                min="1"
-                max="3"
-                step="1"
-                class="w-full"
-                @input="updateConstraintStrength(kind, Number(($event.target as HTMLInputElement).value))"
-              >
-            </div>
-          </div>
         </section>
       </div>
     </aside>

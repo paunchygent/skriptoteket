@@ -6,8 +6,6 @@ and provides dedicated endpoints for validation, suggestions, randomization,
 and immutable snapshot finalization.
 """
 
-from __future__ import annotations
-
 from datetime import datetime
 from uuid import UUID
 
@@ -15,8 +13,8 @@ from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from skriptoteket.application.curated_apps.classroom_planner import (
+    AbandonDraftHandler,
     ApplySuggestionHandler,
-    CreateDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
@@ -26,6 +24,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetBootstrapHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
+    GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
     GetSnapshotHandler,
@@ -34,6 +33,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ListSnapshotsHandler,
     PatchDraftHandler,
     RandomizeDraftHandler,
+    ResolveDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
     ValidateDraftHandler,
@@ -45,6 +45,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PairConstraint,
     PlanDraft,
     PlanningProfile,
+    ResumablePlanDraft,
     RoomFixture,
     RoomTemplate,
     Roster,
@@ -267,8 +268,20 @@ class PlanDraftDto(BaseModel):
     roster_id: UUID
     template_id: UUID
     lesson_mode_id: str
+    status: str
     revision: int
     engine_metadata: SuggestionEngineMetadataDto | None = None
+    last_opened_at: datetime
+
+
+class ResumablePlanDraftDto(BaseModel):
+    """Serialize the latest resumable draft CTA payload."""
+
+    model_config = ConfigDict(frozen=True)
+
+    draft: PlanDraftDto
+    roster_name: str
+    template_name: str
 
 
 class DraftWorkspaceResponse(BaseModel):
@@ -287,12 +300,12 @@ class DraftWorkspaceResponse(BaseModel):
     planning_profile: PlanningProfileDto
 
 
-class CreatePlanDraftRequest(BaseModel):
-    """Deserialize new draft input."""
+class ResolvePlanDraftRequest(BaseModel):
+    """Deserialize the landing-page resolve request."""
 
     roster_id: UUID
     template_id: UUID
-    lesson_mode_id: str
+    lesson_mode_id: str | None = None
 
 
 class UpdatePlanDraftRequest(BaseModel):
@@ -423,6 +436,14 @@ def _serialize_template(template: RoomTemplate) -> RoomTemplateDto:
 
 def _serialize_plan_draft(draft: PlanDraft) -> PlanDraftDto:
     return PlanDraftDto.model_validate(draft)
+
+
+def _serialize_resumable_plan_draft(resumable: ResumablePlanDraft) -> ResumablePlanDraftDto:
+    return ResumablePlanDraftDto(
+        draft=_serialize_plan_draft(resumable.draft),
+        roster_name=resumable.roster_name,
+        template_name=resumable.template_name,
+    )
 
 
 def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspaceResponse:
@@ -629,11 +650,11 @@ async def delete_template(
     await handler.handle(template_id=template_id, owner_user_id=user.id)
 
 
-@router.post("/drafts", response_model=PlanDraftDto, status_code=status.HTTP_201_CREATED)
+@router.post("/drafts/resolve", response_model=PlanDraftDto)
 @inject
-async def create_draft(
-    request: CreatePlanDraftRequest,
-    handler: FromDishka[CreateDraftHandler],
+async def resolve_draft(
+    request: ResolvePlanDraftRequest,
+    handler: FromDishka[ResolveDraftHandler],
     user: User = Depends(require_user_api),
     _: None = Depends(require_csrf_token),
 ) -> PlanDraftDto:
@@ -644,6 +665,29 @@ async def create_draft(
         lesson_mode_id=request.lesson_mode_id,
     )
     return _serialize_plan_draft(draft)
+
+
+@router.post("/drafts/{draft_id}/abandon", response_model=PlanDraftDto)
+@inject
+async def abandon_draft(
+    draft_id: UUID,
+    handler: FromDishka[AbandonDraftHandler],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> PlanDraftDto:
+    return _serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
+
+
+@router.get("/drafts/resumable", response_model=ResumablePlanDraftDto | None)
+@inject
+async def get_resumable_draft(
+    handler: FromDishka[GetResumableDraftHandler],
+    user: User = Depends(require_user_api),
+) -> ResumablePlanDraftDto | None:
+    resumable = await handler.handle(owner_user_id=user.id)
+    if resumable is None:
+        return None
+    return _serialize_resumable_plan_draft(resumable)
 
 
 @router.get("/drafts/{draft_id}", response_model=PlanDraftDto)

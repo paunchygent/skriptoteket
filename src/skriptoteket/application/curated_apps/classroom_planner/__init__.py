@@ -2,10 +2,12 @@
 
 from .handlers.bootstrap import GetBootstrapHandler
 from .handlers.drafts import (
-    CreateDraftHandler,
+    AbandonDraftHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
+    GetResumableDraftHandler,
     PatchDraftHandler,
+    ResolveDraftHandler,
 )
 from .handlers.planning import (
     ApplySuggestionHandler,
@@ -32,8 +34,8 @@ from .handlers.templates import (
 )
 
 __all__ = [
+    "AbandonDraftHandler",
     "ApplySuggestionHandler",
-    "CreateDraftHandler",
     "CreateRoomTemplateHandler",
     "CreateRosterHandler",
     "DeleteRoomTemplateHandler",
@@ -43,6 +45,7 @@ __all__ = [
     "GetBootstrapHandler",
     "GetDraftHandler",
     "GetDraftWorkspaceHandler",
+    "GetResumableDraftHandler",
     "GetRoomTemplateHandler",
     "GetRosterHandler",
     "GetSnapshotHandler",
@@ -51,6 +54,7 @@ __all__ = [
     "ListSnapshotsHandler",
     "PatchDraftHandler",
     "RandomizeDraftHandler",
+    "ResolveDraftHandler",
     "UpdateRoomTemplateHandler",
     "UpdateRosterHandler",
     "ValidateDraftHandler",

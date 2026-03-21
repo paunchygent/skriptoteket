@@ -13,7 +13,6 @@ import { defineStore } from "pinia";
 
 import { ApiError, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
 import {
-  CLASSROOM_PLANNER_DRAFT_SESSION_KEY,
   defaultPlanningProfile,
   type ArrangementSnapshot,
   type DraftGroup,
@@ -22,6 +21,7 @@ import {
   type PairConstraint,
   type PlanDraft,
   type PlanningProfile,
+  type ResumablePlanDraft,
   type RoomTemplate,
   type Roster,
   type SaveStatus,
@@ -157,14 +157,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     }
   }
 
-  function storeDraftId(draftId: string | null): void {
-    if (draftId) {
-      sessionStorage.setItem(CLASSROOM_PLANNER_DRAFT_SESSION_KEY, draftId);
-      return;
-    }
-    sessionStorage.removeItem(CLASSROOM_PLANNER_DRAFT_SESSION_KEY);
-  }
-
   function resetTransientPanels(): void {
     validationFindings.value = [];
     suggestions.value = [];
@@ -191,7 +183,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     suggestions.value = [];
     saveStatus.value = "saved";
     saveMessage.value = null;
-    storeDraftId(workspace.draft.id);
   }
 
   function serializeWorkspacePatch(): Record<string, unknown> {
@@ -264,6 +255,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
   function clearWorkspace(): void {
     clearAutosaveTimer();
+    saveQueued = false;
     draft.value = null;
     roster.value = null;
     template.value = null;
@@ -278,18 +270,30 @@ export const useClassroomState = defineStore("classroom-state", () => {
     snapshots.value = [];
     saveStatus.value = "idle";
     saveMessage.value = null;
-    storeDraftId(null);
   }
 
-  async function createDraft(rosterId: string, templateId: string, lessonModeId: string): Promise<void> {
+  async function waitForPendingSave(): Promise<void> {
+    while (saveInFlight) {
+      await new Promise((resolve) => window.setTimeout(resolve, 10));
+    }
+  }
+
+  async function resolveDraft(
+    rosterId: string,
+    templateId: string,
+    lessonModeId?: string | null,
+  ): Promise<void> {
     saveStatus.value = "saving";
     saveMessage.value = null;
-    const newDraft = await apiPost<PlanDraft>("/api/v1/apps/classroom.group-seating-studio/drafts", {
-      roster_id: rosterId,
-      template_id: templateId,
-      lesson_mode_id: lessonModeId,
-    });
-    await loadWorkspace(newDraft.id);
+    const resolvedDraft = await apiPost<PlanDraft>(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/resolve",
+      {
+        roster_id: rosterId,
+        template_id: templateId,
+        lesson_mode_id: lessonModeId ?? null,
+      },
+    );
+    await loadWorkspace(resolvedDraft.id);
   }
 
   async function loadWorkspace(draftId: string): Promise<void> {
@@ -306,8 +310,27 @@ export const useClassroomState = defineStore("classroom-state", () => {
     await loadWorkspace(draft.value.id);
   }
 
-  function getStoredDraftId(): string | null {
-    return sessionStorage.getItem(CLASSROOM_PLANNER_DRAFT_SESSION_KEY);
+  async function getResumableDraft(): Promise<ResumablePlanDraft | null> {
+    return await apiGet<ResumablePlanDraft | null>(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/resumable",
+    );
+  }
+
+  async function abandonDraft(draftId?: string): Promise<void> {
+    const targetDraftId = draftId ?? draft.value?.id ?? null;
+    if (!targetDraftId) {
+      clearWorkspace();
+      return;
+    }
+    clearAutosaveTimer();
+    saveQueued = false;
+    await waitForPendingSave();
+    await apiPost<PlanDraft>(
+      `/api/v1/apps/classroom.group-seating-studio/drafts/${targetDraftId}/abandon`,
+    );
+    if (draft.value?.id === targetDraftId) {
+      clearWorkspace();
+    }
   }
 
   const {
@@ -453,11 +476,12 @@ export const useClassroomState = defineStore("classroom-state", () => {
     zones,
     hardFindings,
     softFindings,
-    getStoredDraftId,
     clearWorkspace,
-    createDraft,
+    resolveDraft,
     loadWorkspace,
     reloadActiveWorkspace,
+    getResumableDraft,
+    abandonDraft,
     assignStudentToGroup,
     removeStudentFromGroup,
     assignStudentToSeat,

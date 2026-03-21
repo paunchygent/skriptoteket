@@ -255,212 +255,221 @@ async function removeTemplate(): Promise<void> {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-navy/70 p-4">
-    <div class="w-full max-w-6xl border border-navy bg-white p-6 shadow-brutal md:p-8">
-      <div class="flex flex-col gap-4 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
-        <div class="space-y-1">
-          <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klassrumsmallar
-          </p>
-          <h2 class="font-serif text-2xl text-navy">
-            {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
-          </h2>
-          <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-            Placera ut elevplatser och viktiga rumsdetaljer så planeringen får en tydlig whiteboard-liknande översikt redan nu och en bättre exportyta senare.
-          </p>
-        </div>
-        <button
-          type="button"
-          class="btn-ghost h-[32px] w-[32px] self-start px-0 py-0 shadow-none border-navy/30 bg-canvas lg:self-auto"
-          @click="emit('close')"
-        >
-          ×
-        </button>
-      </div>
-
-      <div
-        v-if="error"
-        class="system-message system-message-error mt-4"
-      >
-        <div class="system-message-content">
-          {{ error }}
-        </div>
-      </div>
-
-      <div class="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
-        <aside class="space-y-5">
-          <div class="space-y-1">
-            <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-              Klassrummets namn
-            </label>
-            <input
-              v-model="name"
-              type="text"
-              placeholder="Till exempel Sal 304"
-              class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-            >
-          </div>
-
-          <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
-            <div class="mb-3 flex items-end justify-between gap-3">
-              <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-                Verktyg
-              </h3>
-              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                {{ parsedSeats.length }} platser
-              </span>
-            </div>
-
-            <div class="grid gap-2">
-              <button
-                type="button"
-                class="btn-ghost justify-start shadow-none"
-                :class="selectedTool === 'seat' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
-                @click="selectedTool = 'seat'"
-              >
-                Placera plats
-              </button>
-              <button
-                v-for="fixture in roomFixturePalette"
-                :key="fixture.type"
-                type="button"
-                class="btn-ghost justify-start shadow-none"
-                :class="selectedTool === fixture.type ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
-                @click="selectedTool = fixture.type"
-              >
-                {{ fixture.label }}
-              </button>
-              <button
-                type="button"
-                class="btn-ghost justify-start shadow-none"
-                :class="selectedTool === 'erase' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
-                @click="selectedTool = 'erase'"
-              >
-                Sudda
-              </button>
-            </div>
-          </div>
-
-          <div class="border border-navy bg-white p-4 shadow-brutal-sm">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-              Lägesnotering
-            </h3>
-            <p class="mt-2 text-sm leading-relaxed text-navy/70">
-              Välj ett verktyg och klicka i rutnätet. Fixturer upptar flera rutor och kan inte överlappa platser eller andra fixturer.
+  <div class="fixed inset-0 z-50 overflow-y-auto p-4">
+    <button
+      type="button"
+      aria-label="Stäng modal"
+      class="fixed inset-0 bg-navy/70"
+      @click="emit('close')"
+    />
+    <div class="relative flex min-h-full items-start justify-center py-4">
+      <div class="flex max-h-[calc(100vh-2rem)] w-full max-w-6xl flex-col border border-navy bg-white shadow-brutal">
+        <div class="flex flex-col gap-4 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
+          <div class="space-y-1 px-6 pt-6 md:px-8 md:pt-8">
+            <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+              Klassrumsmallar
+            </p>
+            <h2 class="font-serif text-2xl text-navy">
+              {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
+            </h2>
+            <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
+              Placera ut elevplatser och viktiga rumsdetaljer så planeringen får en tydlig whiteboard-liknande översikt redan nu och en bättre exportyta senare.
             </p>
           </div>
-        </aside>
-
-        <section class="space-y-4">
-          <div class="overflow-auto border border-navy bg-canvas p-4 shadow-brutal-sm">
-            <div
-              class="relative grid gap-1"
-              :style="{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, minWidth: `${GRID_COLS * 52}px` }"
-            >
-              <template
-                v-for="row in GRID_ROWS"
-                :key="`row-${row}`"
-              >
-                <button
-                  v-for="col in GRID_COLS"
-                  :key="`cell-${row}-${col}`"
-                  type="button"
-                  class="relative aspect-square border text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] transition-colors"
-                  :class="{
-                    'border-navy/20 bg-white hover:border-navy/50': !isSeatAt(row - 1, col - 1) && !findFixtureAt(row - 1, col - 1),
-                    'border-navy bg-navy text-canvas': isSeatAt(row - 1, col - 1),
-                    'border-burgundy bg-burgundy/15 text-burgundy': findFixtureAt(row - 1, col - 1)?.type === 'teacher_desk',
-                    'border-navy bg-warning/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'whiteboard',
-                    'border-navy bg-canvas text-navy/70': findFixtureAt(row - 1, col - 1)?.type === 'window',
-                    'border-navy bg-success/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'door',
-                  }"
-                  @click="toggleGridCell(row - 1, col - 1)"
-                >
-                  <span v-if="findFixtureAt(row - 1, col - 1) && findFixtureAt(row - 1, col - 1)?.row === row - 1 && findFixtureAt(row - 1, col - 1)?.col === col - 1">
-                    {{ findFixtureAt(row - 1, col - 1)?.label }}
-                  </span>
-                </button>
-              </template>
-            </div>
-          </div>
-
-          <div class="border border-navy bg-white p-4 shadow-brutal-sm">
-            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-navy/20 pb-3">
-              <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-                Förhandsvisning
-              </h3>
-              <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                {{ parsedFixtures.length }} fixturer
-              </span>
-            </div>
-
-            <div class="relative mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
-              <div
-                class="relative"
-                :style="{ width: `${GRID_COLS * GRID_UNIT}px`, height: `${GRID_ROWS * GRID_UNIT}px` }"
-              >
-                <div
-                  class="absolute inset-0 opacity-15"
-                  style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 24px 24px;"
-                />
-
-                <div
-                  v-for="fixture in parsedFixtures"
-                  :key="fixture.id"
-                  class="absolute flex items-center justify-center border text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
-                  :class="{
-                    'border-navy bg-warning/25 text-navy': fixture.type === 'whiteboard',
-                    'border-burgundy bg-burgundy/10 text-burgundy': fixture.type === 'teacher_desk',
-                    'border-navy bg-white text-navy/70': fixture.type === 'window',
-                    'border-success bg-success/20 text-navy': fixture.type === 'door',
-                  }"
-                  :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
-                >
-                  {{ fixture.label }}
-                </div>
-
-                <div
-                  v-for="seat in parsedSeats"
-                  :key="seat.id"
-                  class="absolute flex h-[72px] w-[72px] items-center justify-center border border-navy bg-white text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] shadow-brutal-sm"
-                  :style="{ left: `${seat.x + 12}px`, top: `${seat.y + 12}px` }"
-                >
-                  {{ seat.id }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div class="mt-6 flex flex-col gap-3 border-t border-navy/20 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <button
-            v-if="isEditing"
-            type="button"
-            class="btn-ghost border-burgundy/40 bg-white text-burgundy"
-            :disabled="isDeleting"
-            @click="removeTemplate"
-          >
-            {{ isDeleting ? "Raderar..." : "Radera klassrum" }}
-          </button>
-        </div>
-        <div class="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            class="btn-ghost border-navy/30 bg-canvas shadow-none"
+            class="mb-0 mr-6 mt-6 btn-ghost h-[32px] w-[32px] self-start px-0 py-0 shadow-none border-navy/30 bg-canvas md:mr-8 md:mt-8 lg:self-auto"
             @click="emit('close')"
           >
-            Avbryt
+            ×
           </button>
-          <button
-            type="button"
-            class="btn-primary"
-            :disabled="!isValid || isSubmitting"
-            @click="submit"
+        </div>
+
+        <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
+          <div
+            v-if="error"
+            class="system-message system-message-error"
           >
-            {{ isSubmitting ? "Sparar..." : isEditing ? "Spara klassrum" : "Skapa klassrum" }}
-          </button>
+            <div class="system-message-content">
+              {{ error }}
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+            <aside class="space-y-5">
+              <div class="space-y-1">
+                <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                  Klassrummets namn
+                </label>
+                <input
+                  v-model="name"
+                  type="text"
+                  placeholder="Till exempel Sal 304"
+                  class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                >
+              </div>
+
+              <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
+                <div class="mb-3 flex items-end justify-between gap-3">
+                  <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                    Verktyg
+                  </h3>
+                  <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                    {{ parsedSeats.length }} platser
+                  </span>
+                </div>
+
+                <div class="grid gap-2">
+                  <button
+                    type="button"
+                    class="btn-ghost justify-start shadow-none"
+                    :class="selectedTool === 'seat' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+                    @click="selectedTool = 'seat'"
+                  >
+                    Placera plats
+                  </button>
+                  <button
+                    v-for="fixture in roomFixturePalette"
+                    :key="fixture.type"
+                    type="button"
+                    class="btn-ghost justify-start shadow-none"
+                    :class="selectedTool === fixture.type ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+                    @click="selectedTool = fixture.type"
+                  >
+                    {{ fixture.label }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-ghost justify-start shadow-none"
+                    :class="selectedTool === 'erase' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+                    @click="selectedTool = 'erase'"
+                  >
+                    Sudda
+                  </button>
+                </div>
+              </div>
+
+              <div class="border border-navy bg-white p-4 shadow-brutal-sm">
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                  Lägesnotering
+                </h3>
+                <p class="mt-2 text-sm leading-relaxed text-navy/70">
+                  Välj ett verktyg och klicka i rutnätet. Fixturer upptar flera rutor och kan inte överlappa platser eller andra fixturer.
+                </p>
+              </div>
+            </aside>
+
+            <section class="space-y-4">
+              <div class="overflow-auto border border-navy bg-canvas p-4 shadow-brutal-sm">
+                <div
+                  class="relative grid gap-1"
+                  :style="{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, minWidth: `${GRID_COLS * 52}px` }"
+                >
+                  <template
+                    v-for="row in GRID_ROWS"
+                    :key="`row-${row}`"
+                  >
+                    <button
+                      v-for="col in GRID_COLS"
+                      :key="`cell-${row}-${col}`"
+                      type="button"
+                      class="relative aspect-square border text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] transition-colors"
+                      :class="{
+                        'border-navy/20 bg-white hover:border-navy/50': !isSeatAt(row - 1, col - 1) && !findFixtureAt(row - 1, col - 1),
+                        'border-navy bg-navy text-canvas': isSeatAt(row - 1, col - 1),
+                        'border-burgundy bg-burgundy/15 text-burgundy': findFixtureAt(row - 1, col - 1)?.type === 'teacher_desk',
+                        'border-navy bg-warning/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'whiteboard',
+                        'border-navy bg-canvas text-navy/70': findFixtureAt(row - 1, col - 1)?.type === 'window',
+                        'border-navy bg-success/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'door',
+                      }"
+                      @click="toggleGridCell(row - 1, col - 1)"
+                    >
+                      <span v-if="findFixtureAt(row - 1, col - 1) && findFixtureAt(row - 1, col - 1)?.row === row - 1 && findFixtureAt(row - 1, col - 1)?.col === col - 1">
+                        {{ findFixtureAt(row - 1, col - 1)?.label }}
+                      </span>
+                    </button>
+                  </template>
+                </div>
+              </div>
+
+              <details class="border border-navy bg-white p-4 shadow-brutal-sm">
+                <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+                  <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                    Förhandsvisning
+                  </h3>
+                  <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                    {{ parsedFixtures.length }} fixturer
+                  </span>
+                </summary>
+
+                <div class="relative mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
+                  <div
+                    class="relative"
+                    :style="{ width: `${GRID_COLS * GRID_UNIT}px`, height: `${GRID_ROWS * GRID_UNIT}px` }"
+                  >
+                    <div
+                      class="absolute inset-0 opacity-15"
+                      style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 24px 24px;"
+                    />
+
+                    <div
+                      v-for="fixture in parsedFixtures"
+                      :key="fixture.id"
+                      class="absolute flex items-center justify-center border text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
+                      :class="{
+                        'border-navy bg-warning/25 text-navy': fixture.type === 'whiteboard',
+                        'border-burgundy bg-burgundy/10 text-burgundy': fixture.type === 'teacher_desk',
+                        'border-navy bg-white text-navy/70': fixture.type === 'window',
+                        'border-success bg-success/20 text-navy': fixture.type === 'door',
+                      }"
+                      :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
+                    >
+                      {{ fixture.label }}
+                    </div>
+
+                    <div
+                      v-for="seat in parsedSeats"
+                      :key="seat.id"
+                      class="absolute flex h-[72px] w-[72px] items-center justify-center border border-navy bg-white text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] shadow-brutal-sm"
+                      :style="{ left: `${seat.x + 12}px`, top: `${seat.y + 12}px` }"
+                    >
+                      {{ seat.id }}
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </section>
+          </div>
+        </div>
+        <div class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+          <div>
+            <button
+              v-if="isEditing"
+              type="button"
+              class="btn-ghost border-burgundy/40 bg-white text-burgundy"
+              :disabled="isDeleting"
+              @click="removeTemplate"
+            >
+              {{ isDeleting ? "Raderar..." : "Radera klassrum" }}
+            </button>
+          </div>
+          <div class="flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              class="btn-ghost border-navy/30 bg-canvas shadow-none"
+              @click="emit('close')"
+            >
+              Avbryt
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              :disabled="!isValid || isSubmitting"
+              @click="submit"
+            >
+              {{ isSubmitting ? "Sparar..." : isEditing ? "Spara klassrum" : "Skapa klassrum" }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -46,6 +46,17 @@ class ClassroomPlannerBootstrapPayload(BaseModel):
     feature_flags: dict[str, bool] = Field(default_factory=dict)
 
 
+DEFAULT_LESSON_MODE_ID = "group_work"
+
+
+def get_default_lesson_mode_id() -> str:
+    """Return the hidden default lesson mode for fundamentals-first flows."""
+
+    if is_valid_lesson_mode_id(lesson_mode_id=DEFAULT_LESSON_MODE_ID):
+        return DEFAULT_LESSON_MODE_ID
+    return LESSON_MODE_PRESETS[0].id
+
+
 class Student(BaseModel):
     """Represent a student in a roster."""
 
@@ -234,6 +245,14 @@ class SuggestionEngineMetadata(BaseModel):
     explanation_bullets: list[str] = Field(default_factory=list)
 
 
+class PlanDraftStatus(StrEnum):
+    """Enumerate mutable draft lifecycle states."""
+
+    ACTIVE = "active"
+    ABANDONED = "abandoned"
+    SUPERSEDED = "superseded"
+
+
 class PlanDraft(BaseModel):
     """Represent the mutable root draft record."""
 
@@ -244,8 +263,10 @@ class PlanDraft(BaseModel):
     roster_id: UUID
     template_id: UUID
     lesson_mode_id: str
+    status: PlanDraftStatus = PlanDraftStatus.ACTIVE
     revision: int = 0
     engine_metadata: SuggestionEngineMetadata | None = None
+    last_opened_at: datetime
     created_at: datetime
     updated_at: datetime
 
@@ -278,6 +299,16 @@ class ClassroomPlannerWorkspace(BaseModel):
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
     pair_constraints: list[PairConstraint] = Field(default_factory=list)
     planning_profile: PlanningProfile = Field(default_factory=default_planning_profile)
+
+
+class ResumablePlanDraft(BaseModel):
+    """Represent the latest resumable draft shown on the landing page."""
+
+    model_config = ConfigDict(frozen=True)
+
+    draft: PlanDraft
+    roster_name: str
+    template_name: str
 
 
 class ValidationSeverity(StrEnum):
