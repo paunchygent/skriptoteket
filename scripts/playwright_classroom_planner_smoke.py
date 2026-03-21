@@ -3,8 +3,9 @@
 This script is the app-specific baseline for future classroom planner browser
 checks. It reuses the repo's shared Playwright config and Chromium launch
 fallback, logs in through the protected app route, creates a small real class
-list and classroom, opens the planner, and verifies that the core workspace can
-be reached without relying on PR-specific flows.
+list and classroom, walks through the class-first workspace flow, and verifies
+that the live planner can still be reached without relying on PR-specific
+shortcuts.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ from typing import Any
 from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium
+from scripts.playwright_ui_smoke import _launch_chromium, _login
 
 APP_PATH = "/apps/classroom.group-seating-studio"
 ARTIFACTS_DIR = Path(".artifacts/classroom-planner-smoke")
@@ -26,7 +27,7 @@ ARTIFACTS_DIR = Path(".artifacts/classroom-planner-smoke")
 def _wait_for_app_heading(page: Any) -> None:
     """Poll for the planner heading through the SPA transition after login."""
 
-    app_heading = page.locator("main").get_by_text("Klassrumskartan", exact=True)
+    app_heading = page.get_by_role("heading", name="Klassrumskartan", exact=True)
     for _ in range(30):
         if app_heading.count() > 0:
             return
@@ -36,20 +37,10 @@ def _wait_for_app_heading(page: Any) -> None:
 
 
 def _login_to_app(page: Any, *, base_url: str, email: str, password: str) -> None:
-    """Open the protected app route and complete the standard SPA login modal."""
+    """Log in through the shared repo flow, then open the protected app route."""
 
+    _login(page, base_url=base_url, email=email, password=password)
     page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
-
-    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-    if dialog.count() > 0:
-        expect(dialog).to_be_visible()
-        dialog.get_by_label("E-post").fill(email)
-        dialog.get_by_label("Lösenord").fill(password)
-        dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-        expect(
-            page.get_by_role("button", name=re.compile(r"Logga ut", re.IGNORECASE))
-        ).to_be_visible(timeout=15_000)
-
     _wait_for_app_heading(page)
 
 
@@ -81,13 +72,32 @@ def _create_template(page: Any, *, template_name: str) -> None:
     expect(page.get_by_role("heading", name=re.compile(re.escape(template_name)))).to_be_visible()
 
 
-def _open_workspace(page: Any) -> None:
-    """Open the planner workspace from the selection gate."""
+def _open_class_workspace(page: Any, *, roster_name: str) -> None:
+    """Open the class workspace from the class-first landing surface."""
 
-    open_button = page.get_by_role("button", name=re.compile(r"Öppna planeringen", re.IGNORECASE))
+    roster_card = page.get_by_role("button", name=re.compile(re.escape(roster_name))).first
+    expect(roster_card).to_be_visible()
+    roster_card.click()
+    expect(page.get_by_text("Klassarbetsyta", exact=True)).to_be_visible()
+
+
+def _open_seating_workspace(page: Any, *, template_name: str) -> None:
+    """Open the planner workspace through the class workspace seating card."""
+
+    template_select = page.locator("select")
+    option_rows = template_select.evaluate(
+        """element => Array.from(element.options).map(option => ({
+            value: option.value,
+            label: option.label,
+        }))"""
+    )
+    matching_option = next(
+        option for option in option_rows if option["value"] and template_name in option["label"]
+    )
+    template_select.select_option(value=matching_option["value"])
+    open_button = page.get_by_role("button", name=re.compile(r"Öppna sittplatser", re.IGNORECASE))
     expect(open_button).to_be_enabled()
     open_button.click()
-    expect(page.get_by_role("button", name=re.compile(r"Gruppvy", re.IGNORECASE))).to_be_visible()
     expect(
         page.get_by_role("button", name=re.compile(r"Sittplatser", re.IGNORECASE))
     ).to_be_visible()
@@ -123,7 +133,8 @@ def main() -> None:
         _login_to_app(page, base_url=base_url, email=config.email, password=config.password)
         _create_roster(page, roster_name=roster_name)
         _create_template(page, template_name=template_name)
-        _open_workspace(page)
+        _open_class_workspace(page, roster_name=roster_name)
+        _open_seating_workspace(page, template_name=template_name)
         _open_student_metadata(page)
 
         page.screenshot(

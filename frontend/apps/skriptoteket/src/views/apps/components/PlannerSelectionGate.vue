@@ -2,57 +2,30 @@
 /**
  * Planner selection gate.
  *
- * This component renders the pre-planning asset selection flow for
- * Klassrumskartan. It keeps class list and classroom selection, CRUD entry
- * points, and responsive onboarding copy outside the live planner workspace.
+ * This component renders the class-first landing surface for Klassrumskartan.
+ * It keeps the top-level resumable CTA, class selection, and secondary roster
+ * and classroom management outside the class workspace and live planner shell.
  */
-
-import { computed } from "vue";
 
 import type { ResumablePlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
 
-const props = defineProps<{
+defineProps<{
   availableRosters: Roster[];
   availableTemplates: RoomTemplate[];
   selectedRosterId: string | null;
-  selectedTemplateId: string | null;
   resumableDraft: ResumablePlanDraft | null;
   isLoadingCatalog: boolean;
-  canStartPlanning: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "select-roster", rosterId: string): void;
-  (e: "select-template", templateId: string): void;
   (e: "create-roster"): void;
   (e: "edit-roster", roster: Roster): void;
   (e: "create-template"): void;
   (e: "edit-template", template: RoomTemplate): void;
-  (e: "start-planning"): void;
   (e: "resume-draft"): void;
   (e: "discard-resumable-draft"): void;
 }>();
-
-const selectedRoster = computed(() => {
-  return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;
-});
-
-const selectedTemplate = computed(() => {
-  return props.availableTemplates.find((template) => template.id === props.selectedTemplateId) ?? null;
-});
-
-function capacityLabel(template: RoomTemplate): string | null {
-  if (!selectedRoster.value) {
-    return null;
-  }
-
-  const seatCount = template.seats.length;
-  const studentCount = selectedRoster.value.students.length;
-  if (seatCount >= studentCount) {
-    return `${studentCount} elever passar i ${seatCount} platser`;
-  }
-  return `${studentCount} elever men bara ${seatCount} platser`;
-}
 </script>
 
 <template>
@@ -64,34 +37,12 @@ function capacityLabel(template: RoomTemplate): string | null {
             Startyta
           </p>
           <h2 class="font-serif text-2xl text-navy">
-            Välj klass och klassrum
+            Välj klass först
           </h2>
         </div>
         <div class="text-sm text-navy/70">
-          Planeringen öppnas så snart du har valt båda.
+          Fortsätt senaste utkastet direkt eller öppna en klassarbetsyta för att välja nästa steg.
         </div>
-      </div>
-
-      <div
-        v-if="selectedRoster && selectedTemplate"
-        class="grid gap-3 border border-success/30 bg-success/10 p-4 text-sm text-navy md:grid-cols-[minmax(0,1fr)_auto]"
-      >
-        <div class="space-y-1">
-          <div class="font-semibold">
-            {{ selectedRoster.name }} · {{ selectedTemplate.name }}
-          </div>
-          <div class="text-navy/70">
-            {{ selectedRoster.students.length }} elever · {{ selectedTemplate.seats.length }} platser
-          </div>
-        </div>
-        <button
-          type="button"
-          class="btn-cta"
-          :disabled="!canStartPlanning"
-          @click="emit('start-planning')"
-        >
-          Öppna planeringen
-        </button>
       </div>
 
       <div
@@ -130,10 +81,10 @@ function capacityLabel(template: RoomTemplate): string | null {
         <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              1. Klasslistor
+              1. Klasser
             </p>
             <h2 class="font-serif text-2xl text-navy">
-              Välj klass
+              Öppna en klass
             </h2>
           </div>
           <button
@@ -180,7 +131,7 @@ function capacityLabel(template: RoomTemplate): string | null {
                   {{ roster.name }}
                 </h3>
                 <p class="mt-1 text-sm text-navy/70">
-                  {{ roster.students.length }} elever
+                  {{ roster.students.length }} elever · öppna klassarbetsytan
                 </p>
               </div>
               <button
@@ -199,10 +150,10 @@ function capacityLabel(template: RoomTemplate): string | null {
         <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              2. Klassrum
+              2. Klassrum i bakgrunden
             </p>
             <h2 class="font-serif text-2xl text-navy">
-              Välj rumsmall
+              Hantera rumsmallar
             </h2>
           </div>
           <button
@@ -235,13 +186,7 @@ function capacityLabel(template: RoomTemplate): string | null {
           <article
             v-for="template in availableTemplates"
             :key="template.id"
-            class="cursor-pointer border p-4 transition-shadow"
-            :class="selectedTemplateId === template.id ? 'border-burgundy bg-burgundy/10 shadow-brutal-sm' : 'border-navy/20 bg-white hover:shadow-brutal-sm'"
-            role="button"
-            tabindex="0"
-            @click="emit('select-template', template.id)"
-            @keydown.enter.prevent="emit('select-template', template.id)"
-            @keydown.space.prevent="emit('select-template', template.id)"
+            class="border border-navy/20 bg-white p-4 transition-shadow hover:shadow-brutal-sm"
           >
             <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div class="min-w-0 text-left">
@@ -250,12 +195,6 @@ function capacityLabel(template: RoomTemplate): string | null {
                 </h3>
                 <p class="mt-1 text-sm text-navy/70">
                   {{ template.seats.length }} platser · {{ template.fixtures.length }} fixturer
-                </p>
-                <p
-                  v-if="capacityLabel(template)"
-                  class="mt-1 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55"
-                >
-                  {{ capacityLabel(template) }}
                 </p>
               </div>
               <button

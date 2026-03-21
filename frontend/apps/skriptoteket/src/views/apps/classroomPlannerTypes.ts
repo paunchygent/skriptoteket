@@ -69,6 +69,7 @@ export type StudentPlanningMeta = {
 };
 
 export type PlanDraftKind = "grouping" | "seating";
+export type ClassroomSelectionMode = "optional" | "required";
 
 export type PlanDraft = {
   id: string;
@@ -84,6 +85,37 @@ export type ResumablePlanDraft = {
   draft: PlanDraft;
   roster_name: string;
   template_name?: string | null;
+};
+
+export type TaskEntryOption = {
+  draft_kind: PlanDraftKind;
+  classroom_selection_mode: ClassroomSelectionMode;
+};
+
+export type PlanDraftSummary = {
+  id: string;
+  draft_kind: PlanDraftKind;
+  template_id?: string | null;
+  template_name?: string | null;
+  status: "active" | "abandoned" | "superseded";
+  revision: number;
+  last_opened_at: string;
+  updated_at: string;
+};
+
+export type ClassWorkspaceRosterSummary = {
+  id: string;
+  name: string;
+  student_count: number;
+};
+
+export type ClassWorkspaceSummary = {
+  roster: ClassWorkspaceRosterSummary;
+  task_entry_options: TaskEntryOption[];
+  active_grouping_draft?: PlanDraftSummary | null;
+  active_seating_draft?: PlanDraftSummary | null;
+  grouping_history: PlanDraftSummary[];
+  seating_history: PlanDraftSummary[];
 };
 
 export type DraftWorkspaceResponse = {

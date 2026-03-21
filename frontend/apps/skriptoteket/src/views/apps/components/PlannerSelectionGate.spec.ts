@@ -1,24 +1,31 @@
+/**
+ * Landing-gate component tests.
+ *
+ * These tests verify that the landing surface stays class-first while keeping
+ * the top-level resumable-draft CTA visible before class selection.
+ */
+
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import PlannerSelectionGate from "./PlannerSelectionGate.vue";
 
 describe("PlannerSelectionGate", () => {
-  it("shows the planner launch CTA when class and classroom are selected", () => {
+  it("renders a class-first landing flow instead of a class-and-classroom launch gate", () => {
     const wrapper = mount(PlannerSelectionGate, {
       props: {
         availableRosters: [{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }],
         availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [{ id: "seat-1", x: 0, y: 0 }], fixtures: [] }],
         selectedRosterId: "roster-1",
-        selectedTemplateId: "template-1",
         resumableDraft: null,
         isLoadingCatalog: false,
-        canStartPlanning: true,
       },
     });
 
-    expect(wrapper.text()).toContain("Öppna planeringen");
-    expect(wrapper.text()).not.toContain("Lektionsläge");
+    expect(wrapper.text()).toContain("Välj klass först");
+    expect(wrapper.text()).toContain("Öppna en klass");
+    expect(wrapper.text()).toContain("Hantera rumsmallar");
+    expect(wrapper.text()).not.toContain("Öppna planeringen");
   });
 
   it("renders an explicit resume CTA when a resumable draft exists", () => {
@@ -27,7 +34,6 @@ describe("PlannerSelectionGate", () => {
         availableRosters: [],
         availableTemplates: [],
         selectedRosterId: null,
-        selectedTemplateId: null,
         resumableDraft: {
           draft: {
             id: "draft-1",
@@ -42,7 +48,6 @@ describe("PlannerSelectionGate", () => {
           template_name: "Sal 101",
         },
         isLoadingCatalog: false,
-        canStartPlanning: false,
       },
     });
 

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0087
 title: "Klassrumskartan: class-first landing and workspace state machine"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-21
@@ -43,12 +43,12 @@ This keeps the app easy to reason about while matching the teacher's real workfl
 
 ## Checklist
 
-- [ ] Replace the current symmetric selection gate with a class-first landing flow.
-- [ ] Keep `resume most recent work` at the top level before class selection.
-- [ ] Add a class workspace state inside `ClassroomPlannerView.vue`.
-- [ ] Load and render the class workspace summary after class selection.
-- [ ] Keep classrooms manageable from the app, but demote them from equal first-step prominence.
-- [ ] Add frontend tests for landing-to-class-workspace transitions and top-level resume behavior.
+- [x] Replace the current symmetric selection gate with a class-first landing flow.
+- [x] Keep `resume most recent work` at the top level before class selection.
+- [x] Add a class workspace state inside `ClassroomPlannerView.vue`.
+- [x] Load and render the class workspace summary after class selection.
+- [x] Keep classrooms manageable from the app, but demote them from equal first-step prominence.
+- [x] Add frontend tests for landing-to-class-workspace transitions and top-level resume behavior.
 
 ## Implementation plan
 
@@ -80,5 +80,6 @@ This keeps the app easy to reason about while matching the teacher's real workfl
 
 ## Follow-up direction
 
-- `PR-0088` will make the class workspace actionable by wiring task-specific draft entry and
-  planner return behavior.
+- `PR-0088` will refine the class-workspace task-entry rules and replace the remaining
+  landing-page reset behavior with planner return/discard semantics that match the new
+  class-first flow.

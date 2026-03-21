@@ -8,7 +8,7 @@
  * whole-workspace mental model.
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import GroupBoard from "./GroupBoard.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
@@ -17,15 +17,37 @@ import { useClassroomState } from "../useClassroomState";
 
 type PlannerView = "groups" | "seats";
 
+const props = withDefaults(
+  defineProps<{
+    initialView?: PlannerView;
+  }>(),
+  {
+    initialView: "groups",
+  },
+);
+
 const emit = defineEmits<{
   (e: "reset-selection"): void;
 }>();
 
 const plannerState = useClassroomState();
 
-const currentView = ref<PlannerView>("groups");
+function resolvePlannerView(requestedView: PlannerView): PlannerView {
+  if (plannerState.draft?.draft_kind === "grouping") {
+    return "groups";
+  }
+  if (plannerState.draft?.draft_kind === "seating") {
+    return "seats";
+  }
+  return requestedView;
+}
+
+const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
 const selectedStudentId = ref<string | null>(null);
 const isMetadataDrawerOpen = ref(false);
+const canShowGroupingSurface = computed(() => plannerState.draft?.draft_kind !== "seating");
+const canShowSeatingSurface = computed(() => plannerState.draft?.draft_kind !== "grouping");
+const workspaceContextLabel = computed(() => plannerState.template?.name ?? "Utan klassrum");
 
 const currentViewHint = computed(() => {
   if (currentView.value === "groups") {
@@ -46,6 +68,24 @@ function selectStudent(studentId: string): void {
 async function reloadAfterConflict(): Promise<void> {
   await plannerState.reloadActiveWorkspace();
 }
+
+watch(
+  () => props.initialView,
+  (nextView) => {
+    currentView.value = resolvePlannerView(nextView);
+    isMetadataDrawerOpen.value = false;
+    selectedStudentId.value = null;
+  },
+);
+
+watch(
+  () => plannerState.draft?.draft_kind ?? null,
+  () => {
+    currentView.value = resolvePlannerView(currentView.value);
+    isMetadataDrawerOpen.value = false;
+    selectedStudentId.value = null;
+  },
+);
 
 </script>
 
@@ -77,12 +117,13 @@ async function reloadAfterConflict(): Promise<void> {
             {{ plannerState.roster?.name }}
           </h2>
           <p class="text-sm leading-relaxed text-navy/70">
-            {{ plannerState.template?.name }} · revision {{ plannerState.draft?.revision ?? 0 }}
+            {{ workspaceContextLabel }} · revision {{ plannerState.draft?.revision ?? 0 }}
           </p>
         </div>
 
         <div class="flex flex-wrap gap-2">
           <button
+            v-if="canShowGroupingSurface"
             type="button"
             class="btn-ghost"
             :class="currentView === 'groups' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-canvas shadow-none'"
@@ -94,6 +135,7 @@ async function reloadAfterConflict(): Promise<void> {
             Gruppvy
           </button>
           <button
+            v-if="canShowSeatingSurface"
             type="button"
             class="btn-ghost"
             :class="currentView === 'seats' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-canvas shadow-none'"

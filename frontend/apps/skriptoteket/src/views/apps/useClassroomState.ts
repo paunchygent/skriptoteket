@@ -13,6 +13,7 @@ import { defineStore } from "pinia";
 
 import { ApiError, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
 import {
+  type ClassWorkspaceSummary,
   type DraftGroup,
   type DraftWorkspaceResponse,
   type GroupAssignment,
@@ -54,7 +55,13 @@ export const useClassroomState = defineStore("classroom-state", () => {
   let saveQueued = false;
 
   const hasWorkspace = computed(() => {
-    return draft.value !== null && roster.value !== null && template.value !== null;
+    if (draft.value === null || roster.value === null) {
+      return false;
+    }
+    if (draft.value.draft_kind === "grouping") {
+      return true;
+    }
+    return template.value !== null;
   });
 
   const students = computed(() => roster.value?.students ?? []);
@@ -279,6 +286,12 @@ export const useClassroomState = defineStore("classroom-state", () => {
     );
   }
 
+  async function getClassWorkspaceSummary(rosterId: string): Promise<ClassWorkspaceSummary> {
+    return await apiGet<ClassWorkspaceSummary>(
+      `/api/v1/apps/classroom.group-seating-studio/rosters/${rosterId}/workspace-summary`,
+    );
+  }
+
   async function abandonDraft(draftId?: string): Promise<void> {
     const targetDraftId = draftId ?? draft.value?.id ?? null;
     if (!targetDraftId) {
@@ -350,6 +363,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     loadWorkspace,
     reloadActiveWorkspace,
     getResumableDraft,
+    getClassWorkspaceSummary,
     abandonDraft,
     assignStudentToGroup,
     removeStudentFromGroup,
