@@ -276,6 +276,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0087-klassrumskartan-class-first-landing-and-workspace-state-machine.md`
 - `docs/backlog/prs/pr-0088-klassrumskartan-task-entry-and-planner-return-semantics.md`
 - `docs/backlog/prs/pr-0089-klassrumskartan-task-history-drawers-and-workspace-polish.md`
+- `docs/backlog/prs/pr-0090-klassrumskartan-grouping-draft-history-contract.md`
+- `docs/backlog/prs/pr-0091-klassrumskartan-grouping-workspace-fundamentals.md`
+- `docs/backlog/prs/pr-0092-klassrumskartan-grouping-undo-redo-and-autosave-ux.md`
+- `docs/backlog/prs/pr-0093-klassrumskartan-grouping-class-history-and-draft-continuity.md`
 - `docs/backlog/prs/pr-0067-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/prs/pr-0068-reagent-prep-chef-sds-pdfs-manual-download.md`
 - `docs/backlog/prs/pr-0069-reagent-prep-chef-sds-index-available-in-docker.md`

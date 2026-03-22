@@ -1,7 +1,7 @@
 ---
 type: adr
 id: ADR-0071
-title: "Klassrumskartan Fundamentals Workflow, Draft Lifecycle, and Saved Artifacts"
+title: "Klassrumskartan Fundamentals Workflow, Draft Lifecycle, and Export Artifacts"
 status: accepted
 owners: "agents"
 deciders: ["architect"]
@@ -20,7 +20,8 @@ We need a contract that preserves the normalized draft core while resetting the 
 - class first, classroom secondary
 - explicit grouping versus seating modes
 - mode-specific randomize/save semantics
-- named teacher-facing saved outputs
+- bounded draft history for undo/redo
+- later explicit export artifacts
 - server-owned draft lifecycle instead of ad hoc client-only resume
 
 ## Decision
@@ -85,7 +86,7 @@ mutable drafts.
 ADR-0072 further constrains that lifecycle by making active work class-scoped and draft-kind
 specific.
 
-### 5. Randomize and save are mode-specific actions
+### 5. Randomize and working controls are mode-specific actions
 
 `Slumpa` is not one global whole-workspace action in the fundamentals workflow.
 
@@ -94,33 +95,40 @@ specific.
 
 Likewise, teacher save actions are mode-specific:
 
-- save grouping
-- save seating arrangement
+- draft undo/redo in grouping
+- draft undo/redo in seating
+- later export of the current grouping draft
+- later export of the current seating draft
 
-Mode-specific save flows must not be blocked by unrelated findings from the other axis.
+Mode-specific working controls must not be blocked by unrelated findings from the other axis.
 
-### 6. Saved outputs are named teacher-facing artifacts with immutable revisions
+### 6. Draft history is bounded working state, not a saved-item archive
 
-Teacher-facing saved outputs are not modeled as unnamed whole-workspace finalize snapshots.
+Recent draft history exists to support undo and redo inside the active workspace.
 
-Instead, the canonical fundamentals model is:
+The canonical fundamentals model is:
 
-- a named saved artifact root owned by the teacher
-- immutable revision records beneath that root
+- one active draft per class and draft kind
+- autosave of the current draft state
+- a bounded recent-history buffer for undo/redo
+- configurable history depth, with 10 steps as the current planning target
 
-The root owns teacher-facing identity:
+This recent-history buffer:
 
-- name
-- kind (`grouping` or `seating`)
-- current revision pointer
+- is part of draft working state
+- is teacher-accessible through workspace undo/redo controls
+- is not a list of separate saved files or named artifacts
+- must remain easy to reason about and cheap to tune
 
-The revision owns the frozen payload and source-draft provenance.
+### 7. Durable file-vault artifacts come from explicit export, not autosave
 
-Editing a saved grouping or saved seating arrangement creates a new immutable revision and must not mutate the live working draft by accident.
+Normal draft autosave and undo/redo history must not masquerade as teacher-facing file-vault
+artifacts.
 
-### 7. Vault integration is a projection, not the source of truth
-
-The planner domain remains authoritative for saved groupings and saved seating arrangements. The file vault receives a synchronized teacher-facing projection so the artifacts are discoverable alongside other saved work. The vault does not become the canonical source of planner truth.
+When durable artifacts are introduced later, they must come from an explicit export/checkpoint
+action on the current draft. The planner domain remains authoritative for draft state. The file
+vault may later receive exported projections, but the vault does not become the canonical source
+of planner truth.
 
 ### 8. Advanced logic remains hidden until separately approved
 
@@ -134,11 +142,13 @@ Constraint logic, pair rules, zone preferences, history rules, suggestion panels
 - The app can evolve toward a class-first workspace without undoing the fundamentals reset.
 - Resume remains possible without undermining the landing page.
 - Grouping and seating stop leaking into each other's save/randomize flows.
-- Saved outputs become meaningful teacher-owned artifacts instead of anonymous technical snapshots.
+- Draft continuity becomes much easier to understand because autosave, undo/redo, and later export
+  no longer compete as overlapping save concepts.
 - The normalized DDD core from ADR-0069 is preserved rather than discarded.
 
 ### Tradeoffs / Risks
 
-- More backend contract work is required around draft lifecycle and saved-artifact persistence.
+- More backend contract work is required around draft lifecycle and bounded draft-history
+  persistence.
 - Existing whole-workspace finalize/snapshot concepts may need to be retained only as advanced or audit/export-oriented mechanisms.
 - The UI must resist re-exposing hidden advanced semantics until those concepts have their own approved stories.

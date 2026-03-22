@@ -21,7 +21,7 @@ The teacher primarily thinks in terms of **a class**:
 - continue active work for that class
 - start new seating work for that class
 - start new grouping work for that class
-- review saved history for that class
+- review draft continuity for that class
 
 The classroom remains important, but mainly as reusable context for room-bound planning.
 
@@ -73,7 +73,7 @@ draft is active.
 
 - `SeatingDraft` is class-scoped and room-contextual.
   - The draft may exist before a room is chosen.
-  - Seat assignments and saved seating outcomes remain classroom-bound once room context exists.
+  - Seat assignments remain classroom-bound once room context exists.
   - Room selection and room switching happen inside the seating workspace.
 - `GroupingDraft` is class-scoped and may be:
   - classroom-agnostic
@@ -81,7 +81,7 @@ draft is active.
 
 This distinction must be clear in both the UI and the API contract.
 
-### 6. Exit, resume, discard, and save are different actions
+### 6. Exit, resume, discard, and export are different actions
 
 The product must distinguish clearly between:
 
@@ -89,8 +89,8 @@ The product must distinguish clearly between:
 - leaving the planner while keeping active work resumable
 - exiting the class workspace back to the landing page
 - explicitly discarding a draft
-- saving a teacher-approved grouping
-- saving a teacher-approved seating arrangement
+- using undo/redo inside the current draft workspace
+- later exporting the current grouping or seating draft deliberately
 
 Switching to `Översikt` does not discard by default. Exiting the class workspace does not discard by
 default. Discard is explicit and separate.
@@ -105,21 +105,21 @@ class selection. The class workspace itself stays neutral until the teacher expl
 
 The class owns its visible history:
 
-- saved groupings
-- saved seating arrangements
 - prior drafts/history for the same class and draft kind
+
+The active draft itself owns its bounded recent undo/redo history inside the workspace.
 
 History must be accessible, but secondary to active work.
 
-### 9. Future smart placement should prefer teacher-approved seating history
+### 9. Future smart placement should prefer explicit teacher-approved seating checkpoints
 
 For future smart placement and rotation features, the preferred historical input is:
 
-- saved seating history
+- later explicit exported or approved seating checkpoints
 - class context
 - teacher-authored placement metadata
 
-Saved grouping history remains useful, but is more secondary. Abandoned drafts are not the
+Grouping history remains useful, but is more secondary. Abandoned drafts and raw undo/redo trail are not the
 preferred source for future algorithmic decisions.
 
 ## Consequences
@@ -129,8 +129,8 @@ preferred source for future algorithmic decisions.
 - The visible app now matches the teacher's actual planning hierarchy.
 - Grouping and seating stop implying that they are always one blended activity.
 - Classroom selection becomes conditional and more intuitive.
-- The future historical data model becomes cleaner because saved class-owned artifacts are
-  distinguishable from ephemeral drafts.
+- The future historical data model becomes cleaner because active drafts, draft undo/redo state,
+  and later explicit export artifacts stay distinct.
 
 ### Tradeoffs / Risks
 

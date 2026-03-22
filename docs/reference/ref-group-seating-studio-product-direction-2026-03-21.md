@@ -12,8 +12,8 @@ links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "EPIC-24"]
 ## One-sentence direction
 
 Klassrumskartan is a teacher-first, **class-first** planning app where seating and grouping are
-separate tasks, classrooms are reusable secondary context, and teacher-approved history stays
-attached to the class.
+separate tasks, classrooms are reusable secondary context, and working history stays attached to
+the active draft while durable artifacts come later through explicit export.
 
 ## Mental model
 
@@ -30,14 +30,15 @@ attached to the class.
 3. Inside that class, land in a neutral overview with a fixed toggle.
 4. Switch to grouping or seating directly from that toggle.
 5. Choose or switch classroom inside seating when the task needs it.
-6. Save meaningful arrangements that later become useful history.
+6. Work inside one active draft with autosave and bounded undo/redo.
+7. Export durable artifacts later through an explicit action instead of treating autosave as file storage.
 
 ## Key product rules
 
 - The class workspace stays neutral until the teacher chooses the task.
 - The overview/grouping/seating toggle stays fixed in place while the selected workspace changes below it.
 - Seating drafts can open before a classroom is chosen; room selection and room switching happen inside seating.
-- Seat assignments and saved seating outcomes are classroom-bound.
+- Seat assignments remain classroom-bound once room context exists.
 - Grouping may be classroom-aware or classroom-agnostic.
 - One active draft exists per class and draft kind.
 - Starting a new draft of the same kind demotes the previous active draft to history.
@@ -46,8 +47,11 @@ attached to the class.
 
 ## History rules
 
-- Saved seating history is the primary future source for smart placement and rotation.
-- Saved grouping history matters, but is more secondary and ephemeral.
+- Recent draft history exists for undo/redo inside the active workspace and should not be surfaced
+  as a pile of separate saved items.
+- Later explicit seating checkpoints or exports are the primary future source for smart placement
+  and rotation.
+- Grouping history matters, but is more secondary and operational.
 - Abandoned drafts are not the preferred future algorithm input.
 
 ## UI rules

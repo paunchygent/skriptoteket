@@ -6,7 +6,7 @@ status: active
 owners: "agents"
 created: 2026-03-20
 updated: 2026-03-22
-outcome: "Teachers work from a class-first workspace, enter separate grouping or seating drafts as needed, use classrooms as secondary context, and save meaningful class-owned history without being forced through undeclared advanced planning controls."
+outcome: "Teachers work from a class-first workspace, enter separate grouping or seating drafts as needed, use classrooms as secondary context, and rely on autosave plus bounded undo/redo draft history without being forced through undeclared advanced planning controls."
 dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 ---
 
@@ -24,11 +24,9 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - Split randomize/save behavior by teacher task so grouping and seating stop behaving like one global workspace action.
 - Allow grouping to be classroom-agnostic or classroom-aware.
 - Keep seating outcomes classroom-bound while allowing the seating draft to open before room selection and manage room context inside the seating workspace.
-- Let teachers save meaningful named outputs:
-  - named groupings for completed group assignments
-  - named seating arrangements for completed seat assignments
-- Model saved outputs as class-owned teacher artifacts that can be renamed, edited, deleted, and later surfaced through the vault without mutating the live draft.
-- Persist saved arrangements and their relevant settings into the user file vault so the work can be found, edited, and deleted later.
+- Keep one active draft per class and task, with bounded recent draft history for undo/redo inside the workspace.
+- Treat autosave and in-workspace undo/redo as draft mechanics, not as teacher-facing file-vault artifacts.
+- Prepare later export/checkpoint flows without conflating them with normal draft save/resume behavior.
 - Add an explicit draft lifecycle so the server understands active/resumable/abandoned/history work instead of accumulating hidden orphan drafts.
 - Establish one active draft per class per draft kind, with automatic demotion of the previous active draft of the same kind to history.
 - Remove superseded solver-first planner contracts from the active codebase before later class-first workspace, grouping, and seating slices continue.
@@ -39,6 +37,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - Visible pair-rule controls, zone-preference controls, or multi-slider rule-engine tuning in the main teacher workflow.
 - Full smart-placement settings design beyond what is required to keep future defaults hidden and separate.
 - Export generation itself (PDF/XLSX), even if this epic prepares the saved-arrangement concepts used later.
+- Treating ordinary draft autosave or undo/redo history as the teacher-facing export or artifact model.
 - Treating the current whole-workspace `ArrangementSnapshot` finalize flow as the teacher-facing save model for groupings or seating arrangements.
 - Treating generic abandoned drafts as the preferred future history source for smart placement.
 
@@ -47,8 +46,8 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-01: Landing page fundamentals](../stories/story-24-01-group-seating-studio-landing-page-fundamentals.md)
 - [x] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md)
 - [x] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
-- [ ] [ST-24-03: Grouping fundamentals + saved groupings](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
-- [ ] [ST-24-04: Seating fundamentals + saved seating arrangements](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
+- [ ] [ST-24-03: Grouping fundamentals + draft history](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
+- [ ] [ST-24-04: Seating fundamentals + draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 
 ## Implementation Summary (as of 2026-03-22)
 
@@ -83,7 +82,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - The newer review guidance also clarifies three structural decisions for implementation:
   - class-first workspace with classrooms as secondary context
   - one active draft per class per draft kind
-  - named saved outputs as class-owned teacher artifacts, not unnamed whole-workspace snapshots
+  - draft-local undo/redo history now, with later explicit export artifacts instead of unnamed whole-workspace snapshots
 - `ST-24-02`, `ST-24-03`, and `ST-24-04` now depend on the remediation gate because the current
   code still contains active solver-era models, routes, store state, and owner-global draft
   invariants that would otherwise bleed into later work.

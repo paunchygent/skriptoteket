@@ -97,7 +97,9 @@ Approved long-term: hybrid.
 
 Approved as a separate advanced concern, not as the teacher-facing save model for groupings and seating arrangements.
 
-For EPIC-24 fundamentals, teacher-facing saved outputs should instead become named artifacts with immutable revisions.
+For EPIC-24 fundamentals, autosave and undo/redo should stay draft-local and bounded, while any
+durable teacher-facing artifacts should come later through explicit export rather than ordinary
+save semantics.
 
 ### 5. Random assignment and future rule toggles
 
@@ -123,9 +125,11 @@ Approved: the planner should follow the existing HuleEdu brutalist academic desi
 - Keep the class workspace neutral on entry with a stable top toggle for overview, grouping, and seating.
 - Separate grouping drafts from seating drafts in the teacher-facing workflow.
 - Split randomize/save flows by teacher mode.
-- Introduce named saved outputs for groupings and seating arrangements, with edit/delete behavior and vault projection.
-- Attach active work and saved history to the class.
-- Prefer saved seating history over abandoned drafts as future smart-placement input.
+- Keep one active draft per class and task, with bounded in-workspace undo/redo history.
+- Attach active work and secondary draft continuity to the class without turning ordinary draft
+  state into file-vault artifacts.
+- Prefer later explicit seating checkpoints or export artifacts over abandoned drafts as future
+  smart-placement input.
 - Keep advanced validation/suggestions/finalization hidden from the default fundamentals workflow until later approved stories.
 - Carry the remaining implementation-shaping directives through technical backlog items:
   - class-first workspace

@@ -24,7 +24,8 @@ class-first workflow:
 - seating drafts can open before a classroom is chosen, but seat work remains classroom-bound once room context exists
 - grouping may use a classroom, but does not have to
 - one active draft exists per class and draft kind
-- saved seating and grouping history belongs to the class
+- bounded undo/redo history belongs to the active draft inside the workspace
+- durable file-vault artifacts belong to a later explicit export flow rather than ordinary save
 
 This keeps the happy path simple while preserving the data needed for later smart placement.
 
@@ -33,16 +34,18 @@ This keeps the happy path simple while preserving the data needed for later smar
 - Make `Class` the primary teacher workspace anchor in the product.
 - De-emphasize `Classroom` as a supporting asset rather than an equal first-step object.
 - Let teachers continue active work per class without being forced to micromanage draft state.
-- Separate `Seating` and `Grouping` as distinct units of work, with distinct drafts, save flows,
-  and history.
+- Separate `Seating` and `Grouping` as distinct units of work, with distinct drafts and
+  mode-specific working controls.
 - Keep the default workflow simple enough that a teacher can do manual planning without learning
   planning jargon.
-- Persist meaningful teacher-approved history that can support later smart-placement features.
+- Keep recent draft history available for undo/redo without turning it into a separate saved-item
+  model.
+- Leave durable export/file-vault artifacts to a later explicit export flow.
 
 ## Non-goals
 
 - Treating grouping and seating as one blended working draft by default.
-- Making historical drafts or saved arrangements the primary visual focus of the main view.
+- Making historical drafts or later export artifacts the primary visual focus of the main view.
 - Exposing smart-placement weights, solver language, or advanced rule controls in the default
   teacher workflow.
 - Finalizing the smart-placement algorithm itself in this PRD version.
@@ -106,34 +109,38 @@ This keeps the happy path simple while preserving the data needed for later smar
 - Grouping is a distinct task from seating.
 - Teachers can create classroom-agnostic groups directly from a class roster.
 - Teachers can optionally create grouping drafts informed by the current classroom context later.
-- Saved groupings belong to the class.
-- Grouping history is useful, but secondary compared with seating history.
+- Grouping drafts autosave continuously.
+- Grouping exposes bounded in-workspace undo/redo history rather than a separate saved-groupings
+  archive in this PRD version.
 
 ### 6. Seating workflow
 
 - Seating is a distinct task from grouping.
 - Seating drafts are class-scoped and room-contextual.
-- Saved seating arrangements belong to the class.
-- Seating history is the main future historical input for smart placement and student rotation.
+- Seating drafts autosave continuously.
+- Seating exposes bounded in-workspace undo/redo history rather than a separate saved-arrangements
+  archive in this PRD version.
 
-### 7. Saved outputs and history
+### 7. Draft continuity, undo/redo, and later export
 
 - The app distinguishes clearly between:
   - active draft
   - discarded draft
-  - saved grouping
-  - saved seating arrangement
-- Teacher-approved saved arrangements are the preferred historical source for future smart
-  placement.
-- Abandoned or half-finished drafts should not be treated as equally valuable historical input.
-- Saved arrangements can still be reviewed, revisited, reprinted, and later edited if necessary,
-  but history should not dominate the default teacher workflow.
+  - superseded draft
+  - bounded in-workspace draft history
+  - later explicit export artifact
+- Recent draft history exists to support undo/redo inside the workspace; it is not a list of
+  separate saved items.
+- Abandoned or half-finished drafts should not be treated as equally valuable historical input for
+  future smart placement.
+- Later export/checkpoint artifacts can become teacher-approved historical input, but that is not
+  the same thing as autosave or undo/redo state.
 
 ### 8. Smart placement boundaries
 
 - Teacher-authored placement metadata remains a valid long-term direction.
 - Future smart placement should primarily read:
-  - saved seating history
+  - later explicit seating checkpoints or export artifacts
   - class context
   - teacher-authored placement metadata
 - Smart-placement settings remain secondary to the manual happy path and should stay out of the
@@ -155,6 +162,6 @@ This keeps the happy path simple while preserving the data needed for later smar
   context inside the seating workspace.
 - A teacher can create grouping work without choosing a classroom when they do not want room-aware
   grouping.
-- A teacher can save a seating arrangement and later use that saved history as meaningful prior
-  context.
+- A teacher can adjust a grouping or seating draft and recover recent steps through undo/redo
+  without confusion about separate saved-item semantics.
 - The visible workflow remains understandable without exposing advanced planner language.

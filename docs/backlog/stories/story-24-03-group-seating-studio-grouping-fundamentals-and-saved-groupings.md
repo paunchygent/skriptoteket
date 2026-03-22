@@ -1,11 +1,11 @@
 ---
 type: story
 id: ST-24-03
-title: "Klassrumskartan — Grouping Fundamentals and Saved Groupings"
+title: "Klassrumskartan — Grouping Fundamentals and Draft History"
 status: ready
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 epic: "EPIC-24"
 acceptance_criteria:
   - "Given the teacher is in a class workspace, when they open or create a grouping draft, then the grouping workflow operates on that class without implying that seating work must happen at the same time."
@@ -17,25 +17,24 @@ acceptance_criteria:
   - "Given a group contains more students, when the grouping board renders, then the group panel grows or lays itself out so the group's student cards fit inside the panel rather than clipping the content."
   - "Given the class already has an active grouping draft, when the teacher returns later, then that grouping draft can be resumed as the active grouping work for that class."
   - "Given the teacher starts a new grouping draft for the same class, when the new draft is created, then the previous active grouping draft is demoted to class history automatically."
-  - "Given the teacher completes a grouping, when they save it, then the full group assignment can be stored as a named saved grouping attached to that class."
-  - "Given the teacher does not provide a grouping name, when the grouping is saved, then the default name is the saved date plus time."
-  - "Given a saved grouping already exists, when the teacher edits or deletes it later, then the saved grouping can be updated or removed without changing the current live grouping by accident."
-  - "Given the teacher saves a grouping, when the save succeeds, then the saved grouping and its relevant settings appear in the class history and in the user's saved files / file vault."
-  - "Given grouping is saved, when the save is validated, then unrelated seating-only findings do not block the grouping save flow."
+  - "Given the teacher changes the current grouping draft, when they use undo or redo, then the recent draft history can be stepped backward or forward inside the grouping workspace without exposing those steps as separate saved items."
+  - "Given the grouping draft changes repeatedly, when draft history is retained for undo and redo, then the history depth stays bounded and configurable rather than growing without limit."
+  - "Given the teacher leaves grouping and returns later, when the draft has been autosaved, then the latest grouping state is resumed without requiring a separate teacher-facing save action."
 ---
 
 ## Context
 This story defines grouping as its own class-scoped teacher task: build groups, name them
-meaningfully, save whole groupings, and reuse the results later without implying that seating and
-grouping are one combined workflow.
+meaningfully, and keep the active grouping draft recoverable through autosave and in-workspace
+undo/redo without implying that seating and grouping are one combined workflow.
 
 ## Notes
 
 - This story starts only after `ST-24-05` and `ST-24-02` have removed superseded planner contracts and established the class-first workspace.
-- `Group name` and `saved grouping name` are separate concepts and must stay separate in the UI and persistence model.
 - The teacher should be able to move students freely between groups, back to the roster, and into newly created groups without hidden automation overriding the manual move.
+- Draft autosave keeps live grouping work alive, while a bounded recent history supports undo and redo inside the grouping workspace.
+- The recent-history depth should be configurable and simple to tune; the current planning target is 10 steps.
 - Future “avoid these students together” logic should support the teacher quietly, but it does not belong as a visible main-view control in this story.
-- The review direction for this story is a named saved artifact root plus immutable revisions underneath, not a whole-workspace finalize snapshot.
-- Grouping save payloads should stay grouping-focused: roster snapshot, groups, group assignments, and only the grouping-relevant settings that were actually used.
-- Grouping history belongs to the class, but it is less strategically important than seating history for later smart-placement work.
+- Grouping draft payloads and draft-history entries should stay grouping-focused: roster snapshot/reference, groups, group assignments, and only the grouping-relevant settings that were actually used.
+- Durable file-vault artifacts belong to a later export flow and must not be conflated with draft autosave or undo/redo history.
+- Grouping history belongs to the class, but the active draft and its in-workspace undo/redo history matter more than any separate archive of technical draft items in this story.
 - A later optional helper may allow classroom-aware grouping to derive natural groups from an active seating arrangement, but that is not the default behavior of this story.
