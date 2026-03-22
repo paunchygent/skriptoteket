@@ -88,6 +88,14 @@ class PlanDraftRepositoryProtocol(Protocol):
         """Save or update a full draft workspace aggregate."""
         ...
 
+    async def undo(self, *, draft_id: UUID) -> DraftWorkspace | None:
+        """Step backward in the grouping history stack."""
+        ...
+
+    async def redo(self, *, draft_id: UUID) -> DraftWorkspace | None:
+        """Step forward in the grouping history stack."""
+        ...
+
     async def mark_status(
         self,
         *,

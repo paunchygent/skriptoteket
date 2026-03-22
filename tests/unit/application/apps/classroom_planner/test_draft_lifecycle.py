@@ -1,3 +1,5 @@
+"""Behavior tests for classroom planner draft lifecycle handlers."""
+
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
@@ -7,7 +9,9 @@ import pytest
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     GetResumableDraftHandler,
+    RedoDraftHandler,
     ResolveDraftHandler,
+    UndoDraftHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
@@ -21,6 +25,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Roster,
     SeatAssignment,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
@@ -214,6 +219,12 @@ async def test_resolve_grouping_draft_updates_active_draft_in_place_when_room_co
     templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
     drafts.get_active_by_roster_and_kind.return_value = existing
 
+    drafts.get_workspace.return_value = DraftWorkspace(
+        draft=existing,
+        groups=[],
+        group_assignments=[],
+    )
+
     result = await handler.handle(
         owner_user_id=owner_id,
         roster_id=roster_id,
@@ -224,8 +235,8 @@ async def test_resolve_grouping_draft_updates_active_draft_in_place_when_room_co
     assert result.id == existing.id
     assert result.template_id == template_id
     drafts.mark_status.assert_not_called()
-    drafts.save.assert_awaited_once()
-    drafts.save_workspace.assert_not_called()
+    drafts.save.assert_not_called()
+    drafts.save_workspace.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -330,3 +341,55 @@ async def test_get_resumable_draft_returns_repo_payload(drafts, now):
 
     assert result == resumable
     drafts.get_latest_resumable.assert_awaited_once_with(owner_user_id=owner_id)
+
+
+@pytest.mark.asyncio
+async def test_undo_draft_rejects_non_grouping_drafts(uow, drafts, now):
+    handler = UndoDraftHandler(uow, drafts)
+    owner_id = uuid4()
+    draft_id = uuid4()
+    drafts.get_by_id.return_value = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=uuid4(),
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+
+    with pytest.raises(DomainError) as error:
+        await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+
+    assert error.value.code == ErrorCode.NOT_FOUND
+    drafts.undo.assert_not_awaited()
+    drafts.get_workspace.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_redo_draft_rejects_foreign_drafts_before_mutation(uow, drafts, now):
+    handler = RedoDraftHandler(uow, drafts)
+    owner_id = uuid4()
+    draft_id = uuid4()
+    drafts.get_by_id.return_value = PlanDraft(
+        id=draft_id,
+        owner_user_id=uuid4(),
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+
+    with pytest.raises(DomainError) as error:
+        await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+
+    assert error.value.code == ErrorCode.NOT_FOUND
+    drafts.redo.assert_not_awaited()
+    drafts.get_workspace.assert_not_called()

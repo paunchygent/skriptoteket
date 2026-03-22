@@ -165,6 +165,23 @@ def _ensure_active_draft(*, draft: PlanDraft) -> None:
     )
 
 
+async def _get_owned_active_grouping_draft(
+    *,
+    drafts: PlanDraftRepositoryProtocol,
+    draft_id: UUID,
+    owner_user_id: UUID,
+) -> PlanDraft:
+    """Load the current grouping draft and reject foreign or unsupported targets."""
+
+    draft = await drafts.get_by_id(draft_id=draft_id)
+    if not draft or draft.owner_user_id != owner_user_id:
+        raise not_found("PlanDraft", str(draft_id))
+    if draft.draft_kind != PlanDraftKind.GROUPING:
+        raise not_found("PlanDraft", str(draft_id))
+    _ensure_active_draft(draft=draft)
+    return draft
+
+
 class ResolveDraftHandler:
     """Resolve the active mutable draft for one class and draft kind."""
 
@@ -222,16 +239,20 @@ class ResolveDraftHandler:
                         "updated_at": now,
                     }
                 )
-                if draft_kind == PlanDraftKind.SEATING and existing.template_id != template_id:
+                if existing.template_id != template_id:
                     workspace = await self._drafts.get_workspace(draft_id=existing.id)
                     if workspace is None:
                         raise not_found("PlanDraft", str(existing.id))
-                    await self._drafts.save_workspace(
-                        workspace=_build_recontextualized_workspace(
+
+                    if draft_kind == PlanDraftKind.SEATING:
+                        updated_workspace = _build_recontextualized_workspace(
                             workspace=workspace,
                             draft=updated,
                         )
-                    )
+                    else:
+                        updated_workspace = workspace.model_copy(update={"draft": updated})
+
+                    await self._drafts.save_workspace(workspace=updated_workspace)
                 else:
                     await self._drafts.save(draft=updated)
                 return updated
@@ -262,6 +283,52 @@ class GetResumableDraftHandler:
 
     async def handle(self, *, owner_user_id: UUID) -> ResumablePlanDraft | None:
         return await self._drafts.get_latest_resumable(owner_user_id=owner_user_id)
+
+
+class UndoDraftHandler:
+    """Step backward in the grouping history stack."""
+
+    def __init__(self, uow: UnitOfWorkProtocol, drafts: PlanDraftRepositoryProtocol) -> None:
+        self._uow = uow
+        self._drafts = drafts
+
+    async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> DraftWorkspace:
+        async with self._uow:
+            await _get_owned_active_grouping_draft(
+                drafts=self._drafts,
+                draft_id=draft_id,
+                owner_user_id=owner_user_id,
+            )
+            workspace = await self._drafts.undo(draft_id=draft_id)
+            if workspace is None:
+                # If we can't undo (no history or at start), just return current
+                workspace = await self._drafts.get_workspace(draft_id=draft_id)
+                if not workspace:
+                    raise not_found("PlanDraft", str(draft_id))
+            return workspace
+
+
+class RedoDraftHandler:
+    """Step forward in the grouping history stack."""
+
+    def __init__(self, uow: UnitOfWorkProtocol, drafts: PlanDraftRepositoryProtocol) -> None:
+        self._uow = uow
+        self._drafts = drafts
+
+    async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> DraftWorkspace:
+        async with self._uow:
+            await _get_owned_active_grouping_draft(
+                drafts=self._drafts,
+                draft_id=draft_id,
+                owner_user_id=owner_user_id,
+            )
+            workspace = await self._drafts.redo(draft_id=draft_id)
+            if workspace is None:
+                # If we can't redo (at tip), just return current
+                workspace = await self._drafts.get_workspace(draft_id=draft_id)
+                if not workspace:
+                    raise not_found("PlanDraft", str(draft_id))
+            return workspace
 
 
 class AbandonDraftHandler:

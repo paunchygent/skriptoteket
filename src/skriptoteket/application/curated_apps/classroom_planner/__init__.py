@@ -6,7 +6,9 @@ from .handlers.drafts import (
     GetDraftWorkspaceHandler,
     GetResumableDraftHandler,
     PatchDraftHandler,
+    RedoDraftHandler,
     ResolveDraftHandler,
+    UndoDraftHandler,
 )
 from .handlers.rosters import (
     CreateRosterHandler,
@@ -39,7 +41,9 @@ __all__ = [
     "ListRoomTemplatesHandler",
     "ListRostersHandler",
     "PatchDraftHandler",
+    "RedoDraftHandler",
     "ResolveDraftHandler",
+    "UndoDraftHandler",
     "UpdateRoomTemplateHandler",
     "UpdateRosterHandler",
 ]

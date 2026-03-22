@@ -20,6 +20,7 @@ from sqlalchemy import (
     func,
     text,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -76,6 +77,9 @@ class PlanDraftModel(Base):
         server_default=func.now(),
         nullable=False,
     )
+
+    history_stack: Mapped[list[dict] | None] = mapped_column(JSONB, nullable=True)
+    undo_index: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False, default=0)
 
     groups: Mapped[list[DraftGroupModel]] = relationship(
         "DraftGroupModel",

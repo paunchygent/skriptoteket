@@ -24,7 +24,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    RedoDraftHandler,
     ResolveDraftHandler,
+    UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
 )
@@ -481,6 +483,22 @@ class CuratedAppsProvider(Provider):
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def undo_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+    ) -> UndoDraftHandler:
+        return UndoDraftHandler(uow=uow, drafts=drafts)
+
+    @provide(scope=Scope.REQUEST)
+    def redo_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+    ) -> RedoDraftHandler:
+        return RedoDraftHandler(uow=uow, drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
     def get_resumable_draft_handler(

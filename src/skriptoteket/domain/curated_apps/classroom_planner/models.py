@@ -166,7 +166,7 @@ class PlanDraft(BaseModel):
 
 
 class DraftWorkspace(BaseModel):
-    """Represent the full mutable draft workspace."""
+    """Represent the full fundamentals planning context."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -175,6 +175,9 @@ class DraftWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
+    history_status: GroupingHistoryStatus = Field(
+        default_factory=lambda: GroupingHistoryStatus(can_undo=False, can_redo=False)
+    )
 
 
 class ClassroomPlannerWorkspace(BaseModel):
@@ -189,6 +192,9 @@ class ClassroomPlannerWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
+    history_status: GroupingHistoryStatus = Field(
+        default_factory=lambda: GroupingHistoryStatus(can_undo=False, can_redo=False)
+    )
 
 
 class ResumablePlanDraft(BaseModel):
@@ -199,6 +205,15 @@ class ResumablePlanDraft(BaseModel):
     draft: PlanDraft
     roster_name: str
     template_name: str | None = None
+
+
+class GroupingHistoryStatus(BaseModel):
+    """Represent the undo/redo availability for a grouping draft."""
+
+    model_config = ConfigDict(frozen=True)
+
+    can_undo: bool
+    can_redo: bool
 
 
 class TaskEntryOption(BaseModel):

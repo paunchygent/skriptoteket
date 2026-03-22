@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
     DraftWorkspace,
     GroupAssignment,
+    GroupingHistoryStatus,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -67,7 +68,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
     ) -> None:
         """Replace child rows without tripping natural-key uniqueness constraints."""
 
-        existing_items = list(getattr(model, attribute_name))
+        existing_items = list(await getattr(model.awaitable_attrs, attribute_name))
         if existing_items:
             getattr(model, attribute_name).clear()
             await self._session.flush()
@@ -91,6 +92,13 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
 
     def _to_workspace(self, model: PlanDraftModel) -> DraftWorkspace:
         """Map one hydrated draft ORM row to the active workspace aggregate."""
+
+        history_stack = model.history_stack or []
+        undo_index = model.undo_index if model.undo_index is not None else 0
+        history_status = GroupingHistoryStatus(
+            can_undo=undo_index > 0,
+            can_redo=undo_index < len(history_stack) - 1,
+        )
 
         return DraftWorkspace(
             draft=self._to_draft(model),
@@ -117,6 +125,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 )
                 for meta in model.student_planning_meta
             ],
+            history_status=history_status,
         )
 
     def _to_draft_summary(
@@ -361,6 +370,42 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             self._session.add(model)
         await self._session.flush()
 
+    def _create_snapshot(self, workspace: DraftWorkspace) -> dict:
+        ordered_groups = sorted(workspace.groups, key=lambda group: (group.sort_order, group.id))
+        ordered_group_assignments = sorted(
+            workspace.group_assignments,
+            key=lambda assignment: (assignment.student_id, assignment.group_id),
+        )
+        ordered_student_planning_meta = sorted(
+            workspace.student_planning_meta,
+            key=lambda meta: meta.student_id,
+        )
+
+        return {
+            "template_id": str(workspace.draft.template_id)
+            if workspace.draft.template_id
+            else None,
+            "groups": [
+                {"id": group.id, "name": group.name, "sort_order": group.sort_order}
+                for group in ordered_groups
+            ],
+            "group_assignments": [
+                {"student_id": assignment.student_id, "group_id": assignment.group_id}
+                for assignment in ordered_group_assignments
+            ],
+            "student_planning_meta": [
+                {
+                    "student_id": meta.student_id,
+                    "teacher_proximity": meta.teacher_proximity,
+                    "stability_preference": meta.stability_preference,
+                    "preferred_zone": meta.preferred_zone,
+                    "avoid_zone": meta.avoid_zone,
+                    "notes": meta.notes,
+                }
+                for meta in ordered_student_planning_meta
+            ],
+        }
+
     async def save_workspace(self, *, workspace: DraftWorkspace) -> None:
         draft = workspace.draft
         model = await self._session.get(
@@ -373,6 +418,15 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.student_planning_meta),
             ),
         )
+
+        previous_workspace = None
+        if (
+            draft.draft_kind == PlanDraftKind.GROUPING
+            and model is not None
+            and not model.history_stack
+        ):
+            previous_workspace = self._to_workspace(model)
+
         if model is None:
             model = PlanDraftModel(
                 id=draft.id,
@@ -435,7 +489,131 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 for meta in workspace.student_planning_meta
             ],
         )
+
+        if draft.draft_kind == PlanDraftKind.GROUPING:
+            if previous_workspace is not None:
+                await self._push_history(model, previous_workspace)
+            await self._push_history(model, workspace)
+
         await self._session.flush()
+
+    async def _push_history(self, model: PlanDraftModel, workspace: DraftWorkspace) -> None:
+        """Push a new snapshot to the grouping history stack."""
+
+        snapshot = self._create_snapshot(workspace)
+
+        history = (model.history_stack or []).copy()
+        undo_index = model.undo_index if model.undo_index is not None else 0
+        # Clear forward history if we were in the middle of undoing
+        history = history[: undo_index + 1]
+
+        # Only push if it's different from the current tip
+        if not history or history[-1] != snapshot:
+            history.append(snapshot)
+            # Bound history to last 10 steps
+            history = history[-10:]
+            model.history_stack = history
+            model.undo_index = len(history) - 1
+
+    async def undo(self, *, draft_id: UUID) -> DraftWorkspace | None:
+        """Step backward in the grouping history stack."""
+
+        model = await self._session.get(
+            PlanDraftModel,
+            draft_id,
+            options=(
+                selectinload(PlanDraftModel.groups),
+                selectinload(PlanDraftModel.group_assignments),
+                selectinload(PlanDraftModel.seat_assignments),
+                selectinload(PlanDraftModel.student_planning_meta),
+            ),
+        )
+        if model is None or not model.history_stack or model.undo_index <= 0:
+            return None
+
+        model.undo_index -= 1
+        snapshot = model.history_stack[model.undo_index]
+        await self._apply_history_snapshot(model, snapshot)
+        await self._session.flush()
+
+        return self._to_workspace(model)
+
+    async def redo(self, *, draft_id: UUID) -> DraftWorkspace | None:
+        """Step forward in the grouping history stack."""
+
+        model = await self._session.get(
+            PlanDraftModel,
+            draft_id,
+            options=(
+                selectinload(PlanDraftModel.groups),
+                selectinload(PlanDraftModel.group_assignments),
+                selectinload(PlanDraftModel.seat_assignments),
+                selectinload(PlanDraftModel.student_planning_meta),
+            ),
+        )
+        if (
+            model is None
+            or not model.history_stack
+            or model.undo_index >= len(model.history_stack) - 1
+        ):
+            return None
+
+        model.undo_index += 1
+        snapshot = model.history_stack[model.undo_index]
+        await self._apply_history_snapshot(model, snapshot)
+        await self._session.flush()
+
+        return self._to_workspace(model)
+
+    async def _apply_history_snapshot(self, model: PlanDraftModel, snapshot: dict) -> None:
+        """Apply a historical snapshot to the active draft model."""
+
+        model.template_id = snapshot.get("template_id")
+
+        await self._replace_related_collection(
+            model=model,
+            attribute_name="groups",
+            new_items=[
+                DraftGroupModel(
+                    group_id=g["id"],
+                    name=g["name"],
+                    sort_order=g["sort_order"],
+                )
+                for g in snapshot["groups"]
+            ],
+        )
+        await self._replace_related_collection(
+            model=model,
+            attribute_name="group_assignments",
+            new_items=[
+                GroupAssignmentModel(
+                    student_id=a["student_id"],
+                    group_id=a["group_id"],
+                )
+                for a in snapshot["group_assignments"]
+            ],
+        )
+        if "student_planning_meta" in snapshot:
+            await self._replace_related_collection(
+                model=model,
+                attribute_name="student_planning_meta",
+                new_items=[
+                    StudentPlanningMetaModel(
+                        student_id=meta["student_id"],
+                        teacher_proximity=meta.get("teacher_proximity"),
+                        stability_preference=meta.get("stability_preference"),
+                        preferred_zone=meta.get("preferred_zone"),
+                        avoid_zone=meta.get("avoid_zone"),
+                        notes=meta.get("notes"),
+                    )
+                    for meta in snapshot["student_planning_meta"]
+                ],
+            )
+
+        if model.revision is None:
+            model.revision = 1
+        else:
+            model.revision += 1
 
     async def mark_status(
         self,

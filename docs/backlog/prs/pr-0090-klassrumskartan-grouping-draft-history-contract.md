@@ -2,7 +2,7 @@
 type: pr
 id: PR-0090
 title: "Klassrumskartan: grouping draft-history contract"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
 updated: 2026-03-22
@@ -16,6 +16,23 @@ acceptance_criteria:
   - "Backend contracts support autosave progression plus undo/redo navigation for the active grouping draft without introducing a separate saved-artifact hierarchy."
   - "Backend tests cover history bounds, undo/redo state transitions, and class-scoped draft continuity."
 ---
+
+## Implementation Summary (as of 2026-03-22)
+
+- Implemented bounded same-row JSON history on `PlanDraftModel` (10 steps).
+- Added `history_stack` (JSONB) and `undo_index` (Integer) columns via Alembic.
+- Enabled `AsyncAttrs` on `Base` model for safe async relation access.
+- Added `GroupingHistoryStatus` domain model and updated `DraftWorkspace` to include it.
+- Implemented `undo()` and `redo()` in `PostgreSQLPlanDraftRepository`.
+- Modified `save_workspace()` to automatically push to history for grouping drafts, properly seeding the initial pre-mutation state so the first user action can be undone.
+- Expanded the snapshot contract to include `template_id` and `student_planning_meta`, making grouping classroom context changes fully history-aware.
+- Canonicalized snapshot ordering so equivalent grouping state does not create duplicate history entries when assignment/meta list order changes.
+- Corrected `ResolveDraftHandler` to save the workspace instead of just the draft when the context changes for a grouping draft.
+- Added `UndoDraftHandler` and `RedoDraftHandler` application handlers and exposed them in the DI provider.
+- Tightened undo/redo handlers so foreign drafts and non-grouping drafts are rejected before any mutation path runs.
+- Fixed the `91f6c4a7b2d1` downgrade path so roomless seating drafts are rebound to a valid room template before the old seating constraint is restored.
+- Exposed `POST /api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/undo` and `redo` endpoints.
+- Verified with comprehensive unit and behavior-level tests for repository logic (including initial undo, redo truncation, and context changes) and API endpoints.
 
 ## Problem
 
@@ -42,12 +59,12 @@ Add the backend/domain contract for grouping draft history as operational workin
 
 ## Checklist
 
-- [ ] Add a bounded grouping draft-history contract aligned with `ST-24-03`.
-- [ ] Keep autosave semantics separate from any later export or checkpoint semantics.
-- [ ] Make recent-history depth configurable, with 10 as the initial target.
-- [ ] Support undo and redo navigation against the active grouping draft.
-- [ ] Keep grouping history payloads focused on grouping data and grouping-relevant context only.
-- [ ] Add backend tests for history bounds, undo/redo transitions, and class-scoped draft continuity.
+- [x] Add a bounded grouping draft-history contract aligned with `ST-24-03`.
+- [x] Keep autosave semantics separate from any later export or checkpoint semantics.
+- [x] Make recent-history depth configurable, with 10 as the initial target.
+- [x] Support undo and redo navigation against the active grouping draft.
+- [x] Keep grouping history payloads focused on grouping data and grouping-relevant context only.
+- [x] Add backend tests for history bounds, undo/redo transitions, and class-scoped draft continuity.
 
 ## Implementation plan
 

@@ -17,12 +17,16 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    RedoDraftHandler,
     ResolveDraftHandler,
+    UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    DraftWorkspace,
     GroupAssignment,
+    GroupingHistoryStatus,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -509,3 +513,105 @@ async def test_get_resumable_draft_returns_serialized_payload():
     assert result.roster_name == "SA24D"
     assert result.template_name == "Sal 101"
     handler.handle.assert_awaited_once_with(owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_undo_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=UndoDraftHandler)
+    roster_repo = AsyncMock()
+    template_repo = AsyncMock()
+    draft_id = uuid4()
+    now = datetime.now(timezone.utc)
+
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=1,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    workspace = DraftWorkspace(
+        draft=draft,
+        groups=[],
+        group_assignments=[],
+        history_status=GroupingHistoryStatus(can_undo=True, can_redo=False),
+    )
+    handler.handle.return_value = workspace
+    roster_repo.get_by_id.return_value = Roster(
+        id=draft.roster_id,
+        owner_user_id=user.id,
+        name="Class",
+        students=[],
+        created_at=now,
+        updated_at=now,
+    )
+
+    result = await _unwrap_dishka(api.undo_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        rosters=roster_repo,
+        templates=template_repo,
+        user=user,
+    )
+
+    assert result.draft.id == draft_id
+    assert result.history_status.can_undo is True
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_redo_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=RedoDraftHandler)
+    roster_repo = AsyncMock()
+    template_repo = AsyncMock()
+    draft_id = uuid4()
+    now = datetime.now(timezone.utc)
+
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    workspace = DraftWorkspace(
+        draft=draft,
+        groups=[],
+        group_assignments=[],
+        history_status=GroupingHistoryStatus(can_undo=True, can_redo=True),
+    )
+    handler.handle.return_value = workspace
+    roster_repo.get_by_id.return_value = Roster(
+        id=draft.roster_id,
+        owner_user_id=user.id,
+        name="Class",
+        students=[],
+        created_at=now,
+        updated_at=now,
+    )
+
+    result = await _unwrap_dishka(api.redo_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        rosters=roster_repo,
+        templates=template_repo,
+        user=user,
+    )
+
+    assert result.draft.id == draft_id
+    assert result.history_status.can_redo is True
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)

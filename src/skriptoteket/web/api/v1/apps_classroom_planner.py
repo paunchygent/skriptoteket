@@ -27,7 +27,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    RedoDraftHandler,
     ResolveDraftHandler,
+    UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
 )
@@ -47,6 +49,10 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     StudentPlanningMeta,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.protocols.classroom_planner import (
+    RoomTemplateRepositoryProtocol,
+    RosterRepositoryProtocol,
+)
 from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
     ClassWorkspaceSummaryDto,
     serialize_class_workspace_summary,
@@ -220,6 +226,15 @@ class ResumablePlanDraftDto(BaseModel):
     template_name: str | None = None
 
 
+class GroupingHistoryStatusDto(BaseModel):
+    """Serialize the undo/redo availability for a grouping draft."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    can_undo: bool
+    can_redo: bool
+
+
 class DraftWorkspaceResponse(BaseModel):
     """Serialize the hydrated fundamentals planner workspace."""
 
@@ -232,6 +247,7 @@ class DraftWorkspaceResponse(BaseModel):
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
     student_planning_meta: list[StudentPlanningMetaDto]
+    history_status: GroupingHistoryStatusDto
 
 
 class ResolvePlanDraftRequest(BaseModel):
@@ -332,6 +348,61 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
         student_planning_meta=[
             StudentPlanningMetaDto.model_validate(meta) for meta in workspace.student_planning_meta
         ],
+        history_status=GroupingHistoryStatusDto.model_validate(workspace.history_status),
+    )
+
+
+@router.post("/drafts/{draft_id}/undo", response_model=DraftWorkspaceResponse)
+@inject
+async def undo_draft(
+    draft_id: UUID,
+    handler: FromDishka[UndoDraftHandler],
+    rosters: FromDishka[RosterRepositoryProtocol],
+    templates: FromDishka[RoomTemplateRepositoryProtocol],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> DraftWorkspaceResponse:
+    workspace = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
+    return _serialize_workspace(
+        ClassroomPlannerWorkspace(
+            draft=workspace.draft,
+            roster=await rosters.get_by_id(roster_id=workspace.draft.roster_id),
+            template=await templates.get_by_id(template_id=workspace.draft.template_id)
+            if workspace.draft.template_id
+            else None,
+            groups=workspace.groups,
+            group_assignments=workspace.group_assignments,
+            seat_assignments=workspace.seat_assignments,
+            student_planning_meta=workspace.student_planning_meta,
+            history_status=workspace.history_status,
+        )
+    )
+
+
+@router.post("/drafts/{draft_id}/redo", response_model=DraftWorkspaceResponse)
+@inject
+async def redo_draft(
+    draft_id: UUID,
+    handler: FromDishka[RedoDraftHandler],
+    rosters: FromDishka[RosterRepositoryProtocol],
+    templates: FromDishka[RoomTemplateRepositoryProtocol],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> DraftWorkspaceResponse:
+    workspace = await handler.handle(draft_id=draft_id, owner_user_id=user.id)
+    return _serialize_workspace(
+        ClassroomPlannerWorkspace(
+            draft=workspace.draft,
+            roster=await rosters.get_by_id(roster_id=workspace.draft.roster_id),
+            template=await templates.get_by_id(template_id=workspace.draft.template_id)
+            if workspace.draft.template_id
+            else None,
+            groups=workspace.groups,
+            group_assignments=workspace.group_assignments,
+            seat_assignments=workspace.seat_assignments,
+            student_planning_meta=workspace.student_planning_meta,
+            history_status=workspace.history_status,
+        )
     )
 
 
