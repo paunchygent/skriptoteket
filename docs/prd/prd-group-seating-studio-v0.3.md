@@ -81,6 +81,24 @@ This keeps the happy path simple while preserving the data needed for later smar
 - Active work is prominent only after the teacher chooses the task.
 - History is accessible but secondary, for example through drawers, dropdowns, or expandable
   sections rather than through a cluttered dashboard.
+- The canonical design target is a desktop/laptop full-viewport workspace where overlays, drawers,
+  and task surfaces may use the available screen real estate without collapsing into phone-shaped
+  layouts by default.
+
+### 2a. Viewport strategy is desktop-first
+
+- Klassrumskartan is designed desktop-first because the core teacher workflows rely on broad,
+  simultaneous spatial context such as student lists, group surfaces, seating canvases, and
+  secondary overlays.
+- Full-sized viewports are the canonical source for interaction design, information hierarchy, and
+  workspace layout decisions.
+- Tablet and phone experiences are ports of the desktop workflow and must adapt that workflow into
+  something workable on smaller screens; they must not dictate the primary interaction model for
+  the desktop experience.
+- Secondary UI such as history drawers should prefer overlay behavior on full-sized viewports
+  rather than pushing the main workspace down or replacing the active task surface unnecessarily.
+- Curated-app breakpoints may diverge from generic app defaults when needed to preserve the
+  teacher-first desktop workflow.
 
 ### 3. Draft kinds and lifecycle
 

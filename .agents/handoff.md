@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, and `PR-0091`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, `PR-0091`, and `PR-0092`.
 
 ## Status
 
@@ -34,13 +34,20 @@ Keep this file updated so the next session can pick up work quickly.
   - pending autosave now flushes before undo/redo
   - the existing compact autosave badge stays; no broad top-panel redesign
   - `Nytt grupputkast` remains a draft-lifecycle boundary outside undo/redo
-- PR-0092 is still IN PROGRESS locally. `GroupBoard.vue` now exposes grouping-only `Ångra` / `Gör om`, `useClassroomState.ts` owns flush-first undo/redo orchestration, and backend `history_status` is now retained as first-class frontend state instead of being dropped on workspace hydration.
+- PR-0092 is DONE locally. `GroupBoard.vue` exposes grouping-only `Ångra` / `Gör om`, `useClassroomState.ts` owns flush-first undo/redo orchestration, and backend `history_status` is retained as first-class frontend state instead of being dropped on workspace hydration.
 - Redo root-cause fix: removed the local redo workaround, made backend `history_status` the authoritative redo source again, and hardened the browser path around focused rename input -> blur/autosave -> undo/redo rehydration.
 - Undo becomes available immediately for pending local grouping edits, but only because the store flushes that pending autosave before calling backend undo; no parallel client redo stack remains.
 - No-op group renames no longer mark the workspace dirty, which removes blur-driven interference with history controls.
 - Browser proof is now green for the exact teacher path: rename first group -> `Ångra` -> `Gör om` -> custom name restored.
-- The full Playwright baseline is still red for a separate issue outside redo: after clicking workspace `Avsluta`, the app sometimes stays in the class workspace instead of returning to landing, so the smoke cannot reach the landing-page `Avsluta utkast` cleanup CTA.
-- Next: finish `PR-0092` by correcting the `Avsluta`-to-landing behavior or the smoke’s landing assumption, then rerun the full planner smoke before moving to `PR-0093`.
+- Landing resumable CTA is now aligned with the intended non-destructive behavior:
+  - `Fortsätt` resumes the active draft
+  - `Stäng` dismisses the CTA reminder locally without deleting or resetting the draft
+- The full Playwright baseline is green again with the landing continue/dismiss behavior.
+- Next: implement `PR-0093` for grouping class history and draft continuity on top of the now-green planner baseline.
+- PR-0093 planning/docs are now tightened around a desktop-first continuity model: grouping history should stay secondary in a right-side overlay drawer on full-sized viewports, while tablet/phone layouts are ports of that workflow rather than the source of the canonical design.
+- PR-0093 now explicitly includes a small historic-draft management addition: older grouping drafts may be deleted from the continuity drawer with a secondary trash-can action plus confirmation, while the active draft remains free of delete controls in the main workspace.
+- Competitive-games planning docs are corrected back to the intended meaning of "programme": a cross-cutting delivery/programme reference for epics, stories, and shared infrastructure work, not a user-facing curated app hub.
+- `docs/reference/ref-competitive-games-cross-cutting-programme.md` now tracks the shared workstreams across curated-app substrate, local runtime, competition infrastructure, official-score validation, and quality/operability.
 
 ## Previous Sessions
 
@@ -71,6 +78,7 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
 - 2026-03-22: `pdm run docs-validate` (PASSED).
+- 2026-03-22: `pdm run docs-validate` (PASSED after correcting the competitive-games "programme" scope back to a cross-cutting delivery reference and removing the mistaken hub story).
 - 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after adding reorder assertions; artifact in `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`).
 - 2026-03-22: `pdm run db-upgrade` (PASSED; required locally after adding the `name_is_custom` draft-group migration).
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupCard.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (34 PASSED).
@@ -95,6 +103,11 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-22: `pdm run python - <<'PY' ... rename -> Ångra -> Gör om focused browser proof ... PY` (PASSED; browser proof for redo path only).
 - 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (FAILED at landing cleanup: could not find landing-page `Avsluta utkast` after workspace `Avsluta`; redo path itself returned `200/200` in backend logs and passed in focused browser proof).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerSelectionGate.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/ClassroomPlannerView.vue src/views/apps/components/PlannerSelectionGate.vue src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerSelectionGate.spec.ts` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-22: `pdm run docs-validate` (PASSED).
+- 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after switching the landing resumable CTA to continue + dismiss and hardening the smoke selectors around the CTA container).
 
 ## How to Run
 

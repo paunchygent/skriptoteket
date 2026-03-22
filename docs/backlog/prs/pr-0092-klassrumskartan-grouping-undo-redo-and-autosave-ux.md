@@ -2,7 +2,7 @@
 type: pr
 id: PR-0092
 title: "Klassrumskartan: grouping undo-redo and autosave UX"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-22
 updated: 2026-03-22
@@ -56,7 +56,7 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
 - [x] Respect the configured recent-history depth in the UI.
 - [x] Keep `Nytt grupputkast` outside the undo/redo chain.
 - [x] Add frontend/backend tests for undo, redo, and autosave feedback behavior.
-- [ ] Restore the full Klassrumskartan Playwright smoke to green after the unrelated `Avsluta`-to-landing path is corrected.
+- [x] Restore the full Klassrumskartan Playwright smoke to green after the landing resumable CTA is aligned with the intended continue-or-dismiss behavior.
 
 ## Implementation plan
 
@@ -104,7 +104,14 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
   - `Gör om`
   - custom name returns
 - The Pinia store now only adds one local affordance on top of backend truth: `Ångra` stays clickable while a grouping edit is pending autosave, because the action flushes that pending save before calling backend undo.
-- The broader Playwright baseline is still red, but for a separate reason: after `Avsluta`, the app remains in the class workspace instead of returning to the landing screen, so the smoke cannot reach the landing-page `Avsluta utkast` cleanup CTA. That issue should be fixed before this PR is closed as `done`.
+- The landing resumable CTA no longer exposes destructive discard semantics. It now offers:
+  - `Fortsätt` to resume the active draft
+  - `Stäng` to dismiss the reminder locally without deleting or resetting the draft
+- The full Klassrumskartan Playwright smoke is green again with the intended landing contract:
+  - `Avsluta` returns to landing
+  - resumable CTA remains available
+  - `Fortsätt` resumes the active draft
+  - `Stäng` hides the CTA without mutating draft lifecycle state
 
 ## Follow-up direction
 

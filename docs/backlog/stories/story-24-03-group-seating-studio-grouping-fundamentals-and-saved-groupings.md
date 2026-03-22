@@ -39,4 +39,10 @@ undo/redo without implying that seating and grouping are one combined workflow.
 - Grouping draft payloads and draft-history entries should stay grouping-focused: roster snapshot/reference, groups, group assignments, and only the grouping-relevant settings that were actually used.
 - Durable file-vault artifacts belong to a later export flow and must not be conflated with draft autosave or undo/redo history.
 - Grouping history belongs to the class, but the active draft and its in-workspace undo/redo history matter more than any separate archive of technical draft items in this story.
+- Grouping continuity and history should follow a desktop-first design language: the active
+  workspace remains primary, while older drafts stay secondary in overlay/drawer-based UI on
+  full-sized viewports rather than pushing the workspace down.
+- Older superseded grouping drafts may later be deleted from that secondary continuity drawer with
+  confirmation, but the active draft should not gain equivalent delete controls in the main
+  workspace.
 - A later optional helper may allow classroom-aware grouping to derive natural groups from an active seating arrangement, but that is not the default behavior of this story.

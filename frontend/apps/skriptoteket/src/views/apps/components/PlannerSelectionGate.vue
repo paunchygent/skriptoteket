@@ -24,7 +24,7 @@ const emit = defineEmits<{
   (e: "create-template"): void;
   (e: "edit-template", template: RoomTemplate): void;
   (e: "resume-draft"): void;
-  (e: "discard-resumable-draft"): void;
+  (e: "dismiss-resumable-draft"): void;
 }>();
 </script>
 
@@ -61,9 +61,10 @@ const emit = defineEmits<{
           <button
             type="button"
             class="btn-ghost border-navy/30 bg-white shadow-none"
-            @click="emit('discard-resumable-draft')"
+            aria-label="Stäng senaste utkastet"
+            @click="emit('dismiss-resumable-draft')"
           >
-            Avsluta utkast
+            Stäng
           </button>
           <button
             type="button"

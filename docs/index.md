@@ -23,8 +23,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
-- Curated app architecture and foundational code:
+- Competitive games + Pinball Teacher reference:
   `docs/reference/ref-curated-app-pinball-teacher-architecture-and-foundational-code.md`
+- Competitive games cross-cutting programme:
+  `docs/reference/ref-competitive-games-cross-cutting-programme.md`
+- Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
+- Proposed EPIC: `docs/backlog/epics/epic-25-competitive-games-and-pinball-teacher.md`
 - Riskunderlag praxis (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - Hazards↔shortcards policy (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`
@@ -115,6 +119,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0070-group-seating-studio-slice-2-engine-and-snapshots.md`
 - `docs/adr/adr-0071-group-seating-studio-fundamentals-workflow-and-saved-artifacts.md`
 - `docs/adr/adr-0072-group-seating-studio-class-first-workspace-and-draft-kinds.md`
+- `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -159,6 +164,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/epics/epic-23-group-seating-studio.md`
 - `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
+- `docs/backlog/epics/epic-25-competitive-games-and-pinball-teacher.md`
 
 ### Backlog Stories
 
@@ -174,6 +180,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-24-02-group-seating-studio-class-first-workspace.md`
 - `docs/backlog/stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md`
 - `docs/backlog/stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md`
+- `docs/backlog/stories/story-25-01-competitive-games-substrate-and-pinball-teacher-bootstrap-contract.md`
+- `docs/backlog/stories/story-25-02-pinball-teacher-local-runtime-vertical-slice.md`
+- `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
+- `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md`
 
 ### Backlog Reviews
 
@@ -198,6 +208,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/reviews/review-epic-23-group-seating-studio.md`
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
+- `docs/backlog/reviews/review-epic-25-competitive-games-and-pinball-teacher.md`
 
 ### Backlog Sprints
 
@@ -525,6 +536,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 ### Reference
 
+- `docs/reference/ref-competitive-games-cross-cutting-programme.md`
+- `docs/reference/ref-curated-app-pinball-teacher-architecture-and-foundational-code.md`
 - `docs/reference/ref-ai-completion-architecture.md`
 - `docs/reference/ref-ai-inline-completion-harness.md`
 - `docs/reference/ref-ai-script-generation-kb-llm.md`

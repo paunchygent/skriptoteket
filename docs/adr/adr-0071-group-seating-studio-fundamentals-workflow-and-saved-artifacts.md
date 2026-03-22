@@ -134,6 +134,21 @@ of planner truth.
 
 Constraint logic, pair rules, zone preferences, history rules, suggestion panels, and multi-slider weighting remain valid long-term goals, but they are hidden from the default teacher-facing workflow until explicitly defined and approved one slice at a time.
 
+### 9. The primary workflow is designed desktop-first
+
+The canonical interaction model for Klassrumskartan is the teacher's laptop-sized workspace.
+
+That means:
+
+- full-sized viewports are the primary source for layout, task sequencing, and visual hierarchy
+- grouping and seating surfaces may rely on wide working space, layered overlays, and simultaneous
+  context where that improves the teacher workflow
+- smaller tablet/phone layouts are ports of that desktop workflow and must translate it into a
+  workable constrained layout rather than dictating the core design language
+- secondary surfaces such as history drawers should prefer overlay behavior on full-sized
+  viewports instead of pushing the main workspace down unless a later approved story explicitly
+  requires a different pattern
+
 ## Consequences
 
 ### Benefits

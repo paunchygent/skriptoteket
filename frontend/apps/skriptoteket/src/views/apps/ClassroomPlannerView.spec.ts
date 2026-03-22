@@ -654,6 +654,49 @@ describe("ClassroomPlannerView", () => {
     expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
     expect(stateMocks.plannerState.clearWorkspace).toHaveBeenCalled();
     expect(wrapper.text()).toContain("Fortsätt senaste utkastet");
+    expect(wrapper.text()).toContain("Stäng");
+
+    wrapper.unmount();
+  });
+
+  it("dismisses the landing resumable CTA without abandoning the active draft", async () => {
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue({
+      draft: {
+        id: "draft-1",
+        roster_id: "roster-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        status: "active",
+        revision: 3,
+        last_opened_at: "2026-03-21T10:00:00Z",
+      },
+      roster_name: "SA24D",
+      template_name: "Sal 101",
+    });
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: true,
+          PlannerClassWorkspace: true,
+          PlannerWorkspaceShell: true,
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Fortsätt senaste utkastet");
+    await wrapper.get('button[aria-label="Stäng senaste utkastet"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("SA24D · Sal 101");
+    expect(wrapper.find('button[aria-label="Stäng senaste utkastet"]').exists()).toBe(false);
+    expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
 
     wrapper.unmount();
   });

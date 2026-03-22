@@ -122,6 +122,21 @@ For future smart placement and rotation features, the preferred historical input
 Grouping history remains useful, but is more secondary. Abandoned drafts and raw undo/redo trail are not the
 preferred source for future algorithmic decisions.
 
+### 10. Class workspace continuity surfaces are desktop-first and overlay-based
+
+The class workspace, planner shell, and task-specific history surfaces are designed for a
+desktop/laptop primary viewport.
+
+That means:
+
+- active work remains visually primary in the main workspace area
+- secondary continuity/history affordances should open as overlays or drawers on full-sized
+  viewports rather than pushing the main workspace down
+- smaller viewports may translate this pattern differently, but they are ports of the desktop
+  workflow rather than the source of the canonical interaction model
+- curated-app breakpoints may be adjusted when needed to preserve the desktop-first teacher
+  workflow
+
 ## Consequences
 
 ### Benefits

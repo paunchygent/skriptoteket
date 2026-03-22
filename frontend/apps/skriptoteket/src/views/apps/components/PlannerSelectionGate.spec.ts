@@ -54,6 +54,35 @@ describe("PlannerSelectionGate", () => {
     expect(wrapper.text()).toContain("Fortsätt senaste utkastet");
     expect(wrapper.text()).toContain("SA24D");
     expect(wrapper.text()).toContain("Sal 101");
-    expect(wrapper.text()).toContain("Avsluta utkast");
+    expect(wrapper.text()).toContain("Stäng");
+  });
+
+  it("emits a dismiss event for the landing resumable CTA without exposing draft deletion wording", async () => {
+    const wrapper = mount(PlannerSelectionGate, {
+      props: {
+        availableRosters: [],
+        availableTemplates: [],
+        selectedRosterId: null,
+        resumableDraft: {
+          draft: {
+            id: "draft-1",
+            roster_id: "roster-1",
+            draft_kind: "seating",
+            template_id: "template-1",
+            status: "active",
+            revision: 2,
+            last_opened_at: "2026-03-21T10:00:00Z",
+          },
+          roster_name: "SA24D",
+          template_name: "Sal 101",
+        },
+        isLoadingCatalog: false,
+      },
+    });
+
+    await wrapper.get('button[aria-label="Stäng senaste utkastet"]').trigger("click");
+
+    expect(wrapper.emitted("dismiss-resumable-draft")).toHaveLength(1);
+    expect(wrapper.text()).not.toContain("Avsluta utkast");
   });
 });

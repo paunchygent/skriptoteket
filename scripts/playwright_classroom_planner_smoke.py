@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
@@ -42,6 +43,28 @@ def _login_to_app(page: Any, *, base_url: str, email: str, password: str) -> Non
     _login(page, base_url=base_url, email=email, password=password)
     page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
     _wait_for_app_heading(page)
+
+
+def _click_landing_cta_button(page: Any, *, label_pattern: re.Pattern[str]) -> None:
+    """Click a landing CTA button through transient CTA rerenders."""
+
+    for attempt in range(3):
+        cta = (
+            page.locator("article")
+            .filter(has=page.get_by_text("Fortsätt senaste utkastet", exact=True))
+            .first
+        )
+        expect(cta).to_be_visible(timeout=15000)
+        page.wait_for_timeout(300)
+        button = page.get_by_role("button", name=label_pattern)
+        expect(button).to_be_visible(timeout=15000)
+        try:
+            button.click(timeout=5000)
+            return
+        except PlaywrightTimeoutError:
+            if attempt == 2:
+                raise
+            page.wait_for_timeout(500)
 
 
 def _create_roster(page: Any, *, roster_name: str) -> None:
@@ -222,20 +245,28 @@ def _verify_seating_history_stays_empty(page: Any) -> None:
 def _exit_to_landing(page: Any) -> None:
     """Leave the class workspace and land on the app entry surface."""
 
-    _focus_workspace_mode(page, label="Sittplatser")
     page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE)).click()
     expect(page.get_by_text("Fortsätt senaste utkastet", exact=True)).to_be_visible()
 
 
-def _discard_resumable_draft(page: Any, *, roster_name: str, template_name: str) -> None:
-    """Use the landing-page discard action to remove the active resumable draft."""
+def _resume_from_landing(page: Any) -> None:
+    """Resume the active draft from the landing CTA."""
 
-    discard_button = page.get_by_role(
-        "button",
-        name=re.compile(r"Avsluta utkast", re.IGNORECASE),
-    ).first
-    expect(discard_button).to_be_visible(timeout=15000)
-    discard_button.click(force=True)
+    _click_landing_cta_button(
+        page,
+        label_pattern=re.compile(r"^Fortsätt$", re.IGNORECASE),
+    )
+    expect(page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE))).to_be_visible()
+
+
+def _dismiss_resumable_cta(page: Any, *, roster_name: str, template_name: str) -> None:
+    """Dismiss the landing resumable CTA without deleting the active draft."""
+
+    _click_landing_cta_button(
+        page,
+        label_pattern=re.compile(r"^Stäng senaste utkastet$", re.IGNORECASE),
+    )
+    expect(page.get_by_text("Fortsätt senaste utkastet", exact=True)).not_to_be_visible()
     expect(page.get_by_text(f"{roster_name} · {template_name}")).not_to_be_visible()
 
 
@@ -272,11 +303,9 @@ def main() -> None:
         _return_to_class_workspace(page)
         _verify_seating_history_stays_empty(page)
         _exit_to_landing(page)
-        _discard_resumable_draft(
-            page,
-            roster_name=roster_name,
-            template_name=second_template_name,
-        )
+        _resume_from_landing(page)
+        _exit_to_landing(page)
+        _dismiss_resumable_cta(page, roster_name=roster_name, template_name=second_template_name)
 
         page.screenshot(
             path=str(ARTIFACTS_DIR / "classroom-planner-smoke.png"),

@@ -7,7 +7,7 @@
  * class workspace, and the live planner shell.
  */
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import { apiGet, isApiError } from "../../api/client";
 import CreateRosterModal from "./components/CreateRosterModal.vue";
@@ -38,11 +38,40 @@ const isLoadingClassWorkspace = ref(false);
 const bootstrapError = ref<string | null>(null);
 const plannerActionError = ref<string | null>(null);
 const resumableDraft = ref<ResumablePlanDraft | null>(null);
+const dismissedResumableDraftId = ref<string | null>(null);
 const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>(null);
 const isRosterModalOpen = ref(false);
 const isTemplateModalOpen = ref(false);
 const activeRosterModal = ref<Roster | null>(null);
 const activeTemplateModal = ref<RoomTemplate | null>(null);
+
+const visibleResumableDraft = computed(() => {
+  if (!resumableDraft.value) {
+    return null;
+  }
+  if (dismissedResumableDraftId.value === resumableDraft.value.draft.id) {
+    return null;
+  }
+  return resumableDraft.value;
+});
+
+function setResumableDraft(draft: ResumablePlanDraft | null): void {
+  resumableDraft.value = draft;
+  if (!draft) {
+    dismissedResumableDraftId.value = null;
+    return;
+  }
+  if (dismissedResumableDraftId.value !== draft.draft.id) {
+    dismissedResumableDraftId.value = null;
+  }
+}
+
+function dismissResumableDraft(): void {
+  if (!resumableDraft.value) {
+    return;
+  }
+  dismissedResumableDraftId.value = resumableDraft.value.draft.id;
+}
 
 async function fetchCatalog(): Promise<void> {
   isLoadingCatalog.value = true;
@@ -130,7 +159,7 @@ onMounted(async () => {
     await Promise.all([
       fetchCatalog(),
       plannerState.getResumableDraft().then((draft) => {
-        resumableDraft.value = draft;
+        setResumableDraft(draft);
       }),
     ]);
   } catch (error: unknown) {
@@ -153,7 +182,7 @@ async function openGroupingWorkspace(payload: { templateId: string | null }): Pr
     } else {
       await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "grouping");
     }
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -177,7 +206,7 @@ async function openSeatingWorkspace(payload: { templateId: string | null }): Pro
     } else {
       await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "seating");
     }
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -207,41 +236,13 @@ async function returnToClassWorkspace(): Promise<void> {
     }
     plannerState.clearWorkspace();
     await loadClassWorkspaceSummary(rosterId);
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     selectedRosterId.value = rosterId;
     currentScreen.value = "class-workspace";
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
       "Kunde inte återvända till klassarbetsytan just nu.",
-    );
-  }
-}
-
-async function discardActiveDraft(): Promise<void> {
-  const draftId = plannerState.draft?.id ?? resumableDraft.value?.draft.id ?? null;
-  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
-  if (!draftId) {
-    return;
-  }
-
-  plannerActionError.value = null;
-  try {
-    plannerState.cancelPendingSave();
-    await plannerState.abandonDraft(draftId);
-    plannerState.clearWorkspace();
-    resumableDraft.value = await plannerState.getResumableDraft();
-    if (rosterId) {
-      await loadClassWorkspaceSummary(rosterId);
-      selectedRosterId.value = rosterId;
-      currentScreen.value = "class-workspace";
-      return;
-    }
-    returnToLanding();
-  } catch (error: unknown) {
-    plannerActionError.value = normalizeUiError(
-      error,
-      "Kunde inte avsluta utkastet just nu.",
     );
   }
 }
@@ -261,7 +262,7 @@ async function exitPlannerToLanding(): Promise<void> {
     }
 
     plannerState.clearWorkspace();
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     selectedRosterId.value = null;
     classWorkspaceSummary.value = null;
     currentScreen.value = "landing";
@@ -290,7 +291,7 @@ async function changeSeatingTemplate(payload: { templateId: string | null }): Pr
       return;
     }
     await plannerState.resolveDraft(rosterId, payload.templateId, "seating");
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -318,7 +319,7 @@ async function changeGroupingTemplate(payload: { templateId: string | null }): P
       return;
     }
     await plannerState.resolveDraft(rosterId, payload.templateId, "grouping");
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -346,7 +347,7 @@ async function startNewGroupingDraft(payload: { templateId: string | null }): Pr
       return;
     }
     await plannerState.startNewGroupingDraft(rosterId, payload.templateId);
-    resumableDraft.value = await plannerState.getResumableDraft();
+    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -498,7 +499,7 @@ function openTemplateEdit(template: RoomTemplate): void {
       :available-rosters="availableRosters"
       :available-templates="availableTemplates"
       :selected-roster-id="selectedRosterId"
-      :resumable-draft="resumableDraft"
+      :resumable-draft="visibleResumableDraft"
       :is-loading-catalog="isLoadingCatalog"
       @select-roster="void openClassWorkspace($event)"
       @create-roster="openRosterCreate"
@@ -506,7 +507,7 @@ function openTemplateEdit(template: RoomTemplate): void {
       @create-template="openTemplateCreate"
       @edit-template="openTemplateEdit"
       @resume-draft="resumeDraft"
-      @discard-resumable-draft="discardActiveDraft"
+      @dismiss-resumable-draft="dismissResumableDraft"
     />
 
     <PlannerClassWorkspace
