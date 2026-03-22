@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, and `PR-0091` (Klassrumskartan grouping workspace fundamentals).
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, and `PR-0091`.
 
 ## Status
 
@@ -31,10 +31,16 @@ Keep this file updated so the next session can pick up work quickly.
 - Live smoke also verifies grouping reorder in the browser: custom names stay fixed, default names remain positional, and `Ordning` badges stay meaningful after reordering.
 - PR-0092 is now tightened at the planning level:
   - undo/redo stays grouping-only
-  - pending autosave should flush before undo/redo
+  - pending autosave now flushes before undo/redo
   - the existing compact autosave badge stays; no broad top-panel redesign
   - `Nytt grupputkast` remains a draft-lifecycle boundary outside undo/redo
-- Next: implement PR-0092 with the narrowed scope above.
+- PR-0092 is still IN PROGRESS locally. `GroupBoard.vue` now exposes grouping-only `Ångra` / `Gör om`, `useClassroomState.ts` owns flush-first undo/redo orchestration, and backend `history_status` is now retained as first-class frontend state instead of being dropped on workspace hydration.
+- Redo root-cause fix: removed the local redo workaround, made backend `history_status` the authoritative redo source again, and hardened the browser path around focused rename input -> blur/autosave -> undo/redo rehydration.
+- Undo becomes available immediately for pending local grouping edits, but only because the store flushes that pending autosave before calling backend undo; no parallel client redo stack remains.
+- No-op group renames no longer mark the workspace dirty, which removes blur-driven interference with history controls.
+- Browser proof is now green for the exact teacher path: rename first group -> `Ångra` -> `Gör om` -> custom name restored.
+- The full Playwright baseline is still red for a separate issue outside redo: after clicking workspace `Avsluta`, the app sometimes stays in the class workspace instead of returning to landing, so the smoke cannot reach the landing-page `Avsluta utkast` cleanup CTA.
+- Next: finish `PR-0092` by correcting the `Avsluta`-to-landing behavior or the smoke’s landing assumption, then rerun the full planner smoke before moving to `PR-0093`.
 
 ## Previous Sessions
 
@@ -76,6 +82,19 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
 - 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after adding default/custom naming assertions; artifact in `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`).
+- 2026-03-22: `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q` (29 PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/GroupCard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (40 PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/classroomPlannerTypes.ts src/views/apps/classroomPlannerStoreMutations.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupBoard.spec.ts src/views/apps/useClassroomState.spec.ts` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
+- 2026-03-22: `pdm run ruff check scripts/playwright_classroom_planner_smoke.py` (PASSED).
+- 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after adding grouping browser-level undo verification; artifact in `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`).
+- 2026-03-22: `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q` (29 PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/GroupCard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (42 PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/classroomPlannerStoreMutations.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupCard.vue src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/GroupCard.spec.ts` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-22: `pdm run python - <<'PY' ... rename -> Ångra -> Gör om focused browser proof ... PY` (PASSED; browser proof for redo path only).
+- 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (FAILED at landing cleanup: could not find landing-page `Avsluta utkast` after workspace `Avsluta`; redo path itself returned `200/200` in backend logs and passed in focused browser proof).
 
 ## How to Run
 
@@ -98,4 +117,4 @@ pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useCl
 
 ## Next Steps
 
-- Start `PR-0092` for `ST-24-03`: add grouping undo/redo controls and compact autosave feedback on top of the shipped draft-history contract and grouping fundamentals.
+- Finish `PR-0092` for `ST-24-03`: keep the verified redo fix, then correct the separate `Avsluta`/landing behavior so the full Klassrumskartan Playwright smoke is green again before starting `PR-0093`.

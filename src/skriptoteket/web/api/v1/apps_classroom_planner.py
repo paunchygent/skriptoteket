@@ -592,7 +592,7 @@ async def get_draft_workspace(
     return _serialize_workspace(workspace)
 
 
-@router.patch("/drafts/{draft_id}", response_model=PlanDraftDto)
+@router.patch("/drafts/{draft_id}", response_model=DraftWorkspaceResponse)
 @inject
 async def update_draft(
     draft_id: UUID,
@@ -600,8 +600,8 @@ async def update_draft(
     handler: FromDishka[PatchDraftHandler],
     user: User = Depends(require_user_api),
     _: None = Depends(require_csrf_token),
-) -> PlanDraftDto:
-    draft = await handler.handle(
+) -> DraftWorkspaceResponse:
+    workspace = await handler.handle(
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=request.expected_revision,
@@ -627,4 +627,4 @@ async def update_draft(
         if request.student_planning_meta is not None
         else None,
     )
-    return serialize_plan_draft(draft)
+    return _serialize_workspace(workspace)

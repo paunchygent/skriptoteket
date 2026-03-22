@@ -2,7 +2,7 @@
 type: pr
 id: PR-0092
 title: "Klassrumskartan: grouping undo-redo and autosave UX"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-22
 updated: 2026-03-22
@@ -50,12 +50,13 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
 
 ## Checklist
 
-- [ ] Add undo and redo controls to the grouping workspace.
-- [ ] Keep the existing compact autosave badge pattern and make it coexist cleanly with undo/redo.
-- [ ] Record meaningful grouping actions into recent history.
-- [ ] Respect the configured recent-history depth in the UI.
-- [ ] Keep `Nytt grupputkast` outside the undo/redo chain.
-- [ ] Add frontend/backend tests for undo, redo, and autosave feedback behavior.
+- [x] Add undo and redo controls to the grouping workspace.
+- [x] Keep the existing compact autosave badge pattern and make it coexist cleanly with undo/redo.
+- [x] Record meaningful grouping actions into recent history.
+- [x] Respect the configured recent-history depth in the UI.
+- [x] Keep `Nytt grupputkast` outside the undo/redo chain.
+- [x] Add frontend/backend tests for undo, redo, and autosave feedback behavior.
+- [ ] Restore the full Klassrumskartan Playwright smoke to green after the unrelated `Avsluta`-to-landing path is corrected.
 
 ## Implementation plan
 
@@ -66,6 +67,7 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
   - call the backend undo/redo endpoint
   - rehydrate the returned workspace, including backend-owned history availability
 - Keep the current compact autosave badge pattern in the shared top panel and avoid redesigning it unless a bug forces a tiny polish adjustment.
+- Allow undo to become available immediately when local grouping changes are pending, while still keeping backend history as the source of truth for persisted availability.
 - Make availability explicit:
   - undo disabled when no earlier step exists
   - redo disabled when no later step exists
@@ -92,6 +94,17 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
 
 - Revert the grouping undo/redo UI if it confuses autosave with navigation or destabilizes
   grouping edits, while preserving the backend draft-history contract for later reintroduction.
+
+## Implementation status (2026-03-22)
+
+- Local redo/undo fallback state was removed so backend `history_status` is again the authoritative redo source.
+- The browser-level teacher path now works locally:
+  - rename first group
+  - `Ångra`
+  - `Gör om`
+  - custom name returns
+- The Pinia store now only adds one local affordance on top of backend truth: `Ångra` stays clickable while a grouping edit is pending autosave, because the action flushes that pending save before calling backend undo.
+- The broader Playwright baseline is still red, but for a separate reason: after `Avsluta`, the app remains in the class workspace instead of returning to the landing screen, so the smoke cannot reach the landing-page `Avsluta utkast` cleanup CTA. That issue should be fixed before this PR is closed as `done`.
 
 ## Follow-up direction
 

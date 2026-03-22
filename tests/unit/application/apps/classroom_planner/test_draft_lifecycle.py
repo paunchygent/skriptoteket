@@ -10,6 +10,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     CreateGroupingDraftHandler,
     GetResumableDraftHandler,
+    PatchDraftHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
     UndoDraftHandler,
@@ -18,6 +19,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
     DraftWorkspace,
     GroupAssignment,
+    GroupingHistoryStatus,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -237,6 +239,76 @@ async def test_resolve_grouping_draft_updates_active_draft_in_place_when_room_co
     assert result.template_id == template_id
     drafts.mark_status.assert_not_called()
     drafts.save.assert_not_called()
+    drafts.save_workspace.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_patch_draft_returns_hydrated_workspace_with_backend_history_status(
+    uow, rosters, templates, drafts, clock, now
+):
+    handler = PatchDraftHandler(uow, drafts, rosters, templates, clock)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    draft_id = uuid4()
+    existing = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=template_id,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    existing_workspace = DraftWorkspace(
+        draft=existing,
+        groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0, name_is_custom=False)],
+        group_assignments=[],
+        seat_assignments=[],
+        student_planning_meta=[],
+        history_status=GroupingHistoryStatus(can_undo=False, can_redo=False),
+    )
+    persisted_workspace = DraftWorkspace(
+        draft=existing.model_copy(update={"revision": 3, "updated_at": now}),
+        groups=[DraftGroup(id="group-1", name="Handledargrupp", sort_order=0, name_is_custom=True)],
+        group_assignments=[],
+        seat_assignments=[],
+        student_planning_meta=[],
+        history_status=GroupingHistoryStatus(can_undo=True, can_redo=False),
+    )
+
+    drafts.get_workspace.side_effect = [existing_workspace, persisted_workspace]
+    rosters.get_by_id.return_value = Roster(
+        id=roster_id,
+        owner_user_id=owner_id,
+        name="Klass A",
+        students=[],
+        created_at=now,
+        updated_at=now,
+    )
+    templates.get_by_id.return_value = RoomTemplate(
+        id=template_id,
+        owner_user_id=owner_id,
+        name="Rum 1",
+        seats=[],
+        fixtures=[],
+        created_at=now,
+        updated_at=now,
+    )
+
+    result = await handler.handle(
+        draft_id=draft_id,
+        owner_user_id=owner_id,
+        expected_revision=2,
+        groups=[DraftGroup(id="group-1", name="Handledargrupp", sort_order=0, name_is_custom=True)],
+    )
+
+    assert result.draft.revision == 3
+    assert result.groups[0].name == "Handledargrupp"
+    assert result.history_status.can_undo is True
     drafts.save_workspace.assert_awaited_once()
 
 

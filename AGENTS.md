@@ -91,7 +91,12 @@ Switch to run bash on hemma via heredocs to avoid nested quoting issues.
 ## Skill Usage (REQUIRED)
 
 - Skills are provided at session start from `$CODEX_HOME/skills` (typically `~/.codex/skills/*/SKILL.md`) and repo-local `.claude/skills/*/SKILL.md`.
-- Always load: `skriptoteket-devops` for Hemma/deploy/compose/env; `skriptoteket-local-devops` for local development; `skriptoteket-frontend-specialist` (and `brutalist-academic-ui` for styling) for SPA work; and the relevant observability skill for Grafana/Prometheus/Loki/Jaeger/structlog.
+- Load the relevant repo/domain skill before planning or implementation work. Treat skills as the procedural layer and keep `AGENTS.md` focused on repo policy.
+- Minimum expected defaults:
+  - `skriptoteket-local-devops` for local development, DB/migrations, and dev-runtime troubleshooting
+  - `skriptoteket-frontend-specialist` for SPA and curated-app frontend work
+  - `playwright-testing` before planning, writing, running, or reviewing Playwright automation
+  - the relevant observability skill when debugging Grafana/Prometheus/Loki/Jaeger/structured logging
 
 ## Tool Execution (Local Dev Only)
 
@@ -116,22 +121,12 @@ The default `ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts` doesn't exist local
 
 ### Browser Automation
 
-Playwright is the default for new browser automation (see `.agents/rules/075-browser-automation.md`).
-Always load and follow the `playwright-testing` skill before planning Playwright work, writing a Playwright script,
-running a Playwright script, or reviewing a Playwright script.
-Run smokes with `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`, or ad-hoc scripts via
-`pdm run python -m scripts.<module>`.
-HMR probe (Playwright; may need escalation on macOS): `pdm run ui-hmr-probe` (artifacts in `.artifacts/hmr-probe/`).
-Prefer Playwright for browser automation and screenshots; do not use Puppeteer.
+Playwright is the default for browser automation. Follow `.agents/rules/075-browser-automation.md` and the
+`playwright-testing` skill for operational details, script structure, and credential handling.
 
-- **Do not create new superusers for UI checks**: reuse the existing local dev bootstrap account in `.env`
-  (`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`). Creating new accounts bloats the dev DB.
-- **Do not create ad hoc demo tools/scripts for Playwright**: if a browser automation script needs a specific tool by
-  slug, add it to the repo script bank (`src/skriptoteket/script_bank/`) and run `pdm run seed-script-bank --slug <slug>`
-  (optionally `--sync-code`) before running Playwright. This avoids polluting the dev DB (see `.agents/rules/075-browser-automation.md`).
-- **Prod smoke tests (recommended)**: keep `BOOTSTRAP_SUPERUSER_*` for provisioning/local dev; store prod UI smoke
-  credentials in a gitignored `.env.prod-smoke` (`BASE_URL`, `PLAYWRIGHT_EMAIL`, `PLAYWRIGHT_PASSWORD`) and run
-  `pdm run ui-smoke --dotenv .env.prod-smoke` (same for `ui-editor-smoke` / `ui-runtime-smoke`).
+Repo-specific reminders:
+- Reuse the bootstrap superuser from `.env` for local UI checks; do not create ad hoc dev accounts.
+- Seed required Playwright tool fixtures through `src/skriptoteket/script_bank/` instead of creating demo tools in the DB.
 
 ## Git Workflow
 

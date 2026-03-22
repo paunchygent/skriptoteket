@@ -343,6 +343,7 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
     draft_id = uuid4()
     roster_id = uuid4()
     template_id = uuid4()
+    new_now = datetime(2025, 1, 2, tzinfo=timezone.utc)
     old_draft = PlanDraft(
         id=draft_id,
         owner_user_id=owner_id,
@@ -355,13 +356,25 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
         created_at=now,
         updated_at=now,
     )
-    drafts.get_workspace.return_value = DraftWorkspace(
-        draft=old_draft,
-        groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
-        group_assignments=[GroupAssignment(student_id="s1", group_id="group-1")],
-        seat_assignments=[],
-        student_planning_meta=[],
-    )
+    drafts.get_workspace.side_effect = [
+        DraftWorkspace(
+            draft=old_draft,
+            groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
+            group_assignments=[GroupAssignment(student_id="s1", group_id="group-1")],
+            seat_assignments=[],
+            student_planning_meta=[],
+        ),
+        DraftWorkspace(
+            draft=old_draft.model_copy(update={"revision": 1, "updated_at": new_now}),
+            groups=[
+                DraftGroup(id="group-1", name="Grupp 1", sort_order=0),
+                DraftGroup(id="group-2", name="Grupp 2", sort_order=1),
+            ],
+            group_assignments=[GroupAssignment(student_id="s1", group_id="group-2")],
+            seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
+            student_planning_meta=[],
+        ),
+    ]
     rosters.get_by_id.return_value = Roster(
         id=roster_id,
         owner_user_id=owner_id,
@@ -379,7 +392,6 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
         created_at=now,
         updated_at=now,
     )
-    new_now = datetime(2025, 1, 2, tzinfo=timezone.utc)
     clock.now.return_value = new_now
 
     result = await handler.handle(
@@ -394,8 +406,9 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
     )
 
-    assert result.revision == 1
-    assert result.updated_at == new_now
+    assert result.draft.revision == 1
+    assert result.draft.updated_at == new_now
+    assert result.group_assignments[0].group_id == "group-2"
     drafts.save_workspace.assert_awaited_once()
     saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
     assert saved_workspace.group_assignments[0].group_id == "group-2"

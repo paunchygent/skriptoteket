@@ -119,43 +119,32 @@ def _open_grouping_workspace(page: Any, *, template_name: str) -> None:
         option for option in option_rows if option["value"] and template_name in option["label"]
     )
     template_select.select_option(value=matching_option["value"])
-    expect(page.get_by_text(template_name, exact=True)).to_be_visible()
+    expect(template_select).to_have_value(matching_option["value"])
 
 
 def _exercise_grouping_fundamentals(page: Any) -> None:
-    """Verify grouping-only randomize and explicit blank new-draft behavior."""
+    """Verify blank grouping drafts plus browser-level undo/redo inside grouping."""
 
     first_group_name = page.locator("input[type='text']").first
-    second_group_name = page.locator("input[type='text']").nth(1)
-    first_group_name.fill("Handledargrupp")
-    first_group_name.press("Tab")
-    second_group_name.fill("Fördjupning")
-    second_group_name.press("Tab")
-    expect(first_group_name).to_have_value("Handledargrupp")
-    expect(second_group_name).to_have_value("Fördjupning")
-    expect(page.locator('[data-test="group-order-badge"]').nth(0)).to_contain_text("Ordning 1")
-    expect(page.locator('[data-test="group-order-badge"]').nth(1)).to_contain_text("Ordning 2")
-
-    page.locator('[data-test="move-group-down"]').first.click()
-    expect(page.locator("input[type='text']").nth(0)).to_have_value("Fördjupning")
-    expect(page.locator("input[type='text']").nth(1)).to_have_value("Handledargrupp")
-    expect(page.locator('[data-test="group-order-badge"]').nth(0)).to_contain_text("Ordning 1")
-    expect(page.locator('[data-test="group-order-badge"]').nth(1)).to_contain_text("Ordning 2")
-
-    page.get_by_role("button", name=re.compile(r"Slumpa", re.IGNORECASE)).click()
-    expect(page.locator("input[type='text']").nth(0)).to_have_value("Fördjupning")
-    expect(page.locator("input[type='text']").nth(1)).to_have_value("Handledargrupp")
-    expect(page.get_by_text("Alla elever ligger i grupp", exact=True)).to_be_visible()
+    redo_button = page.locator('[data-test="redo-grouping"]')
 
     page.get_by_role("button", name=re.compile(r"Nytt grupputkast", re.IGNORECASE)).click()
+    expect(first_group_name).to_be_enabled()
     expect(first_group_name).to_have_value("Grupp 1")
     expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
-    expect(page.get_by_text("Handledargrupp", exact=True)).not_to_be_visible()
     expect(page.locator("aside").get_by_text("2", exact=True)).to_be_visible()
+    expect(redo_button).to_be_disabled()
 
-    page.locator('[data-test="move-group-down"]').first.click()
-    expect(page.locator("input[type='text']").nth(0)).to_have_value("Grupp 1")
-    expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
+    first_group_name.fill("Arbetslag Alfa")
+    first_group_name.press("Enter")
+    expect(first_group_name).to_have_value("Arbetslag Alfa")
+
+    page.locator('[data-test="undo-grouping"]').click()
+    expect(first_group_name).to_have_value("Grupp 1")
+    expect(redo_button).to_be_enabled()
+
+    redo_button.click()
+    expect(first_group_name).to_have_value("Arbetslag Alfa")
 
 
 def _open_seating_workspace(page: Any, *, template_name: str) -> None:

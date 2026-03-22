@@ -400,7 +400,7 @@ class PatchDraftHandler:
         group_assignments: list[GroupAssignment] | None = None,
         seat_assignments: list[SeatAssignment] | None = None,
         student_planning_meta: list[StudentPlanningMeta] | None = None,
-    ) -> PlanDraft:
+    ) -> ClassroomPlannerWorkspace:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
             raise not_found("PlanDraft", str(draft_id))
@@ -455,4 +455,18 @@ class PatchDraftHandler:
 
         async with self._uow:
             await self._drafts.save_workspace(workspace=updated_workspace)
-        return updated_workspace.draft
+            persisted_workspace = await self._drafts.get_workspace(draft_id=draft_id)
+
+        if persisted_workspace is None:
+            raise not_found("PlanDraft", str(draft_id))
+
+        return ClassroomPlannerWorkspace(
+            draft=persisted_workspace.draft,
+            roster=roster,
+            template=template,
+            groups=persisted_workspace.groups,
+            group_assignments=persisted_workspace.group_assignments,
+            seat_assignments=persisted_workspace.seat_assignments,
+            student_planning_meta=persisted_workspace.student_planning_meta,
+            history_status=persisted_workspace.history_status,
+        )

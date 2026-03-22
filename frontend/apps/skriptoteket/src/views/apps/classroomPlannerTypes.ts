@@ -133,6 +133,8 @@ export type DraftWorkspaceResponse = {
   };
 };
 
+export type DraftHistoryStatus = DraftWorkspaceResponse["history_status"];
+
 export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 
 export const emptyStudentPlanningMeta = (studentId: string): StudentPlanningMeta => ({

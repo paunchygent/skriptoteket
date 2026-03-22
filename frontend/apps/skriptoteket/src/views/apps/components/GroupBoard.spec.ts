@@ -7,11 +7,16 @@ const stateMocks = vi.hoisted(() => ({
   plannerState: {
     ungroupedStudents: [{ id: "student-1", display_name: "Ada" }],
     groups: [{ id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false }],
+    canUndo: false,
+    canRedo: false,
+    isWorkspaceBusy: false,
     studentsByGroupId: {
       "group-a": [{ id: "student-2", display_name: "Bo" }],
     },
     addGroup: vi.fn(),
     randomizeGroups: vi.fn(),
+    undoGroupingDraft: vi.fn(),
+    redoGroupingDraft: vi.fn(),
     assignStudentToGroup: vi.fn(),
     removeStudentFromGroup: vi.fn(),
     renameGroup: vi.fn(),
@@ -32,6 +37,11 @@ describe("GroupBoard", () => {
   beforeEach(() => {
     stateMocks.plannerState.addGroup.mockReset();
     stateMocks.plannerState.randomizeGroups.mockReset();
+    stateMocks.plannerState.undoGroupingDraft.mockReset();
+    stateMocks.plannerState.redoGroupingDraft.mockReset();
+    stateMocks.plannerState.canUndo = false;
+    stateMocks.plannerState.canRedo = false;
+    stateMocks.plannerState.isWorkspaceBusy = false;
   });
 
   it("does not leak seat labels into the grouping surface", () => {
@@ -54,5 +64,33 @@ describe("GroupBoard", () => {
 
     await wrapper.get('[data-test="new-grouping-draft"]').trigger("click");
     expect(wrapper.emitted("new-grouping-draft")).toEqual([[]]);
+  });
+
+  it("uses backend-owned undo and redo availability", async () => {
+    stateMocks.plannerState.canUndo = true;
+    stateMocks.plannerState.canRedo = true;
+    const wrapper = mount(GroupBoard);
+
+    const undoButton = wrapper.get('[data-test="undo-grouping"]');
+    const redoButton = wrapper.get('[data-test="redo-grouping"]');
+
+    expect((undoButton.element as HTMLButtonElement).disabled).toBe(false);
+    expect((redoButton.element as HTMLButtonElement).disabled).toBe(false);
+
+    await undoButton.trigger("click");
+    await redoButton.trigger("click");
+
+    expect(stateMocks.plannerState.undoGroupingDraft).toHaveBeenCalledTimes(1);
+    expect(stateMocks.plannerState.redoGroupingDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("locks grouping interactions while the workspace is transitioning", () => {
+    stateMocks.plannerState.isWorkspaceBusy = true;
+    const wrapper = mount(GroupBoard);
+
+    expect((wrapper.get('[data-test="new-grouping-draft"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect((wrapper.get('[data-test="randomize-groups"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect((wrapper.get('[data-test="add-group"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect((wrapper.get('input[type="text"]').element as HTMLInputElement).disabled).toBe(true);
   });
 });

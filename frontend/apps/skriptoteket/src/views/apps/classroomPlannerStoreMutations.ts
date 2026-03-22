@@ -83,6 +83,7 @@ type MutationContext = {
   groupAssignmentsByStudentId: Ref<Record<string, string | null>>;
   seatAssignmentsByStudentId: Ref<Record<string, string | null>>;
   studentPlanningMetaByStudentId: Ref<Record<string, StudentPlanningMeta>>;
+  canMutate: () => boolean;
   markDirty: () => void;
 };
 
@@ -116,6 +117,9 @@ export function buildRandomizedGroupAssignments(
 
 export function createPlannerMutationActions(context: MutationContext) {
   function assignStudentToGroup(studentId: string, groupId: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (!context.studentsById.value[studentId] || !context.groupsById.value[groupId]) {
       return;
     }
@@ -127,6 +131,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function removeStudentFromGroup(studentId: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (!context.studentsById.value[studentId]) {
       return;
     }
@@ -138,6 +145,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function assignStudentToSeat(studentId: string, seatId: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (!context.studentsById.value[studentId] || !context.seatsById.value[seatId]) {
       return;
     }
@@ -153,6 +163,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function swapSeatAssignments(studentIdA: string, studentIdB: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     const nextAssignments = { ...context.seatAssignmentsByStudentId.value };
     const seatA = nextAssignments[studentIdA] ?? null;
     const seatB = nextAssignments[studentIdB] ?? null;
@@ -163,6 +176,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function clearSeatAssignment(studentId: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (!context.studentsById.value[studentId]) {
       return;
     }
@@ -174,6 +190,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function addGroup(name?: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     const nextSortOrder = context.groups.value.length;
     const normalizedName = name?.trim() || buildDefaultGroupName(nextSortOrder);
     context.groups.value = reindexGroups([
@@ -189,22 +208,37 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function renameGroup(groupId: string, name: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
+    let didChange = false;
     context.groups.value = context.groups.value.map((group) => {
       if (group.id !== groupId) {
         return group;
       }
       const normalizedName = name.trim() || buildDefaultGroupName(group.sort_order);
       const nameIsCustom = resolveCustomGroupNameState(normalizedName, group.sort_order);
+      const nextName = nameIsCustom ? normalizedName : buildDefaultGroupName(group.sort_order);
+      if (group.name === nextName && group.name_is_custom === nameIsCustom) {
+        return group;
+      }
+      didChange = true;
       return {
         ...group,
-        name: nameIsCustom ? normalizedName : buildDefaultGroupName(group.sort_order),
+        name: nextName,
         name_is_custom: nameIsCustom,
       };
     });
+    if (!didChange) {
+      return;
+    }
     context.markDirty();
   }
 
   function moveGroup(groupId: string, offset: number): void {
+    if (!context.canMutate()) {
+      return;
+    }
     const currentIndex = context.groups.value.findIndex((group) => group.id === groupId);
     const targetIndex = currentIndex + offset;
     if (currentIndex < 0 || targetIndex < 0 || targetIndex >= context.groups.value.length) {
@@ -218,6 +252,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function removeGroup(groupId: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (context.groups.value.length <= 1) {
       return;
     }
@@ -233,6 +270,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function randomizeGroups(): void {
+    if (!context.canMutate()) {
+      return;
+    }
     context.groupAssignmentsByStudentId.value = buildRandomizedGroupAssignments(
       context.students.value,
       context.groups.value,
@@ -241,6 +281,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function setStudentPlanningMeta(studentId: string, patch: Partial<StudentPlanningMeta>): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (!context.studentsById.value[studentId]) {
       return;
     }
@@ -254,6 +297,9 @@ export function createPlannerMutationActions(context: MutationContext) {
   }
 
   function resetStudentPlanningMeta(studentId: string): void {
+    if (!context.canMutate()) {
+      return;
+    }
     if (!context.studentPlanningMetaByStudentId.value[studentId]) {
       return;
     }

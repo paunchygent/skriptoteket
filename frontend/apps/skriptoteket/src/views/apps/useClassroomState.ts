@@ -14,6 +14,7 @@ import { defineStore } from "pinia";
 import { ApiError, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
 import {
   type ClassWorkspaceSummary,
+  type DraftHistoryStatus,
   type DraftGroup,
   type DraftWorkspaceResponse,
   type GroupAssignment,
@@ -47,12 +48,23 @@ export const useClassroomState = defineStore("classroom-state", () => {
   const groupAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const studentPlanningMetaByStudentId = ref<Record<string, StudentPlanningMeta>>({});
+  const historyStatus = ref<DraftHistoryStatus>({
+    can_undo: false,
+    can_redo: false,
+  });
+  const hasPendingAutosave = ref(false);
+  const historyActionInFlight = ref(false);
+  const workspaceTransitionDepth = ref(0);
   const saveStatus = ref<SaveStatus>("idle");
   const saveMessage = ref<string | null>(null);
 
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
   let saveInFlight = false;
   let saveQueued = false;
+
+  const isWorkspaceBusy = computed(() => {
+    return historyActionInFlight.value || workspaceTransitionDepth.value > 0;
+  });
 
   const hasWorkspace = computed(() => {
     return draft.value !== null && roster.value !== null;
@@ -131,6 +143,26 @@ export const useClassroomState = defineStore("classroom-state", () => {
     ).sort();
   });
 
+  const canUndo = computed(() => {
+    return (
+      draft.value?.draft_kind === "grouping"
+      && !isWorkspaceBusy.value
+      && (historyStatus.value.can_undo || hasPendingAutosave.value)
+    );
+  });
+
+  const canRedo = computed(() => {
+    return draft.value?.draft_kind === "grouping" && !isWorkspaceBusy.value && historyStatus.value.can_redo;
+  });
+
+  function beginWorkspaceTransition(): void {
+    workspaceTransitionDepth.value += 1;
+  }
+
+  function endWorkspaceTransition(): void {
+    workspaceTransitionDepth.value = Math.max(0, workspaceTransitionDepth.value - 1);
+  }
+
   function clearAutosaveTimer(): void {
     if (autosaveTimer) {
       clearTimeout(autosaveTimer);
@@ -139,10 +171,15 @@ export const useClassroomState = defineStore("classroom-state", () => {
   }
 
   function markDirty(): void {
+    if (isWorkspaceBusy.value) {
+      return;
+    }
     scheduleAutosave();
   }
 
   function applyWorkspace(workspace: DraftWorkspaceResponse): void {
+    clearAutosaveTimer();
+    saveQueued = false;
     draft.value = workspace.draft;
     roster.value = workspace.roster;
     template.value = workspace.template ?? null;
@@ -152,6 +189,9 @@ export const useClassroomState = defineStore("classroom-state", () => {
     studentPlanningMetaByStudentId.value = Object.fromEntries(
       workspace.student_planning_meta.map((meta) => [meta.student_id, meta]),
     );
+    historyStatus.value = workspace.history_status;
+    historyActionInFlight.value = false;
+    hasPendingAutosave.value = false;
     saveStatus.value = "saved";
     saveMessage.value = null;
   }
@@ -187,14 +227,13 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
     saveInFlight = true;
     try {
-      const updatedDraft = await apiPatch<PlanDraft>(
+      const workspace = await apiPatch<DraftWorkspaceResponse>(
         `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}`,
         serializeWorkspacePatch(),
       );
-      draft.value = updatedDraft;
-      saveStatus.value = "saved";
-      saveMessage.value = null;
+      applyWorkspace(workspace);
     } catch (error: unknown) {
+      hasPendingAutosave.value = false;
       if (error instanceof ApiError && error.status === 409) {
         saveStatus.value = "conflict";
         saveMessage.value = "Utkastet har ändrats i en annan flik. Ladda om arbetsytan innan du fortsätter.";
@@ -216,6 +255,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
       return;
     }
     clearAutosaveTimer();
+    hasPendingAutosave.value = true;
     saveStatus.value = "saving";
     autosaveTimer = setTimeout(() => {
       void persistWorkspace();
@@ -232,6 +272,13 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupAssignmentsByStudentId.value = {};
     seatAssignmentsByStudentId.value = {};
     studentPlanningMetaByStudentId.value = {};
+    historyStatus.value = {
+      can_undo: false,
+      can_redo: false,
+    };
+    historyActionInFlight.value = false;
+    workspaceTransitionDepth.value = 0;
+    hasPendingAutosave.value = false;
     saveStatus.value = "idle";
     saveMessage.value = null;
   }
@@ -245,24 +292,64 @@ export const useClassroomState = defineStore("classroom-state", () => {
   function cancelPendingSave(): void {
     clearAutosaveTimer();
     saveQueued = false;
+    historyActionInFlight.value = false;
+    hasPendingAutosave.value = false;
   }
 
-  async function flushPendingSave(): Promise<void> {
+  async function flushPendingSave(): Promise<boolean> {
     if (!draft.value) {
-      return;
+      return true;
     }
 
     const hadScheduledSave = autosaveTimer !== null;
     clearAutosaveTimer();
     if (saveInFlight) {
       await waitForPendingSave();
-      return;
+      return saveStatus.value !== "conflict" && saveStatus.value !== "error";
     }
     if (hadScheduledSave || saveQueued) {
       saveQueued = false;
       saveStatus.value = "saving";
       await persistWorkspace();
     }
+
+    return saveStatus.value !== "conflict" && saveStatus.value !== "error";
+  }
+
+  async function runHistoryAction(action: "undo" | "redo"): Promise<void> {
+    if (!draft.value || draft.value.draft_kind !== "grouping" || historyActionInFlight.value) {
+      return;
+    }
+
+    const flushSucceeded = await flushPendingSave();
+    if (!flushSucceeded || !draft.value) {
+      return;
+    }
+
+    historyActionInFlight.value = true;
+    saveStatus.value = "saving";
+    saveMessage.value = null;
+    try {
+      const workspace = await apiPost<DraftWorkspaceResponse>(
+        `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}/${action}`,
+      );
+      applyWorkspace(workspace);
+    } catch (error: unknown) {
+      historyActionInFlight.value = false;
+      saveStatus.value = "error";
+      saveMessage.value = normalizeMutationError(
+        error,
+        action === "undo" ? "Kunde inte ångra ändringen." : "Kunde inte göra om ändringen.",
+      );
+    }
+  }
+
+  async function undoGroupingDraft(): Promise<void> {
+    await runHistoryAction("undo");
+  }
+
+  async function redoGroupingDraft(): Promise<void> {
+    await runHistoryAction("redo");
   }
 
   async function resolveDraft(
@@ -270,40 +357,55 @@ export const useClassroomState = defineStore("classroom-state", () => {
     templateId: string | null,
     draftKind: PlanDraftKind = "seating",
   ): Promise<void> {
-    saveStatus.value = "saving";
-    saveMessage.value = null;
-    const resolvedDraft = await apiPost<PlanDraft>(
-      "/api/v1/apps/classroom.group-seating-studio/drafts/resolve",
-      {
-        roster_id: rosterId,
-        draft_kind: draftKind,
-        template_id: templateId,
-      },
-    );
-    await loadWorkspace(resolvedDraft.id);
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      const resolvedDraft = await apiPost<PlanDraft>(
+        "/api/v1/apps/classroom.group-seating-studio/drafts/resolve",
+        {
+          roster_id: rosterId,
+          draft_kind: draftKind,
+          template_id: templateId,
+        },
+      );
+      await loadWorkspace(resolvedDraft.id);
+    } finally {
+      endWorkspaceTransition();
+    }
   }
 
   async function startNewGroupingDraft(
     rosterId: string,
     templateId: string | null,
   ): Promise<void> {
-    saveStatus.value = "saving";
-    saveMessage.value = null;
-    const createdDraft = await apiPost<PlanDraft>(
-      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new",
-      {
-        roster_id: rosterId,
-        template_id: templateId,
-      },
-    );
-    await loadWorkspace(createdDraft.id);
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      const createdDraft = await apiPost<PlanDraft>(
+        "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new",
+        {
+          roster_id: rosterId,
+          template_id: templateId,
+        },
+      );
+      await loadWorkspace(createdDraft.id);
+    } finally {
+      endWorkspaceTransition();
+    }
   }
 
   async function loadWorkspace(draftId: string): Promise<void> {
-    const workspace = await apiGet<DraftWorkspaceResponse>(
-      `/api/v1/apps/classroom.group-seating-studio/drafts/${draftId}/workspace`,
-    );
-    applyWorkspace(workspace);
+    beginWorkspaceTransition();
+    try {
+      const workspace = await apiGet<DraftWorkspaceResponse>(
+        `/api/v1/apps/classroom.group-seating-studio/drafts/${draftId}/workspace`,
+      );
+      applyWorkspace(workspace);
+    } finally {
+      endWorkspaceTransition();
+    }
   }
 
   async function reloadActiveWorkspace(): Promise<void> {
@@ -364,6 +466,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
     studentPlanningMetaByStudentId,
+    canMutate: () => !isWorkspaceBusy.value,
     markDirty,
   });
 
@@ -372,8 +475,11 @@ export const useClassroomState = defineStore("classroom-state", () => {
     roster,
     template,
     groups,
+    historyStatus,
     saveStatus,
     saveMessage,
+    isWorkspaceBusy,
+    hasPendingAutosave,
     hasWorkspace,
     students,
     seats,
@@ -393,6 +499,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     studentsByGroupId,
     studentBySeatId,
     zones,
+    canUndo,
+    canRedo,
     clearWorkspace,
     resolveDraft,
     startNewGroupingDraft,
@@ -400,6 +508,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     reloadActiveWorkspace,
     cancelPendingSave,
     flushPendingSave,
+    undoGroupingDraft,
+    redoGroupingDraft,
     getResumableDraft,
     getClassWorkspaceSummary,
     abandonDraft,

@@ -17,6 +17,7 @@ const props = defineProps<{
   canMoveUp: boolean;
   canMoveDown: boolean;
   selectedStudentId?: string | null;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -38,6 +39,9 @@ watch(
 );
 
 function onDrop(event: DragEvent): void {
+  if (props.disabled) {
+    return;
+  }
   event.preventDefault();
   const studentId = event.dataTransfer?.getData("studentId");
   if (studentId) {
@@ -46,6 +50,9 @@ function onDrop(event: DragEvent): void {
 }
 
 function onDragOver(event: DragEvent): void {
+  if (props.disabled) {
+    return;
+  }
   event.preventDefault();
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = "move";
@@ -53,6 +60,9 @@ function onDragOver(event: DragEvent): void {
 }
 
 function onDragStart(event: DragEvent, student: Student): void {
+  if (props.disabled) {
+    return;
+  }
   if (event.dataTransfer) {
     event.dataTransfer.setData("studentId", student.id);
     event.dataTransfer.effectAllowed = "move";
@@ -60,6 +70,12 @@ function onDragStart(event: DragEvent, student: Student): void {
 }
 
 function commitName(): void {
+  if (props.disabled) {
+    return;
+  }
+  if (editableName.value.trim() === props.group.name.trim()) {
+    return;
+  }
   emit("group-renamed", props.group.id, editableName.value);
 }
 </script>
@@ -80,6 +96,7 @@ function commitName(): void {
           v-model="editableName"
           type="text"
           class="w-full border border-navy/30 bg-canvas px-2 py-2 text-sm font-semibold text-navy shadow-none"
+          :disabled="props.disabled"
           @blur="commitName"
           @keyup.enter="commitName"
         >
@@ -90,7 +107,7 @@ function commitName(): void {
           aria-label="Flytta grupp upp"
           data-test="move-group-up"
           class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
-          :disabled="!canMoveUp"
+          :disabled="props.disabled || !canMoveUp"
           @click="emit('group-moved', group.id, -1)"
         >
           ↑
@@ -100,7 +117,7 @@ function commitName(): void {
           aria-label="Flytta grupp ned"
           data-test="move-group-down"
           class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
-          :disabled="!canMoveDown"
+          :disabled="props.disabled || !canMoveDown"
           @click="emit('group-moved', group.id, 1)"
         >
           ↓
@@ -108,6 +125,7 @@ function commitName(): void {
         <button
           type="button"
           class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-burgundy/40 bg-white text-burgundy"
+          :disabled="props.disabled"
           @click="emit('group-removed', group.id)"
         >
           ×
@@ -133,12 +151,13 @@ function commitName(): void {
         :key="student.id"
         class="flex min-h-[52px] items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
         :class="selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
-        draggable="true"
+        :draggable="!props.disabled"
         @dragstart="onDragStart($event, student)"
       >
         <button
           type="button"
           class="min-w-0 flex-1 text-left"
+          :disabled="props.disabled"
           @click="emit('student-selected', student.id)"
         >
           <div
@@ -151,6 +170,7 @@ function commitName(): void {
         <button
           type="button"
           class="mt-0.5 shrink-0 text-lg leading-none text-burgundy"
+          :disabled="props.disabled"
           @click.stop="emit('student-removed', student.id)"
         >
           ×

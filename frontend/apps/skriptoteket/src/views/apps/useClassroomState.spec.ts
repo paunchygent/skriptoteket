@@ -47,6 +47,10 @@ function createDraft(
 function createWorkspaceResponse(
   templateId: string | null = "template-1",
   draftKind: "seating" | "grouping" = "seating",
+  historyStatus: { can_undo: boolean; can_redo: boolean } = {
+    can_undo: false,
+    can_redo: false,
+  },
 ) {
   return {
     draft: createDraft(templateId, draftKind),
@@ -78,10 +82,7 @@ function createWorkspaceResponse(
     group_assignments: [],
     seat_assignments: [],
     student_planning_meta: [],
-    history_status: {
-      can_undo: false,
-      can_redo: false,
-    },
+    history_status: historyStatus,
   };
 }
 
@@ -267,6 +268,16 @@ describe("useClassroomState", () => {
     ]);
   });
 
+  it("does not mark the workspace dirty when a group rename is a no-op", () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+
+    state.renameGroup("group-a", "Grupp 1");
+
+    expect(state.hasPendingAutosave).toBe(false);
+    expect(state.saveStatus).toBe("idle");
+  });
+
   it("randomizes groups without changing group count or names", () => {
     const state = seedWorkspace();
     const randomSpy = vi.spyOn(Math, "random");
@@ -358,11 +369,161 @@ describe("useClassroomState", () => {
     expect(state.groupAssignments).toEqual([]);
   });
 
+  it("hydrates undo and redo availability from the backend workspace contract", async () => {
+    const state = useClassroomState();
+    clientMocks.apiGet.mockResolvedValue(
+      createWorkspaceResponse("template-1", "grouping", {
+        can_undo: true,
+        can_redo: false,
+      }),
+    );
+
+    await state.loadWorkspace("draft-1");
+
+    expect(state.historyStatus).toEqual({
+      can_undo: true,
+      can_redo: false,
+    });
+    expect(state.canUndo).toBe(true);
+    expect(state.canRedo).toBe(false);
+  });
+
+  it("flushes pending grouping autosave before undoing", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+    clientMocks.apiPatch.mockResolvedValue(
+      createWorkspaceResponse("template-1", "grouping", {
+        can_undo: true,
+        can_redo: false,
+      }),
+    );
+    clientMocks.apiPost.mockResolvedValue(
+      createWorkspaceResponse("template-1", "grouping", {
+        can_undo: false,
+        can_redo: true,
+      }),
+    );
+
+    state.renameGroup("group-a", "Handledargrupp");
+    expect(state.canUndo).toBe(true);
+    await state.undoGroupingDraft();
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/undo",
+    );
+    expect(clientMocks.apiPatch.mock.invocationCallOrder[0]).toBeLessThan(
+      clientMocks.apiPost.mock.invocationCallOrder[0],
+    );
+    expect(state.canUndo).toBe(false);
+    expect(state.canRedo).toBe(true);
+  });
+
+  it("refreshes backend history availability after autosave completes", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+    clientMocks.apiPatch.mockResolvedValue(
+      createWorkspaceResponse("template-1", "grouping", {
+        can_undo: true,
+        can_redo: false,
+      }),
+    );
+
+    state.renameGroup("group-a", "Handledargrupp");
+    expect(state.canUndo).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
+    expect(state.saveStatus).toBe("saved");
+    expect(state.hasPendingAutosave).toBe(false);
+    expect(state.historyStatus).toEqual({
+      can_undo: true,
+      can_redo: false,
+    });
+    expect(state.canUndo).toBe(true);
+  });
+
+  it("keeps undo and redo grouping-only", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+
+    await state.undoGroupingDraft();
+    await state.redoGroupingDraft();
+
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
+  });
+
+  it("rehydrates backend history state after redoing a grouping step", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+    clientMocks.apiPost.mockResolvedValue(
+      createWorkspaceResponse("template-1", "grouping", {
+        can_undo: true,
+        can_redo: false,
+      }),
+    );
+
+    await state.redoGroupingDraft();
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/redo",
+    );
+    expect(state.canUndo).toBe(true);
+    expect(state.canRedo).toBe(false);
+  });
+
+  it("ignores stale local group renames while undo is already in flight", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+    let resolvePatch!: (value: ReturnType<typeof createDraft>) => void;
+    let resolveUndo!: (value: ReturnType<typeof createWorkspaceResponse>) => void;
+    clientMocks.apiPatch.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePatch = resolve;
+        }),
+    );
+    clientMocks.apiPost.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveUndo = resolve;
+        }),
+    );
+
+    state.renameGroup("group-a", "Handledargrupp");
+    const undoPromise = state.undoGroupingDraft();
+
+    expect(resolvePatch).toBeTypeOf("function");
+    resolvePatch({ ...createDraft("template-1", "grouping"), revision: 5 });
+    while (clientMocks.apiPost.mock.calls.length === 0) {
+      await Promise.resolve();
+    }
+
+    state.renameGroup("group-a", "Sent namn");
+
+    expect(state.groups[0]?.name).toBe("Handledargrupp");
+    expect(resolveUndo).toBeTypeOf("function");
+    resolveUndo(
+      createWorkspaceResponse("template-1", "grouping", {
+        can_undo: false,
+        can_redo: true,
+      }),
+    );
+    await undoPromise;
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
+    expect(state.groups[0]?.name).toBe("Grupp 1");
+    expect(state.hasPendingAutosave).toBe(false);
+    expect(state.canRedo).toBe(true);
+  });
+
   it("autosaves only the fundamentals payload", async () => {
     vi.useFakeTimers();
     const state = seedWorkspace();
     state.draft = createDraft();
-    clientMocks.apiPatch.mockResolvedValue({ ...createDraft(), revision: 5 });
+    clientMocks.apiPatch.mockResolvedValue(createWorkspaceResponse());
 
     state.setStudentPlanningMeta("s1", { notes: "Fokusera nära fönstret" });
     await vi.advanceTimersByTimeAsync(900);

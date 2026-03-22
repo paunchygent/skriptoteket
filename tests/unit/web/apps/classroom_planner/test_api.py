@@ -25,6 +25,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UpdateRosterHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassroomPlannerWorkspace,
     DraftWorkspace,
     GroupAssignment,
     GroupingHistoryStatus,
@@ -388,7 +389,32 @@ async def test_update_draft_calls_handler():
         created_at=now,
         updated_at=now,
     )
-    handler.handle.return_value = draft
+    workspace = ClassroomPlannerWorkspace(
+        draft=draft,
+        roster=Roster(
+            id=draft.roster_id,
+            owner_user_id=user.id,
+            name="Klass A",
+            students=[],
+            created_at=now,
+            updated_at=now,
+        ),
+        template=RoomTemplate(
+            id=draft.template_id,
+            owner_user_id=user.id,
+            name="Rum 1",
+            seats=[],
+            fixtures=[],
+            created_at=now,
+            updated_at=now,
+        ),
+        groups=[],
+        group_assignments=[],
+        seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
+        student_planning_meta=[],
+        history_status=GroupingHistoryStatus(can_undo=True, can_redo=False),
+    )
+    handler.handle.return_value = workspace
 
     result = await _unwrap_dishka(api.update_draft)(
         draft_id=draft_id,
@@ -397,7 +423,8 @@ async def test_update_draft_calls_handler():
         user=user,
     )
 
-    assert result.revision == 1
+    assert result.draft.revision == 1
+    assert result.history_status.can_undo is True
     handler.handle.assert_awaited_once_with(
         draft_id=draft_id,
         owner_user_id=user.id,

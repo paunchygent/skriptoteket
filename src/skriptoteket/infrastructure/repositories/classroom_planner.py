@@ -7,7 +7,7 @@ for grouping, seating, and teacher-note fundamentals.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from hashlib import blake2b
 from uuid import UUID
 
@@ -549,6 +549,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         model.undo_index -= 1
         snapshot = model.history_stack[model.undo_index]
         await self._apply_history_snapshot(model, snapshot)
+        model.updated_at = datetime.now(timezone.utc)
         await self._session.flush()
 
         return self._to_workspace(model)
@@ -576,6 +577,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         model.undo_index += 1
         snapshot = model.history_stack[model.undo_index]
         await self._apply_history_snapshot(model, snapshot)
+        model.updated_at = datetime.now(timezone.utc)
         await self._session.flush()
 
         return self._to_workspace(model)

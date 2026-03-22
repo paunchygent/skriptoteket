@@ -11,6 +11,27 @@ function buildStudents(count: number) {
 }
 
 describe("GroupCard", () => {
+  it("does not emit a rename on blur when the visible name is unchanged", async () => {
+    const wrapper = mount(GroupCard, {
+      props: {
+        group: {
+          id: "group-a",
+          name: "Grupp 1",
+          sort_order: 0,
+          name_is_custom: false,
+        },
+        students: [],
+        canMoveUp: false,
+        canMoveDown: true,
+        selectedStudentId: null,
+      },
+    });
+
+    await wrapper.get('input[type="text"]').trigger("blur");
+
+    expect(wrapper.emitted("group-renamed")).toBeUndefined();
+  });
+
   it("shows meaningful order state and emits reorder offsets", async () => {
     const wrapper = mount(GroupCard, {
       props: {

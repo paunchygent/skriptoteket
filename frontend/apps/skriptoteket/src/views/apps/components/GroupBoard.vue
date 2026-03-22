@@ -27,6 +27,9 @@ const state = useClassroomState();
 const orderedGroups = computed(() => [...state.groups].sort((left, right) => left.sort_order - right.sort_order));
 
 function onDragStart(event: DragEvent, studentId: string): void {
+  if (state.isWorkspaceBusy) {
+    return;
+  }
   if (event.dataTransfer) {
     event.dataTransfer.setData("studentId", studentId);
     event.dataTransfer.effectAllowed = "move";
@@ -34,6 +37,9 @@ function onDragStart(event: DragEvent, studentId: string): void {
 }
 
 function onDropToPool(event: DragEvent): void {
+  if (state.isWorkspaceBusy) {
+    return;
+  }
   event.preventDefault();
   const studentId = event.dataTransfer?.getData("studentId");
   if (studentId) {
@@ -42,6 +48,9 @@ function onDropToPool(event: DragEvent): void {
 }
 
 function onDragOver(event: DragEvent): void {
+  if (state.isWorkspaceBusy) {
+    return;
+  }
   event.preventDefault();
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = "move";
@@ -77,7 +86,8 @@ function onDragOver(event: DragEvent): void {
           type="button"
           class="flex items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
           :class="props.selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
-          draggable="true"
+          :disabled="state.isWorkspaceBusy"
+          :draggable="!state.isWorkspaceBusy"
           @click="emit('student-selected', student.id)"
           @dragstart="onDragStart($event, student.id)"
         >
@@ -110,16 +120,38 @@ function onDragOver(event: DragEvent): void {
         <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="undo-grouping"
+            :disabled="!state.canUndo"
+            @mousedown.prevent
+            @click="void state.undoGroupingDraft()"
+          >
+            Ångra
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="redo-grouping"
+            :disabled="!state.canRedo"
+            @mousedown.prevent
+            @click="void state.redoGroupingDraft()"
+          >
+            Gör om
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
             data-test="new-grouping-draft"
+            :disabled="state.isWorkspaceBusy"
             @click="emit('new-grouping-draft')"
           >
             Nytt grupputkast
           </button>
           <button
             type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
             data-test="randomize-groups"
+            :disabled="state.isWorkspaceBusy"
             @click="state.randomizeGroups()"
           >
             Slumpa
@@ -128,6 +160,7 @@ function onDragOver(event: DragEvent): void {
             type="button"
             class="btn-primary"
             data-test="add-group"
+            :disabled="state.isWorkspaceBusy"
             @click="state.addGroup()"
           >
             Lägg till grupp
@@ -144,6 +177,7 @@ function onDragOver(event: DragEvent): void {
           :can-move-up="index > 0"
           :can-move-down="index < orderedGroups.length - 1"
           :selected-student-id="props.selectedStudentId"
+          :disabled="state.isWorkspaceBusy"
           @student-dropped="state.assignStudentToGroup"
           @student-removed="state.removeStudentFromGroup"
           @group-renamed="state.renameGroup"
