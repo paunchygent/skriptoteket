@@ -11,7 +11,6 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
-    CheckConstraint,
     DateTime,
     ForeignKey,
     Index,
@@ -39,10 +38,6 @@ class PlanDraftModel(Base):
             "draft_kind",
             unique=True,
             postgresql_where=text("status = 'active'"),
-        ),
-        CheckConstraint(
-            "(draft_kind = 'grouping') OR (template_id IS NOT NULL)",
-            name="ck_cp_seating_draft_requires_template",
         ),
     )
 

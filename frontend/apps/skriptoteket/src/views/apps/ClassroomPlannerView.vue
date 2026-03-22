@@ -30,7 +30,6 @@ const plannerState = useClassroomState();
 const availableRosters = ref<Roster[]>([]);
 const availableTemplates = ref<RoomTemplate[]>([]);
 const selectedRosterId = ref<string | null>(null);
-const selectedTemplateId = ref<string | null>(null);
 const currentScreen = ref<PlannerScreen>("landing");
 const plannerInitialView = ref<"groups" | "seats">("groups");
 const isBootstrapping = ref(true);
@@ -61,7 +60,6 @@ async function fetchCatalog(): Promise<void> {
 
 function syncSelectionFromWorkspace(): void {
   selectedRosterId.value = plannerState.roster?.id ?? null;
-  selectedTemplateId.value = plannerState.template?.id ?? null;
 }
 
 function normalizeUiError(error: unknown, fallbackMessage: string): string {
@@ -74,13 +72,16 @@ function normalizeUiError(error: unknown, fallbackMessage: string): string {
   return fallbackMessage;
 }
 
+async function loadClassWorkspaceSummary(rosterId: string): Promise<void> {
+  classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
+}
+
 async function openClassWorkspace(rosterId: string): Promise<void> {
   plannerActionError.value = null;
   selectedRosterId.value = rosterId;
-  selectedTemplateId.value = null;
   isLoadingClassWorkspace.value = true;
   try {
-    classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
+    await loadClassWorkspaceSummary(rosterId);
     currentScreen.value = "class-workspace";
   } catch (error: unknown) {
     classWorkspaceSummary.value = null;
@@ -96,7 +97,6 @@ async function openClassWorkspace(rosterId: string): Promise<void> {
 function returnToLanding(): void {
   currentScreen.value = "landing";
   selectedRosterId.value = null;
-  selectedTemplateId.value = null;
   classWorkspaceSummary.value = null;
 }
 
@@ -140,7 +140,7 @@ onMounted(async () => {
   }
 });
 
-async function openGroupingWorkspace(): Promise<void> {
+async function openGroupingWorkspace(payload: { templateId: string | null }): Promise<void> {
   if (!selectedRosterId.value) {
     return;
   }
@@ -151,7 +151,7 @@ async function openGroupingWorkspace(): Promise<void> {
     if (activeGroupingDraft) {
       await plannerState.loadWorkspace(activeGroupingDraft.id);
     } else {
-      await plannerState.resolveDraft(selectedRosterId.value, null, "grouping");
+      await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "grouping");
     }
     resumableDraft.value = await plannerState.getResumableDraft();
     plannerInitialView.value = "groups";
@@ -164,7 +164,7 @@ async function openGroupingWorkspace(): Promise<void> {
   }
 }
 
-async function openSeatingWorkspace(): Promise<void> {
+async function openSeatingWorkspace(payload: { templateId: string | null }): Promise<void> {
   if (!selectedRosterId.value) {
     return;
   }
@@ -174,10 +174,8 @@ async function openSeatingWorkspace(): Promise<void> {
     const activeSeatingDraft = classWorkspaceSummary.value?.active_seating_draft ?? null;
     if (activeSeatingDraft) {
       await plannerState.loadWorkspace(activeSeatingDraft.id);
-    } else if (selectedTemplateId.value) {
-      await plannerState.resolveDraft(selectedRosterId.value, selectedTemplateId.value, "seating");
     } else {
-      return;
+      await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "seating");
     }
     resumableDraft.value = await plannerState.getResumableDraft();
     plannerInitialView.value = "seats";
@@ -190,34 +188,171 @@ async function openSeatingWorkspace(): Promise<void> {
   }
 }
 
-async function resetToSelection(): Promise<void> {
+async function returnToClassWorkspace(): Promise<void> {
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!rosterId) {
+    returnToLanding();
+    return;
+  }
+
   plannerActionError.value = null;
   try {
-    await plannerState.abandonDraft();
+    await plannerState.flushPendingSave();
+    if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du lämnar arbetsytan."
+          : plannerState.saveMessage ?? "Kunde inte lämna arbetsytan just nu.";
+      return;
+    }
+    plannerState.clearWorkspace();
+    await loadClassWorkspaceSummary(rosterId);
     resumableDraft.value = await plannerState.getResumableDraft();
-    returnToLanding();
+    selectedRosterId.value = rosterId;
+    currentScreen.value = "class-workspace";
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
-      "Kunde inte lämna planeringen just nu.",
+      "Kunde inte återvända till klassarbetsytan just nu.",
     );
   }
 }
 
-async function discardResumableDraft(): Promise<void> {
-  if (!resumableDraft.value) {
+async function discardActiveDraft(): Promise<void> {
+  const draftId = plannerState.draft?.id ?? resumableDraft.value?.draft.id ?? null;
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!draftId) {
     return;
   }
+
   plannerActionError.value = null;
   try {
-    await plannerState.abandonDraft(resumableDraft.value.draft.id);
+    plannerState.cancelPendingSave();
+    await plannerState.abandonDraft(draftId);
+    plannerState.clearWorkspace();
     resumableDraft.value = await plannerState.getResumableDraft();
+    if (rosterId) {
+      await loadClassWorkspaceSummary(rosterId);
+      selectedRosterId.value = rosterId;
+      currentScreen.value = "class-workspace";
+      return;
+    }
+    returnToLanding();
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
       "Kunde inte avsluta utkastet just nu.",
     );
   }
+}
+
+async function exitPlannerToLanding(): Promise<void> {
+  plannerActionError.value = null;
+  try {
+    if (plannerState.draft) {
+      await plannerState.flushPendingSave();
+      if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+        plannerActionError.value =
+          plannerState.saveStatus === "conflict"
+            ? "Lös sparkonflikten innan du avslutar klassarbetsytan."
+            : plannerState.saveMessage ?? "Kunde inte avsluta klassarbetsytan just nu.";
+        return;
+      }
+    }
+
+    plannerState.clearWorkspace();
+    resumableDraft.value = await plannerState.getResumableDraft();
+    selectedRosterId.value = null;
+    classWorkspaceSummary.value = null;
+    currentScreen.value = "landing";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte avsluta klassarbetsytan just nu.",
+    );
+  }
+}
+
+async function changeSeatingTemplate(payload: { templateId: string | null }): Promise<void> {
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!rosterId) {
+    return;
+  }
+
+  plannerActionError.value = null;
+  try {
+    await plannerState.flushPendingSave();
+    if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du byter klassrum."
+          : plannerState.saveMessage ?? "Kunde inte spara ändringarna innan klassrummet byttes.";
+      return;
+    }
+    await plannerState.resolveDraft(rosterId, payload.templateId, "seating");
+    resumableDraft.value = await plannerState.getResumableDraft();
+    plannerInitialView.value = "seats";
+    currentScreen.value = "planner";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte byta klassrum för sittplatserna just nu.",
+    );
+  }
+}
+
+async function changeGroupingTemplate(payload: { templateId: string | null }): Promise<void> {
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!rosterId) {
+    return;
+  }
+
+  plannerActionError.value = null;
+  try {
+    await plannerState.flushPendingSave();
+    if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du byter gruppkontext."
+          : plannerState.saveMessage ?? "Kunde inte spara ändringarna innan gruppkontexten byttes.";
+      return;
+    }
+    await plannerState.resolveDraft(rosterId, payload.templateId, "grouping");
+    resumableDraft.value = await plannerState.getResumableDraft();
+    plannerInitialView.value = "groups";
+    currentScreen.value = "planner";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte uppdatera gruppkontexten just nu.",
+    );
+  }
+}
+
+async function selectPlannerWorkspaceMode(mode: "overview" | "grouping" | "seating"): Promise<void> {
+  if (mode === "overview") {
+    await returnToClassWorkspace();
+    return;
+  }
+
+  if (plannerState.draft) {
+    plannerActionError.value = null;
+    await plannerState.flushPendingSave();
+    if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du byter arbetsyta."
+          : plannerState.saveMessage ?? "Kunde inte byta arbetsyta just nu.";
+      return;
+    }
+  }
+
+  if (mode === "grouping") {
+    await openGroupingWorkspace({ templateId: null });
+    return;
+  }
+
+  await openSeatingWorkspace({ templateId: null });
 }
 
 function upsertRoster(roster: Roster): void {
@@ -250,16 +385,12 @@ function deleteRoster(rosterId: string): void {
 function upsertTemplate(template: RoomTemplate): void {
   const next = availableTemplates.value.filter((item) => item.id !== template.id);
   availableTemplates.value = [...next, template].sort((left, right) => left.name.localeCompare(right.name, "sv"));
-  selectedTemplateId.value = template.id;
   isTemplateModalOpen.value = false;
   activeTemplateModal.value = null;
 }
 
 function deleteTemplate(templateId: string): void {
   availableTemplates.value = availableTemplates.value.filter((template) => template.id !== templateId);
-  if (selectedTemplateId.value === templateId) {
-    selectedTemplateId.value = null;
-  }
   isTemplateModalOpen.value = false;
   activeTemplateModal.value = null;
 }
@@ -272,6 +403,14 @@ function openRosterCreate(): void {
 function openRosterEdit(roster: Roster): void {
   activeRosterModal.value = roster;
   isRosterModalOpen.value = true;
+}
+
+function openSelectedRosterEdit(): void {
+  const activeRoster = availableRosters.value.find((roster) => roster.id === selectedRosterId.value) ?? null;
+  if (!activeRoster) {
+    return;
+  }
+  openRosterEdit(activeRoster);
 }
 
 function openTemplateCreate(): void {
@@ -339,25 +478,27 @@ function openTemplateEdit(template: RoomTemplate): void {
       @create-template="openTemplateCreate"
       @edit-template="openTemplateEdit"
       @resume-draft="resumeDraft"
-      @discard-resumable-draft="discardResumableDraft"
+      @discard-resumable-draft="discardActiveDraft"
     />
 
     <PlannerClassWorkspace
       v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace' && classWorkspaceSummary"
-      :available-templates="availableTemplates"
-      :selected-template-id="selectedTemplateId"
       :workspace-summary="classWorkspaceSummary"
       :is-loading-workspace="isLoadingClassWorkspace"
       @back-to-landing="returnToLanding"
-      @select-template="selectedTemplateId = $event || null"
-      @open-grouping="void openGroupingWorkspace()"
-      @open-seating="void openSeatingWorkspace()"
+      @edit-roster="openSelectedRosterEdit"
+      @open-grouping="void openGroupingWorkspace($event)"
+      @open-seating="void openSeatingWorkspace($event)"
     />
 
     <PlannerWorkspaceShell
       v-if="!isBootstrapping && !bootstrapError && currentScreen === 'planner'"
+      :available-templates="availableTemplates"
       :initial-view="plannerInitialView"
-      @reset-selection="resetToSelection"
+      @change-grouping-template="void changeGroupingTemplate($event)"
+      @change-seating-template="void changeSeatingTemplate($event)"
+      @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
+      @exit-to-landing="void exitPlannerToLanding()"
     />
 
     <CreateRosterModal

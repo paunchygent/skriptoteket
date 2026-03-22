@@ -5,7 +5,7 @@ title: "Review: Klassrumskartan Slice 2 Planning"
 status: approved
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-21
+updated: 2026-03-22
 reviewer: "external-architect"
 epic: EPIC-24
 adrs:
@@ -60,7 +60,8 @@ draft kinds.
 
 - `Class` becomes the primary workspace anchor.
 - `Classroom` becomes secondary reusable context.
-- Seating is classroom-bound.
+- Seating remains classroom-bound as an outcome, but the seating draft may open before room
+  selection and attach/switch room context inside the seating workspace.
 - Grouping may be classroom-aware or classroom-agnostic.
 - One active draft exists per class per draft kind.
 - Starting a new draft of the same kind demotes the previous one to history automatically.
@@ -119,6 +120,7 @@ Approved: the planner should follow the existing HuleEdu brutalist academic desi
 - Split the visible planner into separate grouping and seating modes.
 - Add draft lifecycle semantics so old drafts are not silently orphaned.
 - Make the class, not the class/classroom pair, the primary teacher entry point.
+- Keep the class workspace neutral on entry with a stable top toggle for overview, grouping, and seating.
 - Separate grouping drafts from seating drafts in the teacher-facing workflow.
 - Split randomize/save flows by teacher mode.
 - Introduce named saved outputs for groupings and seating arrangements, with edit/delete behavior and vault projection.

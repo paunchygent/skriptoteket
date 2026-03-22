@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 links: ["ADR-0059", "ADR-0069", "ADR-0070", "ADR-0072", "PRD-group-seating-studio-v0.3", "EPIC-24", "REV-EPIC-24"]
 ---
 
@@ -39,6 +39,9 @@ The landing flow is responsible for:
 - managing classes and classrooms
 - offering explicit recovery/resume affordances for active work
 
+The fixed workspace selector for `Översikt`, `Grupper`, and `Sittplatser` belongs inside the
+class workspace once the teacher has selected a class.
+
 Resume remains supported, but it is no longer allowed to auto-hijack the teacher directly into the planner on load.
 
 ### 2. Grouping and seating are separate teacher-facing modes
@@ -59,6 +62,9 @@ Mode separation is not only visual. It must be reflected in:
 The persisted normalized draft may continue to contain both axes internally for now, but the
 default UI must teach one task at a time and must not imply that grouping and seating are one
 blended teacher task.
+
+The class workspace should start neutral in `Översikt`, with the same top-level toggle remaining in
+place as the teacher switches between overview, grouping, and seating.
 
 ### 3. `lesson_mode_id` is not a teacher-facing top-level mode
 

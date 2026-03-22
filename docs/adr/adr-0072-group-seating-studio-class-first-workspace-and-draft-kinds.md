@@ -6,6 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-21
+updated: 2026-03-22
 links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "EPIC-24", "REV-EPIC-24"]
 ---
 
@@ -33,7 +34,8 @@ The main teacher-facing navigation is class-first.
 The app should emphasize:
 
 - classes
-- active work for a class
+- a neutral class workspace for a class
+- task choice inside that class
 - saved history for a class
 
 The app should de-emphasize classrooms as equal first-step launch objects.
@@ -43,7 +45,8 @@ The app should de-emphasize classrooms as equal first-step launch objects.
 Classrooms remain first-class managed assets, but they are secondary in the teacher workflow.
 
 Teachers may still create, edit, and maintain classrooms centrally, but classroom selection happens
-after class selection when the current task actually needs room context.
+after class selection when the current task actually needs room context. For seating, room
+selection and room switching belong inside the seating workspace rather than in a pre-launch gate.
 
 ### 3. Grouping and seating use separate draft kinds
 
@@ -68,7 +71,10 @@ draft is active.
 
 ### 5. Classroom requirements differ by draft kind
 
-- `SeatingDraft` is class-scoped and classroom-bound.
+- `SeatingDraft` is class-scoped and room-contextual.
+  - The draft may exist before a room is chosen.
+  - Seat assignments and saved seating outcomes remain classroom-bound once room context exists.
+  - Room selection and room switching happen inside the seating workspace.
 - `GroupingDraft` is class-scoped and may be:
   - classroom-agnostic
   - classroom-aware
@@ -79,14 +85,23 @@ This distinction must be clear in both the UI and the API contract.
 
 The product must distinguish clearly between:
 
+- switching back to `Översikt` while staying inside the class workspace
 - leaving the planner while keeping active work resumable
+- exiting the class workspace back to the landing page
 - explicitly discarding a draft
 - saving a teacher-approved grouping
 - saving a teacher-approved seating arrangement
 
-Leaving the planner does not discard by default. Discard is explicit.
+Switching to `Översikt` does not discard by default. Exiting the class workspace does not discard by
+default. Discard is explicit and separate.
 
-### 7. History belongs to the class
+### 7. Resume belongs to the landing page, not the class workspace
+
+The app may expose a top-level quick-resume affordance, but it belongs on the landing page before
+class selection. The class workspace itself stays neutral until the teacher explicitly chooses
+`Översikt`, `Grupper`, or `Sittplatser`.
+
+### 8. History belongs to the class
 
 The class owns its visible history:
 
@@ -96,7 +111,7 @@ The class owns its visible history:
 
 History must be accessible, but secondary to active work.
 
-### 8. Future smart placement should prefer teacher-approved seating history
+### 9. Future smart placement should prefer teacher-approved seating history
 
 For future smart placement and rotation features, the preferred historical input is:
 

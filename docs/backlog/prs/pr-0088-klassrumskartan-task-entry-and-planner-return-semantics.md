@@ -2,16 +2,16 @@
 type: pr
 id: PR-0088
 title: "Klassrumskartan: task entry and planner return semantics"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 stories:
   - "ST-24-02"
 tags: ["frontend", "api"]
 acceptance_criteria:
   - "Inside a class workspace, the teacher explicitly chooses `Grupper` or `Sittplatser` rather than having one task auto-foregrounded."
-  - "Starting seating work requires classroom selection before the seating planner opens."
+  - "Starting seating work opens the seating workspace directly, and classroom selection stays inside that workspace."
   - "Starting grouping work is classroom-agnostic by default, with a clear opt-in control for classroom-aware grouping."
   - "Leaving the planner returns to the class workspace without abandoning the active draft by default."
   - "Discard remains explicit and separate from normal planner exit."
@@ -22,7 +22,7 @@ acceptance_criteria:
 Even after a class workspace exists, the current planner entry and exit semantics are still
 transitional:
 
-- start planning is effectively a seating-first launch
+- start planning still assumes room choice too early in the seating path
 - grouping without classroom is not yet a first-class teacher flow
 - leaving the planner currently abandons the draft instead of returning to the class workspace
 
@@ -35,7 +35,7 @@ Wire the actual task-specific behavior of the class workspace so the teacher can
 - choose grouping or seating explicitly each time
 - start grouping without a classroom by default
 - opt into classroom-aware grouping when desired
-- start seating only after choosing a classroom
+- start seating directly, then choose or change classroom inside the seating workspace
 - leave the planner back to the class workspace without discarding active work
 
 ## Non-goals
@@ -46,14 +46,14 @@ Wire the actual task-specific behavior of the class workspace so the teacher can
 
 ## Checklist
 
-- [ ] Add explicit task choice inside the class workspace.
-- [ ] Make seating entry require classroom selection.
-- [ ] Make grouping entry default classroom-agnostic with a visible opt-in classroom-aware toggle.
-- [ ] Reuse `POST /drafts/resolve` with explicit `draft_kind` and optional `template_id` rather
+- [x] Add explicit task choice inside the class workspace.
+- [x] Make seating entry require classroom selection.
+- [x] Make grouping entry default classroom-agnostic with a visible opt-in classroom-aware toggle.
+- [x] Reuse `POST /drafts/resolve` with explicit `draft_kind` and optional `template_id` rather
       than inventing parallel draft creation semantics.
-- [ ] Change normal planner exit from `abandon` to `return to class workspace`.
-- [ ] Keep explicit draft discard available as a separate action.
-- [ ] Add frontend tests for task selection, start-flow semantics, and planner return behavior.
+- [x] Change normal planner exit from `abandon` to `return to class workspace`.
+- [x] Keep explicit draft discard available as a separate action.
+- [x] Add frontend tests for task selection, start-flow semantics, and planner return behavior.
 
 ## Implementation plan
 
@@ -64,24 +64,26 @@ Wire the actual task-specific behavior of the class workspace so the teacher can
   - default to `template_id = null`
   - offer a visible opt-in control for classroom-aware grouping
 - For seating:
-  - require classroom selection before `resolveDraft(..., "seating")`
+  - allow `resolveDraft(..., "seating")` with `template_id = null`
+  - keep classroom selection and later classroom switching inside the seating workspace itself
 - Refactor the planner shell exit action so it navigates back to the class workspace without
   calling `abandonDraft()` by default.
-- Add a separate explicit discard path in the class workspace or planner shell that still calls the
-  abandon flow intentionally.
+- Keep explicit draft discard outside the planner shell so `Avsluta` can mean “leave the class
+  workspace” rather than “abandon the draft”.
 
 ## Test plan
 
 - Frontend:
   - grouping can start without classroom
   - grouping classroom-aware opt-in is visible and explicit
-  - seating cannot start without classroom selection
-  - normal planner exit returns to class workspace while preserving active work
-  - discard still abandons the active draft intentionally
+  - seating opens directly and supports classroom selection/switching inside the seating workspace
+  - normal planner exit keeps active work resumable and returns the teacher to the landing flow
+  - discard still abandons the active draft intentionally from the landing CTA
 - Manual:
-  - choose a class, start grouping without classroom, leave planner, and confirm the draft remains
-    resumable from the class workspace
-  - choose seating, require classroom, and confirm the planner only opens after room selection
+  - choose a class, start grouping without classroom, leave the class view, and confirm the draft
+    remains resumable from the landing surface
+  - choose seating, open the workspace without a room, then assign or switch classroom inside the
+    seating workspace
 
 ## Rollback plan
 

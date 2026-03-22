@@ -79,7 +79,7 @@ async def test_get_class_workspace_summary_returns_serialized_payload():
             ),
             TaskEntryOption(
                 draft_kind=PlanDraftKind.SEATING,
-                classroom_selection_mode=ClassroomSelectionMode.REQUIRED,
+                classroom_selection_mode=ClassroomSelectionMode.OPTIONAL,
             ),
         ],
         active_grouping_draft=PlanDraftSummary(
@@ -111,5 +111,5 @@ async def test_get_class_workspace_summary_returns_serialized_payload():
     assert result.active_grouping_draft.id == grouping_draft_id
     assert result.active_grouping_draft.status == PlanDraftStatus.ACTIVE
     assert result.task_entry_options[0].classroom_selection_mode == ClassroomSelectionMode.OPTIONAL
-    assert result.task_entry_options[1].classroom_selection_mode == ClassroomSelectionMode.REQUIRED
+    assert result.task_entry_options[1].classroom_selection_mode == ClassroomSelectionMode.OPTIONAL
     handler.handle.assert_awaited_once_with(roster_id=roster_id, owner_user_id=user.id)

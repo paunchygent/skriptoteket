@@ -32,7 +32,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "6b44e9b5d3c1"
+    target_revision = "91f6c4a7b2d1"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
@@ -376,7 +376,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                         :owner_user_id,
                         :roster_id,
                         'seating',
-                        :template_id,
+                        NULL,
                         'active',
                         0,
                         now()
@@ -387,7 +387,6 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
                     "id": str(uuid4()),
                     "owner_user_id": owner_id,
                     "roster_id": second_roster_id,
-                    "template_id": template_id,
                 },
             )
             await conn.execute(

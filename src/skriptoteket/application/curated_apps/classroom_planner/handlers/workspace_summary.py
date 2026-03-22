@@ -34,7 +34,7 @@ def _default_task_entry_options() -> list[TaskEntryOption]:
         ),
         TaskEntryOption(
             draft_kind=PlanDraftKind.SEATING,
-            classroom_selection_mode=ClassroomSelectionMode.REQUIRED,
+            classroom_selection_mode=ClassroomSelectionMode.OPTIONAL,
         ),
     ]
 

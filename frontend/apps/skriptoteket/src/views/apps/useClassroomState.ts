@@ -55,13 +55,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
   let saveQueued = false;
 
   const hasWorkspace = computed(() => {
-    if (draft.value === null || roster.value === null) {
-      return false;
-    }
-    if (draft.value.draft_kind === "grouping") {
-      return true;
-    }
-    return template.value !== null;
+    return draft.value !== null && roster.value !== null;
   });
 
   const students = computed(() => roster.value?.students ?? []);
@@ -248,6 +242,29 @@ export const useClassroomState = defineStore("classroom-state", () => {
     }
   }
 
+  function cancelPendingSave(): void {
+    clearAutosaveTimer();
+    saveQueued = false;
+  }
+
+  async function flushPendingSave(): Promise<void> {
+    if (!draft.value) {
+      return;
+    }
+
+    const hadScheduledSave = autosaveTimer !== null;
+    clearAutosaveTimer();
+    if (saveInFlight) {
+      await waitForPendingSave();
+      return;
+    }
+    if (hadScheduledSave || saveQueued) {
+      saveQueued = false;
+      saveStatus.value = "saving";
+      await persistWorkspace();
+    }
+  }
+
   async function resolveDraft(
     rosterId: string,
     templateId: string | null,
@@ -362,6 +379,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     resolveDraft,
     loadWorkspace,
     reloadActiveWorkspace,
+    cancelPendingSave,
+    flushPendingSave,
     getResumableDraft,
     getClassWorkspaceSummary,
     abandonDraft,

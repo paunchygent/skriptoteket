@@ -29,21 +29,21 @@ vi.mock("../../api/client", () => {
   };
 });
 
-function createDraft() {
+function createDraft(templateId: string | null = "template-1") {
   return {
     id: "draft-1",
     roster_id: "roster-1",
     draft_kind: "seating" as const,
-    template_id: "template-1",
+    template_id: templateId,
     status: "active" as const,
     revision: 4,
     last_opened_at: "2026-03-21T10:00:00Z",
   };
 }
 
-function createWorkspaceResponse() {
+function createWorkspaceResponse(templateId: string | null = "template-1") {
   return {
-    draft: createDraft(),
+    draft: createDraft(templateId),
     roster: {
       id: "roster-1",
       name: "Klass 9A",
@@ -53,15 +53,18 @@ function createWorkspaceResponse() {
         { id: "s3", display_name: "Student 3" },
       ],
     },
-    template: {
-      id: "template-1",
-      name: "Sal 101",
-      seats: [
-        { id: "seat-1", x: 0, y: 0, zone: "front" },
-        { id: "seat-2", x: 120, y: 0, zone: "front" },
-      ],
-      fixtures: [],
-    },
+    template:
+      templateId === null
+        ? null
+        : {
+            id: "template-1",
+            name: "Sal 101",
+            seats: [
+              { id: "seat-1", x: 0, y: 0, zone: "front" },
+              { id: "seat-2", x: 120, y: 0, zone: "front" },
+            ],
+            fixtures: [],
+          },
     groups: [
       { id: "group-a", name: "Grupp A", sort_order: 0 },
       { id: "group-b", name: "Grupp B", sort_order: 1 },
@@ -186,6 +189,25 @@ describe("useClassroomState", () => {
       },
     );
     expect(clientMocks.apiPost.mock.calls[0]?.[1]).not.toHaveProperty("lesson_mode_id");
+  });
+
+  it("keeps seating workspaces alive even before a classroom has been selected", async () => {
+    const state = useClassroomState();
+    clientMocks.apiPost.mockResolvedValue(createDraft(null));
+    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse(null));
+
+    await state.resolveDraft("roster-1", null);
+
+    expect(state.hasWorkspace).toBe(true);
+    expect(state.template).toBeNull();
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/resolve",
+      {
+        roster_id: "roster-1",
+        draft_kind: "seating",
+        template_id: null,
+      },
+    );
   });
 
   it("autosaves only the fundamentals payload", async () => {

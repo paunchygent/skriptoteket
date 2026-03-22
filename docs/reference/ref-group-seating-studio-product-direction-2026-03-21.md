@@ -25,18 +25,23 @@ attached to the class.
 
 ## Workflow hierarchy
 
-1. Start from a class.
-2. Inside that class, continue or start seating/grouping work.
-3. Choose a classroom only when the task needs it.
-4. Save meaningful arrangements that later become useful history.
+1. Optionally resume the latest work from the landing page.
+2. Otherwise start from a class.
+3. Inside that class, land in a neutral overview with a fixed toggle.
+4. Switch to grouping or seating directly from that toggle.
+5. Choose or switch classroom inside seating when the task needs it.
+6. Save meaningful arrangements that later become useful history.
 
 ## Key product rules
 
-- Seating is classroom-bound.
+- The class workspace stays neutral until the teacher chooses the task.
+- The overview/grouping/seating toggle stays fixed in place while the selected workspace changes below it.
+- Seating drafts can open before a classroom is chosen; room selection and room switching happen inside seating.
+- Seat assignments and saved seating outcomes are classroom-bound.
 - Grouping may be classroom-aware or classroom-agnostic.
 - One active draft exists per class and draft kind.
 - Starting a new draft of the same kind demotes the previous active draft to history.
-- Leaving the planner should normally preserve work.
+- Switching back to overview or leaving the class workspace should normally preserve work.
 - Discard must be explicit.
 
 ## History rules

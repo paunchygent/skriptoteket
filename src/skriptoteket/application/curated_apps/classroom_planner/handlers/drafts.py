@@ -130,15 +130,20 @@ def _build_workspace(
     )
 
 
-def _validate_resolve_template_requirement(
+def _build_recontextualized_workspace(
     *,
-    draft_kind: PlanDraftKind,
-    template: RoomTemplate | None,
-) -> None:
-    """Enforce classroom requirements for the requested draft kind."""
+    workspace: DraftWorkspace,
+    draft: PlanDraft,
+) -> DraftWorkspace:
+    """Keep one active draft while refreshing room-bound seating context."""
 
-    if draft_kind == PlanDraftKind.SEATING and template is None:
-        raise validation_error("Sittplatser kräver att ett klassrum väljs.")
+    return workspace.model_copy(
+        update={
+            "draft": draft,
+            # Seat assignments are always tied to the currently selected room.
+            "seat_assignments": [],
+        }
+    )
 
 
 def _ensure_active_draft(*, draft: PlanDraft) -> None:
@@ -196,7 +201,6 @@ class ResolveDraftHandler:
             template = await self._templates.get_by_id(template_id=template_id)
             if not template or template.owner_user_id != owner_user_id:
                 raise not_found("RoomTemplate", str(template_id))
-        _validate_resolve_template_requirement(draft_kind=draft_kind, template=template)
 
         now = self._clock.now()
         async with self._uow:
@@ -211,16 +215,26 @@ class ResolveDraftHandler:
                 draft_kind=draft_kind,
             )
             if existing is not None:
-                if existing.template_id == template_id:
-                    updated = existing.model_copy(update={"last_opened_at": now, "updated_at": now})
-                    await self._drafts.save(draft=updated)
-                    return updated
-                await self._drafts.mark_status(
-                    draft_id=existing.id,
-                    owner_user_id=owner_user_id,
-                    status=PlanDraftStatus.SUPERSEDED,
-                    updated_at=now,
+                updated = existing.model_copy(
+                    update={
+                        "template_id": template_id,
+                        "last_opened_at": now,
+                        "updated_at": now,
+                    }
                 )
+                if draft_kind == PlanDraftKind.SEATING and existing.template_id != template_id:
+                    workspace = await self._drafts.get_workspace(draft_id=existing.id)
+                    if workspace is None:
+                        raise not_found("PlanDraft", str(existing.id))
+                    await self._drafts.save_workspace(
+                        workspace=_build_recontextualized_workspace(
+                            workspace=workspace,
+                            draft=updated,
+                        )
+                    )
+                else:
+                    await self._drafts.save(draft=updated)
+                return updated
 
             draft = PlanDraft(
                 id=self._id_generator.new_uuid(),

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0089
 title: "Klassrumskartan: task history drawers and workspace polish"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 stories:
   - "ST-24-02"
 tags: ["frontend"]
@@ -13,6 +13,7 @@ acceptance_criteria:
   - "Grouping history and seating history are accessible separately from the class workspace and are not visually intermixed."
   - "History stays secondary to active work and is hidden behind drawers, dropdowns, or similarly stowed-away controls rather than expanded default grids."
   - "The class workspace keeps attention on the current task choice and active work instead of presenting all task and history surfaces at once."
+  - "The top class-workspace panel keeps the mode toggle in a stable size and placement across overview, grouping, and seating."
   - "Live browser checks cover the class-first workspace flow using the reusable Klassrumskartan Playwright baseline."
 ---
 
@@ -31,6 +32,7 @@ teacher-readable:
 - hidden-by-default history surfaces
 - no large always-open history grids
 - no visual blending of both task histories into one planner dashboard
+- a stable top panel where the toggle remains constant while the active workspace changes below it
 
 ## Non-goals
 
@@ -41,13 +43,13 @@ teacher-readable:
 
 ## Checklist
 
-- [ ] Add separate grouping-history and seating-history access points in the class workspace.
-- [ ] Keep history hidden by default and secondary to active work.
-- [ ] Avoid always-open grids or dashboard-style history expansion.
-- [ ] Keep the class workspace focused on one chosen task at a time.
-- [ ] Add or extend browser automation coverage using the reusable Klassrumskartan smoke as the
+- [x] Add separate grouping-history and seating-history access points in the class workspace.
+- [x] Keep history hidden by default and secondary to active work.
+- [x] Avoid always-open grids or dashboard-style history expansion.
+- [x] Keep the class workspace focused on one chosen task at a time.
+- [x] Add or extend browser automation coverage using the reusable Klassrumskartan smoke as the
       setup baseline.
-- [ ] Add frontend tests for history-surface visibility and task separation.
+- [x] Add frontend tests for history-surface visibility and task separation.
 
 ## Implementation plan
 
@@ -55,6 +57,8 @@ teacher-readable:
   history and seating history.
 - Keep only lightweight summaries visible in the main class workspace until the teacher requests
   more detail.
+- Reuse one shared top-panel layout so constant controls such as the overview/grouping/seating
+  selector do not shift size or position between modes.
 - Reuse the app-specific Playwright baseline to avoid inventing another bespoke Klassrumskartan
   setup flow just for this story.
 - Tighten copy/layout only as needed to support the class-first mental model; do not pre-build UI

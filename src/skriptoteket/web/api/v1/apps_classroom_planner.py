@@ -241,12 +241,6 @@ class ResolvePlanDraftRequest(BaseModel):
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
 
-    @model_validator(mode="after")
-    def validate_template_requirement(self) -> "ResolvePlanDraftRequest":
-        if self.draft_kind == PlanDraftKind.SEATING and self.template_id is None:
-            raise ValueError("Sittplatser kräver ett klassrum.")
-        return self
-
 
 class UpdatePlanDraftRequest(BaseModel):
     """Deserialize mutable draft workspace patches."""

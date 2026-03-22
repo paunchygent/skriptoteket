@@ -5,7 +5,7 @@ title: "Curated app: Klassrumskartan (Fundamentals Recovery)"
 status: active
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-21
+updated: 2026-03-22
 outcome: "Teachers work from a class-first workspace, enter separate grouping or seating drafts as needed, use classrooms as secondary context, and save meaningful class-owned history without being forced through undeclared advanced planning controls."
 dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 ---
@@ -23,7 +23,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - Preserve `Slumpa` as a practical helper, but keep smart logic and tunable settings out of the default main view.
 - Split randomize/save behavior by teacher task so grouping and seating stop behaving like one global workspace action.
 - Allow grouping to be classroom-agnostic or classroom-aware.
-- Require seating to be classroom-bound.
+- Keep seating outcomes classroom-bound while allowing the seating draft to open before room selection and manage room context inside the seating workspace.
 - Let teachers save meaningful named outputs:
   - named groupings for completed group assignments
   - named seating arrangements for completed seat assignments
@@ -46,11 +46,11 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 
 - [x] [ST-24-01: Landing page fundamentals](../stories/story-24-01-group-seating-studio-landing-page-fundamentals.md)
 - [x] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md)
-- [ ] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
+- [x] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
 - [ ] [ST-24-03: Grouping fundamentals + saved groupings](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
 - [ ] [ST-24-04: Seating fundamentals + saved seating arrangements](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 
-## Implementation Summary (as of 2026-03-21)
+## Implementation Summary (as of 2026-03-22)
 
 - EPIC-24 has been re-scoped away from the earlier “show everything” Slice 2 surface.
 - The governing product direction is now fundamentals first:
@@ -66,6 +66,14 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - frontend store/types no longer encode superseded planner semantics
   - backend/domain/persistence no longer expose lesson-mode/suggestion/snapshot/global-randomize contracts
   - draft lifecycle is now class-scoped by draft kind (`grouping` / `seating`) instead of owner-global
+- `ST-24-02` is now implemented locally across `PR-0086` to `PR-0089`:
+  - landing keeps the top-level resumable CTA outside the class workspace
+  - selecting a class opens a neutral class workspace rather than jumping straight into a planner
+  - overview, grouping, and seating share a fixed top toggle in the same placement and size
+  - seating opens directly and assigns or switches classroom context inside the seating workspace
+  - grouping remains classroom-agnostic by default with optional classroom awareness
+  - switching to `Översikt` preserves active work, while `Avsluta` leaves back to the landing surface
+  - grouping/seating history stays separate and secondary through task-specific drawers
 - ST-24-01 shipped locally across PR-0079 to PR-0081 as a recovery slice:
   - landing page no longer exposes lesson mode as part of the default teacher workflow
   - planner start currently depends on class + classroom only and returns cleanly to the landing page

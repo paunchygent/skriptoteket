@@ -104,7 +104,7 @@ async def test_get_class_workspace_summary_returns_task_separated_payload(
         PlanDraftKind.SEATING,
     ]
     assert result.task_entry_options[0].classroom_selection_mode == ClassroomSelectionMode.OPTIONAL
-    assert result.task_entry_options[1].classroom_selection_mode == ClassroomSelectionMode.REQUIRED
+    assert result.task_entry_options[1].classroom_selection_mode == ClassroomSelectionMode.OPTIONAL
     drafts.get_class_workspace_draft_summary.assert_awaited_once_with(
         owner_user_id=owner_id,
         roster_id=roster_id,

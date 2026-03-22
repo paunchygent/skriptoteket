@@ -78,13 +78,33 @@ def _open_class_workspace(page: Any, *, roster_name: str) -> None:
     roster_card = page.get_by_role("button", name=re.compile(re.escape(roster_name))).first
     expect(roster_card).to_be_visible()
     roster_card.click()
-    expect(page.get_by_text("Klassarbetsyta", exact=True)).to_be_visible()
+    expect(
+        page.get_by_role("heading", name=re.compile(r"Välj arbetsyta", re.IGNORECASE))
+    ).to_be_visible()
 
 
-def _open_seating_workspace(page: Any, *, template_name: str) -> None:
-    """Open the planner workspace through the class workspace seating card."""
+def _focus_workspace_mode(page: Any, *, label: str) -> None:
+    """Select one compact class-workspace mode through the segmented toggle."""
 
-    template_select = page.locator("select")
+    toggle = page.locator('[data-ui="segmented-toggle"]')
+    toggle.get_by_role("button", name=re.compile(re.escape(label), re.IGNORECASE)).click()
+
+
+def _open_grouping_history(page: Any) -> None:
+    """Verify the grouping history drawer stays separate and secondary."""
+
+    page.get_by_role("button", name=re.compile(r"Visa grupphistorik", re.IGNORECASE)).click()
+    expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).to_be_visible()
+    page.get_by_role("button", name="×").click()
+    expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).not_to_be_visible()
+
+
+def _open_grouping_workspace(page: Any, *, template_name: str) -> None:
+    """Open grouping directly and verify classroom support stays optional inside it."""
+
+    _focus_workspace_mode(page, label="Grupper")
+    template_select = page.get_by_role("combobox").first
+    expect(template_select).to_be_visible()
     option_rows = template_select.evaluate(
         """element => Array.from(element.options).map(option => ({
             value: option.value,
@@ -95,12 +115,43 @@ def _open_seating_workspace(page: Any, *, template_name: str) -> None:
         option for option in option_rows if option["value"] and template_name in option["label"]
     )
     template_select.select_option(value=matching_option["value"])
-    open_button = page.get_by_role("button", name=re.compile(r"Öppna sittplatser", re.IGNORECASE))
-    expect(open_button).to_be_enabled()
-    open_button.click()
-    expect(
-        page.get_by_role("button", name=re.compile(r"Sittplatser", re.IGNORECASE))
-    ).to_be_visible()
+    expect(page.get_by_text(template_name, exact=True)).to_be_visible()
+
+
+def _open_seating_workspace(page: Any, *, template_name: str) -> None:
+    """Open seating directly from the selector, then choose a room in that workspace."""
+
+    _focus_workspace_mode(page, label="Sittplatser")
+    template_select = page.get_by_role("combobox").first
+    expect(template_select).to_be_visible()
+    option_rows = template_select.evaluate(
+        """element => Array.from(element.options).map(option => ({
+            value: option.value,
+            label: option.label,
+        }))"""
+    )
+    matching_option = next(
+        option for option in option_rows if option["value"] and template_name in option["label"]
+    )
+    template_select.select_option(value=matching_option["value"])
+    expect(page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE))).to_be_visible()
+
+
+def _switch_seating_workspace_template(page: Any, *, template_name: str) -> None:
+    """Switch room inside the same seating workspace."""
+
+    template_select = page.get_by_role("combobox").first
+    option_rows = template_select.evaluate(
+        """element => Array.from(element.options).map(option => ({
+            value: option.value,
+            label: option.label,
+        }))"""
+    )
+    matching_option = next(
+        option for option in option_rows if option["value"] and template_name in option["label"]
+    )
+    template_select.select_option(value=matching_option["value"])
+    expect(page.get_by_text(template_name, exact=True)).to_be_visible()
 
 
 def _open_student_metadata(page: Any) -> None:
@@ -114,6 +165,48 @@ def _open_student_metadata(page: Any) -> None:
     ).to_be_visible()
 
 
+def _close_student_metadata(page: Any) -> None:
+    """Close the student-notes drawer before background navigation checks."""
+
+    page.get_by_role("button", name="×").click()
+    expect(page.get_by_text("Elevanteckningar", exact=True)).not_to_be_visible()
+
+
+def _return_to_class_workspace(page: Any) -> None:
+    """Return to the class workspace without discarding the active draft."""
+
+    _focus_workspace_mode(page, label="Översikt")
+    expect(
+        page.get_by_role("heading", name=re.compile(r"Välj arbetsyta", re.IGNORECASE))
+    ).to_be_visible()
+
+
+def _verify_seating_history_stays_empty(page: Any) -> None:
+    """Ensure room switching does not silently create historical seating drafts."""
+
+    page.get_by_role("button", name=re.compile(r"Visa sittplatshistorik", re.IGNORECASE)).click()
+    expect(page.get_by_text("Ingen sittplatshistorik ännu.", exact=True)).to_be_visible()
+    page.get_by_role("button", name="×").click()
+    expect(page.get_by_text("Ingen sittplatshistorik ännu.", exact=True)).not_to_be_visible()
+
+
+def _exit_to_landing(page: Any) -> None:
+    """Leave the class workspace and land on the app entry surface."""
+
+    _focus_workspace_mode(page, label="Sittplatser")
+    page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE)).click()
+    expect(page.get_by_text("Fortsätt senaste utkastet", exact=True)).to_be_visible()
+
+
+def _discard_resumable_draft(page: Any, *, roster_name: str, template_name: str) -> None:
+    """Use the landing-page discard action to remove the active resumable draft."""
+
+    discard_button = page.get_by_role("button", name=re.compile(r"Avsluta utkast", re.IGNORECASE))
+    expect(discard_button).to_be_visible()
+    discard_button.click()
+    expect(page.get_by_text(f"{roster_name} · {template_name}")).not_to_be_visible()
+
+
 def main() -> None:
     """Run the reusable Klassrumskartan browser smoke."""
 
@@ -123,7 +216,8 @@ def main() -> None:
 
     run_suffix = str(int(time.time()))
     roster_name = f"PW Klass {run_suffix}"
-    template_name = f"PW Sal {run_suffix}"
+    first_template_name = f"PW Sal A {run_suffix}"
+    second_template_name = f"PW Sal B {run_suffix}"
 
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
@@ -132,10 +226,24 @@ def main() -> None:
 
         _login_to_app(page, base_url=base_url, email=config.email, password=config.password)
         _create_roster(page, roster_name=roster_name)
-        _create_template(page, template_name=template_name)
+        _create_template(page, template_name=first_template_name)
+        _create_template(page, template_name=second_template_name)
         _open_class_workspace(page, roster_name=roster_name)
-        _open_seating_workspace(page, template_name=template_name)
+        _open_grouping_history(page)
+        _open_grouping_workspace(page, template_name=first_template_name)
+        _return_to_class_workspace(page)
+        _open_seating_workspace(page, template_name=first_template_name)
+        _switch_seating_workspace_template(page, template_name=second_template_name)
         _open_student_metadata(page)
+        _close_student_metadata(page)
+        _return_to_class_workspace(page)
+        _verify_seating_history_stays_empty(page)
+        _exit_to_landing(page)
+        _discard_resumable_draft(
+            page,
+            roster_name=roster_name,
+            template_name=second_template_name,
+        )
 
         page.screenshot(
             path=str(ARTIFACTS_DIR / "classroom-planner-smoke.png"),

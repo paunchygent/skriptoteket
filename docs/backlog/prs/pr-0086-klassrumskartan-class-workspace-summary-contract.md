@@ -5,14 +5,14 @@ title: "Klassrumskartan: class workspace summary contract"
 status: done
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 stories:
   - "ST-24-02"
 tags: ["backend", "api", "persistence"]
 acceptance_criteria:
   - "The backend exposes a class-scoped workspace summary that separates active grouping work, active seating work, grouping history, and seating history for one class."
   - "The class-workspace summary does not inline full room-template catalogs or other bulky launch data that belong to task-entry flows."
-  - "The contract makes task-entry rules explicit, including that seating requires a classroom and grouping is classroom-agnostic by default with optional classroom awareness."
+  - "The contract makes task-entry rules explicit, including that seating can start without a classroom while classroom selection/switching still belongs inside seating, and grouping is classroom-agnostic by default with optional classroom awareness."
   - "Backend tests cover class-scoped summary loading, task-specific history separation, and top-level resumable-draft behavior remaining outside the class-workspace query."
 ---
 

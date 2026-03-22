@@ -10,12 +10,16 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ResolveDraftHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    DraftGroup,
+    DraftWorkspace,
+    GroupAssignment,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
     ResumablePlanDraft,
     RoomTemplate,
     Roster,
+    SeatAssignment,
 )
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
@@ -136,7 +140,7 @@ async def test_resolve_draft_creates_new_draft_when_none_exists(
 
 
 @pytest.mark.asyncio
-async def test_resolve_draft_supersedes_previous_active_draft_for_same_class_and_kind(
+async def test_resolve_seating_draft_updates_active_draft_in_place_when_room_changes(
     uow, rosters, templates, drafts, clock, id_generator, now
 ):
     handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
@@ -158,21 +162,70 @@ async def test_resolve_draft_supersedes_previous_active_draft_for_same_class_and
     rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
     templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
     drafts.get_active_by_roster_and_kind.return_value = existing
+    drafts.get_workspace.return_value = DraftWorkspace(
+        draft=existing,
+        groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
+        group_assignments=[GroupAssignment(student_id="student-1", group_id="group-1")],
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-1")],
+        student_planning_meta=[],
+    )
 
-    await handler.handle(
+    result = await handler.handle(
         owner_user_id=owner_id,
         roster_id=roster_id,
         draft_kind=PlanDraftKind.SEATING,
         template_id=template_id,
     )
 
-    drafts.mark_status.assert_awaited_once_with(
-        draft_id=existing.id,
+    assert result.id == existing.id
+    assert result.template_id == template_id
+    drafts.mark_status.assert_not_called()
+    drafts.save.assert_not_called()
+    drafts.save_workspace.assert_awaited_once()
+    saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
+    assert saved_workspace.draft.template_id == template_id
+    assert saved_workspace.seat_assignments == []
+    assert saved_workspace.group_assignments == [
+        GroupAssignment(student_id="student-1", group_id="group-1")
+    ]
+
+
+@pytest.mark.asyncio
+async def test_resolve_grouping_draft_updates_active_draft_in_place_when_room_context_changes(
+    uow, rosters, templates, drafts, clock, id_generator, now
+):
+    handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    existing = PlanDraft(
+        id=uuid4(),
         owner_user_id=owner_id,
-        status=PlanDraftStatus.SUPERSEDED,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
         updated_at=now,
     )
-    drafts.save_workspace.assert_awaited_once()
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+    drafts.get_active_by_roster_and_kind.return_value = existing
+
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=template_id,
+    )
+
+    assert result.id == existing.id
+    assert result.template_id == template_id
+    drafts.mark_status.assert_not_called()
+    drafts.save.assert_awaited_once()
+    drafts.save_workspace.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -229,20 +282,26 @@ async def test_resolve_grouping_draft_allows_missing_template(
 
 
 @pytest.mark.asyncio
-async def test_resolve_seating_draft_requires_template(uow, rosters, drafts, clock, id_generator):
+async def test_resolve_seating_draft_allows_missing_template(
+    uow, rosters, drafts, clock, id_generator
+):
     templates = AsyncMock(spec=RoomTemplateRepositoryProtocol)
     handler = ResolveDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
     owner_id = uuid4()
     roster_id = uuid4()
     rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    drafts.get_active_by_roster_and_kind.return_value = None
 
-    with pytest.raises(Exception, match="klassrum"):
-        await handler.handle(
-            owner_user_id=owner_id,
-            roster_id=roster_id,
-            draft_kind=PlanDraftKind.SEATING,
-            template_id=None,
-        )
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=None,
+    )
+
+    assert result.draft_kind == PlanDraftKind.SEATING
+    assert result.template_id is None
+    drafts.save_workspace.assert_awaited_once()
 
 
 @pytest.mark.asyncio

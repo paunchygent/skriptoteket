@@ -17,9 +17,11 @@ Klassrumskartan is a teacher-first planning app where the **class** is the ancho
 The refined v0.3 product direction replaces the earlier symmetric class/classroom launcher with a
 class-first workflow:
 
+- the teacher may resume most recent work from the landing page
 - the teacher starts from a class
+- the teacher enters a neutral class workspace with a fixed mode toggle
 - the teacher can continue or start seating/grouping work inside that class
-- seating is classroom-bound
+- seating drafts can open before a classroom is chosen, but seat work remains classroom-bound once room context exists
 - grouping may use a classroom, but does not have to
 - one active draft exists per class and draft kind
 - saved seating and grouping history belongs to the class
@@ -66,12 +68,14 @@ This keeps the happy path simple while preserving the data needed for later smar
 ### 2. Class workspace
 
 - Selecting a class opens a class-focused workspace rather than dropping directly into the planner.
-- The class workspace can surface:
-  - active seating draft
-  - active grouping draft
-  - saved seating history
-  - saved grouping history
-- Active work is prominent.
+- The class workspace starts neutral in `Översikt`.
+- A fixed top toggle lets the teacher switch between:
+  - `Översikt`
+  - `Grupper`
+  - `Sittplatser`
+- The toggle stays in the same size and placement while the selected workspace changes below it.
+- The landing page, not the class workspace, owns the top-level quick-resume affordance.
+- Active work is prominent only after the teacher chooses the task.
 - History is accessible but secondary, for example through drawers, dropdowns, or expandable
   sections rather than through a cluttered dashboard.
 
@@ -83,12 +87,15 @@ This keeps the happy path simple while preserving the data needed for later smar
   - at most one active grouping draft
 - When a new draft of the same kind is created for the same class, the previous active draft of
   that kind is demoted to history automatically.
-- Leaving the planner should not discard work by default.
+- Switching to `Översikt` should not discard work by default.
+- Leaving the class workspace through `Avsluta` should not discard work by default.
 - Discard must be explicit and teacher-understandable.
 
 ### 4. Classroom usage rules
 
-- Seating requires a classroom because seating is inherently room-bound.
+- Seating work is inherently room-bound once seat assignments begin, but the seating draft may
+  exist before a classroom is chosen.
+- Classroom selection and classroom switching belong inside the seating workspace.
 - Grouping may be created without a classroom.
 - Grouping may also optionally use a classroom as context for smarter or calmer group formation.
 - The teacher must understand whether grouping is classroom-aware or classroom-agnostic when they
@@ -105,7 +112,7 @@ This keeps the happy path simple while preserving the data needed for later smar
 ### 6. Seating workflow
 
 - Seating is a distinct task from grouping.
-- Seating drafts are class-scoped and classroom-bound.
+- Seating drafts are class-scoped and room-contextual.
 - Saved seating arrangements belong to the class.
 - Seating history is the main future historical input for smart placement and student rotation.
 
@@ -144,6 +151,8 @@ This keeps the happy path simple while preserving the data needed for later smar
   equal class/classroom selectors.
 - A teacher can continue active seating work and active grouping work independently for the same
   class.
+- A teacher can open seating directly from the class workspace and attach or switch classroom
+  context inside the seating workspace.
 - A teacher can create grouping work without choosing a classroom when they do not want room-aware
   grouping.
 - A teacher can save a seating arrangement and later use that saved history as meaningful prior
