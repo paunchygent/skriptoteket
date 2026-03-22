@@ -2,7 +2,7 @@
 type: pr
 id: PR-0091
 title: "Klassrumskartan: grouping workspace fundamentals"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
 updated: 2026-03-22
@@ -13,7 +13,9 @@ acceptance_criteria:
   - "Grouping operates as a standalone class task: manual grouping, group count changes, and group renaming work without seating leaking into the flow."
   - "Grouping gets its own `Slumpa` action that creates a first draft of groups without randomizing seats."
   - "A new grouping draft starts blank and can be created explicitly from the grouping workspace."
+  - "Default group names stay positional (`Grupp 1`, `Grupp 2`, ...) and renumber automatically on reorder/delete until a teacher sets a custom name."
   - "Large groups render without clipping student cards inside the group panel."
+  - "Group-card up/down controls update a meaningful persisted order that later export flows can trust."
   - "Frontend tests cover grouping randomize behavior, blank new-draft semantics, and group-panel rendering behavior."
 ---
 
@@ -47,12 +49,14 @@ saved-grouping flows:
 
 ## Checklist
 
-- [ ] Add grouping-only `Slumpa` to the focused grouping workspace.
-- [ ] Preserve current group count and teacher-defined group names when `Slumpa` runs.
-- [ ] Add explicit `Nytt grupputkast` that starts blank rather than copying the current grouping.
-- [ ] Keep manual drag/drop and group edits first-class after randomization.
-- [ ] Fix large-group layout so student cards do not clip or overflow awkwardly.
-- [ ] Add frontend tests for grouping fundamentals and layout behavior.
+- [x] Add grouping-only `Slumpa` to the focused grouping workspace.
+- [x] Preserve current group count and teacher-defined group names when `Slumpa` runs.
+- [x] Add explicit `Nytt grupputkast` that starts blank rather than copying the current grouping.
+- [x] Keep manual drag/drop and group edits first-class after randomization.
+- [x] Keep default group names positional until a teacher enters a custom name.
+- [x] Fix large-group layout so student cards do not clip or overflow awkwardly.
+- [x] Ensure group reorder controls update meaningful persisted `sort_order` values.
+- [x] Add frontend tests for grouping fundamentals and layout behavior.
 
 ## Implementation plan
 
@@ -62,8 +66,12 @@ saved-grouping flows:
 - Implement grouping randomize behavior against the current class roster and current group count
   only; do not infer seat assignments or classroom-only behavior.
 - Keep group names stable when randomizing so teacher-defined structure survives.
+- Treat untouched default names as system-managed labels that renumber with visible order, while
+  custom teacher-entered names remain fixed.
 - Refine `GroupBoard.vue` / `GroupCard.vue` layout so larger groups expand or reflow instead of
   clipping content.
+- Make group-card up/down controls drive stable `sort_order` updates so later export slices can
+  trust the visible group order.
 - Keep all grouping behavior isolated from seating and from future saved-artifact UI concerns.
 
 ## Test plan

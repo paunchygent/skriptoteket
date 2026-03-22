@@ -29,11 +29,14 @@ vi.mock("../../api/client", () => {
   };
 });
 
-function createDraft(templateId: string | null = "template-1") {
+function createDraft(
+  templateId: string | null = "template-1",
+  draftKind: "seating" | "grouping" = "seating",
+) {
   return {
     id: "draft-1",
     roster_id: "roster-1",
-    draft_kind: "seating" as const,
+    draft_kind: draftKind,
     template_id: templateId,
     status: "active" as const,
     revision: 4,
@@ -41,9 +44,12 @@ function createDraft(templateId: string | null = "template-1") {
   };
 }
 
-function createWorkspaceResponse(templateId: string | null = "template-1") {
+function createWorkspaceResponse(
+  templateId: string | null = "template-1",
+  draftKind: "seating" | "grouping" = "seating",
+) {
   return {
-    draft: createDraft(templateId),
+    draft: createDraft(templateId, draftKind),
     roster: {
       id: "roster-1",
       name: "Klass 9A",
@@ -66,12 +72,16 @@ function createWorkspaceResponse(templateId: string | null = "template-1") {
             fixtures: [],
           },
     groups: [
-      { id: "group-a", name: "Grupp A", sort_order: 0 },
-      { id: "group-b", name: "Grupp B", sort_order: 1 },
+      { id: "group-a", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+      { id: "group-b", name: "Grupp 2", sort_order: 1, name_is_custom: false },
     ],
     group_assignments: [],
     seat_assignments: [],
     student_planning_meta: [],
+    history_status: {
+      can_undo: false,
+      can_redo: false,
+    },
   };
 }
 
@@ -96,8 +106,8 @@ function seedWorkspace() {
     fixtures: [],
   };
   state.groups = [
-    { id: "group-a", name: "Grupp A", sort_order: 0 },
-    { id: "group-b", name: "Grupp B", sort_order: 1 },
+    { id: "group-a", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+    { id: "group-b", name: "Grupp 2", sort_order: 1, name_is_custom: false },
   ];
   state.groupAssignmentsByStudentId = {};
   state.seatAssignmentsByStudentId = {};
@@ -154,11 +164,131 @@ describe("useClassroomState", () => {
     state.moveGroup(createdGroup!.id, -1);
     state.renameGroup(createdGroup!.id, "Nya Grupp C");
 
+    expect(state.groups.map((group) => `${group.sort_order}:${group.name}`)).toEqual([
+      "0:Grupp 1",
+      "1:Nya Grupp C",
+      "2:Grupp 3",
+    ]);
+
     expect(state.groups.find((group) => group.id === createdGroup!.id)?.name).toBe("Nya Grupp C");
 
     state.removeGroup(createdGroup!.id);
 
     expect(state.groups.find((group) => group.id === createdGroup!.id)).toBeUndefined();
+  });
+
+  it("keeps group ordering meaningful when moving cards up and down", () => {
+    const state = seedWorkspace();
+
+    state.addGroup("Grupp C");
+    const createdGroup = state.groups.find((group) => group.name === "Grupp C");
+
+    expect(createdGroup).toBeTruthy();
+
+    state.moveGroup(createdGroup!.id, -1);
+    state.moveGroup("group-a", 1);
+
+    expect(state.groups.map((group) => ({
+      id: group.id,
+      sort_order: group.sort_order,
+    }))).toEqual([
+      { id: createdGroup!.id, sort_order: 0 },
+      { id: "group-a", sort_order: 1 },
+      { id: "group-b", sort_order: 2 },
+    ]);
+  });
+
+  it("renumbers default group names when groups are reordered or removed", () => {
+    const state = seedWorkspace();
+
+    state.addGroup();
+    const createdGroup = state.groups.find((group) => group.sort_order === 2);
+
+    expect(createdGroup).toBeTruthy();
+    expect(createdGroup?.name).toBe("Grupp 3");
+    expect(createdGroup?.name_is_custom).toBe(false);
+
+    state.moveGroup(createdGroup!.id, -1);
+
+    expect(state.groups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      sort_order: group.sort_order,
+    }))).toEqual([
+      { id: "group-a", name: "Grupp 1", sort_order: 0 },
+      { id: createdGroup!.id, name: "Grupp 2", sort_order: 1 },
+      { id: "group-b", name: "Grupp 3", sort_order: 2 },
+    ]);
+
+    state.removeGroup("group-a");
+
+    expect(state.groups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      sort_order: group.sort_order,
+    }))).toEqual([
+      { id: createdGroup!.id, name: "Grupp 1", sort_order: 0 },
+      { id: "group-b", name: "Grupp 2", sort_order: 1 },
+    ]);
+  });
+
+  it("preserves custom group names while default groups continue to renumber", () => {
+    const state = seedWorkspace();
+
+    state.renameGroup("group-b", "Handledargrupp");
+    state.moveGroup("group-b", -1);
+
+    expect(state.groups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      sort_order: group.sort_order,
+      name_is_custom: group.name_is_custom,
+    }))).toEqual([
+      { id: "group-b", name: "Handledargrupp", sort_order: 0, name_is_custom: true },
+      { id: "group-a", name: "Grupp 2", sort_order: 1, name_is_custom: false },
+    ]);
+  });
+
+  it("treats an explicit default label as system-managed naming", () => {
+    const state = seedWorkspace();
+
+    state.renameGroup("group-b", "Handledargrupp");
+    state.renameGroup("group-b", "Grupp 2");
+    state.moveGroup("group-b", -1);
+
+    expect(state.groups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      sort_order: group.sort_order,
+      name_is_custom: group.name_is_custom,
+    }))).toEqual([
+      { id: "group-b", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+      { id: "group-a", name: "Grupp 2", sort_order: 1, name_is_custom: false },
+    ]);
+  });
+
+  it("randomizes groups without changing group count or names", () => {
+    const state = seedWorkspace();
+    const randomSpy = vi.spyOn(Math, "random");
+    randomSpy
+      .mockReturnValueOnce(0.85)
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.6)
+      .mockReturnValueOnce(0.2);
+
+    state.renameGroup("group-a", "Handledargrupp");
+    state.renameGroup("group-b", "Fördjupning");
+    state.randomizeGroups();
+
+    expect(state.groups).toEqual([
+      expect.objectContaining({ id: "group-a", name: "Handledargrupp" }),
+      expect.objectContaining({ id: "group-b", name: "Fördjupning" }),
+    ]);
+    expect(Object.values(state.groupAssignmentsByStudentId)).toHaveLength(3);
+    expect(new Set(Object.values(state.groupAssignmentsByStudentId))).toEqual(
+      new Set(["group-a", "group-b"]),
+    );
+    randomSpy.mockRestore();
   });
 
   it("stores student planning metadata", () => {
@@ -208,6 +338,24 @@ describe("useClassroomState", () => {
         template_id: null,
       },
     );
+  });
+
+  it("starts a brand-new blank grouping draft through the dedicated lifecycle endpoint", async () => {
+    const state = useClassroomState();
+    clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "grouping"));
+    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "grouping"));
+
+    await state.startNewGroupingDraft("roster-1", "template-1");
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new",
+      {
+        roster_id: "roster-1",
+        template_id: "template-1",
+      },
+    );
+    expect(state.draft?.draft_kind).toBe("grouping");
+    expect(state.groupAssignments).toEqual([]);
   });
 
   it("autosaves only the fundamentals payload", async () => {

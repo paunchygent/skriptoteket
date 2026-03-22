@@ -19,6 +19,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
+  (e: "new-grouping-draft"): void;
 }>();
 
 const state = useClassroomState();
@@ -106,16 +107,35 @@ function onDragOver(event: DragEvent): void {
             Arbetsgrupper
           </h3>
         </div>
-        <button
-          type="button"
-          class="btn-primary"
-          @click="state.addGroup()"
-        >
-          Lägg till grupp
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none"
+            data-test="new-grouping-draft"
+            @click="emit('new-grouping-draft')"
+          >
+            Nytt grupputkast
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none"
+            data-test="randomize-groups"
+            @click="state.randomizeGroups()"
+          >
+            Slumpa
+          </button>
+          <button
+            type="button"
+            class="btn-primary"
+            data-test="add-group"
+            @click="state.addGroup()"
+          >
+            Lägg till grupp
+          </button>
+        </div>
       </div>
 
-      <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+      <div class="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">
         <GroupCard
           v-for="(group, index) in orderedGroups"
           :key="group.id"

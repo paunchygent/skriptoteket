@@ -8,6 +8,7 @@ import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
+    CreateGroupingDraftHandler,
     GetResumableDraftHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
@@ -237,6 +238,64 @@ async def test_resolve_grouping_draft_updates_active_draft_in_place_when_room_co
     drafts.mark_status.assert_not_called()
     drafts.save.assert_not_called()
     drafts.save_workspace.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_create_grouping_draft_supersedes_existing_active_grouping(
+    uow, rosters, templates, drafts, clock, id_generator, now
+):
+    handler = CreateGroupingDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    previous_draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=4,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    new_draft_id = uuid4()
+    id_generator.new_uuid.side_effect = [
+        new_draft_id,
+        uuid4(),
+        uuid4(),
+        uuid4(),
+        uuid4(),
+        uuid4(),
+        uuid4(),
+    ]
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+    drafts.get_active_by_roster_and_kind.return_value = previous_draft
+
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+
+    assert result.id == new_draft_id
+    assert result.draft_kind == PlanDraftKind.GROUPING
+    assert result.template_id == template_id
+    drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+    )
+    drafts.save.assert_awaited_once()
+    superseded = drafts.save.await_args.kwargs["draft"]
+    assert superseded.id == previous_draft.id
+    assert superseded.status == PlanDraftStatus.SUPERSEDED
+    drafts.save_workspace.assert_awaited_once()
+    saved_workspace = drafts.save_workspace.await_args.kwargs["workspace"]
+    assert saved_workspace.group_assignments == []
+    assert len(saved_workspace.groups) == 6
 
 
 @pytest.mark.asyncio

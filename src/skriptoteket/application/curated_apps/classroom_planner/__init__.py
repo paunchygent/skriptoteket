@@ -10,6 +10,7 @@ from .handlers.drafts import (
     ResolveDraftHandler,
     UndoDraftHandler,
 )
+from .handlers.grouping_drafts import CreateGroupingDraftHandler
 from .handlers.rosters import (
     CreateRosterHandler,
     DeleteRosterHandler,
@@ -30,6 +31,7 @@ __all__ = [
     "AbandonDraftHandler",
     "CreateRoomTemplateHandler",
     "CreateRosterHandler",
+    "CreateGroupingDraftHandler",
     "DeleteRoomTemplateHandler",
     "DeleteRosterHandler",
     "GetClassWorkspaceSummaryHandler",

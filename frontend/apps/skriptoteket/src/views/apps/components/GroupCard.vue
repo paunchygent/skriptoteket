@@ -66,7 +66,8 @@ function commitName(): void {
 
 <template>
   <div
-    class="flex min-h-[260px] flex-col border border-navy bg-white p-4 shadow-brutal-sm transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-brutal"
+    data-test="group-card"
+    class="flex self-start flex-col border border-navy bg-white p-4 shadow-brutal-sm transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-brutal"
     @dragover="onDragOver"
     @drop="onDrop"
   >
@@ -86,6 +87,8 @@ function commitName(): void {
       <div class="flex items-center gap-1">
         <button
           type="button"
+          aria-label="Flytta grupp upp"
+          data-test="move-group-up"
           class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
           :disabled="!canMoveUp"
           @click="emit('group-moved', group.id, -1)"
@@ -94,6 +97,8 @@ function commitName(): void {
         </button>
         <button
           type="button"
+          aria-label="Flytta grupp ned"
+          data-test="move-group-down"
           class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
           :disabled="!canMoveDown"
           @click="emit('group-moved', group.id, 1)"
@@ -114,16 +119,19 @@ function commitName(): void {
       <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
         {{ students.length }} elever
       </span>
-      <span class="border border-navy bg-canvas px-2 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70">
-        {{ group.id }}
+      <span
+        data-test="group-order-badge"
+        class="border border-navy bg-canvas px-2 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+      >
+        Ordning {{ group.sort_order + 1 }}
       </span>
     </div>
 
-    <div class="mt-4 flex flex-1 flex-col gap-2">
+    <div class="mt-4 flex flex-col gap-2">
       <div
         v-for="student in students"
         :key="student.id"
-        class="flex items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
+        class="flex min-h-[52px] items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
         :class="selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
         draggable="true"
         @dragstart="onDragStart($event, student)"
@@ -133,13 +141,16 @@ function commitName(): void {
           class="min-w-0 flex-1 text-left"
           @click="emit('student-selected', student.id)"
         >
-          <div class="truncate text-sm font-semibold">
+          <div
+            data-test="group-student-name"
+            class="break-words text-sm font-semibold leading-snug"
+          >
             {{ student.display_name }}
           </div>
         </button>
         <button
           type="button"
-          class="text-lg leading-none text-burgundy"
+          class="mt-0.5 shrink-0 text-lg leading-none text-burgundy"
           @click.stop="emit('student-removed', student.id)"
         >
           ×
@@ -148,7 +159,7 @@ function commitName(): void {
 
       <div
         v-if="students.length === 0"
-        class="flex flex-1 items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
+        class="flex min-h-[112px] items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
       >
         Släpp elever här
       </div>

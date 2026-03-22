@@ -12,8 +12,9 @@ tags: ["frontend", "backend", "api"]
 acceptance_criteria:
   - "The teacher can undo or redo recent grouping steps directly inside the grouping workspace without being exposed to separate saved-item jargon."
   - "Undo and redo operate on meaningful grouping actions such as move, swap, add/remove group, rename group, and randomize."
-  - "Autosave feedback remains compact and clearly distinct from undo/redo controls."
+  - "The current compact autosave badge remains in place as low-noise workspace status rather than being replaced with a larger save panel."
   - "The grouping workspace respects the bounded recent-history limit and communicates when undo or redo is no longer available."
+  - "`Nytt grupputkast` remains a draft-lifecycle boundary and is not treated as an undoable in-draft edit step."
   - "Frontend and backend tests cover undo, redo, autosave feedback, and recent-history bounds."
 ---
 
@@ -44,25 +45,34 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
 - Seating undo/redo flows.
 - Exposing bounded recent history as a major class-level archive.
 - Advanced compare/version browser UX.
+- Redesigning the shared top panel or replacing the existing autosave badge with a new visual pattern.
+- Treating `Nytt grupputkast` as part of the same undo/redo chain.
 
 ## Checklist
 
 - [ ] Add undo and redo controls to the grouping workspace.
-- [ ] Keep autosave status compact and visually distinct from undo/redo.
+- [ ] Keep the existing compact autosave badge pattern and make it coexist cleanly with undo/redo.
 - [ ] Record meaningful grouping actions into recent history.
 - [ ] Respect the configured recent-history depth in the UI.
+- [ ] Keep `Nytt grupputkast` outside the undo/redo chain.
 - [ ] Add frontend/backend tests for undo, redo, and autosave feedback behavior.
 
 ## Implementation plan
 
-- Extend the grouping workspace controls with explicit undo/redo actions.
+- Extend the grouping workspace controls with explicit grouping-only undo/redo actions.
 - Treat these actions as workspace editing controls rather than as navigation to older saved items.
-- Keep autosave status compact and low-noise so it does not compete with the actual grouping board.
+- Orchestrate undo/redo in the Pinia store:
+  - flush pending autosave first
+  - call the backend undo/redo endpoint
+  - rehydrate the returned workspace, including backend-owned history availability
+- Keep the current compact autosave badge pattern in the shared top panel and avoid redesigning it unless a bug forces a tiny polish adjustment.
 - Make availability explicit:
   - undo disabled when no earlier step exists
   - redo disabled when no later step exists
 - Ensure actions like `Slumpa`, move, swap, rename, and add/remove group are treated as meaningful
   recent-history steps.
+- Keep `Nytt grupputkast` as a draft-lifecycle action that supersedes the current active grouping draft rather than as an undoable workspace edit.
+- Prefer grouping-local UI wiring in the grouping workspace surface; do not broaden the shared shell with speculative seating undo/redo chrome.
 
 ## Test plan
 
@@ -71,8 +81,9 @@ Add the teacher-facing grouping workspace controls for undo/redo and autosave:
   - redo reverted grouping step
 - Frontend:
   - undo/redo controls enable and disable correctly
-  - autosave feedback stays compact
+  - the compact autosave badge remains visible and distinct from undo/redo
   - history bounds are respected
+  - `Nytt grupputkast` is not presented or treated as part of undo/redo
 - Manual:
   - create a grouping, move students, rename groups, randomize, undo several times, redo several
     times, and confirm the flow remains understandable without any separate saved-item model

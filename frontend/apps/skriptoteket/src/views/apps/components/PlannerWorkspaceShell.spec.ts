@@ -55,7 +55,7 @@ describe("PlannerWorkspaceShell", () => {
     const wrapper = mount(PlannerWorkspaceShell, {
       global: {
         stubs: {
-          GroupBoard: { template: "<div />" },
+          GroupBoard: { template: "<div>Slumpa Nytt grupputkast</div>" },
           RoomCanvas: { template: "<div />" },
           PlannerMetadataDrawer: { props: ["open"], template: "<div>{{ open ? 'open' : 'closed' }}</div>" },
         },
@@ -63,7 +63,8 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.text()).not.toContain("Placeringprofil");
-    expect(wrapper.text()).not.toContain("Slumpa");
+    expect(wrapper.text()).toContain("Slumpa");
+    expect(wrapper.text()).toContain("Nytt grupputkast");
     expect(wrapper.text()).toContain(
       "Dra elever mellan grupperna tills grupparbetet sitter.",
     );
@@ -122,6 +123,33 @@ describe("PlannerWorkspaceShell", () => {
     await wrapper.get("select").setValue("template-2");
 
     expect(wrapper.emitted("change-grouping-template")).toEqual([[{ templateId: "template-2" }]]);
+  });
+
+  it("forwards the explicit new grouping draft action with the current grouping context", async () => {
+    stateMocks.plannerState.template = {
+      id: "template-2",
+      name: "Sal 202",
+      seats: [],
+      fixtures: [],
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      global: {
+        stubs: {
+          GroupBoard: {
+            template: "<button type='button' data-test='new-grouping-draft' @click=\"$emit('new-grouping-draft')\">Nytt grupputkast</button>",
+          },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get("[data-test='new-grouping-draft']").trigger("click");
+
+    expect(wrapper.emitted("new-grouping-draft")).toEqual([[{ templateId: "template-2" }]]);
   });
 
   it("keeps the seating workspace open even before a classroom has been selected", async () => {

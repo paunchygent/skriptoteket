@@ -47,7 +47,9 @@ def _login_to_app(page: Any, *, base_url: str, email: str, password: str) -> Non
 def _create_roster(page: Any, *, roster_name: str) -> None:
     """Create a deterministic class list through the live roster modal."""
 
-    page.get_by_role("button", name=re.compile(r"Ny klasslista", re.IGNORECASE)).click()
+    create_button = page.get_by_role("button", name=re.compile(r"Ny klasslista", re.IGNORECASE))
+    expect(create_button).to_be_visible(timeout=60000)
+    create_button.click()
     expect(
         page.get_by_role("heading", name=re.compile(r"Ny klasslista", re.IGNORECASE))
     ).to_be_visible()
@@ -60,7 +62,9 @@ def _create_roster(page: Any, *, roster_name: str) -> None:
 def _create_template(page: Any, *, template_name: str) -> None:
     """Create a tiny classroom through the live room modal."""
 
-    page.get_by_role("button", name=re.compile(r"Nytt klassrum", re.IGNORECASE)).click()
+    create_button = page.get_by_role("button", name=re.compile(r"Nytt klassrum", re.IGNORECASE))
+    expect(create_button).to_be_visible(timeout=60000)
+    create_button.click()
     expect(
         page.get_by_role("heading", name=re.compile(r"Nytt klassrum", re.IGNORECASE))
     ).to_be_visible()
@@ -116,6 +120,42 @@ def _open_grouping_workspace(page: Any, *, template_name: str) -> None:
     )
     template_select.select_option(value=matching_option["value"])
     expect(page.get_by_text(template_name, exact=True)).to_be_visible()
+
+
+def _exercise_grouping_fundamentals(page: Any) -> None:
+    """Verify grouping-only randomize and explicit blank new-draft behavior."""
+
+    first_group_name = page.locator("input[type='text']").first
+    second_group_name = page.locator("input[type='text']").nth(1)
+    first_group_name.fill("Handledargrupp")
+    first_group_name.press("Tab")
+    second_group_name.fill("Fördjupning")
+    second_group_name.press("Tab")
+    expect(first_group_name).to_have_value("Handledargrupp")
+    expect(second_group_name).to_have_value("Fördjupning")
+    expect(page.locator('[data-test="group-order-badge"]').nth(0)).to_contain_text("Ordning 1")
+    expect(page.locator('[data-test="group-order-badge"]').nth(1)).to_contain_text("Ordning 2")
+
+    page.locator('[data-test="move-group-down"]').first.click()
+    expect(page.locator("input[type='text']").nth(0)).to_have_value("Fördjupning")
+    expect(page.locator("input[type='text']").nth(1)).to_have_value("Handledargrupp")
+    expect(page.locator('[data-test="group-order-badge"]').nth(0)).to_contain_text("Ordning 1")
+    expect(page.locator('[data-test="group-order-badge"]').nth(1)).to_contain_text("Ordning 2")
+
+    page.get_by_role("button", name=re.compile(r"Slumpa", re.IGNORECASE)).click()
+    expect(page.locator("input[type='text']").nth(0)).to_have_value("Fördjupning")
+    expect(page.locator("input[type='text']").nth(1)).to_have_value("Handledargrupp")
+    expect(page.get_by_text("Alla elever ligger i grupp", exact=True)).to_be_visible()
+
+    page.get_by_role("button", name=re.compile(r"Nytt grupputkast", re.IGNORECASE)).click()
+    expect(first_group_name).to_have_value("Grupp 1")
+    expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
+    expect(page.get_by_text("Handledargrupp", exact=True)).not_to_be_visible()
+    expect(page.locator("aside").get_by_text("2", exact=True)).to_be_visible()
+
+    page.locator('[data-test="move-group-down"]').first.click()
+    expect(page.locator("input[type='text']").nth(0)).to_have_value("Grupp 1")
+    expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
 
 
 def _open_seating_workspace(page: Any, *, template_name: str) -> None:
@@ -201,9 +241,12 @@ def _exit_to_landing(page: Any) -> None:
 def _discard_resumable_draft(page: Any, *, roster_name: str, template_name: str) -> None:
     """Use the landing-page discard action to remove the active resumable draft."""
 
-    discard_button = page.get_by_role("button", name=re.compile(r"Avsluta utkast", re.IGNORECASE))
-    expect(discard_button).to_be_visible()
-    discard_button.click()
+    discard_button = page.get_by_role(
+        "button",
+        name=re.compile(r"Avsluta utkast", re.IGNORECASE),
+    ).first
+    expect(discard_button).to_be_visible(timeout=15000)
+    discard_button.click(force=True)
     expect(page.get_by_text(f"{roster_name} · {template_name}")).not_to_be_visible()
 
 
@@ -231,6 +274,7 @@ def main() -> None:
         _open_class_workspace(page, roster_name=roster_name)
         _open_grouping_history(page)
         _open_grouping_workspace(page, template_name=first_template_name)
+        _exercise_grouping_fundamentals(page)
         _return_to_class_workspace(page)
         _open_seating_workspace(page, template_name=first_template_name)
         _switch_seating_workspace_template(page, template_name=second_template_name)

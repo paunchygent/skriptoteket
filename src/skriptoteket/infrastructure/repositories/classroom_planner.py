@@ -103,7 +103,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         return DraftWorkspace(
             draft=self._to_draft(model),
             groups=[
-                DraftGroup(id=group.group_id, name=group.name, sort_order=group.sort_order)
+                DraftGroup(
+                    id=group.group_id,
+                    name=group.name,
+                    sort_order=group.sort_order,
+                    name_is_custom=group.name_is_custom,
+                )
                 for group in model.groups
             ],
             group_assignments=[
@@ -386,7 +391,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             if workspace.draft.template_id
             else None,
             "groups": [
-                {"id": group.id, "name": group.name, "sort_order": group.sort_order}
+                {
+                    "id": group.id,
+                    "name": group.name,
+                    "sort_order": group.sort_order,
+                    "name_is_custom": group.name_is_custom,
+                }
                 for group in ordered_groups
             ],
             "group_assignments": [
@@ -454,7 +464,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model=model,
             attribute_name="groups",
             new_items=[
-                DraftGroupModel(group_id=group.id, name=group.name, sort_order=group.sort_order)
+                DraftGroupModel(
+                    group_id=group.id,
+                    name=group.name,
+                    sort_order=group.sort_order,
+                    name_is_custom=group.name_is_custom,
+                )
                 for group in workspace.groups
             ],
         )
@@ -578,6 +593,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                     group_id=g["id"],
                     name=g["name"],
                     sort_order=g["sort_order"],
+                    name_is_custom=g.get("name_is_custom", False),
                 )
                 for g in snapshot["groups"]
             ],

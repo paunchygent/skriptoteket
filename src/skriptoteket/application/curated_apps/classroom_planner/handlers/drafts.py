@@ -35,22 +35,12 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-
-def _build_default_groups(
-    *,
-    id_generator: IdGeneratorProtocol,
-    count: int = 6,
-) -> list[DraftGroup]:
-    """Create the default group buckets for a new draft."""
-
-    return [
-        DraftGroup(
-            id=f"group-{index}-{id_generator.new_uuid().hex[:8]}",
-            name=f"Grupp {index}",
-            sort_order=index - 1,
-        )
-        for index in range(1, count + 1)
-    ]
+from .planner_context import load_roster_and_template_for_owner
+from .workspace_builders import (
+    build_initial_workspace,
+    build_recontextualized_workspace,
+    ensure_active_draft,
+)
 
 
 def _ensure_unique(values: list[str], *, label: str) -> None:
@@ -114,57 +104,6 @@ def _validate_workspace_structure(
             raise validation_error("Student notes must reference roster students.")
 
 
-def _build_workspace(
-    *,
-    draft: PlanDraft,
-    id_generator: IdGeneratorProtocol,
-) -> DraftWorkspace:
-    """Create the initial fundamentals workspace payload for a new draft."""
-
-    return DraftWorkspace(
-        draft=draft,
-        groups=_build_default_groups(id_generator=id_generator),
-        group_assignments=[],
-        seat_assignments=[],
-        student_planning_meta=[],
-    )
-
-
-def _build_recontextualized_workspace(
-    *,
-    workspace: DraftWorkspace,
-    draft: PlanDraft,
-) -> DraftWorkspace:
-    """Keep one active draft while refreshing room-bound seating context."""
-
-    return workspace.model_copy(
-        update={
-            "draft": draft,
-            # Seat assignments are always tied to the currently selected room.
-            "seat_assignments": [],
-        }
-    )
-
-
-def _ensure_active_draft(*, draft: PlanDraft) -> None:
-    """Reject mutations against drafts that are no longer active."""
-
-    if draft.status == PlanDraftStatus.ACTIVE:
-        return
-    raise DomainError(
-        code=ErrorCode.CONFLICT,
-        message=(
-            "Det här utkastet är inte längre aktivt. "
-            "Gå tillbaka till startsidan och öppna planeringen igen."
-        ),
-        details={
-            "draft_id": str(draft.id),
-            "status": draft.status.value,
-            "reason": "inactive_draft",
-        },
-    )
-
-
 async def _get_owned_active_grouping_draft(
     *,
     drafts: PlanDraftRepositoryProtocol,
@@ -178,7 +117,7 @@ async def _get_owned_active_grouping_draft(
         raise not_found("PlanDraft", str(draft_id))
     if draft.draft_kind != PlanDraftKind.GROUPING:
         raise not_found("PlanDraft", str(draft_id))
-    _ensure_active_draft(draft=draft)
+    ensure_active_draft(draft=draft)
     return draft
 
 
@@ -209,15 +148,13 @@ class ResolveDraftHandler:
         draft_kind: PlanDraftKind,
         template_id: UUID | None = None,
     ) -> PlanDraft:
-        roster = await self._rosters.get_by_id(roster_id=roster_id)
-        if not roster or roster.owner_user_id != owner_user_id:
-            raise not_found("Roster", str(roster_id))
-
-        template = None
-        if template_id is not None:
-            template = await self._templates.get_by_id(template_id=template_id)
-            if not template or template.owner_user_id != owner_user_id:
-                raise not_found("RoomTemplate", str(template_id))
+        await load_roster_and_template_for_owner(
+            rosters=self._rosters,
+            templates=self._templates,
+            owner_user_id=owner_user_id,
+            roster_id=roster_id,
+            template_id=template_id,
+        )
 
         now = self._clock.now()
         async with self._uow:
@@ -245,7 +182,7 @@ class ResolveDraftHandler:
                         raise not_found("PlanDraft", str(existing.id))
 
                     if draft_kind == PlanDraftKind.SEATING:
-                        updated_workspace = _build_recontextualized_workspace(
+                        updated_workspace = build_recontextualized_workspace(
                             workspace=workspace,
                             draft=updated,
                         )
@@ -270,7 +207,7 @@ class ResolveDraftHandler:
                 updated_at=now,
             )
             await self._drafts.save_workspace(
-                workspace=_build_workspace(draft=draft, id_generator=self._id_generator)
+                workspace=build_initial_workspace(draft=draft, id_generator=self._id_generator)
             )
             return draft
 
@@ -467,7 +404,7 @@ class PatchDraftHandler:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
             raise not_found("PlanDraft", str(draft_id))
-        _ensure_active_draft(draft=workspace.draft)
+        ensure_active_draft(draft=workspace.draft)
         if expected_revision is not None and workspace.draft.revision != expected_revision:
             raise DomainError(
                 code=ErrorCode.CONFLICT,

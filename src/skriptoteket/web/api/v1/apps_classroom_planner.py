@@ -6,7 +6,6 @@ state and only publishes the current fundamentals workflow for grouping,
 seating, and student planning notes.
 """
 
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -37,7 +36,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     DraftGroup,
     GroupAssignment,
-    PlanDraft,
     PlanDraftKind,
     ResumablePlanDraft,
     RoomFixture,
@@ -52,6 +50,10 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner import (
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
+)
+from skriptoteket.web.api.v1.apps_classroom_planner_draft_contracts import (
+    PlanDraftDto,
+    serialize_plan_draft,
 )
 from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
     ClassWorkspaceSummaryDto,
@@ -169,6 +171,7 @@ class DraftGroupDto(BaseModel):
     id: str
     name: str
     sort_order: int
+    name_is_custom: bool = False
 
 
 class GroupAssignmentDto(BaseModel):
@@ -200,20 +203,6 @@ class StudentPlanningMetaDto(BaseModel):
     preferred_zone: str | None = None
     avoid_zone: str | None = None
     notes: str | None = None
-
-
-class PlanDraftDto(BaseModel):
-    """Serialize the mutable draft root."""
-
-    model_config = ConfigDict(frozen=True, from_attributes=True)
-
-    id: UUID
-    roster_id: UUID
-    draft_kind: PlanDraftKind
-    template_id: UUID | None = None
-    status: str
-    revision: int
-    last_opened_at: datetime
 
 
 class ResumablePlanDraftDto(BaseModel):
@@ -313,17 +302,11 @@ def _serialize_template(template: RoomTemplate) -> RoomTemplateDto:
     )
 
 
-def _serialize_plan_draft(draft: PlanDraft) -> PlanDraftDto:
-    """Map a draft aggregate to the public API response."""
-
-    return PlanDraftDto.model_validate(draft)
-
-
 def _serialize_resumable_plan_draft(resumable: ResumablePlanDraft) -> ResumablePlanDraftDto:
     """Map the resumable draft aggregate to the landing-page CTA response."""
 
     return ResumablePlanDraftDto(
-        draft=_serialize_plan_draft(resumable.draft),
+        draft=serialize_plan_draft(resumable.draft),
         roster_name=resumable.roster_name,
         template_name=resumable.template_name,
     )
@@ -333,7 +316,7 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
     """Map the hydrated planner workspace to the public API response."""
 
     return DraftWorkspaceResponse(
-        draft=_serialize_plan_draft(workspace.draft),
+        draft=serialize_plan_draft(workspace.draft),
         roster=_serialize_roster(workspace.roster),
         template=_serialize_template(workspace.template) if workspace.template else None,
         groups=[DraftGroupDto.model_validate(group) for group in workspace.groups],
@@ -562,7 +545,7 @@ async def resolve_draft(
         draft_kind=request.draft_kind,
         template_id=request.template_id,
     )
-    return _serialize_plan_draft(draft)
+    return serialize_plan_draft(draft)
 
 
 @router.post("/drafts/{draft_id}/abandon", response_model=PlanDraftDto)
@@ -573,7 +556,7 @@ async def abandon_draft(
     user: User = Depends(require_user_api),
     _: None = Depends(require_csrf_token),
 ) -> PlanDraftDto:
-    return _serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
+    return serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
 
 
 @router.get("/drafts/resumable", response_model=ResumablePlanDraftDto | None)
@@ -595,7 +578,7 @@ async def get_draft(
     handler: FromDishka[GetDraftHandler],
     user: User = Depends(require_user_api),
 ) -> PlanDraftDto:
-    return _serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
+    return serialize_plan_draft(await handler.handle(draft_id=draft_id, owner_user_id=user.id))
 
 
 @router.get("/drafts/{draft_id}/workspace", response_model=DraftWorkspaceResponse)
@@ -644,4 +627,4 @@ async def update_draft(
         if request.student_planning_meta is not None
         else None,
     )
-    return _serialize_plan_draft(draft)
+    return serialize_plan_draft(draft)

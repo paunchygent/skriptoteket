@@ -16,7 +16,7 @@ const stateMocks = vi.hoisted(() => ({
       "student-1": "group-a",
     },
     groupsById: {
-      "group-a": { id: "group-a", name: "Grupp A", sort_order: 0 },
+      "group-a": { id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false },
     },
   },
 }));

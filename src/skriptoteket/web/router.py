@@ -4,6 +4,9 @@ from skriptoteket.web.api.v1 import admin_tools as api_v1_admin_tools
 from skriptoteket.web.api.v1 import admin_users as api_v1_admin_users
 from skriptoteket.web.api.v1 import apps as api_v1_apps
 from skriptoteket.web.api.v1 import apps_classroom_planner as api_v1_apps_classroom_planner
+from skriptoteket.web.api.v1 import (
+    apps_classroom_planner_grouping as api_v1_apps_classroom_planner_grouping,
+)
 from skriptoteket.web.api.v1 import apps_conversion_hub as api_v1_apps_conversion_hub
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as api_v1_apps_reagent_prep_chef
 from skriptoteket.web.api.v1 import auth as api_v1_auth
@@ -30,6 +33,7 @@ router.include_router(api_v1_my_runs.router)
 router.include_router(api_v1_my_tools.router)
 router.include_router(api_v1_apps.router)
 router.include_router(api_v1_apps_classroom_planner.router)
+router.include_router(api_v1_apps_classroom_planner_grouping.router)
 router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
 router.include_router(api_v1_profile.router)

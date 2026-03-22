@@ -23,6 +23,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
+- Curated app architecture and foundational code:
+  `docs/reference/ref-curated-app-pinball-teacher-architecture-and-foundational-code.md`
 - Riskunderlag praxis (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - Hazards↔shortcards policy (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`

@@ -146,7 +146,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     draft.value = workspace.draft;
     roster.value = workspace.roster;
     template.value = workspace.template ?? null;
-    groups.value = reindexGroups(workspace.groups);
+    groups.value = reindexGroups([...workspace.groups].sort((left, right) => left.sort_order - right.sort_order));
     groupAssignmentsByStudentId.value = normalizeAssignments(workspace.group_assignments, "group_id");
     seatAssignmentsByStudentId.value = normalizeAssignments(workspace.seat_assignments, "seat_id");
     studentPlanningMetaByStudentId.value = Object.fromEntries(
@@ -283,6 +283,22 @@ export const useClassroomState = defineStore("classroom-state", () => {
     await loadWorkspace(resolvedDraft.id);
   }
 
+  async function startNewGroupingDraft(
+    rosterId: string,
+    templateId: string | null,
+  ): Promise<void> {
+    saveStatus.value = "saving";
+    saveMessage.value = null;
+    const createdDraft = await apiPost<PlanDraft>(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new",
+      {
+        roster_id: rosterId,
+        template_id: templateId,
+      },
+    );
+    await loadWorkspace(createdDraft.id);
+  }
+
   async function loadWorkspace(draftId: string): Promise<void> {
     const workspace = await apiGet<DraftWorkspaceResponse>(
       `/api/v1/apps/classroom.group-seating-studio/drafts/${draftId}/workspace`,
@@ -327,6 +343,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
   }
 
   const {
+    randomizeGroups,
     assignStudentToGroup,
     removeStudentFromGroup,
     assignStudentToSeat,
@@ -339,6 +356,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
   } = createPlannerMutationActions({
+    students,
     studentsById,
     seatsById,
     groupsById,
@@ -377,6 +395,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     zones,
     clearWorkspace,
     resolveDraft,
+    startNewGroupingDraft,
     loadWorkspace,
     reloadActiveWorkspace,
     cancelPendingSave,
@@ -393,6 +412,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     renameGroup,
     moveGroup,
     removeGroup,
+    randomizeGroups,
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
   };

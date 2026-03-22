@@ -33,6 +33,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: "change-grouping-template", payload: { templateId: string | null }): void;
   (e: "change-seating-template", payload: { templateId: string | null }): void;
+  (e: "new-grouping-draft", payload: { templateId: string | null }): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
   (e: "exit-to-landing"): void;
 }>();
@@ -137,6 +138,10 @@ function changeGroupingTemplateFromEvent(event: Event): void {
 
   pendingGroupingTemplateId.value = target.value;
   emit("change-grouping-template", { templateId: pendingGroupingTemplateId.value || null });
+}
+
+function startNewGroupingDraft(): void {
+  emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
 }
 
 function selectWorkspaceMode(value: string): void {
@@ -285,6 +290,7 @@ watch(
     <GroupBoard
       v-if="currentView === 'groups'"
       :selected-student-id="selectedStudentId"
+      @new-grouping-draft="startNewGroupingDraft"
       @student-selected="selectStudent"
     />
     <RoomCanvas

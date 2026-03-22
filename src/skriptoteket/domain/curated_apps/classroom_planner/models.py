@@ -93,6 +93,7 @@ class DraftGroup(BaseModel):
     id: str
     name: str
     sort_order: int
+    name_is_custom: bool = False
 
 
 class GroupAssignment(BaseModel):

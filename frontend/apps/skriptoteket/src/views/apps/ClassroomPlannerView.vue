@@ -329,6 +329,34 @@ async function changeGroupingTemplate(payload: { templateId: string | null }): P
   }
 }
 
+async function startNewGroupingDraft(payload: { templateId: string | null }): Promise<void> {
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!rosterId) {
+    return;
+  }
+
+  plannerActionError.value = null;
+  try {
+    await plannerState.flushPendingSave();
+    if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du startar ett nytt grupputkast."
+          : plannerState.saveMessage ?? "Kunde inte spara ändringarna innan nytt grupputkast startades.";
+      return;
+    }
+    await plannerState.startNewGroupingDraft(rosterId, payload.templateId);
+    resumableDraft.value = await plannerState.getResumableDraft();
+    plannerInitialView.value = "groups";
+    currentScreen.value = "planner";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte starta ett nytt grupputkast just nu.",
+    );
+  }
+}
+
 async function selectPlannerWorkspaceMode(mode: "overview" | "grouping" | "seating"): Promise<void> {
   if (mode === "overview") {
     await returnToClassWorkspace();
@@ -497,6 +525,7 @@ function openTemplateEdit(template: RoomTemplate): void {
       :initial-view="plannerInitialView"
       @change-grouping-template="void changeGroupingTemplate($event)"
       @change-seating-template="void changeSeatingTemplate($event)"
+      @new-grouping-draft="void startNewGroupingDraft($event)"
       @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
       @exit-to-landing="void exitPlannerToLanding()"
     />

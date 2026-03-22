@@ -23,6 +23,7 @@ type PlannerStateMock = {
   flushPendingSave: ReturnType<typeof vi.fn>;
   getClassWorkspaceSummary: ReturnType<typeof vi.fn>;
   resolveDraft: ReturnType<typeof vi.fn>;
+  startNewGroupingDraft: ReturnType<typeof vi.fn>;
   loadWorkspace: ReturnType<typeof vi.fn>;
   getResumableDraft: ReturnType<typeof vi.fn>;
 };
@@ -42,6 +43,7 @@ const stateMocks = vi.hoisted(() => ({
     flushPendingSave: vi.fn(),
     getClassWorkspaceSummary: vi.fn(),
     resolveDraft: vi.fn(),
+    startNewGroupingDraft: vi.fn(),
     loadWorkspace: vi.fn(),
     getResumableDraft: vi.fn(),
   }))(),
@@ -71,6 +73,7 @@ describe("ClassroomPlannerView", () => {
     stateMocks.plannerState.getClassWorkspaceSummary.mockReset();
     stateMocks.plannerState.loadWorkspace.mockReset();
     stateMocks.plannerState.resolveDraft.mockReset();
+    stateMocks.plannerState.startNewGroupingDraft.mockReset();
     stateMocks.plannerState.getResumableDraft.mockReset();
     stateMocks.plannerState.roster = null;
     stateMocks.plannerState.template = null;
@@ -476,6 +479,101 @@ describe("ClassroomPlannerView", () => {
 
     expect(stateMocks.plannerState.resolveDraft).toHaveBeenNthCalledWith(1, "roster-1", null, "grouping");
     expect(stateMocks.plannerState.resolveDraft).toHaveBeenNthCalledWith(2, "roster-1", "template-1", "grouping");
+
+    wrapper.unmount();
+  });
+
+  it("starts a blank grouping draft from the active grouping workspace", async () => {
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+    stateMocks.plannerState.getResumableDraft
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        draft: {
+          id: "draft-grouping-2",
+          roster_id: "roster-1",
+          draft_kind: "grouping",
+          template_id: "template-1",
+          status: "active",
+          revision: 0,
+          last_opened_at: "2026-03-21T12:00:00Z",
+        },
+        roster_name: "SA24D",
+        template_name: "Sal 101",
+      });
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue({
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    });
+    stateMocks.plannerState.resolveDraft.mockImplementation(async (_rosterId, templateId, draftKind) => {
+      stateMocks.plannerState.roster = { id: "roster-1", name: "SA24D", students: [] };
+      stateMocks.plannerState.template = templateId
+        ? { id: templateId, name: "Sal 101", seats: [], fixtures: [] }
+        : null;
+      stateMocks.plannerState.draft = {
+        id: "draft-grouping-1",
+        roster_id: "roster-1",
+        draft_kind: draftKind,
+        template_id: templateId,
+        status: "active",
+        revision: 1,
+        last_opened_at: "2026-03-21T10:00:00Z",
+      };
+    });
+    stateMocks.plannerState.startNewGroupingDraft.mockImplementation(async (_rosterId, templateId) => {
+      stateMocks.plannerState.roster = { id: "roster-1", name: "SA24D", students: [] };
+      stateMocks.plannerState.template = templateId
+        ? { id: templateId, name: "Sal 101", seats: [], fixtures: [] }
+        : null;
+      stateMocks.plannerState.draft = {
+        id: "draft-grouping-2",
+        roster_id: "roster-1",
+        draft_kind: "grouping",
+        template_id: templateId,
+        status: "active",
+        revision: 0,
+        last_opened_at: "2026-03-21T12:00:00Z",
+      };
+    });
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: true,
+          PlannerClassWorkspace: {
+            template:
+              "<button type='button' data-test='open-grouping' @click=\"$emit('open-grouping', { templateId: null })\">Öppna grupper</button>",
+          },
+          PlannerWorkspaceShell: {
+            template:
+              "<button type='button' data-test='new-grouping-draft' @click=\"$emit('new-grouping-draft', { templateId: 'template-1' })\">Nytt grupputkast</button>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    await wrapper.get('[role="button"]').trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='open-grouping']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='new-grouping-draft']").trigger("click");
+    await flushPromises();
+
+    expect(stateMocks.plannerState.startNewGroupingDraft).toHaveBeenCalledWith(
+      "roster-1",
+      "template-1",
+    );
 
     wrapper.unmount();
   });

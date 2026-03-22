@@ -47,6 +47,7 @@ export type DraftGroup = {
   id: string;
   name: string;
   sort_order: number;
+  name_is_custom: boolean;
 };
 
 export type GroupAssignment = {
@@ -126,6 +127,10 @@ export type DraftWorkspaceResponse = {
   group_assignments: GroupAssignment[];
   seat_assignments: SeatAssignment[];
   student_planning_meta: StudentPlanningMeta[];
+  history_status: {
+    can_undo: boolean;
+    can_redo: boolean;
+  };
 };
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";

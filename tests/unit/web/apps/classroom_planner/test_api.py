@@ -6,6 +6,7 @@ import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
+    CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
@@ -39,6 +40,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 )
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner as api
+from skriptoteket.web.api.v1 import apps_classroom_planner_grouping as api_grouping
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -443,6 +445,44 @@ async def test_resolve_draft_calls_handler():
         owner_user_id=user.id,
         roster_id=req.roster_id,
         draft_kind=PlanDraftKind.SEATING,
+        template_id=req.template_id,
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_grouping_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=CreateGroupingDraftHandler)
+    req = api_grouping.CreateGroupingDraftRequest(
+        roster_id=uuid4(),
+        template_id=uuid4(),
+    )
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=user.id,
+        roster_id=req.roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=req.template_id,
+        status=PlanDraftStatus.ACTIVE,
+        revision=0,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = draft
+
+    result = await _unwrap_dishka(api_grouping.create_grouping_draft)(
+        request=req,
+        handler=handler,
+        user=user,
+    )
+
+    assert result.id == draft.id
+    handler.handle.assert_awaited_once_with(
+        owner_user_id=user.id,
+        roster_id=req.roster_id,
         template_id=req.template_id,
     )
 

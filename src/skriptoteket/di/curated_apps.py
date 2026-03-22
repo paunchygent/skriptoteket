@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
+    CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     DeleteRoomTemplateHandler,
@@ -476,6 +477,25 @@ class CuratedAppsProvider(Provider):
         id_generator: IdGeneratorProtocol,
     ) -> ResolveDraftHandler:
         return ResolveDraftHandler(
+            uow=uow,
+            rosters=rosters,
+            templates=templates,
+            drafts=drafts,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_grouping_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateGroupingDraftHandler:
+        return CreateGroupingDraftHandler(
             uow=uow,
             rosters=rosters,
             templates=templates,

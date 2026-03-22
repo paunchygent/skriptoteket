@@ -14,6 +14,7 @@ acceptance_criteria:
   - "Given the teacher wants a starting point, when `Slumpa` is used in grouping, then the class is divided into groups as a first draft without also randomizing seat assignments."
   - "Given the teacher wants a different group structure, when they add or remove groups, then the grouping workspace updates without losing manual control over student placement."
   - "Given the teacher wants meaningful groups, when they rename a group, then the individual group keeps that teacher-defined name."
+  - "Given a group still uses the default system name, when groups are reordered or deleted, then the default names renumber automatically to match the visible group order."
   - "Given a group contains more students, when the grouping board renders, then the group panel grows or lays itself out so the group's student cards fit inside the panel rather than clipping the content."
   - "Given the class already has an active grouping draft, when the teacher returns later, then that grouping draft can be resumed as the active grouping work for that class."
   - "Given the teacher starts a new grouping draft for the same class, when the new draft is created, then the previous active grouping draft is demoted to class history automatically."
@@ -31,6 +32,7 @@ undo/redo without implying that seating and grouping are one combined workflow.
 
 - This story starts only after `ST-24-05` and `ST-24-02` have removed superseded planner contracts and established the class-first workspace.
 - The teacher should be able to move students freely between groups, back to the roster, and into newly created groups without hidden automation overriding the manual move.
+- Default group names are positional labels (`Grupp 1`, `Grupp 2`, ...) rather than permanent identities; they should renumber with visible order until the teacher sets a custom name, after which that custom name stays fixed.
 - Draft autosave keeps live grouping work alive, while a bounded recent history supports undo and redo inside the grouping workspace.
 - The recent-history depth should be configurable and simple to tune; the current planning target is 10 steps.
 - Future “avoid these students together” logic should support the teacher quietly, but it does not belong as a visible main-view control in this story.

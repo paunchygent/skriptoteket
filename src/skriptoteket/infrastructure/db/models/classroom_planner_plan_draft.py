@@ -11,6 +11,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    Boolean,
     DateTime,
     ForeignKey,
     Index,
@@ -136,6 +137,7 @@ class DraftGroupModel(Base):
     group_id: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    name_is_custom: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     draft: Mapped[PlanDraftModel] = relationship("PlanDraftModel", back_populates="groups")
 

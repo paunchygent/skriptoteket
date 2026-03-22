@@ -121,7 +121,9 @@ async def test_first_step_undo_seeds_blank_grouping_state() -> None:
     assert len(history) == 2
     assert model.undo_index == 1
     assert history[0]["groups"] == []
-    assert history[1]["groups"] == [{"id": "g1", "name": "G1", "sort_order": 0}]
+    assert history[1]["groups"] == [
+        {"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}
+    ]
 
 
 @pytest.mark.asyncio
@@ -191,19 +193,19 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
     history = [
         {
             "template_id": None,
-            "groups": [{"id": "g1", "name": "G1", "sort_order": 0}],
+            "groups": [{"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
             "student_planning_meta": [],
         },
         {
             "template_id": None,
-            "groups": [{"id": "g2", "name": "G2", "sort_order": 0}],
+            "groups": [{"id": "g2", "name": "G2", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
             "student_planning_meta": [],
         },
         {
             "template_id": None,
-            "groups": [{"id": "g3", "name": "G3", "sort_order": 0}],
+            "groups": [{"id": "g3", "name": "G3", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
             "student_planning_meta": [],
         },
