@@ -21,6 +21,8 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
     PostgreSQLPlanDraftRepository,
 )
 
+HistorySnapshot = dict[str, object]
+
 
 def _make_grouping_draft(
     *, draft_id: object, owner_user_id: object, roster_id: object, now: datetime
@@ -69,7 +71,7 @@ def _make_draft_model(
     *,
     draft: PlanDraft,
     now: datetime,
-    history_stack: list[dict] | None = None,
+    history_stack: list[HistorySnapshot] | None = None,
     undo_index: int = 0,
 ) -> PlanDraftModel:
     """Build a mutable draft row for repository unit tests."""
@@ -94,7 +96,7 @@ def _make_draft_model(
     )
 
 
-def _require_history(model: PlanDraftModel) -> list[dict]:
+def _require_history(model: PlanDraftModel) -> list[HistorySnapshot]:
     """Return non-null history for assertions in repository contract tests."""
 
     assert model.history_stack is not None
@@ -216,7 +218,7 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
         roster_id=roster_id,
         now=now,
     )
-    history = [
+    history: list[HistorySnapshot] = [
         {
             "template_id": None,
             "groups": [{"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}],
@@ -379,7 +381,7 @@ async def test_seating_undo_restores_assignments_without_restoring_template_id()
         now=now,
         template_id=current_template_id,
     )
-    history = [
+    history: list[HistorySnapshot] = [
         {
             "groups": [],
             "group_assignments": [],

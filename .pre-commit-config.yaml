@@ -32,11 +32,11 @@ repos:
         pass_filenames: false
 
       - id: pytest
-        name: Pytest (unit suite)
-        entry: pdm run test
+        name: Pytest (targeted unit suite)
+        entry: pdm run python -m scripts.run_precommit_targeted_unit_tests
         language: system
         types: [python]
-        pass_filenames: false
+        pass_filenames: true
 
       - id: docs-contract-validate
         name: Docs contract validate (placement + naming + frontmatter)
