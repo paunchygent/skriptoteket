@@ -372,6 +372,24 @@ describe("useClassroomState", () => {
     expect(state.groupAssignments).toEqual([]);
   });
 
+  it("starts a brand-new seating draft through the dedicated lifecycle endpoint", async () => {
+    const state = useClassroomState();
+    clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "seating"));
+    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "seating"));
+
+    await state.startNewSeatingDraft("roster-1", "template-1");
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/seating/new",
+      {
+        roster_id: "roster-1",
+        template_id: "template-1",
+      },
+    );
+    expect(state.draft?.draft_kind).toBe("seating");
+    expect(state.seatAssignments).toEqual([]);
+  });
+
   it("activates a historical grouping draft through the dedicated lifecycle endpoint", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "grouping"));
@@ -396,6 +414,34 @@ describe("useClassroomState", () => {
 
     expect(clientMocks.apiDelete).toHaveBeenCalledWith(
       "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/draft-history-1",
+    );
+    expect(state.saveStatus).toBe("saved");
+  });
+
+  it("activates a historical seating draft through the dedicated lifecycle endpoint", async () => {
+    const state = useClassroomState();
+    clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "seating"));
+    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "seating"));
+
+    await state.activateSeatingHistoryDraft("draft-history-2");
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/seating/draft-history-2/activate",
+    );
+    expect(clientMocks.apiGet).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/workspace",
+    );
+    expect(state.draft?.draft_kind).toBe("seating");
+  });
+
+  it("deletes a historical seating draft through the dedicated lifecycle endpoint", async () => {
+    const state = useClassroomState();
+    clientMocks.apiDelete.mockResolvedValue(undefined);
+
+    await state.deleteSeatingHistoryDraft("draft-history-2");
+
+    expect(clientMocks.apiDelete).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/seating/draft-history-2",
     );
     expect(state.saveStatus).toBe("saved");
   });

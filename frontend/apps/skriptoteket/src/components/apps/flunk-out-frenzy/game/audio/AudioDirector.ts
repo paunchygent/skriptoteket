@@ -22,13 +22,16 @@ type CueName =
   | "game-over";
 
 export class AudioDirector implements RuntimeAudioDirector {
+  readonly enabled = true;
   private readonly cues = new Map<CueName, Howl>();
+  private readonly previousGlobalMuteState: boolean;
 
   static async create(): Promise<AudioDirector> {
     return new AudioDirector();
   }
 
   private constructor() {
+    this.previousGlobalMuteState = Howler._muted;
     Howler.autoUnlock = true;
 
     this.cues.set("round-started", this.createCue(520, 180, 0.12));
@@ -88,6 +91,7 @@ export class AudioDirector implements RuntimeAudioDirector {
     }
 
     this.cues.clear();
+    Howler.mute(this.previousGlobalMuteState);
   }
 
   private createCue(

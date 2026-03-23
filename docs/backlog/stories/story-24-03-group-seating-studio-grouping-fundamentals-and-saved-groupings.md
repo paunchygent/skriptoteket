@@ -2,10 +2,10 @@
 type: story
 id: ST-24-03
 title: "Klassrumskartan — Grouping Fundamentals and Draft History"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-22
+updated: 2026-03-23
 epic: "EPIC-24"
 acceptance_criteria:
   - "Given the teacher is in a class workspace, when they open or create a grouping draft, then the grouping workflow operates on that class without implying that seating work must happen at the same time."
@@ -50,3 +50,14 @@ undo/redo without implying that seating and grouping are one combined workflow.
 - Seating copy should stay consistent: use `Sittplatser` for the mode, `Sittschema` for the active
   work surface, and `Klassrum` for the room context.
 - A later optional helper may allow classroom-aware grouping to derive natural groups from an active seating arrangement, but that is not the default behavior of this story.
+
+## Implementation Summary (as of 2026-03-23)
+
+- `ST-24-03` shipped across `PR-0090` through `PR-0093`.
+- Grouping now has its own class-scoped draft lifecycle with:
+  - blank `Nytt grupputkast`
+  - grouping-only `Slumpa`
+  - persisted group ordering and positional default names
+  - autosave plus bounded in-draft undo/redo
+- The active grouping draft resumes directly, while older grouping drafts remain secondary in the
+  overlay continuity drawer and can be reopened or deleted there with confirmation.

@@ -30,7 +30,7 @@ def _wait_for_app_heading(page: Any) -> None:
 
     app_heading = page.get_by_role("heading", name="Klassrumskartan", exact=True)
     for _ in range(30):
-        if app_heading.count() > 0:
+        if app_heading.count() > 0 and app_heading.first.is_visible():
             return
         page.wait_for_timeout(500)
 
@@ -40,15 +40,26 @@ def _wait_for_app_heading(page: Any) -> None:
 def _login_to_app(page: Any, *, base_url: str, email: str, password: str) -> None:
     """Log in through the shared repo flow, then open the protected app route."""
 
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-    expect(dialog).to_be_visible()
-    dialog.get_by_label("E-post").fill(email)
-    dialog.get_by_label("Lösenord").fill(password)
-    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
-    page.wait_for_timeout(750)
-    page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
-    _wait_for_app_heading(page)
+    for attempt in range(3):
+        page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
+        try:
+            _wait_for_app_heading(page)
+            return
+        except AssertionError:
+            if attempt == 0:
+                page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+                dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+                if dialog.count() > 0:
+                    expect(dialog).to_be_visible()
+                    dialog.get_by_label("E-post").fill(email)
+                    dialog.get_by_label("Lösenord").fill(password)
+                    dialog.get_by_role(
+                        "button", name=re.compile(r"Logga in", re.IGNORECASE)
+                    ).click()
+                    page.wait_for_timeout(750)
+            if attempt == 2:
+                raise
+            page.wait_for_timeout(1000)
 
 
 def _click_landing_cta_button(page: Any, *, label_pattern: re.Pattern[str]) -> None:
@@ -161,13 +172,43 @@ def _open_grouping_history(page: Any) -> None:
     page.locator('[data-test="grouping-history"]').click()
 
 
-def _close_history_drawer(page: Any) -> None:
-    """Close the visible history drawer without hitting unrelated close buttons."""
+def _close_history_drawer(page: Any, *, title: str) -> None:
+    """Close one visible history drawer without hitting unrelated close buttons."""
 
     history_drawer = page.locator("aside").filter(
-        has=page.get_by_role("heading", name=re.compile(r"Grupper", re.IGNORECASE))
+        has=page.get_by_role("heading", name=re.compile(re.escape(title), re.IGNORECASE))
     )
+    if history_drawer.count() == 0 or not history_drawer.first.is_visible():
+        return
     history_drawer.get_by_role("button", name="×").click()
+
+
+def _wait_for_active_history_revision(page: Any, *, title: str, revision: int) -> None:
+    """Wait until the drawer reflects the promoted active draft revision."""
+
+    expected_revision = f"Revision {revision}"
+    history_drawer = page.locator("aside").filter(
+        has=page.get_by_role("heading", name=re.compile(re.escape(title), re.IGNORECASE))
+    )
+    for _ in range(10):
+        if history_drawer.count() > 0 and history_drawer.first.is_visible():
+            active_card = history_drawer.locator("article").filter(
+                has=history_drawer.get_by_text("Aktivt nu", exact=True)
+            )
+            if active_card.count() > 0 and expected_revision in active_card.first.inner_text():
+                return
+        page.wait_for_timeout(300)
+
+    raise AssertionError(f"{title} drawer did not promote revision {revision} to active state.")
+
+
+def _extract_revision(label_text: str) -> int:
+    """Extract a draft revision number from a history row label."""
+
+    match = re.search(r"Revision\s+(\d+)", label_text, re.IGNORECASE)
+    if not match:
+        raise AssertionError(f"Could not extract revision from history label: {label_text!r}")
+    return int(match.group(1))
 
 
 def _verify_grouping_history_starts_empty(page: Any) -> None:
@@ -175,7 +216,7 @@ def _verify_grouping_history_starts_empty(page: Any) -> None:
 
     _open_grouping_history(page)
     expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).to_be_visible()
-    _close_history_drawer(page)
+    _close_history_drawer(page, title="Grupper")
     expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).not_to_be_visible()
 
 
@@ -241,8 +282,12 @@ def _reopen_historic_grouping_draft(page: Any) -> None:
     history_button = page.get_by_role(
         "button", name=re.compile(r"Revision \d+", re.IGNORECASE)
     ).first
+    reopened_revision = _extract_revision(history_button.inner_text())
     history_button.click()
     expect(page.locator("input[type='text']").first).to_have_value("Arbetslag Alfa")
+    _open_grouping_history(page)
+    _wait_for_active_history_revision(page, title="Grupper", revision=reopened_revision)
+    _close_history_drawer(page, title="Grupper")
 
 
 def _delete_remaining_historic_grouping_draft(page: Any) -> None:
@@ -251,10 +296,15 @@ def _delete_remaining_historic_grouping_draft(page: Any) -> None:
     _open_grouping_history(page)
     initial_history_count = page.get_by_role("button", name="Ta bort historiskt utkast").count()
     page.get_by_role("button", name="Ta bort historiskt utkast").first.click()
-    expect(page.get_by_text("Ta bort utkast?", exact=True)).to_be_visible()
-    page.get_by_role("button", name=re.compile(r"^Ta bort$", re.IGNORECASE)).click()
+    confirmation = page.locator("article").filter(
+        has=page.get_by_text("Ta bort utkast?", exact=True)
+    )
+    expect(confirmation).to_be_visible()
+    confirmation.get_by_role(
+        "button",
+        name=re.compile(r"^Ta bort$", re.IGNORECASE),
+    ).click(force=True)
     page.wait_for_timeout(500)
-    _close_history_drawer(page)
     _open_grouping_history(page)
     remaining_history_count = page.get_by_role("button", name="Ta bort historiskt utkast").count()
     assert remaining_history_count == initial_history_count - 1
@@ -262,7 +312,7 @@ def _delete_remaining_historic_grouping_draft(page: Any) -> None:
         expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).to_be_visible()
     else:
         expect(page.get_by_role("button", name="Ta bort historiskt utkast").first).to_be_visible()
-    _close_history_drawer(page)
+    _close_history_drawer(page, title="Grupper")
     expect(page.locator('[data-test="grouping-history"]')).to_be_visible()
 
 
@@ -343,11 +393,97 @@ def _return_to_class_workspace(page: Any) -> None:
 
 
 def _verify_seating_toolbar(page: Any) -> None:
-    """Ensure seating exposes the intended minimal secondary action."""
+    """Ensure seating exposes the intended continuity and classroom actions."""
 
+    seating_history_button = page.locator('[data-test="seating-history"]')
+    expect(seating_history_button).to_be_visible()
+    expect(seating_history_button).to_have_text(re.compile(r"Historik", re.IGNORECASE))
+    new_seating_button = page.locator('[data-test="new-seating-draft"]')
+    expect(new_seating_button).to_be_visible()
+    expect(new_seating_button).to_have_text(re.compile(r"Nytt sittschema", re.IGNORECASE))
     edit_classroom_button = page.locator('[data-test="edit-current-template"]')
     expect(edit_classroom_button).to_be_visible()
     expect(edit_classroom_button).to_have_text(re.compile(r"Redigera klassrum", re.IGNORECASE))
+
+
+def _open_seating_history(page: Any) -> None:
+    """Open the seating history drawer from the seating toolbar."""
+
+    page.locator('[data-test="seating-history"]').click()
+
+
+def _verify_seating_history_starts_empty(page: Any) -> None:
+    """Verify the seating drawer starts empty before a second draft exists."""
+
+    _open_seating_history(page)
+    expect(page.get_by_text("Ingen sitthistorik ännu.", exact=True)).to_be_visible()
+    _close_history_drawer(page, title="Sittplatser")
+    expect(page.get_by_text("Ingen sitthistorik ännu.", exact=True)).not_to_be_visible()
+
+
+def _start_second_seating_draft(page: Any) -> None:
+    """Create a second seating draft in the current classroom."""
+
+    page.locator('[data-test="new-seating-draft"]').click()
+    expect(page.locator('[data-test="seating-workspace"]')).to_be_visible()
+    page.wait_for_timeout(500)
+
+
+def _reopen_historic_seating_draft(page: Any) -> None:
+    """Open the older seating draft from the seating history drawer."""
+
+    _open_seating_history(page)
+    aside = page.locator("aside").filter(
+        has=page.get_by_role("heading", name=re.compile(r"Sittplatser", re.IGNORECASE))
+    )
+    expect(aside.get_by_text("Tidigare sittscheman", exact=True)).to_be_visible()
+    expect(aside.get_by_role("button", name="Ta bort historiskt utkast").first).to_be_visible()
+    history_button = aside.get_by_role(
+        "button", name=re.compile(r"Revision \d+", re.IGNORECASE)
+    ).first
+    reopened_revision = _extract_revision(history_button.inner_text())
+    history_button.click()
+    expect(page.locator('[data-test="seating-workspace"]')).to_be_visible()
+    expect(page.locator('[data-test="edit-current-template"]')).to_be_visible()
+    _open_seating_history(page)
+    _wait_for_active_history_revision(page, title="Sittplatser", revision=reopened_revision)
+    _close_history_drawer(page, title="Sittplatser")
+
+
+def _delete_remaining_historic_seating_draft(page: Any) -> None:
+    """Delete one historic seating draft and keep the active one intact."""
+
+    _open_seating_history(page)
+    initial_history_count = page.get_by_role("button", name="Ta bort historiskt utkast").count()
+    page.get_by_role("button", name="Ta bort historiskt utkast").first.click()
+    confirmation = page.locator("article").filter(
+        has=page.get_by_text("Ta bort utkast?", exact=True)
+    )
+    expect(confirmation).to_be_visible()
+    confirmation.get_by_role(
+        "button",
+        name=re.compile(r"^Ta bort$", re.IGNORECASE),
+    ).click(force=True)
+    page.wait_for_timeout(300)
+
+    remaining_history_count = initial_history_count
+    for _ in range(10):
+        _open_seating_history(page)
+        remaining_history_count = page.get_by_role(
+            "button", name="Ta bort historiskt utkast"
+        ).count()
+        if remaining_history_count == initial_history_count - 1:
+            break
+        _close_history_drawer(page, title="Sittplatser")
+        page.wait_for_timeout(300)
+
+    assert remaining_history_count == initial_history_count - 1
+    if remaining_history_count == 0:
+        expect(page.get_by_text("Ingen sitthistorik ännu.", exact=True)).to_be_visible()
+    else:
+        expect(page.get_by_role("button", name="Ta bort historiskt utkast").first).to_be_visible()
+    _close_history_drawer(page, title="Sittplatser")
+    expect(page.locator('[data-test="seating-history"]')).to_be_visible()
 
 
 def _exit_to_landing(page: Any) -> None:
@@ -410,6 +546,10 @@ def main() -> None:
         _open_seating_workspace(page, template_name=first_template_name)
         _switch_seating_workspace_template(page, template_name=second_template_name)
         _verify_seating_toolbar(page)
+        _verify_seating_history_starts_empty(page)
+        _start_second_seating_draft(page)
+        _reopen_historic_seating_draft(page)
+        _delete_remaining_historic_seating_draft(page)
         _open_student_metadata(page)
         _close_student_metadata(page)
         _return_to_class_workspace(page)

@@ -22,6 +22,11 @@ from .handlers.rosters import (
     ListRostersHandler,
     UpdateRosterHandler,
 )
+from .handlers.seating_drafts import CreateSeatingDraftHandler
+from .handlers.seating_history import (
+    ActivateSeatingHistoryDraftHandler,
+    DeleteHistoricSeatingDraftHandler,
+)
 from .handlers.templates import (
     CreateRoomTemplateHandler,
     DeleteRoomTemplateHandler,
@@ -34,10 +39,13 @@ from .handlers.workspace_summary import GetClassWorkspaceSummaryHandler
 __all__ = [
     "AbandonDraftHandler",
     "ActivateGroupingHistoryDraftHandler",
+    "ActivateSeatingHistoryDraftHandler",
     "CreateRoomTemplateHandler",
     "CreateRosterHandler",
     "CreateGroupingDraftHandler",
+    "CreateSeatingDraftHandler",
     "DeleteHistoricGroupingDraftHandler",
+    "DeleteHistoricSeatingDraftHandler",
     "DeleteRoomTemplateHandler",
     "DeleteRosterHandler",
     "GetClassWorkspaceSummaryHandler",

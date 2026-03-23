@@ -44,6 +44,8 @@ const isRosterModalOpen = ref(false);
 const isTemplateModalOpen = ref(false);
 const activeRosterModal = ref<Roster | null>(null);
 const activeTemplateModal = ref<RoomTemplate | null>(null);
+const isSeatingLifecycleBusy = ref(false);
+const busySeatingHistoryDraftId = ref<string | null>(null);
 
 const visibleResumableDraft = computed(() => {
   if (!resumableDraft.value) {
@@ -369,6 +371,38 @@ async function startNewGroupingDraft(payload: { templateId: string | null }): Pr
   }
 }
 
+async function startNewSeatingDraft(payload: { templateId: string }): Promise<void> {
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!rosterId || isSeatingLifecycleBusy.value) {
+    return;
+  }
+
+  plannerActionError.value = null;
+  isSeatingLifecycleBusy.value = true;
+  try {
+    await plannerState.flushPendingSave();
+    if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du startar ett nytt sittschema."
+          : plannerState.saveMessage ?? "Kunde inte spara ändringarna innan nytt sittschema startades.";
+      return;
+    }
+    await plannerState.startNewSeatingDraft(rosterId, payload.templateId);
+    setResumableDraft(await plannerState.getResumableDraft());
+    await refreshClassWorkspaceSummaryForSelectedRoster();
+    plannerInitialView.value = "seats";
+    currentScreen.value = "planner";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte starta ett nytt sittschema just nu.",
+    );
+  } finally {
+    isSeatingLifecycleBusy.value = false;
+  }
+}
+
 async function openGroupingHistoryDraft(draftId: string): Promise<void> {
   plannerActionError.value = null;
   try {
@@ -382,6 +416,30 @@ async function openGroupingHistoryDraft(draftId: string): Promise<void> {
       error,
       "Kunde inte öppna det historiska grupputkastet just nu.",
     );
+  }
+}
+
+async function openSeatingHistoryDraft(draftId: string): Promise<void> {
+  if (isSeatingLifecycleBusy.value) {
+    return;
+  }
+  plannerActionError.value = null;
+  isSeatingLifecycleBusy.value = true;
+  busySeatingHistoryDraftId.value = draftId;
+  try {
+    await plannerState.activateSeatingHistoryDraft(draftId);
+    setResumableDraft(await plannerState.getResumableDraft());
+    await refreshClassWorkspaceSummaryForSelectedRoster();
+    plannerInitialView.value = "seats";
+    currentScreen.value = "planner";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte öppna det historiska sittschemat just nu.",
+    );
+  } finally {
+    busySeatingHistoryDraftId.value = null;
+    isSeatingLifecycleBusy.value = false;
   }
 }
 
@@ -401,6 +459,30 @@ async function deleteGroupingHistoryDraft(draftId: string): Promise<void> {
       error,
       "Kunde inte ta bort det historiska grupputkastet just nu.",
     );
+  }
+}
+
+async function deleteSeatingHistoryDraft(draftId: string): Promise<void> {
+  const rosterId = selectedRosterId.value ?? classWorkspaceSummary.value?.roster.id ?? null;
+  if (!rosterId || isSeatingLifecycleBusy.value) {
+    return;
+  }
+
+  plannerActionError.value = null;
+  isSeatingLifecycleBusy.value = true;
+  busySeatingHistoryDraftId.value = draftId;
+  try {
+    await plannerState.deleteSeatingHistoryDraft(draftId);
+    await loadClassWorkspaceSummary(rosterId);
+    setResumableDraft(await plannerState.getResumableDraft());
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte ta bort det historiska sittschemat just nu.",
+    );
+  } finally {
+    busySeatingHistoryDraftId.value = null;
+    isSeatingLifecycleBusy.value = false;
   }
 }
 
@@ -571,11 +653,16 @@ function openTemplateEdit(template: RoomTemplate): void {
       :available-templates="availableTemplates"
       :initial-view="plannerInitialView"
       :workspace-summary="classWorkspaceSummary"
+      :seating-lifecycle-busy="isSeatingLifecycleBusy"
+      :seating-history-busy-draft-id="busySeatingHistoryDraftId"
       @change-grouping-template="void changeGroupingTemplate($event)"
       @change-seating-template="void changeSeatingTemplate($event)"
       @new-grouping-draft="void startNewGroupingDraft($event)"
+      @new-seating-draft="void startNewSeatingDraft($event)"
       @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
       @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"
+      @open-seating-history-draft="void openSeatingHistoryDraft($event)"
+      @delete-seating-history-draft="void deleteSeatingHistoryDraft($event)"
       @edit-current-template="openTemplateEdit"
       @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
       @exit-to-landing="void exitPlannerToLanding()"

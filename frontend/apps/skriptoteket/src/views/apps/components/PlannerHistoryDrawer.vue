@@ -4,8 +4,8 @@
  *
  * This drawer keeps grouping and seating history secondary to the active class
  * workspace flow. It can present the current active draft separately from
- * older drafts and, for grouping history, emits explicit open/delete actions
- * instead of mixing history management into the main workspace.
+ * older drafts and emits explicit open/delete actions instead of mixing
+ * history management into the main workspace.
  */
 
 import { computed, ref } from "vue";

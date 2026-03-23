@@ -13,12 +13,25 @@ import { GameRuntime } from "./game/core/GameRuntime";
 import { createInitialHudSnapshot } from "./game/core/runtimeTypes";
 import { KeyboardInputController } from "./game/input/KeyboardInputController";
 import type { MachineEvent } from "./game/physics/physicsTypes";
-import type { GameHostApi, GameHudSnapshot } from "./gameHostTypes";
+import {
+  labelGameSessionStatus,
+  type GameHostApi,
+  type GameHudSnapshot,
+  type GameRuntimeFactory,
+  type GameRuntimeLike,
+} from "./gameHostTypes";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   title: string;
-}>();
+  audioEnabled?: boolean;
+  runtimeFactory?: GameRuntimeFactory;
+}>(), {
+  audioEnabled: true,
+  runtimeFactory: undefined,
+});
 
+// These are intentionally temporary reference-art crops until the dedicated
+// Flunk-Out Frenzy art pass replaces them.
 const referencePlayfieldUrl = new URL(
   "../../../assets/flunk-out-frenzy/reference-playfield-crop.jpg",
   import.meta.url,
@@ -26,12 +39,14 @@ const referencePlayfieldUrl = new URL(
 
 const emit = defineEmits<{
   hudChange: [hud: GameHudSnapshot];
+  bootError: [message: string | null];
 }>();
 
 const hostElement = ref<HTMLDivElement | null>(null);
 const hudSnapshot = ref<GameHudSnapshot>(createInitialHudSnapshot());
 const runtimeBooting = ref(true);
-let runtime: GameRuntime | null = null;
+const runtimeError = ref<string | null>(null);
+let runtime: GameRuntimeLike | null = null;
 let keyboardController: KeyboardInputController | null = null;
 let unsubscribeHud: (() => void) | null = null;
 let disposed = false;
@@ -48,16 +63,13 @@ declare global {
 }
 
 const statusLabel = computed(() => {
-  if (hudSnapshot.value.status === "running") {
-    return "Pågående runda";
+  if (runtimeError.value) {
+    return "Startfel";
   }
-  if (hudSnapshot.value.status === "paused") {
-    return "Pausad";
+  if (runtimeBooting.value) {
+    return "Startar";
   }
-  if (hudSnapshot.value.status === "game-over") {
-    return "Game over";
-  }
-  return "Väntar på start";
+  return labelGameSessionStatus(hudSnapshot.value.status);
 });
 
 function startGame(): void {
@@ -87,8 +99,12 @@ onMounted(() => {
 
   const mountedHost = hostElement.value;
   disposed = false;
+  runtimeBooting.value = true;
+  runtimeError.value = null;
 
-  void GameRuntime.create()
+  const createRuntime = props.runtimeFactory ?? ((options) => GameRuntime.create(options));
+
+  void createRuntime({ audioEnabled: props.audioEnabled })
     .then((createdRuntime) => {
       if (disposed || hostElement.value !== mountedHost) {
         createdRuntime.dispose();
@@ -96,19 +112,19 @@ onMounted(() => {
       }
 
       runtime = createdRuntime;
-      runtime.mount(mountedHost);
-      unsubscribeHud = runtime.subscribeHud((nextHud) => {
+      createdRuntime.mount(mountedHost);
+      unsubscribeHud = createdRuntime.subscribeHud((nextHud) => {
         hudSnapshot.value = nextHud;
         emit("hudChange", nextHud);
       });
 
-      keyboardController = new KeyboardInputController(runtime);
+      keyboardController = new KeyboardInputController(createdRuntime);
       keyboardController.attach();
 
       if (import.meta.env.DEV) {
         window.__FOF_DEBUG__ = {
           injectMachineEvents(events: MachineEvent[]) {
-            createdRuntime.injectMachineEventsForDebug(events);
+            createdRuntime.injectMachineEventsForDebug?.(events);
           },
           hud() {
             return hudSnapshot.value;
@@ -117,9 +133,15 @@ onMounted(() => {
       }
 
       runtimeBooting.value = false;
+      runtimeError.value = null;
+      emit("bootError", null);
     })
     .catch((error: unknown) => {
       runtimeBooting.value = false;
+      runtimeError.value = error instanceof Error
+        ? error.message
+        : "Spelmotorn kunde inte starta.";
+      emit("bootError", runtimeError.value);
       console.error("Failed to initialize Flunk-Out Frenzy runtime.", error);
     });
 });
@@ -132,7 +154,6 @@ onBeforeUnmount(() => {
   unsubscribeHud = null;
   runtime?.dispose();
   runtime = null;
-  runtimeBooting.value = true;
 
   if (import.meta.env.DEV) {
     delete window.__FOF_DEBUG__;
@@ -170,7 +191,16 @@ defineExpose<GameHostApi>({
       </div>
 
       <div
-        v-if="hudSnapshot.status === 'game-over'"
+        v-if="runtimeError"
+        data-test="runtime-error"
+        class="fof-host__message fof-host__message--error"
+      >
+        <p>Spelmotorn kunde inte starta</p>
+        <span>{{ runtimeError }}</span>
+      </div>
+
+      <div
+        v-else-if="hudSnapshot.status === 'game-over'"
         class="fof-host__message"
       >
         <p>Game over</p>
@@ -196,7 +226,7 @@ defineExpose<GameHostApi>({
 .fof-host__playfield {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 0.76;
+  aspect-ratio: var(--fof-cabinet-aspect-ratio, 0.76);
   border-radius: clamp(1.25rem, 2vw, 1.8rem);
   border: 1px solid rgba(255, 245, 225, 0.12);
   background: #100f0c;
@@ -276,6 +306,12 @@ defineExpose<GameHostApi>({
 
 .fof-host__message--subtle {
   background: rgba(20, 27, 22, 0.58);
+}
+
+.fof-host__message--error {
+  background:
+    linear-gradient(180deg, rgba(76, 17, 26, 0.9), rgba(38, 11, 16, 0.92));
+  border-color: rgba(255, 162, 176, 0.34);
 }
 
 .fof-host__message p,

@@ -11,15 +11,29 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import GameHost from "../../components/apps/flunk-out-frenzy/GameHost.vue";
-import type { GameHostApi, GameHudSnapshot } from "../../components/apps/flunk-out-frenzy/gameHostTypes";
+import {
+  labelGameSessionStatus,
+  type GameHostApi,
+  type GameHudSnapshot,
+  type GameRuntimeFactory,
+} from "../../components/apps/flunk-out-frenzy/gameHostTypes";
 import { useFlunkOutFrenzyBootstrap } from "./useFlunkOutFrenzyBootstrap";
 
+const props = defineProps<{
+  runtimeFactory?: GameRuntimeFactory;
+}>();
+
 const { bootstrap, bootstrapError, isBootstrapping, loadBootstrap } = useFlunkOutFrenzyBootstrap();
+// These are intentionally temporary reference-art plates until the dedicated
+// Flunk-Out Frenzy cabinet art pass lands.
 const sceneReferenceUrl = new URL(
   "../../assets/flunk-out-frenzy/reference-cabinet-scene.jpg",
   import.meta.url,
 ).href;
 
+// The physics board is 600x1200, but the surrounding cabinet frame is wider to
+// preserve a believable machine silhouette around the playfield.
+const CABINET_FRAME_ASPECT_RATIO = 0.76;
 const DESKTOP_BREAKPOINT_PX = 940;
 const DESKTOP_SIDE_RAIL_RESERVE_PX = 336;
 const DESKTOP_TOP_MARQUEE_RESERVE_PX = 184;
@@ -28,6 +42,8 @@ const DESKTOP_BOTTOM_RESERVE_PX = 20;
 const gameHost = ref<GameHostApi | null>(null);
 const sceneElement = ref<HTMLElement | null>(null);
 const isSettingsOpen = ref(false);
+const runtimeBootError = ref<string | null>(null);
+const runtimeHostKey = ref(0);
 const hud = ref<GameHudSnapshot>({
   score: 0,
   ballsRemaining: 3,
@@ -65,23 +81,20 @@ const featureFlagRows = computed(() => {
 });
 
 const sessionStatusLabel = computed(() => {
-  if (hud.value.status === "running") {
-    return "Pågående runda";
-  }
-  if (hud.value.status === "paused") {
-    return "Pausad";
-  }
-  if (hud.value.status === "game-over") {
-    return "Game over";
-  }
-  return "Redo att starta";
+  return labelGameSessionStatus(hud.value.status);
 });
 
 const pauseLabel = computed(() => {
   return hud.value.status === "paused" ? "Fortsätt" : "Pausa";
 });
 
-const canPause = computed(() => hud.value.status === "running" || hud.value.status === "paused");
+const canPause = computed(() => {
+  if (runtimeBootError.value) {
+    return false;
+  }
+
+  return hud.value.status === "running" || hud.value.status === "paused";
+});
 
 const hostFrameStyle = computed(() => {
   if (hostFrame.value.width === null || hostFrame.value.height === null) {
@@ -94,11 +107,39 @@ const hostFrameStyle = computed(() => {
   };
 });
 
+const isAudioAvailable = computed(() => bootstrap.value?.feature_flags.audio_enabled ?? true);
+
+const muteLabel = computed(() => {
+  if (!isAudioAvailable.value) {
+    return "Ljud avstängt";
+  }
+
+  return hud.value.muted ? "Ljud av" : "Ljud på";
+});
+
 function onHudChange(nextHud: GameHudSnapshot): void {
   hud.value = nextHud;
 }
 
+function onRuntimeBootError(message: string | null): void {
+  runtimeBootError.value = message;
+
+  if (message) {
+    hud.value = {
+      score: 0,
+      ballsRemaining: 3,
+      multiplier: 1,
+      status: "ready",
+      muted: false,
+    };
+  }
+}
+
 function onStart(): void {
+  if (runtimeBootError.value) {
+    return;
+  }
+
   gameHost.value?.startGame();
 }
 
@@ -116,11 +157,31 @@ function onPauseToggle(): void {
 }
 
 function onRestart(): void {
+  if (runtimeBootError.value) {
+    return;
+  }
+
   gameHost.value?.restartGame();
 }
 
 function onToggleMute(): void {
+  if (runtimeBootError.value || !isAudioAvailable.value) {
+    return;
+  }
+
   gameHost.value?.setMuted(!hud.value.muted);
+}
+
+function retryRuntimeHost(): void {
+  runtimeBootError.value = null;
+  hud.value = {
+    score: 0,
+    ballsRemaining: 3,
+    multiplier: 1,
+    status: "ready",
+    muted: false,
+  };
+  runtimeHostKey.value += 1;
 }
 
 function updateBoardFrame(): void {
@@ -137,7 +198,6 @@ function updateBoardFrame(): void {
   const sceneStyles = window.getComputedStyle(scene);
   const paddingX = parseFloat(sceneStyles.paddingLeft) + parseFloat(sceneStyles.paddingRight);
   const paddingY = parseFloat(sceneStyles.paddingTop) + parseFloat(sceneStyles.paddingBottom);
-  const hostAspectRatio = 0.76;
 
   const availableWidth = Math.max(
     scene.clientWidth - paddingX - DESKTOP_SIDE_RAIL_RESERVE_PX,
@@ -148,8 +208,10 @@ function updateBoardFrame(): void {
     420,
   );
 
-  const width = Math.floor(Math.min(availableWidth, availableHeight * hostAspectRatio));
-  const height = Math.floor(width / hostAspectRatio);
+  const width = Math.floor(
+    Math.min(availableWidth, availableHeight * CABINET_FRAME_ASPECT_RATIO),
+  );
+  const height = Math.floor(width / CABINET_FRAME_ASPECT_RATIO);
 
   hostFrame.value = { width, height };
 }
@@ -216,7 +278,10 @@ onBeforeUnmount(() => {
       <div
         ref="sceneElement"
         class="fof-machine-scene"
-        :style="{ '--fof-scene-image': `url(${sceneReferenceUrl})` }"
+        :style="{
+          '--fof-scene-image': `url(${sceneReferenceUrl})`,
+          '--fof-cabinet-aspect-ratio': String(CABINET_FRAME_ASPECT_RATIO),
+        }"
       >
         <header class="fof-marquee">
           <p class="fof-marquee__eyebrow">
@@ -254,13 +319,37 @@ onBeforeUnmount(() => {
           :style="hostFrameStyle"
         >
           <GameHost
+            :key="runtimeHostKey"
             ref="gameHost"
+            :audio-enabled="bootstrap.feature_flags.audio_enabled"
             :title="bootstrap.title"
+            :runtime-factory="props.runtimeFactory"
+            @boot-error="onRuntimeBootError"
             @hud-change="onHudChange"
           />
         </div>
 
         <aside class="fof-service-cluster">
+          <div
+            v-if="runtimeBootError"
+            data-test="runtime-route-error"
+            class="fof-runtime-error"
+          >
+            <p class="fof-runtime-error__title">
+              Spelmotorn kunde inte starta
+            </p>
+            <p class="fof-runtime-error__body">
+              {{ runtimeBootError }}
+            </p>
+            <button
+              class="fof-action fof-action--primary"
+              type="button"
+              @click="retryRuntimeHost"
+            >
+              Försök igen
+            </button>
+          </div>
+
           <div class="fof-keyguide">
             <p class="fof-keyguide__eyebrow">
               Kontroller
@@ -284,6 +373,7 @@ onBeforeUnmount(() => {
             <button
               class="fof-action fof-action--primary"
               type="button"
+              :disabled="Boolean(runtimeBootError)"
               @click="onStart"
             >
               Start
@@ -299,6 +389,7 @@ onBeforeUnmount(() => {
             <button
               class="fof-action"
               type="button"
+              :disabled="Boolean(runtimeBootError)"
               @click="onRestart"
             >
               Starta om
@@ -306,9 +397,10 @@ onBeforeUnmount(() => {
             <button
               class="fof-action"
               type="button"
+              :disabled="Boolean(runtimeBootError) || !isAudioAvailable"
               @click="onToggleMute"
             >
-              {{ hud.muted ? "Ljud av" : "Ljud på" }}
+              {{ muteLabel }}
             </button>
           </div>
 
@@ -438,6 +530,36 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
+.fof-runtime-error {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(255, 162, 176, 0.3);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(180deg, rgba(72, 18, 26, 0.92), rgba(38, 11, 16, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 219, 227, 0.12),
+    0 14px 30px rgba(11, 6, 5, 0.26);
+}
+
+.fof-runtime-error__title,
+.fof-runtime-error__body {
+  margin: 0;
+}
+
+.fof-runtime-error__title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fof-runtime-error__body {
+  color: rgba(247, 240, 228, 0.82);
+  line-height: 1.5;
+}
+
 .fof-shell__eyebrow,
 .fof-settings__eyebrow,
 .fof-marquee__eyebrow,
@@ -554,7 +676,10 @@ onBeforeUnmount(() => {
 }
 
 .fof-machine-scene__host {
-  width: min(calc((100dvh - 9rem) * 0.76), calc(100% - 2rem));
+  width: min(
+    calc((100dvh - 9rem) * var(--fof-cabinet-aspect-ratio, 0.76)),
+    calc(100% - 2rem)
+  );
   max-width: 100%;
   z-index: 1;
 }
@@ -785,7 +910,10 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1180px) {
   .fof-machine-scene__host {
-    width: min(calc((100dvh - 8.5rem) * 0.76), calc(100% - 1.5rem));
+    width: min(
+      calc((100dvh - 8.5rem) * var(--fof-cabinet-aspect-ratio, 0.76)),
+      calc(100% - 1.5rem)
+    );
   }
 
   .fof-status-cluster,

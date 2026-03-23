@@ -9,8 +9,11 @@ import pytest
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
+    ActivateSeatingHistoryDraftHandler,
     CreateGroupingDraftHandler,
+    CreateSeatingDraftHandler,
     DeleteHistoricGroupingDraftHandler,
+    DeleteHistoricSeatingDraftHandler,
     GetResumableDraftHandler,
     PatchDraftHandler,
     RedoDraftHandler,
@@ -150,6 +153,66 @@ async def test_resolve_draft_creates_new_draft_when_none_exists(
 
 
 @pytest.mark.asyncio
+async def test_create_seating_draft_requires_classroom(
+    uow, rosters, templates, drafts, clock, id_generator
+):
+    handler = CreateSeatingDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+
+    with pytest.raises(DomainError) as error:
+        await handler.handle(
+            owner_user_id=uuid4(),
+            roster_id=uuid4(),
+            template_id=None,
+        )
+
+    assert error.value.code == ErrorCode.VALIDATION_ERROR
+    drafts.save_workspace.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_create_seating_draft_supersedes_existing_active_draft(
+    uow, rosters, templates, drafts, clock, id_generator, now
+):
+    handler = CreateSeatingDraftHandler(uow, rosters, templates, drafts, clock, id_generator)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    existing = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=template_id,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    rosters.get_by_id.return_value = Mock(spec=Roster, owner_user_id=owner_id)
+    templates.get_by_id.return_value = Mock(spec=RoomTemplate, owner_user_id=owner_id)
+    drafts.get_active_by_roster_and_kind.return_value = existing
+
+    result = await handler.handle(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+
+    assert result.draft_kind == PlanDraftKind.SEATING
+    drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+    )
+    drafts.save.assert_awaited_once()
+    superseded = drafts.save.await_args.kwargs["draft"]
+    assert superseded.id == existing.id
+    assert superseded.status == PlanDraftStatus.SUPERSEDED
+    drafts.save_workspace.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_resolve_seating_draft_updates_active_draft_in_place_when_room_changes(
     uow, rosters, templates, drafts, clock, id_generator, now
 ):
@@ -198,6 +261,70 @@ async def test_resolve_seating_draft_updates_active_draft_in_place_when_room_cha
     assert saved_workspace.group_assignments == [
         GroupAssignment(student_id="student-1", group_id="group-1")
     ]
+
+
+@pytest.mark.asyncio
+async def test_activate_seating_history_draft_supersedes_current_active(uow, drafts, clock, now):
+    handler = ActivateSeatingHistoryDraftHandler(uow, drafts, clock)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    target = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=uuid4(),
+        status=PlanDraftStatus.SUPERSEDED,
+        revision=1,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    active = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=uuid4(),
+        status=PlanDraftStatus.ACTIVE,
+        revision=4,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.side_effect = [target, target]
+    drafts.get_active_by_roster_and_kind.return_value = active
+
+    result = await handler.handle(draft_id=target.id, owner_user_id=owner_id)
+
+    assert result.status == PlanDraftStatus.ACTIVE
+    drafts.save.assert_awaited()
+    assert drafts.save.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_delete_historic_seating_draft_rejects_active_target(uow, drafts):
+    handler = DeleteHistoricSeatingDraftHandler(uow, drafts)
+    owner_id = uuid4()
+    target = PlanDraft(
+        id=uuid4(),
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=uuid4(),
+        status=PlanDraftStatus.ACTIVE,
+        revision=4,
+        last_opened_at=datetime.now(timezone.utc),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    drafts.get_by_id.return_value = target
+
+    with pytest.raises(DomainError) as error:
+        await handler.handle(draft_id=target.id, owner_user_id=owner_id)
+
+    assert error.value.code == ErrorCode.VALIDATION_ERROR
+    drafts.delete.assert_not_called()
 
 
 @pytest.mark.asyncio

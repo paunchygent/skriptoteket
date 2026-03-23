@@ -25,6 +25,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
 - Competitive games + Flunk-Out Frenzy reference:
   `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
+- Seating continuity follow-up:
+  `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
+- Seating undo/redo follow-up:
+  `docs/backlog/prs/pr-0106-klassrumskartan-seating-undo-redo-and-bounded-draft-history.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -301,6 +305,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0099-flunk-out-frenzy-prototype-alpha-physics-and-rules.md`
 - `docs/backlog/prs/pr-0100-flunk-out-frenzy-renderer-audio-and-playable-local-proof.md`
 - `docs/backlog/prs/pr-0104-flunk-out-frenzy-post-review-runtime-and-shell-remediation.md`
+- `docs/backlog/prs/pr-0107-flunk-out-frenzy-canvas-warning-cleanup-and-test-renderer-boundaries.md`
+- `docs/backlog/prs/pr-0108-flunk-out-frenzy-runtime-lazy-load-and-game-bundle-splitting.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`

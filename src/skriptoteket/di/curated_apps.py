@@ -12,10 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
+    ActivateSeatingHistoryDraftHandler,
     CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
+    CreateSeatingDraftHandler,
     DeleteHistoricGroupingDraftHandler,
+    DeleteHistoricSeatingDraftHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
     GetClassWorkspaceSummaryHandler,
@@ -530,6 +533,42 @@ class CuratedAppsProvider(Provider):
         drafts: PlanDraftRepositoryProtocol,
     ) -> DeleteHistoricGroupingDraftHandler:
         return DeleteHistoricGroupingDraftHandler(uow=uow, drafts=drafts)
+
+    @provide(scope=Scope.REQUEST)
+    def create_seating_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateSeatingDraftHandler:
+        return CreateSeatingDraftHandler(
+            uow=uow,
+            rosters=rosters,
+            templates=templates,
+            drafts=drafts,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def activate_seating_history_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> ActivateSeatingHistoryDraftHandler:
+        return ActivateSeatingHistoryDraftHandler(uow=uow, drafts=drafts, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def delete_historic_seating_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+    ) -> DeleteHistoricSeatingDraftHandler:
+        return DeleteHistoricSeatingDraftHandler(uow=uow, drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
     def undo_draft_handler(

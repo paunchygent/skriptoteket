@@ -22,6 +22,7 @@ declare module "howler" {
 
   export const Howler: {
     autoUnlock: boolean;
+    _muted: boolean;
     mute(muted: boolean): void;
   };
 }

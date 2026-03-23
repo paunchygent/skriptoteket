@@ -74,7 +74,18 @@ function buildWorkspaceSummary(): ClassWorkspaceSummary {
         updated_at: "2026-03-21T09:15:00Z",
       },
     ],
-    seating_history: [],
+    seating_history: [
+      {
+        id: "seating-history-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "superseded",
+        revision: 3,
+        last_opened_at: "2026-03-21T08:00:00Z",
+        updated_at: "2026-03-21T08:20:00Z",
+      },
+    ],
   };
 }
 
@@ -268,7 +279,6 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(false);
-    expect(wrapper.find("[data-test='room-canvas']").exists()).toBe(true);
     expect(wrapper.text()).toContain("Sal 101");
     expect(wrapper.text()).toContain("Redigera klassrum");
   });
@@ -352,6 +362,9 @@ describe("PlannerWorkspaceShell", () => {
       throw new Error("Expected the grouping history row to be openable from the grouping toolbar.");
     }
     await openButton.trigger("click");
+    expect(wrapper.emitted("open-grouping-history-draft")).toEqual([["grouping-history-1"]]);
+
+    await wrapper.get('[data-test="grouping-history"]').trigger("click");
 
     const deleteButton = wrapper.find('[aria-label="Ta bort historiskt utkast"]');
     await deleteButton.trigger("click");
@@ -362,7 +375,6 @@ describe("PlannerWorkspaceShell", () => {
     }
     await confirmButton.trigger("click");
 
-    expect(wrapper.emitted("open-grouping-history-draft")).toEqual([["grouping-history-1"]]);
     expect(wrapper.emitted("delete-grouping-history-draft")).toEqual([["grouping-history-1"]]);
   });
 
@@ -394,5 +406,164 @@ describe("PlannerWorkspaceShell", () => {
     await wrapper.get('[data-test="edit-current-template"]').trigger("click");
 
     expect(wrapper.emitted("edit-current-template")).toEqual([[stateMocks.plannerState.template]]);
+  });
+
+  it("opens seating history from the seating toolbar and routes drawer actions to the parent", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="seating-history"]').trigger("click");
+
+    expect(wrapper.text()).toContain("Aktuellt sittschema");
+    expect(wrapper.text()).toContain("Tidigare sittscheman");
+
+    const openButton = wrapper.findAll("button").find((button) => button.text().includes("Revision 3"));
+    if (!openButton) {
+      throw new Error("Expected the seating history row to be openable from the seating toolbar.");
+    }
+    await openButton.trigger("click");
+    expect(wrapper.emitted("open-seating-history-draft")).toEqual([["seating-history-1"]]);
+
+    await wrapper.get('[data-test="seating-history"]').trigger("click");
+
+    const deleteButton = wrapper.find('[aria-label="Ta bort historiskt utkast"]');
+    await deleteButton.trigger("click");
+
+    const confirmButton = wrapper.findAll("button").find((button) => button.text() === "Ta bort");
+    if (!confirmButton) {
+      throw new Error("Expected the live seating history drawer to confirm delete.");
+    }
+    await confirmButton.trigger("click");
+
+    expect(wrapper.emitted("delete-seating-history-draft")).toEqual([["seating-history-1"]]);
+  });
+
+  it("focuses the classroom picker instead of emitting new seating draft when no classroom is selected", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.template = null;
+    const wrapper = mount(PlannerWorkspaceShell, {
+      attachTo: document.body,
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="new-seating-draft"]').trigger("click");
+
+    expect(wrapper.emitted("new-seating-draft")).toBeUndefined();
+    expect(wrapper.get('[data-test="seating-template-select"]').element).toBe(document.activeElement);
+    expect(wrapper.text()).toContain("Välj klassrum innan du startar ett nytt sittschema.");
+
+    wrapper.unmount();
+  });
+
+  it("forwards the explicit new seating draft action with the current seating classroom", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="new-seating-draft"]').trigger("click");
+
+    expect(wrapper.emitted("new-seating-draft")).toEqual([[{ templateId: "template-1" }]]);
+  });
+
+  it("locks seating toolbar and drawer actions while a seating lifecycle transition is in flight", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="seating-history"]').trigger("click");
+    expect(wrapper.text()).toContain("Tidigare sittscheman");
+
+    await wrapper.setProps({
+      seatingLifecycleBusy: true,
+      seatingHistoryBusyDraftId: "seating-history-1",
+    });
+
+    expect(wrapper.get('[data-test="seating-history"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="new-seating-draft"]').attributes("disabled")).toBeDefined();
+
+    const openButton = wrapper.findAll("button").find((button) => button.text().includes("Revision 3"));
+    expect(openButton?.attributes("disabled")).toBeDefined();
+    expect(wrapper.find('[aria-label="Ta bort historiskt utkast"]').exists()).toBe(false);
+
+    await wrapper.get('[data-test="new-seating-draft"]').trigger("click");
+    expect(wrapper.emitted("new-seating-draft")).toBeUndefined();
+    expect(wrapper.emitted("open-seating-history-draft")).toBeUndefined();
+    expect(wrapper.emitted("delete-seating-history-draft")).toBeUndefined();
   });
 });

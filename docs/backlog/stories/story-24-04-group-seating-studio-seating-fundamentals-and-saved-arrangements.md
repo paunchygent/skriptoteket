@@ -2,7 +2,7 @@
 type: story
 id: ST-24-04
 title: "Klassrumskartan — Seating fundamentals, room-builder ergonomics, and draft history"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-23
@@ -221,6 +221,22 @@ Focus:
 - `Rensa` that clears room content without resetting classroom identity or size
 - circular seats across builder, preview, and seating canvas
 
+### PR-0105
+
+Focus:
+
+- seating continuity drawer inside `Sittplatser`
+- `Nytt sitschema` lifecycle for the same class and selected classroom
+- reopen/delete historic seating drafts from the drawer
+
+### PR-0106
+
+Focus:
+
+- seating-specific undo/redo
+- bounded seating in-draft history
+- backend history generalization from grouping-only to draft-kind-aware behavior where needed
+
 ## Critical questions
 
 No critical open product questions remain from the current explanation.
@@ -233,6 +249,27 @@ The latest clarified direction is specific enough to implement safely:
 - tables do not contain seats
 - benches may coalesce visually
 - seats must remain separate
+
+## Close-out review (2026-03-23)
+
+`ST-24-04` remains open after review.
+
+Shipped in this story so far:
+
+- `PR-0101`: room resize, ghost placement preview, and corrected wall anchoring
+- `PR-0102`: wall-vs-floor rendering, object artwork, labels, bench coalescing, and true round
+  tables
+- `PR-0103`: larger desktop-first builder modal, zoom, `Anpassa`, `Rensa`, and circular seats
+- `PR-0105`: seating continuity drawer in `Sittplatser`, classroom-required `Nytt sittschema`,
+  reopen/delete of historic seating drafts, and dedicated live browser proof of the new lifecycle
+
+Still missing against the current acceptance criteria:
+
+- seating-specific undo/redo inside the seating workspace
+- bounded seating draft history exposed through the actual seating flow rather than only through
+  summary data
+
+`ST-24-04` therefore stays open only for `PR-0106`, not for continuity/drawer work.
 
 ## Notes
 

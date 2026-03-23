@@ -10,8 +10,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { RuntimeEngine, RuntimeEngineState } from "./runtimeEngineTypes";
 import { GameRuntime } from "./GameRuntime";
+import { ManualAnimationScheduler } from "./manualAnimationScheduler.spec-support";
 import type {
-  AnimationScheduler,
   GameHudSnapshot,
   GameViewSnapshot,
   RuntimeCommand,
@@ -20,51 +20,6 @@ import type { RuntimeAudioDirector } from "../audio/audioTypes";
 import type { MachineEvent } from "../physics/physicsTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
 import type { RuntimeRenderer } from "../render/renderTypes";
-
-interface ManualFrame {
-  handle: number;
-  callback: FrameRequestCallback;
-}
-
-class ManualAnimationScheduler implements AnimationScheduler {
-  private frameHandle = 0;
-  private nowMs = 0;
-  private readonly frames = new Map<number, FrameRequestCallback>();
-
-  now(): number {
-    return this.nowMs;
-  }
-
-  requestFrame(callback: FrameRequestCallback): number {
-    const handle = ++this.frameHandle;
-    this.frames.set(handle, callback);
-    return handle;
-  }
-
-  cancelFrame(handle: number): void {
-    this.frames.delete(handle);
-  }
-
-  runFrame(deltaMs: number): void {
-    const nextFrame = this.nextFrame();
-    if (!nextFrame) {
-      return;
-    }
-
-    this.nowMs += deltaMs;
-    nextFrame.callback(this.nowMs);
-  }
-
-  private nextFrame(): ManualFrame | null {
-    const [handle, callback] = this.frames.entries().next().value ?? [];
-    if (!handle || !callback) {
-      return null;
-    }
-
-    this.frames.delete(handle);
-    return { handle, callback };
-  }
-}
 
 class FakeRuntimeEngine implements RuntimeEngine {
   public readonly appliedCommands: RuntimeCommand[] = [];
@@ -154,6 +109,14 @@ class FakeRenderer implements RuntimeRenderer {
 }
 
 class FakeAudioDirector implements RuntimeAudioDirector {
+  public readonly enabled = true;
+  public readonly setMuted = vi.fn();
+  public readonly consumeEffects = vi.fn();
+  public readonly dispose = vi.fn();
+}
+
+class DisabledAudioDirector implements RuntimeAudioDirector {
+  public readonly enabled = false;
   public readonly setMuted = vi.fn();
   public readonly consumeEffects = vi.fn();
   public readonly dispose = vi.fn();
@@ -347,6 +310,28 @@ describe("GameRuntime", () => {
     expect(engine.dispose).toHaveBeenCalledTimes(1);
     expect(hostElement.dataset.runtimeMounted).toBeUndefined();
     expect(hostElement.dataset.ballPresent).toBeUndefined();
+  });
+
+  it("keeps HUD mute state false when the runtime audio adapter is disabled", () => {
+    const scheduler = new ManualAnimationScheduler();
+    const engine = new FakeRuntimeEngine();
+    const renderer = new FakeRenderer();
+    const audio = new DisabledAudioDirector();
+    const runtime = new GameRuntime({ scheduler, engine, renderer, audio });
+    const hudEvents: GameHudSnapshot[] = [];
+
+    runtime.subscribeHud((hud) => {
+      hudEvents.push(hud);
+    });
+
+    runtime.setMuted(true);
+    runtime.start();
+
+    expect(lastHud(hudEvents)).toMatchObject({
+      muted: false,
+      status: "running",
+    });
+    expect(audio.setMuted).not.toHaveBeenCalled();
   });
 
   it("can inject semantic machine events through the debug seam", () => {

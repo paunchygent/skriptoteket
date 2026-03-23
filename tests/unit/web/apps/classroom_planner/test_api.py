@@ -3,14 +3,18 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
+    ActivateSeatingHistoryDraftHandler,
     CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
+    CreateSeatingDraftHandler,
     DeleteHistoricGroupingDraftHandler,
+    DeleteHistoricSeatingDraftHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
     GetDraftHandler,
@@ -44,6 +48,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner as api
 from skriptoteket.web.api.v1 import apps_classroom_planner_grouping as api_grouping
+from skriptoteket.web.api.v1 import apps_classroom_planner_seating as api_seating
 from tests.fixtures.identity_fixtures import make_user
 
 
@@ -91,6 +96,101 @@ async def test_delete_historic_grouping_draft_calls_handler():
     draft_id = uuid4()
 
     await _unwrap_dishka(api_grouping.delete_historic_grouping_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        user=user,
+    )
+
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_seating_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=CreateSeatingDraftHandler)
+    now = datetime.now(timezone.utc)
+    roster_id = uuid4()
+    template_id = uuid4()
+    draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=user.id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=template_id,
+        status=PlanDraftStatus.ACTIVE,
+        revision=0,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = draft
+
+    result = await _unwrap_dishka(api_seating.create_seating_draft)(
+        request=api_seating.CreateSeatingDraftRequest(
+            roster_id=roster_id,
+            template_id=template_id,
+        ),
+        handler=handler,
+        user=user,
+    )
+
+    assert result.id == draft.id
+    handler.handle.assert_awaited_once_with(
+        owner_user_id=user.id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+
+
+@pytest.mark.unit
+def test_create_seating_draft_request_requires_template_id():
+    with pytest.raises(ValidationError):
+        api_seating.CreateSeatingDraftRequest(
+            roster_id=uuid4(),
+            template_id=None,
+        )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_activate_seating_history_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=ActivateSeatingHistoryDraftHandler)
+    draft_id = uuid4()
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=uuid4(),
+        status=PlanDraftStatus.ACTIVE,
+        revision=3,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = draft
+
+    result = await _unwrap_dishka(api_seating.activate_seating_history_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        user=user,
+    )
+
+    assert result.id == draft_id
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_delete_historic_seating_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=DeleteHistoricSeatingDraftHandler)
+    draft_id = uuid4()
+
+    await _unwrap_dishka(api_seating.delete_historic_seating_draft)(
         draft_id=draft_id,
         handler=handler,
         user=user,

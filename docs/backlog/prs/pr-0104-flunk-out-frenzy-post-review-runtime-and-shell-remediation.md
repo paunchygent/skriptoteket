@@ -2,7 +2,7 @@
 type: pr
 id: PR-0104
 title: "Flunk-Out Frenzy: post-review runtime, shell, and test remediation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-23
 updated: 2026-03-23
@@ -61,16 +61,16 @@ This remediation task focuses only on the still-open issues below.
 
 ### 1. Runtime boot-failure surface
 
-- [ ] Add a visible runtime initialization error state in
+- [x] Add a visible runtime initialization error state in
       `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/GameHost.vue`.
-- [ ] Emit or expose boot failure to
+- [x] Emit or expose boot failure to
       `frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.vue` so the
       route can disable or hide misleading controls when runtime creation fails.
-- [ ] Ensure the play shell distinguishes:
+- [x] Ensure the play shell distinguishes:
       - bootstrap failure
       - runtime boot failure
       - normal ready/running states
-- [ ] Add component tests that force `GameRuntime.create()` to reject and prove
+- [x] Add component tests that force `GameRuntime.create()` to reject and prove
       the failure is visible and actionable.
 
 Suggested solution:
@@ -81,13 +81,13 @@ Suggested solution:
 
 ### 2. Global mute lifecycle safety
 
-- [ ] Fix
+- [x] Fix
       `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/audio/AudioDirector.ts`
       so mute state does not leak across runtime disposal.
-- [ ] Ensure a new route/session starts with audio state consistent with the HUD.
-- [ ] Confirm disposal cleans up Howler state safely if the user leaves the
+- [x] Ensure a new route/session starts with audio state consistent with the HUD.
+- [x] Confirm disposal cleans up Howler state safely if the user leaves the
       route while muted.
-- [ ] Add regression tests covering:
+- [x] Add regression tests covering:
       - mute -> dispose -> new runtime
       - muted and unmuted starts
 
@@ -98,13 +98,13 @@ Suggested solution:
 
 ### 3. Bootstrap contract enforcement
 
-- [ ] Thread bootstrap feature flags from
+- [x] Thread bootstrap feature flags from
       `frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.vue` into
       `GameHost.vue` / `GameRuntime.ts`.
-- [ ] Start with enforcing `audio_enabled`.
-- [ ] Gate audio subsystem creation and shell audio affordances when disabled.
-- [ ] Confirm future flags can follow the same pattern without redesign.
-- [ ] Add tests proving the runtime/shell behavior changes when
+- [x] Start with enforcing `audio_enabled`.
+- [x] Gate audio subsystem creation and shell audio affordances when disabled.
+- [x] Confirm future flags can follow the same pattern without redesign.
+- [x] Add tests proving the runtime/shell behavior changes when
       `audio_enabled` is `false`.
 
 Suggested solution:
@@ -114,14 +114,14 @@ Suggested solution:
 
 ### 4. Test seam remediation: remove module-level mocking
 
-- [ ] Add an explicit DI seam to
+- [x] Add an explicit DI seam to
       `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/GameHost.vue`
       for runtime creation or runtime adapter factories.
-- [ ] Update:
+- [x] Update:
       - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/GameHost.spec.ts`
       - `frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.spec.ts`
       so tests pass fakes via the seam rather than `vi.mock(...)` on module imports.
-- [ ] Keep protocol-driven fake implementations for runtime/renderer/audio.
+- [x] Keep protocol-driven fake implementations for runtime/renderer/audio.
 
 Suggested solution:
 
@@ -130,17 +130,17 @@ Suggested solution:
 
 ### 5. Core runtime test coverage tightening
 
-- [ ] Extract shared manual scheduler logic into a reusable test helper for:
+- [x] Extract shared manual scheduler logic into a reusable test helper for:
       - `GameRuntime.spec.ts`
       - `FixedStepRunner.spec.ts`
-- [ ] Add a new direct spec file for
+- [x] Add a new direct spec file for
       `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/CommandQueue.ts`
       covering:
       - push
       - drain
       - clear
       - repeated drain after emptying
-- [ ] Keep test helpers small and local to the feature tree.
+- [x] Keep test helpers small and local to the feature tree.
 
 Suggested solution:
 
@@ -149,15 +149,15 @@ Suggested solution:
 
 ### 6. Low-risk cleanup and clarity follow-ups
 
-- [ ] Deduplicate status-label formatting now duplicated in:
+- [x] Deduplicate status-label formatting now duplicated in:
       - `GameHost.vue`
       - `FlunkOutFrenzyView.vue`
-- [ ] Explain the `0.76` host/cabinet aspect ratio with a named constant or
+- [x] Explain the `0.76` host/cabinet aspect ratio with a named constant or
       inline comment so it is clearly distinct from the `600 x 1200` physics
       board.
-- [ ] Remove the redundant unmount-time `runtimeBooting.value = true` write in
+- [x] Remove the redundant unmount-time `runtimeBooting.value = true` write in
       `GameHost.vue` if it remains unused.
-- [ ] Clarify placeholder/reference art provenance for:
+- [x] Clarify placeholder/reference art provenance for:
       - `reference-cabinet-scene.jpg`
       - `reference-playfield-crop.jpg`
       - related `reference-*` assets

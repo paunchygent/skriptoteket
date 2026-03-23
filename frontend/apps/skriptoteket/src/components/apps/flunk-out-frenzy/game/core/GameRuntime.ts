@@ -9,6 +9,7 @@
 
 import { PrototypeAlphaGameEngine } from "../engine/PrototypeAlphaGameEngine";
 import { AudioDirector } from "../audio/AudioDirector";
+import { NoopAudioDirector } from "../audio/NoopAudioDirector";
 import type { MachineEvent } from "../physics/physicsTypes";
 import type { RuntimeAudioDirector } from "../audio/audioTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
@@ -34,6 +35,7 @@ export interface GameRuntimeOptions {
   engine?: RuntimeEngine;
   renderer?: RuntimeRenderer;
   audio?: RuntimeAudioDirector;
+  audioEnabled?: boolean;
 }
 
 export class GameRuntime {
@@ -53,7 +55,7 @@ export class GameRuntime {
     const [engine, renderer, audio] = await Promise.all([
       PrototypeAlphaGameEngine.create(),
       options.renderer ? Promise.resolve(options.renderer) : PixiRenderer.create(),
-      options.audio ? Promise.resolve(options.audio) : AudioDirector.create(),
+      resolveRuntimeAudio(options),
     ]);
 
     return new GameRuntime({
@@ -143,6 +145,10 @@ export class GameRuntime {
   }
 
   setMuted(muted: boolean): void {
+    if (!this.audio.enabled) {
+      return;
+    }
+
     if (this.hudSnapshot.muted === muted) {
       return;
     }
@@ -289,7 +295,7 @@ export class GameRuntime {
   ): GameHudSnapshot {
     return {
       ...createInitialHudSnapshot(),
-      muted: this.hudSnapshot?.muted ?? false,
+      muted: this.audio.enabled ? (this.hudSnapshot?.muted ?? false) : false,
       score: state.score,
       ballsRemaining: state.ballsRemaining,
       multiplier: state.multiplier,
@@ -326,4 +332,18 @@ export class GameRuntime {
     this.hostElement.dataset.runtimeBallsRemaining = String(this.hudSnapshot.ballsRemaining);
     this.hostElement.dataset.runtimeMultiplier = String(this.hudSnapshot.multiplier);
   }
+}
+
+async function resolveRuntimeAudio(
+  options: Pick<GameRuntimeOptions, "audio" | "audioEnabled">,
+): Promise<RuntimeAudioDirector> {
+  if (options.audio) {
+    return options.audio;
+  }
+
+  if (options.audioEnabled === false) {
+    return NoopAudioDirector.create();
+  }
+
+  return AudioDirector.create();
 }

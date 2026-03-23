@@ -396,6 +396,27 @@ export const useClassroomState = defineStore("classroom-state", () => {
     }
   }
 
+  async function startNewSeatingDraft(
+    rosterId: string,
+    templateId: string,
+  ): Promise<void> {
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      const createdDraft = await apiPost<PlanDraft>(
+        "/api/v1/apps/classroom.group-seating-studio/drafts/seating/new",
+        {
+          roster_id: rosterId,
+          template_id: templateId,
+        },
+      );
+      await loadWorkspace(createdDraft.id);
+    } finally {
+      endWorkspaceTransition();
+    }
+  }
+
   async function loadWorkspace(draftId: string): Promise<void> {
     beginWorkspaceTransition();
     try {
@@ -430,11 +451,43 @@ export const useClassroomState = defineStore("classroom-state", () => {
   }
 
   async function deleteGroupingHistoryDraft(draftId: string): Promise<void> {
-    saveStatus.value = "saving";
-    saveMessage.value = null;
-    await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/drafts/grouping/${draftId}`);
-    saveStatus.value = "saved";
-    saveMessage.value = null;
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/drafts/grouping/${draftId}`);
+      saveStatus.value = "saved";
+      saveMessage.value = null;
+    } finally {
+      endWorkspaceTransition();
+    }
+  }
+
+  async function activateSeatingHistoryDraft(draftId: string): Promise<void> {
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      const activatedDraft = await apiPost<PlanDraft>(
+        `/api/v1/apps/classroom.group-seating-studio/drafts/seating/${draftId}/activate`,
+      );
+      await loadWorkspace(activatedDraft.id);
+    } finally {
+      endWorkspaceTransition();
+    }
+  }
+
+  async function deleteSeatingHistoryDraft(draftId: string): Promise<void> {
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/drafts/seating/${draftId}`);
+      saveStatus.value = "saved";
+      saveMessage.value = null;
+    } finally {
+      endWorkspaceTransition();
+    }
   }
 
   async function getResumableDraft(): Promise<ResumablePlanDraft | null> {
@@ -526,10 +579,13 @@ export const useClassroomState = defineStore("classroom-state", () => {
     clearWorkspace,
     resolveDraft,
     startNewGroupingDraft,
+    startNewSeatingDraft,
     loadWorkspace,
     reloadActiveWorkspace,
     activateGroupingHistoryDraft,
     deleteGroupingHistoryDraft,
+    activateSeatingHistoryDraft,
+    deleteSeatingHistoryDraft,
     cancelPendingSave,
     flushPendingSave,
     undoGroupingDraft,

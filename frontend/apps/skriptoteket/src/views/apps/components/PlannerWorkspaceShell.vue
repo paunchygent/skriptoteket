@@ -8,7 +8,7 @@
  * whole-workspace mental model.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
 import GroupBoard from "./GroupBoard.vue";
@@ -25,11 +25,15 @@ const props = withDefaults(
     availableTemplates?: RoomTemplate[];
     initialView?: PlannerView;
     workspaceSummary?: ClassWorkspaceSummary | null;
+    seatingLifecycleBusy?: boolean;
+    seatingHistoryBusyDraftId?: string | null;
   }>(),
   {
     availableTemplates: () => [],
     initialView: "groups",
     workspaceSummary: null,
+    seatingLifecycleBusy: false,
+    seatingHistoryBusyDraftId: null,
   },
 );
 
@@ -37,8 +41,11 @@ const emit = defineEmits<{
   (e: "change-grouping-template", payload: { templateId: string | null }): void;
   (e: "change-seating-template", payload: { templateId: string | null }): void;
   (e: "new-grouping-draft", payload: { templateId: string | null }): void;
+  (e: "new-seating-draft", payload: { templateId: string }): void;
   (e: "open-grouping-history-draft", draftId: string): void;
   (e: "delete-grouping-history-draft", draftId: string): void;
+  (e: "open-seating-history-draft", draftId: string): void;
+  (e: "delete-seating-history-draft", draftId: string): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
   (e: "exit-to-landing"): void;
@@ -59,9 +66,11 @@ function resolvePlannerView(requestedView: PlannerView): PlannerView {
 const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
 const selectedStudentId = ref<string | null>(null);
 const isMetadataDrawerOpen = ref(false);
-const isGroupingHistoryDrawerOpen = ref(false);
+const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
 const pendingGroupingTemplateId = ref("");
 const pendingSeatingTemplateId = ref("");
+const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
+const showSeatingTemplateRequiredHint = ref(false);
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
 const currentWorkspaceLabel = computed(() => {
   return currentView.value === "groups" ? "Grupper" : "Sittplatser";
@@ -105,7 +114,38 @@ const hasSaveMessage = computed(() => {
 });
 const activeGroupingSummary = computed(() => props.workspaceSummary?.active_grouping_draft ?? null);
 const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping_history ?? []);
+const activeSeatingSummary = computed(() => props.workspaceSummary?.active_seating_draft ?? null);
+const seatingHistorySummaries = computed(() => props.workspaceSummary?.seating_history ?? []);
 const canEditCurrentTemplate = computed(() => currentView.value === "seats" && plannerState.template !== null);
+const isHistoryDrawerOpen = computed(() => openHistoryDrawerKind.value !== null);
+const historyDrawerTitle = computed(() => {
+  return openHistoryDrawerKind.value === "seating" ? "Sittplatser" : "Grupper";
+});
+const historyDrawerActiveSummary = computed(() => {
+  return openHistoryDrawerKind.value === "seating"
+    ? activeSeatingSummary.value
+    : activeGroupingSummary.value;
+});
+const historyDrawerSummaries = computed(() => {
+  return openHistoryDrawerKind.value === "seating"
+    ? seatingHistorySummaries.value
+    : groupingHistorySummaries.value;
+});
+const historyDrawerEmptyLabel = computed(() => {
+  return openHistoryDrawerKind.value === "seating"
+    ? "Ingen sitthistorik ännu."
+    : "Ingen grupphistorik ännu.";
+});
+const historyDrawerActiveLabel = computed(() => {
+  return openHistoryDrawerKind.value === "seating"
+    ? "Aktuellt sittschema"
+    : "Aktuellt grupputkast";
+});
+const historyDrawerLabel = computed(() => {
+  return openHistoryDrawerKind.value === "seating"
+    ? "Tidigare sittscheman"
+    : "Tidigare grupputkast";
+});
 
 const currentViewHint = computed(() => {
   if (isSeatWorkspaceWithoutTemplate.value) {
@@ -136,6 +176,7 @@ function changeSeatingTemplateFromEvent(event: Event): void {
     return;
   }
 
+  showSeatingTemplateRequiredHint.value = false;
   pendingSeatingTemplateId.value = target.value;
   emit("change-seating-template", { templateId: pendingSeatingTemplateId.value || null });
 }
@@ -154,20 +195,60 @@ function startNewGroupingDraft(): void {
   emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
 }
 
-function openGroupingHistoryDrawer(): void {
-  isGroupingHistoryDrawerOpen.value = true;
+async function startNewSeatingDraft(): Promise<void> {
+  if (props.seatingLifecycleBusy) {
+    return;
+  }
+  if (!plannerState.template?.id) {
+    showSeatingTemplateRequiredHint.value = true;
+    await nextTick();
+    seatingTemplateSelect.value?.focus();
+    return;
+  }
+
+  showSeatingTemplateRequiredHint.value = false;
+  emit("new-seating-draft", { templateId: plannerState.template.id });
 }
 
-function closeGroupingHistoryDrawer(): void {
-  isGroupingHistoryDrawerOpen.value = false;
+function openGroupingHistoryDrawer(): void {
+  openHistoryDrawerKind.value = "grouping";
+}
+
+function openSeatingHistoryDrawer(): void {
+  if (props.seatingLifecycleBusy) {
+    return;
+  }
+  openHistoryDrawerKind.value = "seating";
+}
+
+function closeHistoryDrawer(): void {
+  openHistoryDrawerKind.value = null;
 }
 
 function openGroupingHistoryDraft(draftId: string): void {
+  closeHistoryDrawer();
   emit("open-grouping-history-draft", draftId);
 }
 
 function deleteGroupingHistoryDraft(draftId: string): void {
+  closeHistoryDrawer();
   emit("delete-grouping-history-draft", draftId);
+}
+
+function openSeatingHistoryDraft(draftId: string): void {
+  if (props.seatingLifecycleBusy) {
+    return;
+  }
+  closeHistoryDrawer();
+  emit("open-seating-history-draft", draftId);
+}
+
+function deleteSeatingHistoryDraft(draftId: string): void {
+  if (props.seatingLifecycleBusy) {
+    return;
+  }
+  closeHistoryDrawer();
+  emit("delete-seating-history-draft", draftId);
 }
 
 function editCurrentTemplate(): void {
@@ -186,9 +267,10 @@ watch(
   () => props.initialView,
   (nextView) => {
     currentView.value = resolvePlannerView(nextView);
-    isGroupingHistoryDrawerOpen.value = false;
+    openHistoryDrawerKind.value = null;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
+    showSeatingTemplateRequiredHint.value = false;
   },
 );
 
@@ -196,11 +278,12 @@ watch(
   () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null] as const,
   () => {
     currentView.value = resolvePlannerView(currentView.value);
-    isGroupingHistoryDrawerOpen.value = false;
+    openHistoryDrawerKind.value = null;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
     pendingGroupingTemplateId.value = plannerState.template?.id ?? "";
     pendingSeatingTemplateId.value = plannerState.template?.id ?? "";
+    showSeatingTemplateRequiredHint.value = false;
   },
 );
 
@@ -296,6 +379,8 @@ watch(
         <label class="block min-w-[18rem] space-y-2">
           <span class="block text-sm font-semibold text-navy">Klassrum</span>
           <select
+            ref="seatingTemplateSelect"
+            data-test="seating-template-select"
             class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
             :value="plannerState.template?.id ?? pendingSeatingTemplateId"
             @change="changeSeatingTemplateFromEvent"
@@ -311,6 +396,12 @@ watch(
               {{ template.name }} · {{ template.seats.length }} platser
             </option>
           </select>
+          <p
+            v-if="showSeatingTemplateRequiredHint"
+            class="text-xs font-semibold text-burgundy"
+          >
+            Välj klassrum innan du startar ett nytt sittschema.
+          </p>
         </label>
       </div>
 
@@ -330,8 +421,7 @@ watch(
       @student-selected="selectStudent"
     />
     <section
-      v-else-if="!isSeatWorkspaceWithoutTemplate"
-      data-test="seating-workspace"
+      v-if="currentView === 'seats'"
       class="space-y-4"
     >
       <div class="flex flex-col gap-3 border border-navy bg-white p-4 shadow-brutal-sm md:flex-row md:items-center md:justify-between">
@@ -346,9 +436,27 @@ watch(
         <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none"
+            data-test="seating-history"
+            :disabled="props.seatingLifecycleBusy"
+            @click="openSeatingHistoryDrawer"
+          >
+            Historik
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none"
+            data-test="new-seating-draft"
+            :disabled="props.seatingLifecycleBusy"
+            @click="void startNewSeatingDraft()"
+          >
+            Nytt sittschema
+          </button>
+          <button
+            type="button"
             class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
             data-test="edit-current-template"
-            :disabled="!canEditCurrentTemplate || plannerState.isWorkspaceBusy"
+            :disabled="!canEditCurrentTemplate || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy"
             @click="editCurrentTemplate"
           >
             Redigera klassrum
@@ -357,6 +465,8 @@ watch(
       </div>
 
       <RoomCanvas
+        v-if="!isSeatWorkspaceWithoutTemplate"
+        data-test="seating-workspace"
         :selected-student-id="selectedStudentId"
         @student-selected="selectStudent"
       />
@@ -369,18 +479,27 @@ watch(
     />
 
     <PlannerHistoryDrawer
-      :open="currentView === 'groups' && isGroupingHistoryDrawerOpen"
-      title="Grupper"
-      :active-summary="activeGroupingSummary"
-      :summaries="groupingHistorySummaries"
-      empty-label="Ingen grupphistorik ännu."
-      active-label="Aktuellt grupputkast"
-      history-label="Tidigare grupputkast"
-      :can-open-summaries="true"
-      :can-delete-summaries="true"
-      @close="closeGroupingHistoryDrawer"
-      @open-summary="openGroupingHistoryDraft"
-      @delete-summary="deleteGroupingHistoryDraft"
+      :open="isHistoryDrawerOpen"
+      :title="historyDrawerTitle"
+      :active-summary="historyDrawerActiveSummary"
+      :summaries="historyDrawerSummaries"
+      :empty-label="historyDrawerEmptyLabel"
+      :active-label="historyDrawerActiveLabel"
+      :history-label="historyDrawerLabel"
+      :can-open-summaries="!(openHistoryDrawerKind === 'seating' && props.seatingLifecycleBusy)"
+      :can-delete-summaries="!(openHistoryDrawerKind === 'seating' && props.seatingLifecycleBusy)"
+      :busy-summary-id="openHistoryDrawerKind === 'seating' ? props.seatingHistoryBusyDraftId : null"
+      @close="closeHistoryDrawer"
+      @open-summary="
+        openHistoryDrawerKind === 'seating'
+          ? openSeatingHistoryDraft($event)
+          : openGroupingHistoryDraft($event)
+      "
+      @delete-summary="
+        openHistoryDrawerKind === 'seating'
+          ? deleteSeatingHistoryDraft($event)
+          : deleteGroupingHistoryDraft($event)
+      "
     />
   </section>
 </template>

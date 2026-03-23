@@ -5,7 +5,7 @@ title: "Curated app: Klassrumskartan (Fundamentals Recovery)"
 status: active
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-22
+updated: 2026-03-23
 outcome: "Teachers work from a class-first workspace, enter separate grouping or seating drafts as needed, use classrooms as secondary context, and rely on autosave plus bounded undo/redo draft history without being forced through undeclared advanced planning controls."
 dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 ---
@@ -46,10 +46,10 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-01: Landing page fundamentals](../stories/story-24-01-group-seating-studio-landing-page-fundamentals.md)
 - [x] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md)
 - [x] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
-- [ ] [ST-24-03: Grouping fundamentals + draft history](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
+- [x] [ST-24-03: Grouping fundamentals + draft history](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
 - [ ] [ST-24-04: Seating fundamentals, room-builder ergonomics, and draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 
-## Implementation Summary (as of 2026-03-22)
+## Implementation Summary (as of 2026-03-23)
 
 - EPIC-24 has been re-scoped away from the earlier “show everything” Slice 2 surface.
 - The governing product direction is now fundamentals first:
@@ -87,3 +87,15 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   code still contains active solver-era models, routes, store state, and owner-global draft
   invariants that would otherwise bleed into later work.
 - Future smart placement, historical reuse, and constraint logic remain valid long-term goals, but should only ship through later approved stories after the fundamentals above are trusted.
+- `ST-24-03` is now shipped:
+  - grouping has blank new-draft lifecycle, grouping-only autosave undo/redo, and class-scoped
+    continuity through the secondary overlay drawer
+  - historic grouping drafts can be reopened or deleted with confirmation without polluting the
+    active grouping workspace
+- `ST-24-04` is only partially shipped so far:
+  - room-builder ergonomics and object-visual slices (`PR-0101` to `PR-0103`) are done
+  - `PR-0105` is now implemented locally: seating has a teacher-facing continuity drawer in
+    `Sittplatser`, classroom-required `Nytt sittschema`, and reopen/delete for historic seating
+    drafts with a dedicated browser proof
+  - only `PR-0106` remains to close the story: seating-specific undo/redo plus bounded in-draft
+    history
