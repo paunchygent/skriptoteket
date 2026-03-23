@@ -10,22 +10,48 @@
 
 import { computed } from "vue";
 
+import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
+import type { RoomTemplate } from "../classroomPlannerTypes";
 import GroupCard from "./GroupCard.vue";
+import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
+import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import { useClassroomState } from "../useClassroomState";
 
 const props = defineProps<{
   selectedStudentId?: string | null;
+  availableTemplates?: RoomTemplate[];
+  selectedTemplateId?: string | null;
 }>();
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
   (e: "new-grouping-draft"): void;
   (e: "open-history"): void;
+  (e: "change-grouping-template", templateId: string | null): void;
+  (e: "edit-roster"): void;
 }>();
 
 const state = useClassroomState();
 
 const orderedGroups = computed(() => [...state.groups].sort((left, right) => left.sort_order - right.sort_order));
+const secondaryActionItems = computed(() => [
+  {
+    id: "history",
+    label: "Historik",
+    icon: IconHistory,
+    disabled: state.isWorkspaceBusy,
+    testId: "grouping-history",
+    onSelect: () => emit("open-history"),
+  },
+  {
+    id: "edit-roster",
+    label: "Redigera klass",
+    icon: IconSettings,
+    disabled: state.isWorkspaceBusy,
+    testId: "edit-grouping-roster",
+    onSelect: () => emit("edit-roster"),
+  },
+]);
 
 function onDragStart(event: DragEvent, studentId: string): void {
   if (state.isWorkspaceBusy) {
@@ -56,6 +82,14 @@ function onDragOver(event: DragEvent): void {
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = "move";
   }
+}
+
+function changeGroupingTemplate(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLSelectElement)) {
+    return;
+  }
+  emit("change-grouping-template", target.value || null);
 }
 </script>
 
@@ -109,73 +143,101 @@ function onDragOver(event: DragEvent): void {
     </aside>
 
     <section class="space-y-4">
-      <div class="flex flex-col gap-3 border border-navy bg-white p-4 shadow-brutal-sm md:flex-row md:items-center md:justify-between">
-        <div class="space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Gruppstruktur
-          </p>
-          <h3 class="font-serif text-xl text-navy">
-            Arbetsgrupper
-          </h3>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="undo-grouping"
-            :disabled="!state.canUndo"
-            @mousedown.prevent
-            @click="void state.undoGroupingDraft()"
+      <div class="flex flex-wrap items-end justify-end gap-2 border border-navy bg-white p-4 shadow-brutal-sm">
+        <label
+          v-if="props.availableTemplates && props.availableTemplates.length > 0"
+          class="block min-w-[16rem]"
+        >
+          <select
+            aria-label="Klassrum (valfritt)"
+            class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
+            :value="props.selectedTemplateId ?? ''"
+            data-test="grouping-template-select"
+            @change="changeGroupingTemplate"
           >
-            Ångra
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="redo-grouping"
-            :disabled="!state.canRedo"
-            @mousedown.prevent
-            @click="void state.redoGroupingDraft()"
-          >
-            Gör om
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="new-grouping-draft"
-            :disabled="state.isWorkspaceBusy"
-            @click="emit('new-grouping-draft')"
-          >
-            Nytt grupputkast
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="grouping-history"
-            :disabled="state.isWorkspaceBusy"
-            @click="emit('open-history')"
-          >
-            Historik
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="randomize-groups"
-            :disabled="state.isWorkspaceBusy"
-            @click="state.randomizeGroups()"
-          >
-            Slumpa
-          </button>
-          <button
-            type="button"
-            class="btn-primary"
-            data-test="add-group"
-            :disabled="state.isWorkspaceBusy"
-            @click="state.addGroup()"
-          >
-            Lägg till grupp
-          </button>
-        </div>
+            <option value="">
+              Arbeta utan klassrum
+            </option>
+            <option
+              v-for="template in props.availableTemplates"
+              :key="template.id"
+              :value="template.id"
+            >
+              {{ template.name }} · {{ template.seats.length }} platser
+            </option>
+          </select>
+        </label>
+        <PlannerToolbarIconButton
+          label="Ångra"
+          class="2xl:hidden"
+          data-test="undo-grouping"
+          :disabled="!state.canUndo"
+          @mousedown.prevent
+          @click="void state.undoGroupingDraft()"
+        >
+          <IconUndo :size="18" />
+        </PlannerToolbarIconButton>
+        <button
+          type="button"
+          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
+          :disabled="!state.canUndo"
+          @mousedown.prevent
+          @click="void state.undoGroupingDraft()"
+        >
+          Ångra
+        </button>
+        <PlannerToolbarIconButton
+          label="Gör om"
+          class="2xl:hidden"
+          data-test="redo-grouping"
+          :disabled="!state.canRedo"
+          @mousedown.prevent
+          @click="void state.redoGroupingDraft()"
+        >
+          <IconRedo :size="18" />
+        </PlannerToolbarIconButton>
+        <button
+          type="button"
+          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
+          :disabled="!state.canRedo"
+          @mousedown.prevent
+          @click="void state.redoGroupingDraft()"
+        >
+          Gör om
+        </button>
+        <button
+          type="button"
+          class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+          data-test="new-grouping-draft"
+          :disabled="state.isWorkspaceBusy"
+          @click="emit('new-grouping-draft')"
+        >
+          Nytt grupputkast
+        </button>
+        <button
+          type="button"
+          class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+          data-test="randomize-groups"
+          :disabled="state.isWorkspaceBusy"
+          @click="state.randomizeGroups()"
+        >
+          <IconShuffle :size="16" />
+          <span>Slumpa</span>
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          data-test="add-group"
+          :disabled="state.isWorkspaceBusy"
+          @click="state.addGroup()"
+        >
+          Lägg till grupp
+        </button>
+        <PlannerToolbarOverflowMenu
+          label="Fler gruppåtgärder"
+          :items="secondaryActionItems"
+          test-id="grouping-actions-menu"
+        />
       </div>
 
       <div class="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">

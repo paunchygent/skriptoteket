@@ -250,6 +250,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0109-klassrumskartan-seating-slumpa-fundamentals.md`
 - `docs/backlog/prs/pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md`
 - `docs/backlog/prs/pr-0111-klassrumskartan-overview-resumable-cta-and-workspace-entry-polish.md`
+- `docs/backlog/prs/pr-0113-klassrumskartan-borja-om-current-grouping-and-seating-draft-without-new-draft.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`

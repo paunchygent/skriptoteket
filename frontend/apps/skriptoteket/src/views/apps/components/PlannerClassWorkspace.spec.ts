@@ -82,11 +82,13 @@ describe("PlannerClassWorkspace", () => {
   it("opens in a neutral overview instead of expanding both task surfaces", () => {
     const wrapper = mountWorkspace();
 
-    expect(wrapper.text()).toContain("Klassöversikt");
     expect(wrapper.text()).toContain("Klassrum: Sal 101");
     expect(wrapper.text()).toContain("Sal 101");
     expect(wrapper.text()).toContain("28 elever");
     expect(wrapper.text()).toContain("1 platser");
+    expect(wrapper.text()).not.toContain("Här hanterar du klass och klassrum i ett kompakt arbetsflöde.");
+    expect(wrapper.text()).not.toContain("Redigera klassen här eller öppna en arbetsyta i väljaren ovan.");
+    expect(wrapper.text()).not.toContain("Välj Grupper eller Sittplatser i väljaren ovan när du vill fortsätta arbetet.");
     expect(wrapper.text()).not.toContain("Grupparbete för SA24D");
     expect(wrapper.text()).not.toContain("Sittplacering för SA24D");
   });
@@ -142,6 +144,7 @@ describe("PlannerClassWorkspace", () => {
       throw new Error("Expected the segmented toggle to expose Grupper.");
     }
     await groupingToggle.trigger("click");
+    expect(groupingToggle.attributes("aria-pressed")).toBe("false");
     expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
 
     const seatingToggle = wrapper.findAll('[data-ui="segmented-toggle"] button').find(
@@ -151,6 +154,7 @@ describe("PlannerClassWorkspace", () => {
       throw new Error("Expected the segmented toggle to expose Sittplatser.");
     }
     await seatingToggle.trigger("click");
+    expect(seatingToggle.attributes("aria-pressed")).toBe("false");
     expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: "template-2" }]]);
   });
 
@@ -175,9 +179,9 @@ describe("PlannerClassWorkspace", () => {
     });
 
     expect(wrapper.text()).toContain("Inget klassrum valt");
-    expect(wrapper.text()).toContain("Klassöversikt · Inget klassrum valt");
+    expect(wrapper.text()).toContain("Inget klassrum valt");
     expect(wrapper.get("[data-test='overview-classroom-empty']").text()).toContain(
-      "Välj ett klassrum",
+      "Välj ett klassrum i listan ovan",
     );
     expect(wrapper.text()).not.toContain("Aktiv klass");
     expect(wrapper.text()).not.toContain("Neutral översikt före byte");

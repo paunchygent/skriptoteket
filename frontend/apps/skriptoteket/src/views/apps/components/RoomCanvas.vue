@@ -80,14 +80,9 @@ function wallFixtureStyle(fixture: RoomFixture): Record<string, string> {
       @drop="onDropToPool"
     >
       <div class="flex items-end justify-between gap-3 border-b border-navy/20 pb-3">
-        <div>
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Placering
-          </p>
-          <h3 class="font-serif text-xl text-navy">
-            Ej placerade
-          </h3>
-        </div>
+        <h3 class="font-serif text-xl text-navy">
+          Ej placerade
+        </h3>
         <span class="border border-navy bg-canvas px-2 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70">
           {{ state.unseatedStudents.length }}
         </span>
@@ -122,14 +117,9 @@ function wallFixtureStyle(fixture: RoomFixture): Record<string, string> {
 
     <section class="border border-navy bg-white p-4 shadow-brutal-sm">
       <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klassrumsyta
-          </p>
-          <h3 class="font-serif text-xl text-navy">
-            Sittschema
-          </h3>
-        </div>
+        <h3 class="font-serif text-xl text-navy">
+          Sittschema
+        </h3>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
           Dra elever till en plats eller byt två elevers placering genom att släppa ovanpå en upptagen stol.
         </p>

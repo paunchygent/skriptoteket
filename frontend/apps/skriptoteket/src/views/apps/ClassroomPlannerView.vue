@@ -812,6 +812,7 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       @change-seating-template="void changeSeatingTemplate($event)"
       @new-grouping-draft="void startNewGroupingDraft($event)"
       @new-seating-draft="void startNewSeatingDraft($event)"
+      @edit-roster="openSelectedRosterEdit"
       @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
       @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"
       @open-seating-history-draft="void openSeatingHistoryDraft($event)"

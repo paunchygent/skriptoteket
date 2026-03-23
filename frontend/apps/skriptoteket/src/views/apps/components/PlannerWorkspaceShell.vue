@@ -10,11 +10,14 @@
 
 import { computed, nextTick, ref, watch } from "vue";
 
+import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
 import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
 import GroupBoard from "./GroupBoard.vue";
 import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
+import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
+import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import RoomCanvas from "./RoomCanvas.vue";
 import { useClassroomState } from "../useClassroomState";
 
@@ -42,6 +45,7 @@ const emit = defineEmits<{
   (e: "change-seating-template", payload: { templateId: string | null }): void;
   (e: "new-grouping-draft", payload: { templateId: string | null }): void;
   (e: "new-seating-draft", payload: { templateId: string }): void;
+  (e: "edit-roster"): void;
   (e: "open-grouping-history-draft", draftId: string): void;
   (e: "delete-grouping-history-draft", draftId: string): void;
   (e: "open-seating-history-draft", draftId: string): void;
@@ -72,9 +76,6 @@ const pendingSeatingTemplateId = ref("");
 const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
-const currentWorkspaceLabel = computed(() => {
-  return currentView.value === "groups" ? "Grupper" : "Sittplatser";
-});
 const workspaceModeValue = computed<"overview" | "grouping" | "seating">(() => {
   return currentView.value === "groups" ? "grouping" : "seating";
 });
@@ -156,6 +157,24 @@ const historyDrawerLabel = computed(() => {
     ? "Tidigare sittscheman"
     : "Tidigare grupputkast";
 });
+const seatingSecondaryActionItems = computed(() => [
+  {
+    id: "history",
+    label: "Historik",
+    icon: IconHistory,
+    disabled: props.seatingLifecycleBusy,
+    testId: "seating-history",
+    onSelect: openSeatingHistoryDrawer,
+  },
+  {
+    id: "edit-template",
+    label: "Redigera klassrum",
+    icon: IconSettings,
+    disabled: !canEditCurrentTemplate.value || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
+    testId: "edit-current-template",
+    onSelect: editCurrentTemplate,
+  },
+]);
 
 const currentViewHint = computed(() => {
   if (isSeatWorkspaceWithoutTemplate.value) {
@@ -191,14 +210,9 @@ function changeSeatingTemplateFromEvent(event: Event): void {
   emit("change-seating-template", { templateId: pendingSeatingTemplateId.value || null });
 }
 
-function changeGroupingTemplateFromEvent(event: Event): void {
-  const target = event.target;
-  if (!(target instanceof HTMLSelectElement)) {
-    return;
-  }
-
-  pendingGroupingTemplateId.value = target.value;
-  emit("change-grouping-template", { templateId: pendingGroupingTemplateId.value || null });
+function changeGroupingTemplate(templateId: string | null): void {
+  pendingGroupingTemplateId.value = templateId ?? "";
+  emit("change-grouping-template", { templateId });
 }
 
 function startNewGroupingDraft(): void {
@@ -340,7 +354,7 @@ watch(
 
     <PlannerTopPanel
       :title="plannerTitle"
-      :context-label="`${currentWorkspaceLabel} · ${isSeatWorkspaceWithoutTemplate ? 'välj klassrum i sittschemat' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`}`"
+      :context-label="isSeatWorkspaceWithoutTemplate ? 'Välj klassrum i sittschemat' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`"
       :mode-value="workspaceModeValue"
       :supporting-text="currentViewHint"
       :status-label="saveStatusLabel"
@@ -350,65 +364,29 @@ watch(
       @exit="emit('exit-to-landing')"
     />
 
-    <article
+    <GroupBoard
       v-if="currentView === 'groups'"
-      class="space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
-    >
-      <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 lg:flex-row lg:items-end lg:justify-between">
-        <div class="space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klassrumsstöd
-          </p>
-          <h3 class="font-serif text-xl text-navy md:text-2xl">
-            {{ plannerState.template?.name ?? "Grupper utan klassrumsstöd" }}
-          </h3>
-          <p class="max-w-[42rem] text-sm leading-relaxed text-navy/70">
-            Låt grupperna vara fria eller välj ett klassrum när rummets kontext ska hjälpa arbetet.
-          </p>
-        </div>
-
-        <label class="block min-w-[18rem] space-y-2">
-          <span class="block text-sm font-semibold text-navy">Klassrum</span>
-          <select
-            class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
-            :value="plannerState.template?.id ?? pendingGroupingTemplateId"
-            @change="changeGroupingTemplateFromEvent"
-          >
-            <option value="">
-              Arbeta utan klassrum
-            </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.id"
-              :value="template.id"
-            >
-              {{ template.name }} · {{ template.seats.length }} platser
-            </option>
-          </select>
-        </label>
-      </div>
-    </article>
-
-    <article
+      :selected-student-id="selectedStudentId"
+      :available-templates="availableTemplates"
+      :selected-template-id="plannerState.template?.id ?? pendingGroupingTemplateId"
+      @new-grouping-draft="startNewGroupingDraft"
+      @open-history="openGroupingHistoryDrawer"
+      @edit-roster="emit('edit-roster')"
+      @student-selected="selectStudent"
+      @change-grouping-template="changeGroupingTemplate"
+    />
+    <section
       v-if="currentView === 'seats'"
-      data-test="seating-workspace-setup"
-      class="space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
+      class="space-y-4"
     >
-      <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 lg:flex-row lg:items-end lg:justify-between">
-        <div class="space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+      <div class="flex flex-wrap items-end justify-end gap-2 border border-navy bg-white p-4 shadow-brutal-sm">
+        <label
+          class="block min-w-[16rem] space-y-1"
+          data-test="seating-workspace-setup"
+        >
+          <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
             Klassrum
-          </p>
-          <h3 class="font-serif text-xl text-navy md:text-2xl">
-            {{ plannerState.template?.name ?? "Välj klassrum för sittschemat" }}
-          </h3>
-          <p class="max-w-[42rem] text-sm leading-relaxed text-navy/70">
-            Byt klassrum här när samma klass behöver ett nytt sittschema i en annan sal.
-          </p>
-        </div>
-
-        <label class="block min-w-[18rem] space-y-2">
-          <span class="block text-sm font-semibold text-navy">Klassrum</span>
+          </span>
           <select
             ref="seatingTemplateSelect"
             data-test="seating-template-select"
@@ -434,92 +412,64 @@ watch(
             Välj klassrum innan du startar ett nytt sittschema.
           </p>
         </label>
-      </div>
-
-      <div
-        v-if="isSeatWorkspaceWithoutTemplate"
-        class="border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
-      >
-        Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
-      </div>
-    </article>
-
-    <GroupBoard
-      v-if="currentView === 'groups'"
-      :selected-student-id="selectedStudentId"
-      @new-grouping-draft="startNewGroupingDraft"
-      @open-history="openGroupingHistoryDrawer"
-      @student-selected="selectStudent"
-    />
-    <section
-      v-if="currentView === 'seats'"
-      class="space-y-4"
-    >
-      <div class="flex flex-col gap-3 border border-navy bg-white p-4 shadow-brutal-sm md:flex-row md:items-center md:justify-between">
-        <div class="space-y-1">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Sittstruktur
-          </p>
-          <h3 class="font-serif text-xl text-navy">
-            Aktuellt sittschema
-          </h3>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="undo-seating-draft"
-            :disabled="!plannerState.canUndo || props.seatingLifecycleBusy"
-            @click="void undoSeatingDraft()"
-          >
-            Ångra
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="redo-seating-draft"
-            :disabled="!plannerState.canRedo || props.seatingLifecycleBusy"
-            @click="void redoSeatingDraft()"
-          >
-            Gör om
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none"
-            data-test="seating-history"
-            :disabled="props.seatingLifecycleBusy"
-            @click="openSeatingHistoryDrawer"
-          >
-            Historik
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="randomize-seating"
-            :disabled="!canRandomizeSeating"
-            @click="randomizeCurrentSeatingDraft"
-          >
-            Slumpa
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none"
-            data-test="new-seating-draft"
-            :disabled="props.seatingLifecycleBusy"
-            @click="void startNewSeatingDraft()"
-          >
-            Nytt sittschema
-          </button>
-          <button
-            type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-            data-test="edit-current-template"
-            :disabled="!canEditCurrentTemplate || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy"
-            @click="editCurrentTemplate"
-          >
-            Redigera klassrum
-          </button>
-        </div>
+        <PlannerToolbarIconButton
+          label="Ångra"
+          class="2xl:hidden"
+          data-test="undo-seating-draft"
+          :disabled="!plannerState.canUndo || props.seatingLifecycleBusy"
+          @click="void undoSeatingDraft()"
+        >
+          <IconUndo :size="18" />
+        </PlannerToolbarIconButton>
+        <button
+          type="button"
+          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
+          :disabled="!plannerState.canUndo || props.seatingLifecycleBusy"
+          @click="void undoSeatingDraft()"
+        >
+          Ångra
+        </button>
+        <PlannerToolbarIconButton
+          label="Gör om"
+          class="2xl:hidden"
+          data-test="redo-seating-draft"
+          :disabled="!plannerState.canRedo || props.seatingLifecycleBusy"
+          @click="void redoSeatingDraft()"
+        >
+          <IconRedo :size="18" />
+        </PlannerToolbarIconButton>
+        <button
+          type="button"
+          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
+          :disabled="!plannerState.canRedo || props.seatingLifecycleBusy"
+          @click="void redoSeatingDraft()"
+        >
+          Gör om
+        </button>
+        <button
+          type="button"
+          class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+          data-test="randomize-seating"
+          :disabled="!canRandomizeSeating"
+          @click="randomizeCurrentSeatingDraft"
+        >
+          <IconShuffle :size="16" />
+          <span>Slumpa</span>
+        </button>
+        <button
+          type="button"
+          class="btn-ghost border-navy/30 bg-white shadow-none"
+          data-test="new-seating-draft"
+          :disabled="props.seatingLifecycleBusy"
+          @click="void startNewSeatingDraft()"
+        >
+          Nytt sittschema
+        </button>
+        <PlannerToolbarOverflowMenu
+          label="Fler sittplatsåtgärder"
+          :items="seatingSecondaryActionItems"
+          test-id="seating-actions-menu"
+        />
       </div>
 
       <RoomCanvas
@@ -528,6 +478,12 @@ watch(
         :selected-student-id="selectedStudentId"
         @student-selected="selectStudent"
       />
+      <div
+        v-else
+        class="border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
+      >
+        Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
+      </div>
     </section>
 
     <PlannerMetadataDrawer

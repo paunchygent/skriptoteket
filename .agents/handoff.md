@@ -49,7 +49,8 @@ Keep this file updated so the next session can pick up work quickly.
   - `ST-24-06` is now in progress as the remaining seating `Slumpa` fundamentals slice
   - `ST-24-07` is now in progress as the compact overview-first management slice via `PR-0110`
   - `ST-24-08` is now drafted as the final landing cutover and exit-to-origin slice
-  - `PR-0109` is shipped, `PR-0110` is the active implementation slice, and `PR-0111` plus `PR-0112` are the next overview follow-ups before the later cutover story
+  - `PR-0109` and `PR-0110` are shipped, `PR-0112` is the current local overview/planner design simplification pass, `PR-0111` remains the resumable-CTA follow-up, and `PR-0113` is now in progress as the separate in-place `Börja om` reset slice spanning `ST-24-03` and `ST-24-04`
+  - `PR-0112` now also has a dedicated browser proof in `scripts/playwright_pr_0112_design_transition_check.py`, and the shared `scripts/playwright_classroom_planner_smoke.py` helpers were refreshed to match the current `Klassarbetsyta` shell and protected-route login modal
 - `REV-EPIC-24` amendment is now approved and recorded in `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`.
 - `PR-0109` is now implemented locally:
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStoreMutations.ts` adds seating full-draft randomization
@@ -109,6 +110,8 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-23: `BASE_URL=http://127.0.0.1:5173 pdm run python - <<'PY' ... PY` authenticated local Playwright probe against `http://127.0.0.1:5173/apps/classroom.group-seating-studio` (PASSED; opened `Testklass A`, verified the current `Klassöversikt` surface plus `Välj klassrum`, and saved `.artifacts/pr0110-live-check/overview-dashboard-current.png`).
 - 2026-03-23: `pdm run docs-validate` (PASSED after drafting `PR-0112` and recording the latest `PR-0110` overview-polish verification in handoff).
 - 2026-03-23: `pdm run docs-validate` (PASSED after drafting `PR-0112` for overview design simplification and seamless workspace transitions, updating `ST-24-07` decomposition, and indexing the new PR doc).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerToolbarIconButton.vue src/views/apps/components/PlannerToolbarOverflowMenu.vue src/views/apps/components/RoomCanvas.vue src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED for the accepted `PR-0112` ruthless-review fixes and docs refresh).
+- 2026-03-23: `pdm run ruff check scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0112_design_transition_check.py`; `pdm run python -m scripts.playwright_pr_0112_design_transition_check --base-url http://127.0.0.1:5173` (PASSED; proved honest overview/grouping/seating transitions on the canonical local SPA, kept grouping/seating `Slumpa` visible while `Historik` / edit actions stayed in overflow, and saved fresh artifacts in `.artifacts/pr-0112-live-check/overview.png`, `.artifacts/pr-0112-live-check/groups.png`, and `.artifacts/pr-0112-live-check/seating.png`).
 
 ## How to Run
 
@@ -138,8 +141,8 @@ pdm run docs-validate
 ## Next Steps
 
 - EPIC-24 next planned implementation chain is:
-  - present `PR-0110` for approval, then commit/push it
+  - finish and verify the current local `PR-0112` design simplification pass
   - then land `PR-0111` (duplicated resumable CTA + overview-entry/browser proof)
-  - then land `PR-0112` (overview design simplification + seamless workspace transitions)
+  - then implement the now-started `PR-0113` explicit in-place `Börja om` reset slice
   - `ST-24-08` only after overview-first management is fully proven
 - Competitive-games lane remains separate and should not be conflated with Klassrumskartan planning.

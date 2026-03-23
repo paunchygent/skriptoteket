@@ -203,7 +203,20 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: { template: "<div data-test='group-board' />" },
+          GroupBoard: {
+            props: ["availableTemplates", "selectedTemplateId"],
+            template: `
+              <div data-test="group-board">
+                <label>
+                  Klassrum (valfritt)
+                  <select :value="selectedTemplateId" data-test="grouping-template-select" @change="$emit('change-grouping-template', $event.target.value)">
+                    <option value="">Arbeta utan klassrum</option>
+                    <option value="template-2">Sal 202 · 0 platser</option>
+                  </select>
+                </label>
+              </div>
+            `,
+          },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
@@ -214,12 +227,13 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Grupper utan klassrumsstöd");
+    expect(wrapper.text()).toContain("Klassrum (valfritt)");
     expect(wrapper.text()).toContain("Arbeta utan klassrum");
 
-    await wrapper.get("select").setValue("template-2");
+    await wrapper.get('[data-test="grouping-template-select"]').setValue("template-2");
 
     expect(wrapper.emitted("change-grouping-template")).toEqual([[{ templateId: "template-2" }]]);
+    expect((wrapper.get('[data-test="grouping-template-select"]').element as HTMLSelectElement).value).toBe("template-2");
   });
 
   it("forwards the explicit new grouping draft action with the current grouping context", async () => {
@@ -280,7 +294,8 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(false);
     expect(wrapper.find("[data-test='room-canvas']").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Gruppvy");
-    expect(wrapper.text()).toContain("Välj klassrum för sittschemat");
+    expect(wrapper.text()).toContain("Välj klassrum i sittschemat");
+    expect(wrapper.text()).toContain("Klassrum");
     expect(wrapper.text()).toContain(
       "Välj eller byt klassrum direkt här i sittschemat.",
     );
@@ -316,7 +331,7 @@ describe("PlannerWorkspaceShell", () => {
 
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(false);
     expect(wrapper.text()).toContain("Sal 101");
-    expect(wrapper.text()).toContain("Redigera klassrum");
+    expect(wrapper.find('[data-test="seating-actions-menu"]').exists()).toBe(true);
   });
 
   it("uses the top panel exit action instead of workspace-local navigation buttons", async () => {
@@ -414,6 +429,31 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.emitted("delete-grouping-history-draft")).toEqual([["grouping-history-1"]]);
   });
 
+  it("lets the grouping toolbar open Redigera klass for parity with seating settings", async () => {
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: {
+            template: "<button type='button' data-test='edit-grouping-roster' @click=\"$emit('edit-roster')\">Redigera klass</button>",
+          },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="edit-grouping-roster"]').trigger("click");
+
+    expect(wrapper.emitted("edit-roster")).toEqual([[]]);
+  });
+
   it("lets the seating toolbar edit the current classroom without exposing grouping actions", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-2",
@@ -439,6 +479,7 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.text()).not.toContain("Lägg till grupp");
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="edit-current-template"]').trigger("click");
 
     expect(wrapper.emitted("edit-current-template")).toEqual([[stateMocks.plannerState.template]]);
@@ -565,6 +606,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="seating-history"]').trigger("click");
 
     expect(wrapper.text()).toContain("Aktuellt sittschema");
@@ -577,6 +619,7 @@ describe("PlannerWorkspaceShell", () => {
     await openButton.trigger("click");
     expect(wrapper.emitted("open-seating-history-draft")).toEqual([["seating-history-1"]]);
 
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="seating-history"]').trigger("click");
 
     const deleteButton = wrapper.find('[aria-label="Ta bort historiskt utkast"]');
@@ -679,6 +722,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="seating-history"]').trigger("click");
     expect(wrapper.text()).toContain("Tidigare sittscheman");
 
@@ -687,10 +731,12 @@ describe("PlannerWorkspaceShell", () => {
       seatingHistoryBusyDraftId: "seating-history-1",
     });
 
-    expect(wrapper.get('[data-test="seating-history"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="undo-seating-draft"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="redo-seating-draft"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="new-seating-draft"]').attributes("disabled")).toBeDefined();
+
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+    expect(wrapper.get('[data-test="seating-history"]').attributes("disabled")).toBeDefined();
 
     const openButton = wrapper.findAll("button").find((button) => button.text().includes("Revision 3"));
     expect(openButton?.attributes("disabled")).toBeDefined();

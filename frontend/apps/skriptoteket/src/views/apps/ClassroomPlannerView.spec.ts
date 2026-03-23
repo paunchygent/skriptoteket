@@ -779,6 +779,72 @@ describe("ClassroomPlannerView", () => {
     wrapper.unmount();
   });
 
+  it("opens roster editing from the live grouping workspace settings path", async () => {
+    const workspaceSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    };
+
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
+    stateMocks.plannerState.resolveDraft.mockImplementation(async () => {
+      stateMocks.plannerState.roster = { id: "roster-1", name: "SA24D", students: [] };
+      stateMocks.plannerState.template = null;
+      stateMocks.plannerState.draft = {
+        id: "draft-2",
+        roster_id: "roster-1",
+        draft_kind: "grouping",
+        template_id: null,
+        status: "active",
+        revision: 1,
+        last_opened_at: "2026-03-21T10:00:00Z",
+      };
+    });
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: {
+            props: ["roster"],
+            template: "<div data-test='roster-modal'>{{ roster?.name }}</div>",
+          },
+          CreateRoomTemplateModal: true,
+          PlannerClassWorkspace: {
+            template:
+              "<button type='button' data-test='open-grouping' @click=\"$emit('open-grouping', { templateId: null })\">Öppna grupper</button>",
+          },
+          PlannerWorkspaceShell: {
+            template:
+              "<button type='button' data-test='edit-grouping-roster' @click=\"$emit('edit-roster')\">Redigera klass</button>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    await wrapper.get('[role="button"]').trigger("click");
+    await flushPromises();
+    await wrapper.get('[data-test="open-grouping"]').trigger("click");
+    await flushPromises();
+    await wrapper.get('[data-test="edit-grouping-roster"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="roster-modal"]').text()).toContain("SA24D");
+
+    wrapper.unmount();
+  });
+
   it("returns from the planner to the class workspace without abandoning the draft", async () => {
     const workspaceSummary: ClassWorkspaceSummary = {
       roster: { id: "roster-1", name: "SA24D", student_count: 1 },

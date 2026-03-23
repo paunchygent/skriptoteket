@@ -86,9 +86,9 @@ const classroomPanelDescription = computed(() => {
 });
 const workspaceContextLabel = computed(() => {
   if (!selectedTemplate.value) {
-    return "Klassöversikt · Inget klassrum valt";
+    return "Inget klassrum valt";
   }
-  return `Klassöversikt · Klassrum: ${selectedTemplate.value.name}`;
+  return `Klassrum: ${selectedTemplate.value.name}`;
 });
 
 function selectWorkspaceMode(value: string): void {
@@ -99,13 +99,11 @@ function selectWorkspaceMode(value: string): void {
 
   if (value === "grouping") {
     emit("open-grouping", { templateId: null });
-    workspaceMode.value = "overview";
     return;
   }
 
   if (value === "seating") {
     emit("open-seating", { templateId: props.selectedTemplateId });
-    workspaceMode.value = "overview";
   }
 }
 
@@ -154,9 +152,7 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
       :title="workspaceSummary.roster.name"
       :context-label="workspaceContextLabel"
       :mode-value="workspaceMode"
-      supporting-text="Välj Grupper eller Sittplatser i väljaren ovan när du vill fortsätta arbetet."
       status-label="Översikt"
-      status-message="Redigera klassen här eller öppna en arbetsyta i väljaren ovan."
       status-tone="neutral"
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('back-to-landing')"
@@ -169,216 +165,202 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
       Laddar klassarbetsytan...
     </div>
 
-    <article
+    <div
       v-else
-      class="space-y-4 border border-navy bg-white p-4 shadow-brutal-sm"
+      class="grid gap-4 xl:grid-cols-2"
     >
-      <div class="space-y-1">
-        <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          Översikt
-        </p>
-        <h3 class="font-serif text-2xl text-navy">
-          Klassöversikt
-        </h3>
-        <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Här hanterar du klass och klassrum i ett kompakt arbetsflöde. Öppna Grupper eller Sittplatser i väljaren ovan när du vill fortsätta planeringen.
-        </p>
-      </div>
+      <article
+        class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4"
+      >
+        <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Klass
+          </p>
+          <div class="flex flex-wrap items-baseline gap-2">
+            <p class="text-xl font-semibold text-navy">
+              {{ workspaceSummary.roster.name }}
+            </p>
+            <span class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
+              {{ workspaceSummary.roster.student_count }} elever
+            </span>
+          </div>
+          <p class="text-sm text-navy/70">
+            {{ classPanelDescription }}
+          </p>
+        </div>
 
-      <div class="grid gap-4 xl:grid-cols-2">
-        <article
-          class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4"
+        <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
+          <span class="font-semibold">Byt klass</span>
+          <select
+            class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
+            :disabled="isLoadingWorkspace"
+            :value="selectedRosterId ?? workspaceSummary.roster.id"
+            data-test="overview-roster-select"
+            @change="selectRoster"
+          >
+            <option
+              v-for="roster in availableRosters"
+              :key="roster.id"
+              :value="roster.id"
+            >
+              {{ roster.name }}
+            </option>
+          </select>
+        </label>
+
+        <div
+          :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
+          data-test="overview-roster-preview"
         >
-          <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
-            <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Klass
-            </p>
-            <div class="flex flex-wrap items-baseline gap-2">
-              <p class="text-xl font-semibold text-navy">
-                {{ workspaceSummary.roster.name }}
-              </p>
-              <span class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
-                {{ workspaceSummary.roster.student_count }} elever
-              </span>
-            </div>
-            <p class="text-sm text-navy/70">
-              {{ classPanelDescription }}
-            </p>
-          </div>
-
-          <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
-            <span class="font-semibold">Byt klass</span>
-            <select
-              class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
-              :disabled="isLoadingWorkspace"
-              :value="selectedRosterId ?? workspaceSummary.roster.id"
-              data-test="overview-roster-select"
-              @change="selectRoster"
-            >
-              <option
-                v-for="roster in availableRosters"
-                :key="roster.id"
-                :value="roster.id"
-              >
-                {{ roster.name }}
-              </option>
-            </select>
-          </label>
-
           <div
-            :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-            data-test="overview-roster-preview"
+            v-if="selectedRoster && selectedRosterPreviewNames.length > 0"
+            class="grid h-full grid-cols-3 content-start gap-x-4 gap-y-1 overflow-hidden p-4 text-[0.8rem] leading-5 text-navy/72"
           >
-            <div
-              v-if="selectedRoster && selectedRosterPreviewNames.length > 0"
-              class="grid h-full grid-cols-3 content-start gap-x-4 gap-y-1 overflow-hidden p-4 text-[0.8rem] leading-5 text-navy/72"
+            <span
+              v-for="name in selectedRosterPreviewNames"
+              :key="name"
+              class="truncate"
             >
-              <span
-                v-for="name in selectedRosterPreviewNames"
-                :key="name"
-                class="truncate"
-              >
-                {{ name }}
-              </span>
-            </div>
-            <div
-              v-else
-              class="flex h-full items-center justify-center p-4 text-center text-sm text-navy/55"
-            >
-              Välj en klasslista för att visa en kompakt elevöversikt här.
-            </div>
+              {{ name }}
+            </span>
           </div>
-
-          <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
-            <button
-              type="button"
-              class="btn-primary w-full justify-center"
-              @click="emit('create-roster')"
-            >
-              Ny klasslista
-            </button>
-            <button
-              type="button"
-              class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
-              @click="emit('edit-roster')"
-            >
-              Redigera klass
-            </button>
-            <button
-              type="button"
-              class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
-              :disabled="!selectedRoster"
-              data-test="overview-delete-roster"
-              @click="emit('delete-current-roster')"
-            >
-              Ta bort klasslista
-            </button>
-          </div>
-        </article>
-
-        <article class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4">
-          <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
-            <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Klassrum
-            </p>
-            <div class="flex flex-wrap items-baseline gap-2">
-              <p class="text-xl font-semibold text-navy">
-                {{ selectedTemplate?.name ?? "Inget klassrum valt" }}
-              </p>
-              <span
-                v-if="selectedTemplate"
-                class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55"
-              >
-                {{ selectedTemplate.seats.length }} platser
-              </span>
-            </div>
-            <p class="text-sm text-navy/70">
-              {{ classroomPanelDescription }}
-            </p>
-          </div>
-
-          <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
-            <span class="font-semibold">Välj klassrum</span>
-            <select
-              class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
-              :disabled="isLoadingWorkspace"
-              :value="selectedTemplateId ?? ''"
-              data-test="overview-template-select"
-              @change="selectTemplate"
-            >
-              <option value="">
-                Utan klassrum
-              </option>
-              <option
-                v-for="template in availableTemplates"
-                :key="template.id"
-                :value="template.id"
-              >
-                {{ template.name }}
-              </option>
-            </select>
-          </label>
-
-          <div
-            v-if="selectedTemplate"
-            class="space-y-3"
-          >
-            <div
-              :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-              data-test="overview-classroom-preview"
-            >
-              <div class="absolute inset-2 border border-dashed border-navy/10" />
-              <div
-                v-for="fixture in selectedTemplate.fixtures"
-                :key="fixture.id"
-                class="absolute border border-navy/25 bg-navy/10"
-                :style="buildFixturePreviewStyle(selectedTemplate, fixture.id)"
-              />
-              <div
-                v-for="seat in selectedTemplate.seats"
-                :key="seat.id"
-                class="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-burgundy/40 bg-burgundy/70"
-                :style="buildSeatPreviewStyle(selectedTemplate, seat.id)"
-              />
-            </div>
-          </div>
-
           <div
             v-else
-            :class="['flex items-center justify-center border border-dashed border-navy/25 bg-white px-4 py-8 text-center text-sm text-navy/55', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-            data-test="overview-classroom-empty"
+            class="flex h-full items-center justify-center p-4 text-center text-sm text-navy/55"
           >
-            Välj ett klassrum i listan nedan för att visa en kompakt förhandsgranskning här.
+            Välj en klasslista för att visa en kompakt elevöversikt här.
           </div>
+        </div>
 
-          <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
-            <button
-              type="button"
-              class="btn-primary w-full justify-center"
-              @click="emit('create-template')"
+        <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
+          <button
+            type="button"
+            class="btn-primary w-full justify-center"
+            @click="emit('create-roster')"
+          >
+            Ny klasslista
+          </button>
+          <button
+            type="button"
+            class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
+            @click="emit('edit-roster')"
+          >
+            Redigera klass
+          </button>
+          <button
+            type="button"
+            class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
+            :disabled="!selectedRoster"
+            data-test="overview-delete-roster"
+            @click="emit('delete-current-roster')"
+          >
+            Ta bort klasslista
+          </button>
+        </div>
+      </article>
+
+      <article class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4">
+        <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Klassrum
+          </p>
+          <div class="flex flex-wrap items-baseline gap-2">
+            <p class="text-xl font-semibold text-navy">
+              {{ selectedTemplate?.name ?? "Inget klassrum valt" }}
+            </p>
+            <span
+              v-if="selectedTemplate"
+              class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55"
             >
-              Nytt klassrum
-            </button>
-            <button
-              type="button"
-              class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
-              :disabled="!selectedTemplate"
-              @click="emit('edit-current-template')"
-            >
-              Redigera klassrum
-            </button>
-            <button
-              type="button"
-              class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
-              :disabled="!selectedTemplate"
-              data-test="overview-delete-template"
-              @click="emit('delete-current-template')"
-            >
-              Ta bort klassrum
-            </button>
+              {{ selectedTemplate.seats.length }} platser
+            </span>
           </div>
-        </article>
-      </div>
-    </article>
+          <p class="text-sm text-navy/70">
+            {{ classroomPanelDescription }}
+          </p>
+        </div>
+
+        <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
+          <span class="font-semibold">Välj klassrum</span>
+          <select
+            class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
+            :disabled="isLoadingWorkspace"
+            :value="selectedTemplateId ?? ''"
+            data-test="overview-template-select"
+            @change="selectTemplate"
+          >
+            <option value="">
+              Utan klassrum
+            </option>
+            <option
+              v-for="template in availableTemplates"
+              :key="template.id"
+              :value="template.id"
+            >
+              {{ template.name }}
+            </option>
+          </select>
+        </label>
+
+        <div
+          v-if="selectedTemplate"
+          class="space-y-3"
+        >
+          <div
+            :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
+            data-test="overview-classroom-preview"
+          >
+            <div class="absolute inset-2 border border-dashed border-navy/10" />
+            <div
+              v-for="fixture in selectedTemplate.fixtures"
+              :key="fixture.id"
+              class="absolute border border-navy/25 bg-navy/10"
+              :style="buildFixturePreviewStyle(selectedTemplate, fixture.id)"
+            />
+            <div
+              v-for="seat in selectedTemplate.seats"
+              :key="seat.id"
+              class="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-burgundy/40 bg-burgundy/70"
+              :style="buildSeatPreviewStyle(selectedTemplate, seat.id)"
+            />
+          </div>
+        </div>
+
+        <div
+          v-else
+          :class="['flex items-center justify-center border border-dashed border-navy/25 bg-white px-4 py-8 text-center text-sm text-navy/55', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
+          data-test="overview-classroom-empty"
+        >
+          Välj ett klassrum i listan ovan för att visa en kompakt förhandsgranskning här.
+        </div>
+
+        <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
+          <button
+            type="button"
+            class="btn-primary w-full justify-center"
+            @click="emit('create-template')"
+          >
+            Nytt klassrum
+          </button>
+          <button
+            type="button"
+            class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
+            :disabled="!selectedTemplate"
+            @click="emit('edit-current-template')"
+          >
+            Redigera klassrum
+          </button>
+          <button
+            type="button"
+            class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
+            :disabled="!selectedTemplate"
+            data-test="overview-delete-template"
+            @click="emit('delete-current-template')"
+          >
+            Ta bort klassrum
+          </button>
+        </div>
+      </article>
+    </div>
   </section>
 </template>

@@ -26,11 +26,22 @@ ARTIFACTS_DIR = Path(".artifacts/classroom-planner-smoke")
 
 
 def _wait_for_app_heading(page: Any) -> None:
-    """Poll for the planner heading through the SPA transition after login."""
+    """Poll for the planner root through the SPA transition after login.
+
+    Depending on where the SPA settles after authentication, the curated app
+    may first expose either the `Klassrumskartan` heading or the landing copy
+    above the class-first entry surface. Both represent a successful app boot.
+    """
 
     app_heading = page.get_by_role("heading", name="Klassrumskartan", exact=True)
-    for _ in range(30):
+    landing_copy = page.get_by_text(
+        "Välj en klass för att arbeta vidare med grupper eller sittplatser.",
+        exact=True,
+    )
+    for _ in range(40):
         if app_heading.count() > 0 and app_heading.first.is_visible():
+            return
+        if landing_copy.count() > 0 and landing_copy.first.is_visible():
             return
         page.wait_for_timeout(500)
 
@@ -46,14 +57,23 @@ def _login_to_app(page: Any, *, base_url: str, email: str, password: str) -> Non
             _wait_for_app_heading(page)
             return
         except AssertionError:
-            if attempt == 0:
+            dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+            if dialog.count() > 0:
+                expect(dialog).to_be_visible()
+                dialog.get_by_label("E-post").fill(email)
+                dialog.get_by_label("Lösenord").fill(password)
+                dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+                page.wait_for_timeout(750)
+            elif attempt == 0:
                 page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-                dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-                if dialog.count() > 0:
-                    expect(dialog).to_be_visible()
-                    dialog.get_by_label("E-post").fill(email)
-                    dialog.get_by_label("Lösenord").fill(password)
-                    dialog.get_by_role(
+                login_page_dialog = page.get_by_role(
+                    "dialog", name=re.compile(r"Logga in", re.IGNORECASE)
+                )
+                if login_page_dialog.count() > 0:
+                    expect(login_page_dialog).to_be_visible()
+                    login_page_dialog.get_by_label("E-post").fill(email)
+                    login_page_dialog.get_by_label("Lösenord").fill(password)
+                    login_page_dialog.get_by_role(
                         "button", name=re.compile(r"Logga in", re.IGNORECASE)
                     ).click()
                     page.wait_for_timeout(750)
@@ -149,14 +169,20 @@ def _create_template(page: Any, *, template_name: str) -> None:
 
 
 def _open_class_workspace(page: Any, *, roster_name: str) -> None:
-    """Open the class workspace from the class-first landing surface."""
+    """Open the class workspace from the class-first landing surface.
+
+    The current workspace shell lands on the shared top panel first, with the
+    selected roster title under the `Klassarbetsyta` eyebrow and the segmented
+    toggle immediately available. We verify that shell rather than waiting for
+    the old overview-only heading.
+    """
 
     roster_card = page.get_by_role("button", name=re.compile(re.escape(roster_name))).first
     expect(roster_card).to_be_visible()
     roster_card.click()
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Klassöversikt", re.IGNORECASE))
-    ).to_be_visible()
+    expect(page.get_by_text("Klassarbetsyta", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name=re.compile(re.escape(roster_name)))).to_be_visible()
+    expect(page.locator('[data-ui="segmented-toggle"]')).to_be_visible()
 
 
 def _focus_workspace_mode(page: Any, *, label: str) -> None:
