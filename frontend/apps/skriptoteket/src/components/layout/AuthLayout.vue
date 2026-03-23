@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+/**
+ * Authenticated application layout.
+ *
+ * This layout usually renders the full Skriptoteket authenticated chrome, but
+ * selected bespoke game routes can switch it into an immersive mode where only
+ * the shared top bar remains and the generic sidebar framing disappears.
+ */
+
+import { computed, onBeforeUnmount, ref, watch, watchEffect } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
@@ -30,10 +38,20 @@ const emit = defineEmits<{
 const layout = useLayoutStore();
 const { focusMode } = storeToRefs(layout);
 const route = useRoute();
+const IMMERSIVE_CURATED_APP_IDS = new Set(["games.flunk_out_frenzy"]);
 
 const isEditorRoute = computed(
   () => route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor",
 );
+
+const isImmersiveCuratedAppRoute = computed(() => {
+  if (route.name !== "app-detail") {
+    return false;
+  }
+
+  const appId = route.params.appId;
+  return typeof appId === "string" && IMMERSIVE_CURATED_APP_IDS.has(appId);
+});
 
 const sidebarOpen = ref(false);
 
@@ -60,11 +78,28 @@ watch(
   },
   { immediate: true },
 );
+
+watchEffect(() => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.body.classList.toggle("app-shell-game-mode", isImmersiveCuratedAppRoute.value);
+});
+
+onBeforeUnmount(() => {
+  if (typeof document !== "undefined") {
+    document.body.classList.remove("app-shell-game-mode");
+  }
+});
 </script>
 
 <template>
   <!-- Mobile header bar: brand left, hamburger right -->
-  <header class="auth-mobile-header md:hidden">
+  <header
+    v-if="!isImmersiveCuratedAppRoute"
+    class="auth-mobile-header md:hidden"
+  >
     <RouterLink
       to="/"
       class="mobile-brand"
@@ -84,7 +119,10 @@ watch(
   </header>
 
   <!-- Mobile sidebar drawer backdrop -->
-  <Transition name="drawer-backdrop">
+  <Transition
+    v-if="!isImmersiveCuratedAppRoute"
+    name="drawer-backdrop"
+  >
     <div
       v-if="sidebarOpen"
       class="md:hidden fixed inset-0 bg-navy/40 z-40"
@@ -94,6 +132,7 @@ watch(
 
   <!-- Sidebar (authenticated) -->
   <AuthSidebar
+    v-if="!isImmersiveCuratedAppRoute"
     :is-open="sidebarOpen"
     :is-focus-mode="focusMode"
     :user="user"
@@ -108,13 +147,17 @@ watch(
   <!-- Main content wrapper with top user bar -->
   <div
     class="auth-main-wrapper"
-    :class="{ 'is-focus-mode': focusMode }"
+    :class="{
+      'is-focus-mode': focusMode,
+      'is-immersive-route': isImmersiveCuratedAppRoute,
+    }"
   >
     <!-- Top user bar -->
     <AuthTopBar
       :user="user"
       :logout-in-progress="logoutInProgress"
       :is-focus-mode="focusMode"
+      :is-immersive-route="isImmersiveCuratedAppRoute"
       @toggle-focus-mode="toggleFocusMode"
       @logout="onLogout"
     />
@@ -122,7 +165,10 @@ watch(
     <!-- Main content area -->
     <main
       class="auth-main-content"
-      :class="{ 'auth-main-content--editor': isEditorRoute }"
+      :class="{
+        'auth-main-content--editor': isEditorRoute,
+        'auth-main-content--immersive': isImmersiveCuratedAppRoute,
+      }"
     >
       <div
         v-if="logoutError"
@@ -178,7 +224,8 @@ watch(
     will-change: margin-left;
   }
 
-  .auth-main-wrapper.is-focus-mode {
+  .auth-main-wrapper.is-focus-mode,
+  .auth-main-wrapper.is-immersive-route {
     margin-left: 0;
   }
 }
@@ -214,6 +261,19 @@ watch(
   flex-direction: column;
 }
 
+.auth-main-content--immersive {
+  padding: 0;
+  overflow: hidden;
+}
+
+.auth-main-content--immersive .route-stage,
+.auth-main-content--immersive .route-stage-item {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
 @media (min-width: 1024px) {
   .auth-main-content--editor {
     overflow: hidden;
@@ -223,6 +283,10 @@ watch(
 @media (min-width: 768px) {
   .auth-main-content {
     padding: var(--huleedu-space-8);
+  }
+
+  .auth-main-content--immersive {
+    padding: 0;
   }
 }
 

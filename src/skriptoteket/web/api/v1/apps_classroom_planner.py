@@ -33,6 +33,8 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UpdateRosterHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    DEFAULT_ROOM_GRID_COLS,
+    DEFAULT_ROOM_GRID_ROWS,
     ClassroomPlannerWorkspace,
     DraftGroup,
     GroupAssignment,
@@ -141,6 +143,8 @@ class RoomTemplateDto(BaseModel):
 
     id: UUID
     name: str
+    grid_cols: int = Field(default=DEFAULT_ROOM_GRID_COLS, ge=1)
+    grid_rows: int = Field(default=DEFAULT_ROOM_GRID_ROWS, ge=1)
     seats: list[SeatDto]
     fixtures: list[RoomFixtureDto]
 
@@ -149,6 +153,8 @@ class CreateRoomTemplateRequest(BaseModel):
     """Deserialize a room template create or update payload."""
 
     name: str
+    grid_cols: int = Field(default=DEFAULT_ROOM_GRID_COLS, ge=1)
+    grid_rows: int = Field(default=DEFAULT_ROOM_GRID_ROWS, ge=1)
     seats: list[Seat]
     fixtures: list[RoomFixture] = Field(default_factory=list)
 
@@ -297,6 +303,8 @@ def _serialize_template(template: RoomTemplate) -> RoomTemplateDto:
     return RoomTemplateDto(
         id=template.id,
         name=template.name,
+        grid_cols=template.grid_cols,
+        grid_rows=template.grid_rows,
         seats=[SeatDto.model_validate(seat) for seat in template.seats],
         fixtures=[RoomFixtureDto.model_validate(fixture) for fixture in template.fixtures],
     )
@@ -495,6 +503,8 @@ async def create_template(
     template = await handler.handle(
         owner_user_id=user.id,
         name=request.name,
+        grid_cols=request.grid_cols,
+        grid_rows=request.grid_rows,
         seats=request.seats,
         fixtures=request.fixtures,
     )
@@ -514,6 +524,8 @@ async def update_template(
         template_id=template_id,
         owner_user_id=user.id,
         name=request.name,
+        grid_cols=request.grid_cols,
+        grid_rows=request.grid_rows,
         seats=request.seats,
         fixtures=request.fixtures,
     )

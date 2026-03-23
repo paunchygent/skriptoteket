@@ -1,7 +1,7 @@
 ---
 type: reference
-id: REF-curated-app-pinball-teacher-architecture-and-foundational-code
-title: "Reference: Competitive games curated apps and Pinball Teacher"
+id: REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code
+title: "Reference: Competitive games curated apps and Flunk-Out Frenzy"
 status: active
 owners: "agents"
 created: 2026-03-22
@@ -19,7 +19,7 @@ links:
 ## Purpose
 
 This reference describes how **competitive browser games** should fit into
-Skriptoteket as a curated-app family, with **Pinball Teacher** as the first
+Skriptoteket as a curated-app family, with **Flunk-Out Frenzy** as the first
 candidate app.
 
 It is intentionally architectural. It defines the platform seams, the runtime
@@ -34,7 +34,7 @@ plan.
 Use these canonical terms when searching the codebase or linking future docs:
 
 - `competitive games`
-- `Pinball Teacher`
+- `Flunk-Out Frenzy`
 - `curated app`
 - `bespoke_required`
 - `official high score`
@@ -111,7 +111,7 @@ Recommended responsibilities:
 
 ### 2. App-specific game implementation
 
-This layer is where Pinball Teacher remains bespoke.
+This layer is where Flunk-Out Frenzy remains bespoke.
 
 Recommended responsibilities:
 
@@ -131,7 +131,7 @@ src/skriptoteket/
       policies.py
       errors.py
     curated_apps/
-      pinball_teacher/
+      flunk_out_frenzy/
         models.py
         bootstrap.py
         scoring.py
@@ -141,7 +141,7 @@ src/skriptoteket/
       submit_score.py
       validate_submission.py
     curated_apps/
-      pinball_teacher/
+      flunk_out_frenzy/
         get_bootstrap.py
   infrastructure/
     competitive_play/
@@ -149,39 +149,61 @@ src/skriptoteket/
       replay_storage.py
     curated_apps/
       apps/
-        pinball_teacher/
+        flunk_out_frenzy/
           registry_entry.py
   web/
     api/v1/
-      apps_pinball_teacher.py
+      apps_flunk_out_frenzy.py
 frontend/apps/skriptoteket/src/
   views/apps/
-    PinballTeacherView.vue
-  components/apps/pinball-teacher/
+    FlunkOutFrenzyView.vue
+  components/apps/flunk-out-frenzy/
     GameHost.vue
     gameBridge.ts
     game/
 ```
 
-## Pinball Teacher frontend boundary
+## Flunk-Out Frenzy frontend boundary
 
-Pinball Teacher should keep a hard split between the SPA shell and the game
+Flunk-Out Frenzy should keep a hard split between the SPA shell and the game
 machine:
 
 ### Shell responsibilities
 
-`frontend/apps/skriptoteket/src/views/apps/PinballTeacherView.vue` should own:
+`frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.vue` should own:
 
 - route-level loading and error states
 - app boot metadata
+- route-level immersive mode activation
 - HUD projection from the runtime
 - pause / restart / mute buttons
 - score summary and submit-score UX
 - leaderboard and profile-adjacent views
 
+### Shell presentation rule
+
+Once the user enters Flunk-Out Frenzy, the main surface should read as a game,
+not as a generic Skriptoteket teacher tool.
+
+That means:
+
+- keep only the shared top bar as obvious Skriptoteket chrome
+- hide the normal sidebar / generic content framing while the game route is
+  active
+- make the first viewport read as one staged game composition rather than a
+  dashboard of unrelated columns
+- use strong container styling only where it carries interaction or critical
+  game information; do not wrap empty or decorative regions in cards/panels
+- use real playfield, cabinet, or game-world imagery as the main visual anchor;
+  abstract gradients can support the scene but should not define it
+- avoid academic/brutalist card stacks and visible debug/bootstrap panels in
+  the main play surface
+- treat settings, diagnostics, and future score-submission affordances as
+  secondary overlays or in-game menus, not permanent side panels
+
 ### Machine responsibilities
 
-`frontend/apps/skriptoteket/src/components/apps/pinball-teacher/game/` should
+`frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/` should
 own:
 
 - fixed-step runtime loop
@@ -208,7 +230,7 @@ Strong:
 - Vue receives a read-only HUD projection such as score, balls left,
   multiplier, mute state, and paused state
 
-## Pinball Teacher stack recommendation
+## Flunk-Out Frenzy stack recommendation
 
 Within the existing Skriptoteket SPA and backend:
 
@@ -223,12 +245,12 @@ the same rendering or simulation libraries.
 
 ## Suggested backend API shape
 
-Pinball Teacher should prefer typed app endpoints such as:
+Flunk-Out Frenzy should prefer typed app endpoints such as:
 
-- `GET /api/v1/apps/games.pinball_teacher/bootstrap`
-- `POST /api/v1/apps/games.pinball_teacher/score-submissions`
-- `GET /api/v1/apps/games.pinball_teacher/leaderboards/global`
-- `GET /api/v1/apps/games.pinball_teacher/leaderboards/me`
+- `GET /api/v1/apps/games.flunk_out_frenzy/bootstrap`
+- `POST /api/v1/apps/games.flunk_out_frenzy/score-submissions`
+- `GET /api/v1/apps/games.flunk_out_frenzy/leaderboards/global`
+- `GET /api/v1/apps/games.flunk_out_frenzy/leaderboards/me`
 
 If the app uses internal run/execution machinery for exports or background
 validation, those details must stay server-side behind the app-specific API.
@@ -285,10 +307,9 @@ for the first trustworthy leaderboard slice.
 ### Slice 1: local playable app
 
 - bespoke route and bootstrap contract
-- Pinball Teacher runtime inside the existing SPA
+- Flunk-Out Frenzy runtime inside the existing SPA
 - local 3-ball play
 - pause / restart / mute
-- replay capture seam, even if not uploaded yet
 
 ### Slice 2: competitive-play plumbing
 
@@ -320,7 +341,7 @@ for the first trustworthy leaderboard slice.
 
 ## Notes
 
-- Pinball Teacher is the first candidate app, not a special exception to the
+- Flunk-Out Frenzy is the first candidate app, not a special exception to the
   platform.
 - If additional games are added later, extend the shared `competitive_play`
   subsystem instead of cloning Pinball-specific persistence logic.

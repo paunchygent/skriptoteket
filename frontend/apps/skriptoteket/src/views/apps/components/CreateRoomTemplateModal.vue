@@ -3,21 +3,56 @@
  * Room template create/edit modal.
  *
  * This modal manages reusable classroom layouts for the planner. It lets the
- * teacher place seats and room fixtures on a coarse grid so the live planner
- * canvas, future PDF exports, and classroom snapshots share one visual source
- * of truth.
+ * teacher place seats and room objects on a configurable grid so the live
+ * seating canvas, future exports, and classroom snapshots share one saved room
+ * contract.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
+import RoomSeatToken from "./RoomSeatToken.vue";
 import {
-  roomFixturePalette,
   type RoomFixture,
   type RoomFixtureType,
   type RoomTemplate,
   type Seat,
 } from "../classroomPlannerTypes";
+import {
+  buildRoomFixtureLabel,
+  fixtureContainsCell,
+  getRoomFixturePaletteEntry,
+  isFloorFixtureType,
+  isWallFixtureType,
+  MIN_ROOM_GRID_COLS,
+  MIN_ROOM_GRID_ROWS,
+  normalizeFixturePlacement,
+  normalizeRoomGrid,
+  rectanglesOverlap,
+  resolveWallSideForPointer,
+  roomFixturePalette,
+  ROOM_GRID_UNIT,
+  type PointerAnchor,
+  type RoomGridDimensions,
+  type WallSide,
+} from "../roomFixtureLayout";
+import {
+  buildRoomFixtureFromGridPlacement,
+  getFloorFixtureFrameStyle,
+  getFloorPlacementStyle,
+  getRoomFloorLayerStyle,
+  getRoomSurfaceMetrics,
+  getRoomSurfaceStyle,
+  getWallFixtureFrameStyle,
+} from "../roomFixturePresentation";
+import {
+  clampRoomViewportScale,
+  computeRoomViewportFitScale,
+  getScaledRoomSurfaceStyle,
+  ROOM_VIEWPORT_SCALE_STEP,
+} from "../roomBuilderViewport";
+import { getSeatFrameStyle, getSeatGhostFrameStyle } from "../roomSeatPresentation";
 
 type BuilderTool = "seat" | "erase" | RoomFixtureType;
 
@@ -28,12 +63,13 @@ type FixturePlacement = {
   row: number;
   width: number;
   height: number;
-  label: string;
+  label: string | null;
 };
 
-const GRID_COLS = 14;
-const GRID_ROWS = 9;
-const GRID_UNIT = 96;
+type HoveredCell = {
+  row: number;
+  col: number;
+};
 
 const props = defineProps<{
   template?: RoomTemplate | null;
@@ -49,11 +85,40 @@ const name = ref("");
 const selectedTool = ref<BuilderTool>("seat");
 const seatCells = ref<string[]>([]);
 const fixtures = ref<FixturePlacement[]>([]);
+const gridCols = ref(MIN_ROOM_GRID_COLS);
+const gridRows = ref(MIN_ROOM_GRID_ROWS);
+const hoveredCell = ref<HoveredCell | null>(null);
+const pointerAnchor = ref<PointerAnchor | null>(null);
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
 const error = ref<string | null>(null);
+const builderViewport = ref<HTMLElement | null>(null);
+const builderViewportSize = ref({ width: 0, height: 0 });
+const manualZoomScale = ref<number | null>(null);
 
 const isEditing = computed(() => Boolean(props.template));
+const roomGrid = computed<RoomGridDimensions>(() => normalizeRoomGrid({
+  cols: gridCols.value,
+  rows: gridRows.value,
+}));
+const roomSurfaceStyle = computed(() => getRoomSurfaceStyle(roomGrid.value));
+const roomFloorLayerStyle = computed(() => getRoomFloorLayerStyle(roomGrid.value));
+const roomSurfaceMetrics = computed(() => getRoomSurfaceMetrics(roomGrid.value));
+const builderFitScale = computed(() => {
+  return computeRoomViewportFitScale(builderViewportSize.value, roomSurfaceMetrics.value);
+});
+const builderScale = computed(() => manualZoomScale.value ?? builderFitScale.value);
+const builderScaledSurfaceStyle = computed(() => {
+  return getScaledRoomSurfaceStyle(roomSurfaceMetrics.value, builderScale.value);
+});
+const builderSurfaceTransformStyle = computed(() => {
+  return {
+    ...roomSurfaceStyle.value,
+    transform: `scale(${builderScale.value})`,
+    transformOrigin: "top left",
+  };
+});
+const builderScalePercent = computed(() => Math.round(builderScale.value * 100));
 
 function seatKey(row: number, col: number): string {
   return `${row}:${col}`;
@@ -63,34 +128,42 @@ function isSeatAt(row: number, col: number): boolean {
   return seatCells.value.includes(seatKey(row, col));
 }
 
-function findFixtureAt(row: number, col: number): FixturePlacement | null {
+function findFloorFixtureAt(row: number, col: number): FixturePlacement | null {
   return (
     fixtures.value.find((fixture) => {
-      return (
-        row >= fixture.row &&
-        row < fixture.row + fixture.height &&
-        col >= fixture.col &&
-        col < fixture.col + fixture.width
-      );
+      return isFloorFixtureType(fixture.type) && fixtureContainsCell(fixture, row, col);
     }) ?? null
   );
 }
 
-function fixturePaletteEntry(type: RoomFixtureType) {
-  return roomFixturePalette.find((entry) => entry.type === type);
+function findWallFixtureAt(row: number, col: number): FixturePlacement | null {
+  return (
+    fixtures.value.find((fixture) => {
+      return isWallFixtureType(fixture.type) && fixtureContainsCell(fixture, row, col);
+    }) ?? null
+  );
 }
 
-function buildFixtureLabel(type: RoomFixtureType): string {
-  return fixturePaletteEntry(type)?.label ?? type;
-}
-
-function fixtureFits(row: number, col: number, width: number, height: number): boolean {
-  if (col + width > GRID_COLS || row + height > GRID_ROWS) {
+function fixtureFits(
+  type: RoomFixtureType,
+  row: number,
+  col: number,
+  wallSideOverride?: WallSide | null,
+): boolean {
+  const placement = normalizeFixturePlacement(type, row, col, roomGrid.value, wallSideOverride);
+  if (!placement) {
     return false;
   }
-  for (let currentRow = row; currentRow < row + height; currentRow += 1) {
-    for (let currentCol = col; currentCol < col + width; currentCol += 1) {
-      if (isSeatAt(currentRow, currentCol) || findFixtureAt(currentRow, currentCol)) {
+
+  if (isWallFixtureType(type)) {
+    return !fixtures.value.some((fixture) => {
+      return isWallFixtureType(fixture.type) && rectanglesOverlap(placement, fixture);
+    });
+  }
+
+  for (let currentRow = placement.row; currentRow < placement.row + placement.height; currentRow += 1) {
+    for (let currentCol = placement.col; currentCol < placement.col + placement.width; currentCol += 1) {
+      if (isSeatAt(currentRow, currentCol) || findFloorFixtureAt(currentRow, currentCol)) {
         return false;
       }
     }
@@ -102,13 +175,81 @@ function removeFixtureById(fixtureId: string): void {
   fixtures.value = fixtures.value.filter((fixture) => fixture.id !== fixtureId);
 }
 
-function toggleGridCell(row: number, col: number): void {
+function updateHoverState(event: MouseEvent, row: number, col: number): void {
+  hoveredCell.value = { row, col };
+  const target = event.currentTarget;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const rect = target.getBoundingClientRect();
+  const relativeX = rect.width === 0 ? 0.5 : (event.clientX - rect.left) / rect.width;
+  const relativeY = rect.height === 0 ? 0.5 : (event.clientY - rect.top) / rect.height;
+  pointerAnchor.value = {
+    x: col * ROOM_GRID_UNIT + (relativeX * ROOM_GRID_UNIT),
+    y: row * ROOM_GRID_UNIT + (relativeY * ROOM_GRID_UNIT),
+    relativeX,
+    relativeY,
+  };
+}
+
+function clearHoverState(): void {
+  hoveredCell.value = null;
+  pointerAnchor.value = null;
+}
+
+function currentWallSide(): WallSide | null {
+  if (!pointerAnchor.value || !hoveredCell.value) {
+    return null;
+  }
+  return resolveWallSideForPointer(
+    pointerAnchor.value,
+    hoveredCell.value.row,
+    hoveredCell.value.col,
+    roomGrid.value,
+  );
+}
+
+function resolveWallSideForPlacement(event: MouseEvent | undefined, row: number, col: number): WallSide | null {
+  const target = event?.currentTarget;
+  if (!(target instanceof HTMLElement)) {
+    return currentWallSide();
+  }
+
+  const rect = target.getBoundingClientRect();
+  const clientX = event?.clientX ?? (rect.left + (rect.width / 2));
+  const clientY = event?.clientY ?? (rect.top + (rect.height / 2));
+  const relativeX = rect.width === 0 ? 0.5 : (clientX - rect.left) / rect.width;
+  const relativeY = rect.height === 0 ? 0.5 : (clientY - rect.top) / rect.height;
+  return resolveWallSideForPointer(
+    {
+      x: col * ROOM_GRID_UNIT + (relativeX * ROOM_GRID_UNIT),
+      y: row * ROOM_GRID_UNIT + (relativeY * ROOM_GRID_UNIT),
+      relativeX,
+      relativeY,
+    },
+    row,
+    col,
+    roomGrid.value,
+  );
+}
+
+function toggleGridCell(row: number, col: number, event?: MouseEvent): void {
   error.value = null;
-  const occupiedFixture = findFixtureAt(row, col);
+  if (event) {
+    updateHoverState(event, row, col);
+  }
+
+  const occupiedFloorFixture = findFloorFixtureAt(row, col);
+  const occupiedWallFixture = findWallFixtureAt(row, col);
 
   if (selectedTool.value === "erase") {
-    if (occupiedFixture) {
-      removeFixtureById(occupiedFixture.id);
+    if (occupiedWallFixture) {
+      removeFixtureById(occupiedWallFixture.id);
+      return;
+    }
+    if (occupiedFloorFixture) {
+      removeFixtureById(occupiedFloorFixture.id);
       return;
     }
     seatCells.value = seatCells.value.filter((value) => value !== seatKey(row, col));
@@ -116,8 +257,8 @@ function toggleGridCell(row: number, col: number): void {
   }
 
   if (selectedTool.value === "seat") {
-    if (occupiedFixture) {
-      error.value = "Ta bort fixturen först om du vill lägga en plats där.";
+    if (occupiedFloorFixture) {
+      error.value = "Ta bort möbeln eller objektet först om du vill lägga en plats där.";
       return;
     }
     const key = seatKey(row, col);
@@ -127,12 +268,18 @@ function toggleGridCell(row: number, col: number): void {
     return;
   }
 
-  const paletteItem = fixturePaletteEntry(selectedTool.value);
+  const paletteItem = getRoomFixturePaletteEntry(selectedTool.value);
   if (!paletteItem) {
     return;
   }
-  if (!fixtureFits(row, col, paletteItem.width, paletteItem.height)) {
-    error.value = "Fixturen får inte plats där eller krockar med befintlig möblering.";
+  const wallSide = isWallFixtureType(selectedTool.value)
+    ? resolveWallSideForPlacement(event, row, col)
+    : null;
+  const placement = normalizeFixturePlacement(selectedTool.value, row, col, roomGrid.value, wallSide);
+  if (!placement || !fixtureFits(selectedTool.value, row, col, wallSide)) {
+    error.value = isWallFixtureType(selectedTool.value)
+      ? "Det valda objektet måste få plats längs väggen utan att krocka med andra väggobjekt."
+      : "Det valda objektet får inte plats där eller krockar med befintlig möblering.";
     return;
   }
 
@@ -141,37 +288,176 @@ function toggleGridCell(row: number, col: number): void {
     {
       id: `${selectedTool.value}-${crypto.randomUUID().slice(0, 8)}`,
       type: selectedTool.value,
-      row,
-      col,
-      width: paletteItem.width,
-      height: paletteItem.height,
-      label: paletteItem.label,
+      row: placement.row,
+      col: placement.col,
+      width: placement.width,
+      height: placement.height,
+      label: buildRoomFixtureLabel(selectedTool.value),
     },
   ];
+}
+
+function templateFitsGrid(cols: number, rows: number): boolean {
+  const allSeatsFit = seatCells.value.every((value) => {
+    const [row, col] = value.split(":").map(Number);
+    return row < rows && col < cols;
+  });
+  if (!allSeatsFit) {
+    return false;
+  }
+  return fixtures.value.every((fixture) => {
+    return fixture.row + fixture.height <= rows && fixture.col + fixture.width <= cols;
+  });
+}
+
+const canShrinkCols = computed(() => {
+  return gridCols.value > MIN_ROOM_GRID_COLS && templateFitsGrid(gridCols.value - 1, gridRows.value);
+});
+
+const canShrinkRows = computed(() => {
+  return gridRows.value > MIN_ROOM_GRID_ROWS && templateFitsGrid(gridCols.value, gridRows.value - 1);
+});
+
+function resizeRoom(axis: "cols" | "rows", delta: 1 | -1): void {
+  error.value = null;
+  if (axis === "cols") {
+    if (delta < 0 && !canShrinkCols.value) {
+      error.value = "Ta bort eller flytta objekt längst ut till höger innan du gör klassrummet smalare.";
+      return;
+    }
+    gridCols.value = Math.max(MIN_ROOM_GRID_COLS, gridCols.value + delta);
+    return;
+  }
+
+  if (delta < 0 && !canShrinkRows.value) {
+    error.value = "Ta bort eller flytta objekt längst ned innan du gör klassrummet lägre.";
+    return;
+  }
+  gridRows.value = Math.max(MIN_ROOM_GRID_ROWS, gridRows.value + delta);
+}
+
+let builderViewportObserver: ResizeObserver | null = null;
+
+function syncBuilderViewportSize(): void {
+  const element = builderViewport.value;
+  if (!element) {
+    builderViewportSize.value = { width: 0, height: 0 };
+    return;
+  }
+
+  builderViewportSize.value = {
+    width: element.clientWidth,
+    height: element.clientHeight,
+  };
+}
+
+function zoomOut(): void {
+  const currentScale = manualZoomScale.value ?? builderFitScale.value;
+  manualZoomScale.value = clampRoomViewportScale(currentScale - ROOM_VIEWPORT_SCALE_STEP);
+}
+
+function zoomIn(): void {
+  const currentScale = manualZoomScale.value ?? builderFitScale.value;
+  manualZoomScale.value = clampRoomViewportScale(currentScale + ROOM_VIEWPORT_SCALE_STEP);
+}
+
+function resetBuilderZoom(): void {
+  manualZoomScale.value = null;
+}
+
+function clearRoomContents(): void {
+  seatCells.value = [];
+  fixtures.value = [];
+  selectedTool.value = "seat";
+  hoveredCell.value = null;
+  pointerAnchor.value = null;
+  error.value = null;
 }
 
 watch(
   () => props.template,
   (template) => {
+    const normalizedGrid = normalizeRoomGrid(template);
     name.value = template?.name ?? "";
+    gridCols.value = normalizedGrid.cols;
+    gridRows.value = normalizedGrid.rows;
     seatCells.value =
-      template?.seats.map((seat) => seatKey(Math.round(seat.y / GRID_UNIT), Math.round(seat.x / GRID_UNIT))) ??
+      template?.seats.map((seat) => seatKey(Math.round(seat.y / ROOM_GRID_UNIT), Math.round(seat.x / ROOM_GRID_UNIT))) ??
       [];
     fixtures.value =
       template?.fixtures.map((fixture) => ({
         id: fixture.id,
         type: fixture.type,
-        row: Math.round(fixture.y / GRID_UNIT),
-        col: Math.round(fixture.x / GRID_UNIT),
-        width: Math.max(1, Math.round(fixture.width / GRID_UNIT)),
-        height: Math.max(1, Math.round(fixture.height / GRID_UNIT)),
-        label: fixture.label ?? buildFixtureLabel(fixture.type),
+        row: Math.round(fixture.y / ROOM_GRID_UNIT),
+        col: Math.round(fixture.x / ROOM_GRID_UNIT),
+        width: Math.max(1, Math.round(fixture.width / ROOM_GRID_UNIT)),
+        height: Math.max(1, Math.round(fixture.height / ROOM_GRID_UNIT)),
+        label: fixture.label ?? buildRoomFixtureLabel(fixture.type),
       })) ?? [];
+    hoveredCell.value = null;
+    pointerAnchor.value = null;
     error.value = null;
     selectedTool.value = "seat";
+    manualZoomScale.value = null;
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  syncBuilderViewportSize();
+  if (typeof ResizeObserver === "undefined") {
+    return;
+  }
+
+  builderViewportObserver = new ResizeObserver(() => {
+    syncBuilderViewportSize();
+  });
+
+  if (builderViewport.value) {
+    builderViewportObserver.observe(builderViewport.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  builderViewportObserver?.disconnect();
+  builderViewportObserver = null;
+});
+
+const ghostPlacement = computed(() => {
+  if (!hoveredCell.value || selectedTool.value === "erase") {
+    return null;
+  }
+
+  if (selectedTool.value === "seat") {
+    return {
+      row: hoveredCell.value.row,
+      col: hoveredCell.value.col,
+      width: 1,
+      height: 1,
+      wallSide: null,
+      type: "seat" as const,
+      canPlace: !findFloorFixtureAt(hoveredCell.value.row, hoveredCell.value.col),
+    };
+  }
+
+  const wallSide = isWallFixtureType(selectedTool.value) ? currentWallSide() : null;
+  const placement = normalizeFixturePlacement(
+    selectedTool.value,
+    hoveredCell.value.row,
+    hoveredCell.value.col,
+    roomGrid.value,
+    wallSide,
+  );
+  if (!placement) {
+    return null;
+  }
+
+  return {
+    ...placement,
+    type: selectedTool.value,
+    canPlace: fixtureFits(selectedTool.value, hoveredCell.value.row, hoveredCell.value.col, wallSide),
+  };
+});
 
 const parsedSeats = computed<Seat[]>(() => {
   return seatCells.value
@@ -182,8 +468,8 @@ const parsedSeats = computed<Seat[]>(() => {
     .sort((left, right) => (left.row - right.row) || (left.col - right.col))
     .map((cell, index) => ({
       id: `seat-${index + 1}`,
-      x: cell.col * GRID_UNIT,
-      y: cell.row * GRID_UNIT,
+      x: cell.col * ROOM_GRID_UNIT,
+      y: cell.row * ROOM_GRID_UNIT,
       zone: null,
     }));
 });
@@ -192,16 +478,65 @@ const parsedFixtures = computed<RoomFixture[]>(() => {
   return fixtures.value.map((fixture) => ({
     id: fixture.id,
     type: fixture.type,
-    x: fixture.col * GRID_UNIT,
-    y: fixture.row * GRID_UNIT,
-    width: fixture.width * GRID_UNIT,
-    height: fixture.height * GRID_UNIT,
+    x: fixture.col * ROOM_GRID_UNIT,
+    y: fixture.row * ROOM_GRID_UNIT,
+    width: fixture.width * ROOM_GRID_UNIT,
+    height: fixture.height * ROOM_GRID_UNIT,
     label: fixture.label,
   }));
 });
 
+const builderRenderableFixtures = computed(() => {
+  return fixtures.value.map((fixture) => ({
+    placement: fixture,
+    pixelFixture: buildRoomFixtureFromGridPlacement(fixture),
+  }));
+});
+
+const builderFloorFixtures = computed(() => {
+  return builderRenderableFixtures.value.filter((fixture) => !isWallFixtureType(fixture.placement.type));
+});
+
+const builderWallFixtures = computed(() => {
+  return builderRenderableFixtures.value.filter((fixture) => isWallFixtureType(fixture.placement.type));
+});
+
+const ghostRenderableFixture = computed<RoomFixture | null>(() => {
+  if (!ghostPlacement.value || ghostPlacement.value.type === "seat") {
+    return null;
+  }
+
+  return {
+    id: `ghost-${ghostPlacement.value.type}`,
+    type: ghostPlacement.value.type,
+    x: ghostPlacement.value.col * ROOM_GRID_UNIT,
+    y: ghostPlacement.value.row * ROOM_GRID_UNIT,
+    width: ghostPlacement.value.width * ROOM_GRID_UNIT,
+    height: ghostPlacement.value.height * ROOM_GRID_UNIT,
+    label: buildRoomFixtureLabel(ghostPlacement.value.type),
+  };
+});
+
+const previewFloorFixtures = computed(() => {
+  return parsedFixtures.value.filter((fixture) => !isWallFixtureType(fixture.type));
+});
+
+const previewWallFixtures = computed(() => {
+  return parsedFixtures.value.filter((fixture) => isWallFixtureType(fixture.type));
+});
+
+function ghostPlacementClass(canPlace: boolean, type: BuilderTool | "seat"): string {
+  if (!canPlace) {
+    return "border-burgundy bg-burgundy/10 text-burgundy opacity-70";
+  }
+  if (type === "seat") {
+    return "border-navy/70 bg-navy/10";
+  }
+  return "border-navy/40 bg-white/40";
+}
+
 const isValid = computed(() => {
-  return name.value.trim().length > 0 && parsedSeats.value.length > 0;
+  return name.value.trim().length > 0;
 });
 
 async function submit(): Promise<void> {
@@ -215,6 +550,8 @@ async function submit(): Promise<void> {
   try {
     const payload = {
       name: name.value.trim(),
+      grid_cols: roomGrid.value.cols,
+      grid_rows: roomGrid.value.rows,
       seats: parsedSeats.value,
       fixtures: parsedFixtures.value,
     };
@@ -263,22 +600,22 @@ async function removeTemplate(): Promise<void> {
       @click="emit('close')"
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
-      <div class="flex max-h-[calc(100vh-2rem)] w-full max-w-6xl flex-col border border-navy bg-white shadow-brutal">
+      <div class="flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-white shadow-brutal 2xl:max-w-[1680px]">
         <div class="flex flex-col gap-4 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div class="space-y-1 px-6 pt-6 md:px-8 md:pt-8">
             <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Klassrumsmallar
+              Klassrum
             </p>
             <h2 class="font-serif text-2xl text-navy">
               {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
             </h2>
             <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-              Placera ut elevplatser och viktiga rumsdetaljer så planeringen får en tydlig whiteboard-liknande översikt redan nu och en bättre exportyta senare.
+              Placera ut sittplatser och möbler i klassrummet.
             </p>
           </div>
           <button
             type="button"
-            class="mb-0 mr-6 mt-6 btn-ghost h-[32px] w-[32px] self-start px-0 py-0 shadow-none border-navy/30 bg-canvas md:mr-8 md:mt-8 lg:self-auto"
+            class="mb-0 mr-6 mt-6 btn-ghost h-[32px] w-[32px] self-start border-navy/30 bg-canvas px-0 py-0 shadow-none md:mr-8 md:mt-8 lg:self-auto"
             @click="emit('close')"
           >
             ×
@@ -295,7 +632,7 @@ async function removeTemplate(): Promise<void> {
             </div>
           </div>
 
-          <div class="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+          <div class="mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)]">
             <aside class="space-y-5">
               <div class="space-y-1">
                 <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -309,13 +646,67 @@ async function removeTemplate(): Promise<void> {
                 >
               </div>
 
+              <div class="border border-navy bg-white p-4 shadow-brutal-sm">
+                <div class="mb-3 flex items-end justify-between gap-3">
+                  <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                    Storlek
+                  </h3>
+                  <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                    {{ roomGrid.cols }} × {{ roomGrid.rows }}
+                  </span>
+                </div>
+
+                <div class="grid gap-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm text-navy/70">Bredd</span>
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+                        :disabled="!canShrinkCols"
+                        @click="resizeRoom('cols', -1)"
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none"
+                        @click="resizeRoom('cols', 1)"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm text-navy/70">Höjd</span>
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+                        :disabled="!canShrinkRows"
+                        @click="resizeRoom('rows', -1)"
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none"
+                        @click="resizeRoom('rows', 1)"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
                 <div class="mb-3 flex items-end justify-between gap-3">
                   <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
                     Verktyg
                   </h3>
                   <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                    {{ parsedSeats.length }} platser
+                    {{ parsedSeats.length }} sittplatser
                   </span>
                 </div>
 
@@ -346,49 +737,207 @@ async function removeTemplate(): Promise<void> {
                   >
                     Sudda
                   </button>
+                  <button
+                    type="button"
+                    data-test="builder-clear-room"
+                    class="btn-ghost justify-start border-navy/30 bg-white text-navy shadow-none"
+                    @click="clearRoomContents"
+                  >
+                    Rensa
+                  </button>
                 </div>
               </div>
 
               <div class="border border-navy bg-white p-4 shadow-brutal-sm">
                 <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
-                  Lägesnotering
+                  Så här gör du
                 </h3>
                 <p class="mt-2 text-sm leading-relaxed text-navy/70">
-                  Välj ett verktyg och klicka i rutnätet. Fixturer upptar flera rutor och kan inte överlappa platser eller andra fixturer.
+                  Välj ett verktyg och för pekaren över rutnätet för att se hur objektet hamnar innan du klickar. Möbler och andra objekt kan inte överlappa sittplatser eller varandra.
                 </p>
               </div>
             </aside>
 
-            <section class="space-y-4">
-              <div class="overflow-auto border border-navy bg-canvas p-4 shadow-brutal-sm">
-                <div
-                  class="relative grid gap-1"
-                  :style="{ gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, minWidth: `${GRID_COLS * 52}px` }"
-                >
-                  <template
-                    v-for="row in GRID_ROWS"
-                    :key="`row-${row}`"
-                  >
-                    <button
-                      v-for="col in GRID_COLS"
-                      :key="`cell-${row}-${col}`"
-                      type="button"
-                      class="relative aspect-square border text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] transition-colors"
-                      :class="{
-                        'border-navy/20 bg-white hover:border-navy/50': !isSeatAt(row - 1, col - 1) && !findFixtureAt(row - 1, col - 1),
-                        'border-navy bg-navy text-canvas': isSeatAt(row - 1, col - 1),
-                        'border-burgundy bg-burgundy/15 text-burgundy': findFixtureAt(row - 1, col - 1)?.type === 'teacher_desk',
-                        'border-navy bg-warning/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'whiteboard',
-                        'border-navy bg-canvas text-navy/70': findFixtureAt(row - 1, col - 1)?.type === 'window',
-                        'border-navy bg-success/20 text-navy': findFixtureAt(row - 1, col - 1)?.type === 'door',
-                      }"
-                      @click="toggleGridCell(row - 1, col - 1)"
+            <section class="flex min-h-0 flex-col gap-4">
+              <div class="flex min-h-0 flex-1 flex-col border border-navy bg-canvas p-4 shadow-brutal-sm">
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
+                      Klassrumsyta
+                    </h3>
+                    <p class="text-xs text-navy/60">
+                      Anpassa vyn utan att ändra klassrummets sparade geometri.
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span
+                      data-test="builder-zoom-percent"
+                      class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
                     >
-                      <span v-if="findFixtureAt(row - 1, col - 1) && findFixtureAt(row - 1, col - 1)?.row === row - 1 && findFixtureAt(row - 1, col - 1)?.col === col - 1">
-                        {{ findFixtureAt(row - 1, col - 1)?.label }}
-                      </span>
+                      {{ builderScalePercent }}%
+                    </span>
+                    <button
+                      type="button"
+                      data-test="builder-zoom-out"
+                      class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+                      @click="zoomOut"
+                    >
+                      −
                     </button>
-                  </template>
+                    <button
+                      type="button"
+                      data-test="builder-zoom-in"
+                      class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+                      @click="zoomIn"
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      data-test="builder-zoom-fit"
+                      class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+                      @click="resetBuilderZoom"
+                    >
+                      Anpassa
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  ref="builderViewport"
+                  data-test="room-builder-viewport"
+                  class="min-h-[560px] flex-1 overflow-auto border border-navy/20 bg-white/70 p-3 lg:min-h-[640px]"
+                >
+                  <div class="flex min-h-full min-w-full items-start justify-center">
+                    <div
+                      class="relative shrink-0"
+                      :style="builderScaledSurfaceStyle"
+                    >
+                      <div
+                        class="absolute left-0 top-0"
+                        :style="builderSurfaceTransformStyle"
+                        @mouseleave="clearHoverState"
+                      >
+                        <div
+                          class="absolute"
+                          :style="roomFloorLayerStyle"
+                        >
+                          <div
+                            class="relative grid h-full w-full gap-1"
+                            :style="{ gridTemplateColumns: `repeat(${roomGrid.cols}, minmax(0, 1fr))` }"
+                          >
+                            <template
+                              v-for="row in roomGrid.rows"
+                              :key="`row-${row}`"
+                            >
+                              <button
+                                v-for="col in roomGrid.cols"
+                                :key="`cell-${row}-${col}`"
+                                type="button"
+                                class="relative aspect-square border border-navy/20 bg-white text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] transition-colors hover:border-navy/50"
+                                @mousemove="updateHoverState($event, row - 1, col - 1)"
+                                @focus="hoveredCell = { row: row - 1, col: col - 1 }"
+                                @click="toggleGridCell(row - 1, col - 1, $event)"
+                              />
+                            </template>
+
+                            <div class="pointer-events-none absolute inset-0 z-10">
+                              <div
+                                v-for="fixture in builderFloorFixtures"
+                                :key="fixture.placement.id"
+                                class="absolute overflow-visible"
+                                :style="getFloorPlacementStyle(fixture.placement)"
+                              >
+                                <RoomFixtureArtwork
+                                  :fixture="fixture.pixelFixture"
+                                  :fixtures="parsedFixtures"
+                                  :grid="roomGrid"
+                                  surface="builder-grid"
+                                />
+                              </div>
+
+                              <div
+                                v-for="seat in parsedSeats"
+                                :key="seat.id"
+                                class="absolute"
+                                :style="getSeatFrameStyle(seat)"
+                              >
+                                <RoomSeatToken :seat-id="seat.id" />
+                              </div>
+                            </div>
+
+                            <div
+                              v-if="ghostPlacement && (!ghostRenderableFixture || ghostPlacement.type === 'seat' || !isWallFixtureType(ghostPlacement.type))"
+                              class="pointer-events-none absolute inset-0 z-20"
+                            >
+                              <div
+                                v-if="ghostPlacement.type === 'seat'"
+                                class="absolute"
+                                :style="getSeatGhostFrameStyle(ghostPlacement.row, ghostPlacement.col)"
+                              >
+                                <RoomSeatToken
+                                  :seat-id="`seat-${ghostPlacement.row + 1}-${ghostPlacement.col + 1}`"
+                                  ghost
+                                />
+                              </div>
+                              <div
+                                v-else-if="ghostRenderableFixture"
+                                class="absolute rounded-sm border-2 border-dashed"
+                                :class="ghostPlacementClass(ghostPlacement.canPlace, ghostPlacement.type)"
+                                :style="{
+                                  left: `${ghostPlacement.col * ROOM_GRID_UNIT}px`,
+                                  top: `${ghostPlacement.row * ROOM_GRID_UNIT}px`,
+                                  width: `${ghostPlacement.width * ROOM_GRID_UNIT}px`,
+                                  height: `${ghostPlacement.height * ROOM_GRID_UNIT}px`,
+                                }"
+                              >
+                                <RoomFixtureArtwork
+                                  :fixture="ghostRenderableFixture"
+                                  :grid="roomGrid"
+                                  surface="ghost"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          class="pointer-events-none absolute inset-0 z-10"
+                        >
+                          <div
+                            v-for="fixture in builderWallFixtures"
+                            :key="fixture.placement.id"
+                            class="absolute overflow-visible"
+                            :style="getWallFixtureFrameStyle(fixture.pixelFixture, roomGrid)"
+                          >
+                            <RoomFixtureArtwork
+                              :fixture="fixture.pixelFixture"
+                              :fixtures="parsedFixtures"
+                              :grid="roomGrid"
+                              surface="builder-grid"
+                            />
+                          </div>
+                        </div>
+
+                        <div
+                          v-if="ghostPlacement && ghostPlacement.type !== 'seat' && ghostRenderableFixture && isWallFixtureType(ghostPlacement.type)"
+                          class="pointer-events-none absolute inset-0 z-20"
+                        >
+                          <div
+                            class="absolute rounded-sm border-2 border-dashed"
+                            :class="ghostPlacementClass(ghostPlacement.canPlace, ghostPlacement.type)"
+                            :style="getWallFixtureFrameStyle(ghostRenderableFixture, roomGrid)"
+                          >
+                            <RoomFixtureArtwork
+                              :fixture="ghostRenderableFixture"
+                              :grid="roomGrid"
+                              surface="ghost"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -398,42 +947,62 @@ async function removeTemplate(): Promise<void> {
                     Förhandsvisning
                   </h3>
                   <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                    {{ parsedFixtures.length }} fixturer
+                    {{ parsedSeats.length }} sittplatser
                   </span>
                 </summary>
 
                 <div class="relative mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
                   <div
                     class="relative"
-                    :style="{ width: `${GRID_COLS * GRID_UNIT}px`, height: `${GRID_ROWS * GRID_UNIT}px` }"
+                    :style="roomSurfaceStyle"
                   >
                     <div
-                      class="absolute inset-0 opacity-15"
-                      style="background-image: linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px); background-size: 24px 24px;"
+                      class="absolute opacity-15"
+                      :style="{
+                        ...roomFloorLayerStyle,
+                        backgroundImage: 'linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px)',
+                        backgroundSize: '24px 24px',
+                      }"
                     />
 
                     <div
-                      v-for="fixture in parsedFixtures"
-                      :key="fixture.id"
-                      class="absolute flex items-center justify-center border text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
-                      :class="{
-                        'border-navy bg-warning/25 text-navy': fixture.type === 'whiteboard',
-                        'border-burgundy bg-burgundy/10 text-burgundy': fixture.type === 'teacher_desk',
-                        'border-navy bg-white text-navy/70': fixture.type === 'window',
-                        'border-success bg-success/20 text-navy': fixture.type === 'door',
-                      }"
-                      :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
+                      class="absolute"
+                      :style="roomFloorLayerStyle"
                     >
-                      {{ fixture.label }}
+                      <div
+                        v-for="fixture in previewFloorFixtures"
+                        :key="fixture.id"
+                        class="absolute overflow-visible"
+                        :style="getFloorFixtureFrameStyle(fixture)"
+                      >
+                        <RoomFixtureArtwork
+                          :fixture="fixture"
+                          :fixtures="parsedFixtures"
+                          :grid="roomGrid"
+                        />
+                      </div>
+
+                      <div
+                        v-for="seat in parsedSeats"
+                        :key="seat.id"
+                        class="absolute"
+                        :style="getSeatFrameStyle(seat)"
+                      >
+                        <RoomSeatToken :seat-id="seat.id" />
+                      </div>
                     </div>
 
                     <div
-                      v-for="seat in parsedSeats"
-                      :key="seat.id"
-                      class="absolute flex h-[72px] w-[72px] items-center justify-center border border-navy bg-white text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] shadow-brutal-sm"
-                      :style="{ left: `${seat.x + 12}px`, top: `${seat.y + 12}px` }"
+                      v-for="fixture in previewWallFixtures"
+                      :key="fixture.id"
+                      class="absolute overflow-visible"
+                      :style="getWallFixtureFrameStyle(fixture, roomGrid)"
                     >
-                      {{ seat.id }}
+                      <RoomFixtureArtwork
+                        :fixture="fixture"
+                        :fixtures="parsedFixtures"
+                        :grid="roomGrid"
+                      />
                     </div>
                   </div>
                 </div>

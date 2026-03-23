@@ -1,9 +1,9 @@
 /**
  * Planner class-workspace component tests.
  *
- * These tests verify that the class workspace stays neutral on entry, focuses
- * one task surface at a time, and keeps history hidden behind task-specific
- * drawers.
+ * These tests verify that the class workspace stays neutral on entry, uses the
+ * top segmented toggle as the only mode switch, and keeps the overview free of
+ * workspace-local history controls.
  */
 
 import { mount } from "@vue/test-utils";
@@ -34,13 +34,13 @@ describe("PlannerClassWorkspace", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Välj arbetsyta");
+    expect(wrapper.text()).toContain("Klassöversikt");
     expect(wrapper.text()).toContain("28 elever");
     expect(wrapper.text()).not.toContain("Grupparbete för SA24D");
     expect(wrapper.text()).not.toContain("Sittplacering för SA24D");
   });
 
-  it("keeps overview cards actionable instead of rendering a second task stepper", async () => {
+  it("keeps only class editing in the overview cards", async () => {
     const wrapper = mount(PlannerClassWorkspace, {
       props: {
         isLoadingWorkspace: false,
@@ -50,25 +50,19 @@ describe("PlannerClassWorkspace", () => {
 
     const buttons = wrapper.findAll("button");
     const editRosterButton = buttons.find((button) => button.text() === "Redigera klass");
-    const openGroupingButton = buttons.find((button) => button.text() === "Öppna grupper");
-    const openSeatingButton = buttons.find((button) => button.text() === "Öppna sittplatser");
 
     expect(editRosterButton).toBeDefined();
-    expect(openGroupingButton).toBeDefined();
-    expect(openSeatingButton).toBeDefined();
+    expect(wrapper.text()).not.toContain("Öppna grupper");
+    expect(wrapper.text()).not.toContain("Öppna sittplatser");
+    expect(wrapper.text()).not.toContain("Visa grupphistorik");
+    expect(wrapper.text()).not.toContain("Visa sittplatshistorik");
 
-    if (!editRosterButton || !openGroupingButton || !openSeatingButton) {
-      throw new Error("Expected overview actions for roster, grouping, and seating.");
+    if (!editRosterButton) {
+      throw new Error("Expected the overview to expose class editing only.");
     }
 
     await editRosterButton.trigger("click");
     expect(wrapper.emitted("edit-roster")).toEqual([[]]);
-
-    await openGroupingButton.trigger("click");
-    expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
-
-    await openSeatingButton.trigger("click");
-    expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: null }]]);
   });
 
   it("uses the top selector as direct task entry instead of a second confirm step", async () => {
@@ -98,7 +92,7 @@ describe("PlannerClassWorkspace", () => {
     expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: null }]]);
   });
 
-  it("keeps task history hidden until the teacher opens the matching history drawer", async () => {
+  it("does not expose grouping history controls directly in overview", () => {
     const wrapper = mount(PlannerClassWorkspace, {
       props: {
         isLoadingWorkspace: false,
@@ -121,15 +115,8 @@ describe("PlannerClassWorkspace", () => {
     });
 
     expect(wrapper.text()).not.toContain("Ingen grupphistorik ännu.");
-    const historyButton = wrapper.findAll("button").find((button) => button.text() === "Visa grupphistorik");
-    expect(historyButton).toBeDefined();
-    if (!historyButton) {
-      throw new Error("Expected the overview to expose a grouping history button.");
-    }
-    await historyButton.trigger("click");
-
-    expect(wrapper.text()).toContain("Historik");
-    expect(wrapper.text()).toContain("Grupper");
-    expect(wrapper.text()).toContain("Revision 2");
+    expect(wrapper.text()).not.toContain("Visa grupphistorik");
+    expect(wrapper.text()).not.toContain("Historik");
+    expect(wrapper.text()).not.toContain("Revision 2");
   });
 });

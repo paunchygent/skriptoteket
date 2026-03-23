@@ -105,6 +105,14 @@ async function loadClassWorkspaceSummary(rosterId: string): Promise<void> {
   classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
 }
 
+async function refreshClassWorkspaceSummaryForSelectedRoster(): Promise<void> {
+  const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
+  if (!rosterId) {
+    return;
+  }
+  classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
+}
+
 async function openClassWorkspace(rosterId: string): Promise<void> {
   plannerActionError.value = null;
   selectedRosterId.value = rosterId;
@@ -183,6 +191,7 @@ async function openGroupingWorkspace(payload: { templateId: string | null }): Pr
       await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "grouping");
     }
     setResumableDraft(await plannerState.getResumableDraft());
+    await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -207,6 +216,7 @@ async function openSeatingWorkspace(payload: { templateId: string | null }): Pro
       await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "seating");
     }
     setResumableDraft(await plannerState.getResumableDraft());
+    await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -348,12 +358,48 @@ async function startNewGroupingDraft(payload: { templateId: string | null }): Pr
     }
     await plannerState.startNewGroupingDraft(rosterId, payload.templateId);
     setResumableDraft(await plannerState.getResumableDraft());
+    await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
       "Kunde inte starta ett nytt grupputkast just nu.",
+    );
+  }
+}
+
+async function openGroupingHistoryDraft(draftId: string): Promise<void> {
+  plannerActionError.value = null;
+  try {
+    await plannerState.activateGroupingHistoryDraft(draftId);
+    setResumableDraft(await plannerState.getResumableDraft());
+    await refreshClassWorkspaceSummaryForSelectedRoster();
+    plannerInitialView.value = "groups";
+    currentScreen.value = "planner";
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte öppna det historiska grupputkastet just nu.",
+    );
+  }
+}
+
+async function deleteGroupingHistoryDraft(draftId: string): Promise<void> {
+  const rosterId = selectedRosterId.value ?? classWorkspaceSummary.value?.roster.id ?? null;
+  if (!rosterId) {
+    return;
+  }
+
+  plannerActionError.value = null;
+  try {
+    await plannerState.deleteGroupingHistoryDraft(draftId);
+    await loadClassWorkspaceSummary(rosterId);
+    setResumableDraft(await plannerState.getResumableDraft());
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte ta bort det historiska grupputkastet just nu.",
     );
   }
 }
@@ -464,7 +510,7 @@ function openTemplateEdit(template: RoomTemplate): void {
           Klassrumskartan
         </h1>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Börja med klassen, öppna sedan rätt arbetsyta för grupper eller sittplatser, och håll klassrummet som ett stöd där det faktiskt behövs.
+          Välj en klass för att arbeta vidare med grupper eller sittplatser.
         </p>
       </div>
     </header>
@@ -524,9 +570,13 @@ function openTemplateEdit(template: RoomTemplate): void {
       v-if="!isBootstrapping && !bootstrapError && currentScreen === 'planner'"
       :available-templates="availableTemplates"
       :initial-view="plannerInitialView"
+      :workspace-summary="classWorkspaceSummary"
       @change-grouping-template="void changeGroupingTemplate($event)"
       @change-seating-template="void changeSeatingTemplate($event)"
       @new-grouping-draft="void startNewGroupingDraft($event)"
+      @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
+      @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"
+      @edit-current-template="openTemplateEdit"
       @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
       @exit-to-landing="void exitPlannerToLanding()"
     />

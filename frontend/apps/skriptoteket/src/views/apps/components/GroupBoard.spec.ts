@@ -64,6 +64,9 @@ describe("GroupBoard", () => {
 
     await wrapper.get('[data-test="new-grouping-draft"]').trigger("click");
     expect(wrapper.emitted("new-grouping-draft")).toEqual([[]]);
+
+    await wrapper.get('[data-test="grouping-history"]').trigger("click");
+    expect(wrapper.emitted("open-history")).toEqual([[]]);
   });
 
   it("uses backend-owned undo and redo availability", async () => {
@@ -89,6 +92,7 @@ describe("GroupBoard", () => {
     const wrapper = mount(GroupBoard);
 
     expect((wrapper.get('[data-test="new-grouping-draft"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect((wrapper.get('[data-test="grouping-history"]').element as HTMLButtonElement).disabled).toBe(true);
     expect((wrapper.get('[data-test="randomize-groups"]').element as HTMLButtonElement).disabled).toBe(true);
     expect((wrapper.get('[data-test="add-group"]').element as HTMLButtonElement).disabled).toBe(true);
     expect((wrapper.get('input[type="text"]').element as HTMLInputElement).disabled).toBe(true);

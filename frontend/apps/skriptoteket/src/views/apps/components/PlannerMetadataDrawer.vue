@@ -69,7 +69,7 @@ const currentMeta = computed(() => {
         v-if="!selectedStudent || !currentMeta"
         class="flex flex-1 items-center justify-center p-6 text-center text-sm leading-relaxed text-navy/60"
       >
-        Klicka på en elev i sittkartan för att öppna lärarens elevanteckningar.
+        Klicka på en elev i sittschemat för att öppna lärarens elevanteckningar.
       </div>
 
       <div

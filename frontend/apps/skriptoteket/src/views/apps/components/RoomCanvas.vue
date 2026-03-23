@@ -11,6 +11,15 @@
 import { computed } from "vue";
 
 import SeatNode from "./SeatNode.vue";
+import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
+import type { RoomFixture } from "../classroomPlannerTypes";
+import {
+  getFloorFixtureFrameStyle,
+  getRoomFloorLayerStyle,
+  getRoomSurfaceStyle,
+  getWallFixtureFrameStyle,
+} from "../roomFixturePresentation";
+import { isWallFixtureType, normalizeRoomGrid } from "../roomFixtureLayout";
 import { useClassroomState } from "../useClassroomState";
 
 const props = defineProps<{
@@ -22,6 +31,15 @@ const emit = defineEmits<{
 }>();
 
 const state = useClassroomState();
+const roomGrid = computed(() => normalizeRoomGrid(state.template));
+const roomSurfaceStyle = computed(() => getRoomSurfaceStyle(roomGrid.value));
+const roomFloorLayerStyle = computed(() => getRoomFloorLayerStyle(roomGrid.value));
+const floorFixtures = computed(() => {
+  return state.fixtures.filter((fixture) => !isWallFixtureType(fixture.type));
+});
+const wallFixtures = computed(() => {
+  return state.fixtures.filter((fixture) => isWallFixtureType(fixture.type));
+});
 
 function onDragStart(event: DragEvent, studentId: string): void {
   if (event.dataTransfer) {
@@ -45,36 +63,12 @@ function onDragOver(event: DragEvent): void {
   }
 }
 
-const canvasStyle = computed(() => {
-  let maxX = 960;
-  let maxY = 720;
-  for (const seat of state.seats) {
-    maxX = Math.max(maxX, seat.x + 120);
-    maxY = Math.max(maxY, seat.y + 120);
-  }
-  for (const fixture of state.fixtures) {
-    maxX = Math.max(maxX, fixture.x + fixture.width + 48);
-    maxY = Math.max(maxY, fixture.y + fixture.height + 48);
-  }
-  return {
-    width: `${maxX}px`,
-    height: `${maxY}px`,
-  };
-});
+function floorFixtureStyle(fixture: RoomFixture): Record<string, string> {
+  return getFloorFixtureFrameStyle(fixture);
+}
 
-function fixtureToneClass(type: string): string {
-  switch (type) {
-    case "whiteboard":
-      return "border-navy bg-warning/20 text-navy";
-    case "teacher_desk":
-      return "border-burgundy bg-burgundy/10 text-burgundy";
-    case "window":
-      return "border-navy bg-white text-navy/70";
-    case "door":
-      return "border-success bg-success/20 text-navy";
-    default:
-      return "border-navy bg-white text-navy";
-  }
+function wallFixtureStyle(fixture: RoomFixture): Record<string, string> {
+  return getWallFixtureFrameStyle(fixture, roomGrid.value);
 }
 </script>
 
@@ -133,42 +127,66 @@ function fixtureToneClass(type: string): string {
             Klassrumsyta
           </p>
           <h3 class="font-serif text-xl text-navy">
-            Sittkarta
+            Sittschema
           </h3>
         </div>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Dragga elever till en plats eller byt två elevers placering genom att släppa ovanpå en upptagen stol.
+          Dra elever till en plats eller byt två elevers placering genom att släppa ovanpå en upptagen stol.
         </p>
       </div>
 
       <div class="mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
         <div
           class="relative room-canvas-surface"
-          :style="canvasStyle"
+          :style="roomSurfaceStyle"
         >
-          <div class="room-canvas-grid absolute inset-0 opacity-15" />
+          <div
+            class="absolute room-canvas-grid opacity-15"
+            :style="roomFloorLayerStyle"
+          />
 
           <div
-            v-for="fixture in state.fixtures"
-            :key="fixture.id"
-            class="absolute flex items-center justify-center border px-2 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
-            :class="fixtureToneClass(fixture.type)"
-            :style="{ left: `${fixture.x}px`, top: `${fixture.y}px`, width: `${fixture.width}px`, height: `${fixture.height}px` }"
+            class="absolute"
+            :style="roomFloorLayerStyle"
           >
-            {{ fixture.label ?? fixture.type }}
+            <div
+              v-for="fixture in floorFixtures"
+              :key="fixture.id"
+              class="absolute overflow-visible"
+              :style="floorFixtureStyle(fixture)"
+            >
+              <RoomFixtureArtwork
+                :fixture="fixture"
+                :fixtures="state.fixtures"
+                :grid="roomGrid"
+              />
+            </div>
+
+            <SeatNode
+              v-for="seat in state.seats"
+              :key="seat.id"
+              :seat="seat"
+              :student="state.studentBySeatId[seat.id]"
+              :selected="props.selectedStudentId === state.studentBySeatId[seat.id]?.id"
+              @student-dropped="state.assignStudentToSeat"
+              @student-removed="state.clearSeatAssignment"
+              @swap-requested="state.swapSeatAssignments"
+              @student-selected="emit('student-selected', $event)"
+            />
           </div>
 
-          <SeatNode
-            v-for="seat in state.seats"
-            :key="seat.id"
-            :seat="seat"
-            :student="state.studentBySeatId[seat.id]"
-            :selected="props.selectedStudentId === state.studentBySeatId[seat.id]?.id"
-            @student-dropped="state.assignStudentToSeat"
-            @student-removed="state.clearSeatAssignment"
-            @swap-requested="state.swapSeatAssignments"
-            @student-selected="emit('student-selected', $event)"
-          />
+          <div
+            v-for="fixture in wallFixtures"
+            :key="fixture.id"
+            class="absolute overflow-visible"
+            :style="wallFixtureStyle(fixture)"
+          >
+            <RoomFixtureArtwork
+              :fixture="fixture"
+              :fixtures="state.fixtures"
+              :grid="roomGrid"
+            />
+          </div>
         </div>
       </div>
     </section>

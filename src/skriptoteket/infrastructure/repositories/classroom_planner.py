@@ -734,6 +734,8 @@ class PostgreSQLRoomTemplateRepository(RoomTemplateRepositoryProtocol):
             id=model.id,
             owner_user_id=model.owner_user_id,
             name=model.name,
+            grid_cols=model.grid_cols,
+            grid_rows=model.grid_rows,
             seats=[Seat(id=s["id"], x=s["x"], y=s["y"], zone=s.get("zone")) for s in model.seats],
             fixtures=[
                 RoomFixture(
@@ -762,6 +764,8 @@ class PostgreSQLRoomTemplateRepository(RoomTemplateRepositoryProtocol):
                 id=model.id,
                 owner_user_id=model.owner_user_id,
                 name=model.name,
+                grid_cols=model.grid_cols,
+                grid_rows=model.grid_rows,
                 seats=[
                     Seat(id=s["id"], x=s["x"], y=s["y"], zone=s.get("zone")) for s in model.seats
                 ],
@@ -787,6 +791,8 @@ class PostgreSQLRoomTemplateRepository(RoomTemplateRepositoryProtocol):
         model = await self._session.get(RoomTemplateModel, template.id)
         if model:
             model.name = template.name
+            model.grid_cols = template.grid_cols
+            model.grid_rows = template.grid_rows
             model.seats = [seat.model_dump() for seat in template.seats]
             model.fixtures = [fixture.model_dump(mode="json") for fixture in template.fixtures]
             model.updated_at = template.updated_at
@@ -795,6 +801,8 @@ class PostgreSQLRoomTemplateRepository(RoomTemplateRepositoryProtocol):
                 id=template.id,
                 owner_user_id=template.owner_user_id,
                 name=template.name,
+                grid_cols=template.grid_cols,
+                grid_rows=template.grid_rows,
                 seats=[seat.model_dump() for seat in template.seats],
                 fixtures=[fixture.model_dump(mode="json") for fixture in template.fixtures],
                 created_at=template.created_at,

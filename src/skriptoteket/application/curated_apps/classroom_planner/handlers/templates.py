@@ -11,6 +11,8 @@ from collections import Counter
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    DEFAULT_ROOM_GRID_COLS,
+    DEFAULT_ROOM_GRID_ROWS,
     RoomFixture,
     RoomTemplate,
     Seat,
@@ -87,6 +89,8 @@ class CreateRoomTemplateHandler:
         *,
         owner_user_id: UUID,
         name: str,
+        grid_cols: int = DEFAULT_ROOM_GRID_COLS,
+        grid_rows: int = DEFAULT_ROOM_GRID_ROWS,
         seats: list[Seat],
         fixtures: list[RoomFixture],
     ) -> RoomTemplate:
@@ -96,6 +100,8 @@ class CreateRoomTemplateHandler:
             id=self._id_generator.new_uuid(),
             owner_user_id=owner_user_id,
             name=name,
+            grid_cols=grid_cols,
+            grid_rows=grid_rows,
             seats=seats,
             fixtures=fixtures,
             created_at=now,
@@ -125,6 +131,8 @@ class UpdateRoomTemplateHandler:
         template_id: UUID,
         owner_user_id: UUID,
         name: str,
+        grid_cols: int = DEFAULT_ROOM_GRID_COLS,
+        grid_rows: int = DEFAULT_ROOM_GRID_ROWS,
         seats: list[Seat],
         fixtures: list[RoomFixture],
     ) -> RoomTemplate:
@@ -137,6 +145,8 @@ class UpdateRoomTemplateHandler:
             id=template.id,
             owner_user_id=template.owner_user_id,
             name=name,
+            grid_cols=grid_cols,
+            grid_rows=grid_rows,
             seats=seats,
             fixtures=fixtures,
             created_at=template.created_at,

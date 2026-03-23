@@ -24,7 +24,14 @@ export type Seat = {
   zone?: string | null;
 };
 
-export type RoomFixtureType = "whiteboard" | "teacher_desk" | "window" | "door";
+export type RoomFixtureType =
+  | "whiteboard"
+  | "teacher_desk"
+  | "window"
+  | "door"
+  | "round_table"
+  | "square_table"
+  | "bench";
 
 export type RoomFixture = {
   id: string;
@@ -39,6 +46,8 @@ export type RoomFixture = {
 export type RoomTemplate = {
   id: string;
   name: string;
+  grid_cols?: number;
+  grid_rows?: number;
   seats: Seat[];
   fixtures: RoomFixture[];
 };
@@ -145,15 +154,3 @@ export const emptyStudentPlanningMeta = (studentId: string): StudentPlanningMeta
   avoid_zone: null,
   notes: null,
 });
-
-export const roomFixturePalette: Array<{
-  type: RoomFixtureType;
-  label: string;
-  width: number;
-  height: number;
-}> = [
-  { type: "whiteboard", label: "Whiteboard", width: 3, height: 1 },
-  { type: "teacher_desk", label: "Lärarbord", width: 2, height: 1 },
-  { type: "window", label: "Fönster", width: 2, height: 1 },
-  { type: "door", label: "Dörr", width: 1, height: 1 },
-];

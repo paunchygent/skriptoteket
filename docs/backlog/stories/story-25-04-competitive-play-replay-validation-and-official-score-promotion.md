@@ -8,7 +8,7 @@ created: 2026-03-22
 epic: "EPIC-25"
 dependencies: ["ST-25-03", "ADR-0073"]
 acceptance_criteria:
-  - "Given a pending Pinball Teacher score submission with valid replay data that matches the declared `app_version` and `ruleset_id`, when validation completes, then the submission can be promoted to an official score."
+  - "Given a pending Flunk-Out Frenzy score submission with valid replay data that matches the declared `app_version` and `ruleset_id`, when validation completes, then the submission can be promoted to an official score."
   - "Given replay validation fails or the submission does not match the declared ruleset, when validation completes, then the submission is marked rejected with a stored reason and it never appears on the official leaderboard."
   - "Given a future balance or scoring change introduces a new `ruleset_id` or `season_id`, when leaderboard queries run, then incompatible runs remain scoped apart rather than merged into the same official board."
 data_impact: "Yes (promotion state + validation metadata)"

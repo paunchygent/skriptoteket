@@ -14,6 +14,8 @@ acceptance_criteria:
   - "Resuming the current grouping draft stays distinct from reopening an older superseded grouping draft."
   - "Any class-level grouping history remains clearly secondary to the active draft and its in-workspace undo/redo history."
   - "On desktop/laptop-sized viewports, grouping history opens as an overlay drawer rather than pushing the active workspace down."
+  - "The segmented toggle remains the only way to enter `Översikt`, `Grupper`, and `Sittplatser`; the overview does not duplicate those entry actions."
+  - "The grouping history trigger lives in the grouping action row so the continuity drawer feels native to that mode instead of being anchored in the overview."
   - "Smaller viewport behavior is treated as an adaptation of the desktop workflow rather than the source of the primary interaction model."
   - "Older historical grouping drafts can be deleted from the drawer through a secondary trash-can action with confirmation, without introducing active-draft delete controls into the main workspace."
   - "Live browser verification covers grouping draft creation, grouping randomize/manual edits, undo/redo, leaving and resuming the draft, and opening an older grouping draft from secondary history."
@@ -68,6 +70,9 @@ Finish the grouping draft workflow as a clear document-like model:
   - do not push the active workspace down when history opens
   - treat tablet/phone layouts as ports of the desktop workflow rather than the source of the
     canonical layout
+- Keep the overview quiet:
+  - the segmented toggle remains the only mode switch
+  - overview content stays class-focused instead of duplicating grouping/seating launch actions
 - Ensure creating a new grouping draft does not silently copy the current one.
 - Keep reopening earlier grouping drafts simple and class-scoped without turning them into
   teacher-facing "saved files".

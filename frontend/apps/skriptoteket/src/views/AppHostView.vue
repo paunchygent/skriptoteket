@@ -1,4 +1,12 @@
 <script setup lang="ts">
+/**
+ * Curated app host view.
+ *
+ * This view resolves a curated app deep link, fetches the generic app detail
+ * metadata, and selects either a bespoke SPA surface or the generic fallback
+ * view depending on the registered `ui_mode`.
+ */
+
 import { computed, defineAsyncComponent, ref, shallowRef, watch } from "vue";
 import type { Component } from "vue";
 import { useRoute } from "vue-router";
@@ -26,6 +34,7 @@ const bespokeView = shallowRef<Component | null>(null);
 const bespokeRegistry: Record<string, () => Promise<{ default: Component }>> = {
   "chemistry.reagent_prep_chef": () => import("./apps/ReagentPrepChefView.vue"),
   "classroom.group-seating-studio": () => import("./apps/ClassroomPlannerView.vue"),
+  "games.flunk_out_frenzy": () => import("./apps/FlunkOutFrenzyView.vue"),
 };
 
 function resolveBespokeView(appIdValue: string): void {

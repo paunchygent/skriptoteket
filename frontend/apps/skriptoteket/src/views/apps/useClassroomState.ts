@@ -11,7 +11,7 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
-import { ApiError, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
+import { ApiError, apiDelete, apiGet, apiPatch, apiPost, isApiError } from "../../api/client";
 import {
   type ClassWorkspaceSummary,
   type DraftHistoryStatus,
@@ -415,6 +415,28 @@ export const useClassroomState = defineStore("classroom-state", () => {
     await loadWorkspace(draft.value.id);
   }
 
+  async function activateGroupingHistoryDraft(draftId: string): Promise<void> {
+    beginWorkspaceTransition();
+    try {
+      saveStatus.value = "saving";
+      saveMessage.value = null;
+      const activatedDraft = await apiPost<PlanDraft>(
+        `/api/v1/apps/classroom.group-seating-studio/drafts/grouping/${draftId}/activate`,
+      );
+      await loadWorkspace(activatedDraft.id);
+    } finally {
+      endWorkspaceTransition();
+    }
+  }
+
+  async function deleteGroupingHistoryDraft(draftId: string): Promise<void> {
+    saveStatus.value = "saving";
+    saveMessage.value = null;
+    await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/drafts/grouping/${draftId}`);
+    saveStatus.value = "saved";
+    saveMessage.value = null;
+  }
+
   async function getResumableDraft(): Promise<ResumablePlanDraft | null> {
     return await apiGet<ResumablePlanDraft | null>(
       "/api/v1/apps/classroom.group-seating-studio/drafts/resumable",
@@ -506,6 +528,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     startNewGroupingDraft,
     loadWorkspace,
     reloadActiveWorkspace,
+    activateGroupingHistoryDraft,
+    deleteGroupingHistoryDraft,
     cancelPendingSave,
     flushPendingSave,
     undoGroupingDraft,

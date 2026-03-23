@@ -8,7 +8,9 @@ import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
+    ActivateGroupingHistoryDraftHandler,
     CreateGroupingDraftHandler,
+    DeleteHistoricGroupingDraftHandler,
     GetResumableDraftHandler,
     PatchDraftHandler,
     RedoDraftHandler,
@@ -524,3 +526,113 @@ async def test_redo_draft_rejects_foreign_drafts_before_mutation(uow, drafts, no
     assert error.value.code == ErrorCode.NOT_FOUND
     drafts.redo.assert_not_awaited()
     drafts.get_workspace.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_activate_grouping_history_draft_promotes_target_and_supersedes_current(
+    uow, drafts, clock, now
+):
+    owner_id = uuid4()
+    roster_id = uuid4()
+    target_id = uuid4()
+    active_id = uuid4()
+    handler = ActivateGroupingHistoryDraftHandler(uow, drafts, clock)
+    historic = PlanDraft(
+        id=target_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.SUPERSEDED,
+        revision=3,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    active = PlanDraft(
+        id=active_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=6,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.side_effect = [historic, historic]
+    drafts.get_active_by_roster_and_kind.return_value = active
+
+    result = await handler.handle(draft_id=target_id, owner_user_id=owner_id)
+
+    assert result.id == target_id
+    assert result.status == PlanDraftStatus.ACTIVE
+    drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+    )
+    assert drafts.save.await_count == 2
+    superseded = drafts.save.await_args_list[0].kwargs["draft"]
+    activated = drafts.save.await_args_list[1].kwargs["draft"]
+    assert superseded.id == active_id
+    assert superseded.status == PlanDraftStatus.SUPERSEDED
+    assert activated.id == target_id
+    assert activated.status == PlanDraftStatus.ACTIVE
+
+
+@pytest.mark.asyncio
+async def test_delete_historic_grouping_draft_rejects_active_drafts(uow, drafts, now):
+    owner_id = uuid4()
+    draft_id = uuid4()
+    handler = DeleteHistoricGroupingDraftHandler(uow, drafts)
+    active = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.return_value = active
+
+    with pytest.raises(DomainError) as error:
+        await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+
+    assert error.value.code == ErrorCode.VALIDATION_ERROR
+    drafts.delete.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_delete_historic_grouping_draft_deletes_superseded_drafts(uow, drafts, now):
+    owner_id = uuid4()
+    draft_id = uuid4()
+    roster_id = uuid4()
+    handler = DeleteHistoricGroupingDraftHandler(uow, drafts)
+    historic = PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.SUPERSEDED,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    drafts.get_by_id.side_effect = [historic, historic]
+
+    await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+
+    drafts.acquire_roster_kind_lifecycle_lock.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+    )
+    drafts.delete.assert_awaited_once_with(draft_id=draft_id)

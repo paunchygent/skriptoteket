@@ -10,8 +10,9 @@
 
 import { computed, ref, watch } from "vue";
 
-import type { RoomTemplate } from "../classroomPlannerTypes";
+import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
 import GroupBoard from "./GroupBoard.vue";
+import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import RoomCanvas from "./RoomCanvas.vue";
@@ -23,10 +24,12 @@ const props = withDefaults(
   defineProps<{
     availableTemplates?: RoomTemplate[];
     initialView?: PlannerView;
+    workspaceSummary?: ClassWorkspaceSummary | null;
   }>(),
   {
     availableTemplates: () => [],
     initialView: "groups",
+    workspaceSummary: null,
   },
 );
 
@@ -34,6 +37,9 @@ const emit = defineEmits<{
   (e: "change-grouping-template", payload: { templateId: string | null }): void;
   (e: "change-seating-template", payload: { templateId: string | null }): void;
   (e: "new-grouping-draft", payload: { templateId: string | null }): void;
+  (e: "open-grouping-history-draft", draftId: string): void;
+  (e: "delete-grouping-history-draft", draftId: string): void;
+  (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
   (e: "exit-to-landing"): void;
 }>();
@@ -53,6 +59,7 @@ function resolvePlannerView(requestedView: PlannerView): PlannerView {
 const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
 const selectedStudentId = ref<string | null>(null);
 const isMetadataDrawerOpen = ref(false);
+const isGroupingHistoryDrawerOpen = ref(false);
 const pendingGroupingTemplateId = ref("");
 const pendingSeatingTemplateId = ref("");
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
@@ -96,10 +103,13 @@ const saveStatusTone = computed<"neutral" | "success" | "warning" | "danger">(()
 const hasSaveMessage = computed(() => {
   return typeof plannerState.saveMessage === "string" && plannerState.saveMessage.length > 0;
 });
+const activeGroupingSummary = computed(() => props.workspaceSummary?.active_grouping_draft ?? null);
+const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping_history ?? []);
+const canEditCurrentTemplate = computed(() => currentView.value === "seats" && plannerState.template !== null);
 
 const currentViewHint = computed(() => {
   if (isSeatWorkspaceWithoutTemplate.value) {
-    return "Välj eller byt klassrum direkt här i sittarbetsytan.";
+    return "Välj eller byt klassrum direkt här i sittschemat.";
   }
   if (currentView.value === "groups") {
     return "Dra elever mellan grupperna tills grupparbetet sitter.";
@@ -144,6 +154,28 @@ function startNewGroupingDraft(): void {
   emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
 }
 
+function openGroupingHistoryDrawer(): void {
+  isGroupingHistoryDrawerOpen.value = true;
+}
+
+function closeGroupingHistoryDrawer(): void {
+  isGroupingHistoryDrawerOpen.value = false;
+}
+
+function openGroupingHistoryDraft(draftId: string): void {
+  emit("open-grouping-history-draft", draftId);
+}
+
+function deleteGroupingHistoryDraft(draftId: string): void {
+  emit("delete-grouping-history-draft", draftId);
+}
+
+function editCurrentTemplate(): void {
+  if (plannerState.template) {
+    emit("edit-current-template", plannerState.template);
+  }
+}
+
 function selectWorkspaceMode(value: string): void {
   if (value === "overview" || value === "grouping" || value === "seating") {
     emit("select-workspace-mode", value);
@@ -154,6 +186,7 @@ watch(
   () => props.initialView,
   (nextView) => {
     currentView.value = resolvePlannerView(nextView);
+    isGroupingHistoryDrawerOpen.value = false;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
   },
@@ -163,6 +196,7 @@ watch(
   () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null] as const,
   () => {
     currentView.value = resolvePlannerView(currentView.value);
+    isGroupingHistoryDrawerOpen.value = false;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
     pendingGroupingTemplateId.value = plannerState.template?.id ?? "";
@@ -192,7 +226,7 @@ watch(
 
     <PlannerTopPanel
       :title="plannerTitle"
-      :context-label="`${currentWorkspaceLabel} · ${isSeatWorkspaceWithoutTemplate ? 'välj klassrum i arbetsytan' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`}`"
+      :context-label="`${currentWorkspaceLabel} · ${isSeatWorkspaceWithoutTemplate ? 'välj klassrum i sittschemat' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`}`"
       :mode-value="workspaceModeValue"
       :supporting-text="currentViewHint"
       :status-label="saveStatusLabel"
@@ -220,7 +254,7 @@ watch(
         </div>
 
         <label class="block min-w-[18rem] space-y-2">
-          <span class="block text-sm font-semibold text-navy">Rumsmall</span>
+          <span class="block text-sm font-semibold text-navy">Klassrum</span>
           <select
             class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
             :value="plannerState.template?.id ?? pendingGroupingTemplateId"
@@ -243,6 +277,7 @@ watch(
 
     <article
       v-if="currentView === 'seats'"
+      data-test="seating-workspace-setup"
       class="space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
     >
       <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 lg:flex-row lg:items-end lg:justify-between">
@@ -251,22 +286,22 @@ watch(
             Klassrum
           </p>
           <h3 class="font-serif text-xl text-navy md:text-2xl">
-            {{ plannerState.template?.name ?? "Välj klassrum för sittplatserna" }}
+            {{ plannerState.template?.name ?? "Välj klassrum för sittschemat" }}
           </h3>
           <p class="max-w-[42rem] text-sm leading-relaxed text-navy/70">
-            Byt rum här när samma klass behöver en ny sittplacering i en annan sal.
+            Byt klassrum här när samma klass behöver ett nytt sittschema i en annan sal.
           </p>
         </div>
 
         <label class="block min-w-[18rem] space-y-2">
-          <span class="block text-sm font-semibold text-navy">Rumsmall</span>
+          <span class="block text-sm font-semibold text-navy">Klassrum</span>
           <select
             class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
             :value="plannerState.template?.id ?? pendingSeatingTemplateId"
             @change="changeSeatingTemplateFromEvent"
           >
             <option value="">
-              Välj rumsmall
+              Välj klassrum
             </option>
             <option
               v-for="template in availableTemplates"
@@ -283,7 +318,7 @@ watch(
         v-if="isSeatWorkspaceWithoutTemplate"
         class="border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
       >
-        Välj ett klassrum ovan för att öppna whiteboardytan. Du kan byta rum här senare utan att lämna sittarbetsytan.
+        Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
       </div>
     </article>
 
@@ -291,18 +326,61 @@ watch(
       v-if="currentView === 'groups'"
       :selected-student-id="selectedStudentId"
       @new-grouping-draft="startNewGroupingDraft"
+      @open-history="openGroupingHistoryDrawer"
       @student-selected="selectStudent"
     />
-    <RoomCanvas
+    <section
       v-else-if="!isSeatWorkspaceWithoutTemplate"
-      :selected-student-id="selectedStudentId"
-      @student-selected="selectStudent"
-    />
+      data-test="seating-workspace"
+      class="space-y-4"
+    >
+      <div class="flex flex-col gap-3 border border-navy bg-white p-4 shadow-brutal-sm md:flex-row md:items-center md:justify-between">
+        <div class="space-y-1">
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Sittstruktur
+          </p>
+          <h3 class="font-serif text-xl text-navy">
+            Aktuellt sittschema
+          </h3>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="edit-current-template"
+            :disabled="!canEditCurrentTemplate || plannerState.isWorkspaceBusy"
+            @click="editCurrentTemplate"
+          >
+            Redigera klassrum
+          </button>
+        </div>
+      </div>
+
+      <RoomCanvas
+        :selected-student-id="selectedStudentId"
+        @student-selected="selectStudent"
+      />
+    </section>
 
     <PlannerMetadataDrawer
       :selected-student-id="selectedStudentId"
       :open="isMetadataDrawerOpen"
       @close="isMetadataDrawerOpen = false"
+    />
+
+    <PlannerHistoryDrawer
+      :open="currentView === 'groups' && isGroupingHistoryDrawerOpen"
+      title="Grupper"
+      :active-summary="activeGroupingSummary"
+      :summaries="groupingHistorySummaries"
+      empty-label="Ingen grupphistorik ännu."
+      active-label="Aktuellt grupputkast"
+      history-label="Tidigare grupputkast"
+      :can-open-summaries="true"
+      :can-delete-summaries="true"
+      @close="closeGroupingHistoryDrawer"
+      @open-summary="openGroupingHistoryDraft"
+      @delete-summary="deleteGroupingHistoryDraft"
     />
   </section>
 </template>

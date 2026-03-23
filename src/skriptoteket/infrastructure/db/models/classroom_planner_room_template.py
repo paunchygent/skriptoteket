@@ -26,6 +26,8 @@ class RoomTemplateModel(Base):
         nullable=False,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    grid_cols: Mapped[int] = mapped_column(nullable=False, server_default="14")
+    grid_rows: Mapped[int] = mapped_column(nullable=False, server_default="9")
     seats: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, server_default="[]")
     fixtures: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, server_default="[]")
 

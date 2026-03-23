@@ -19,7 +19,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
-from scripts.playwright_ui_smoke import _launch_chromium, _login
+from scripts.playwright_ui_smoke import _launch_chromium
 
 APP_PATH = "/apps/classroom.group-seating-studio"
 ARTIFACTS_DIR = Path(".artifacts/classroom-planner-smoke")
@@ -40,7 +40,13 @@ def _wait_for_app_heading(page: Any) -> None:
 def _login_to_app(page: Any, *, base_url: str, email: str, password: str) -> None:
     """Log in through the shared repo flow, then open the protected app route."""
 
-    _login(page, base_url=base_url, email=email, password=password)
+    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
+    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+    expect(dialog).to_be_visible()
+    dialog.get_by_label("E-post").fill(email)
+    dialog.get_by_label("Lösenord").fill(password)
+    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+    page.wait_for_timeout(750)
     page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
     _wait_for_app_heading(page)
 
@@ -92,9 +98,41 @@ def _create_template(page: Any, *, template_name: str) -> None:
         page.get_by_role("heading", name=re.compile(r"Nytt klassrum", re.IGNORECASE))
     ).to_be_visible()
     page.get_by_placeholder(re.compile(r"Sal 304", re.IGNORECASE)).fill(template_name)
+
+    builder_viewport = page.locator('[data-test="room-builder-viewport"]')
+    expect(builder_viewport).to_be_visible()
+    initial_zoom = page.locator('[data-test="builder-zoom-percent"]').inner_text()
+    builder_scroll_fits = builder_viewport.evaluate(
+        """element => ({
+            widthFits: element.scrollWidth <= element.clientWidth + 2,
+            heightFits: element.scrollHeight <= element.clientHeight + 2,
+        })"""
+    )
+    assert builder_scroll_fits["widthFits"] and builder_scroll_fits["heightFits"]
+
+    page.locator('[data-test="builder-zoom-in"]').click()
+    expect(page.locator('[data-test="builder-zoom-percent"]')).not_to_have_text(initial_zoom)
+    page.locator('[data-test="builder-zoom-fit"]').click()
+    expect(page.locator('[data-test="builder-zoom-percent"]')).to_have_text(initial_zoom)
+
     grid_buttons = page.locator("section .relative.grid.gap-1 button[type='button']")
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
+
+    expect(builder_viewport.get_by_text("seat-1", exact=True)).to_be_visible()
+    expect(builder_viewport.get_by_text("seat-2", exact=True)).to_be_visible()
+    page.get_by_role("button", name=re.compile(r"Bänk", re.IGNORECASE)).click()
+    grid_buttons.nth(15).click()
+    page.locator('[data-test="builder-clear-room"]').click()
+    expect(builder_viewport.get_by_text("seat-1", exact=True)).not_to_be_visible()
+    expect(builder_viewport.get_by_text("seat-2", exact=True)).not_to_be_visible()
+
+    page.get_by_role("button", name=re.compile(r"Placera plats", re.IGNORECASE)).click()
+    grid_buttons.nth(0).click()
+    grid_buttons.nth(1).click()
+    expect(builder_viewport.get_by_text("seat-1", exact=True)).to_be_visible()
+    expect(builder_viewport.get_by_text("seat-2", exact=True)).to_be_visible()
+
     page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
     expect(page.get_by_role("heading", name=re.compile(re.escape(template_name)))).to_be_visible()
 
@@ -106,7 +144,7 @@ def _open_class_workspace(page: Any, *, roster_name: str) -> None:
     expect(roster_card).to_be_visible()
     roster_card.click()
     expect(
-        page.get_by_role("heading", name=re.compile(r"Välj arbetsyta", re.IGNORECASE))
+        page.get_by_role("heading", name=re.compile(r"Klassöversikt", re.IGNORECASE))
     ).to_be_visible()
 
 
@@ -118,11 +156,26 @@ def _focus_workspace_mode(page: Any, *, label: str) -> None:
 
 
 def _open_grouping_history(page: Any) -> None:
-    """Verify the grouping history drawer stays separate and secondary."""
+    """Open the grouping history drawer from the grouping toolbar."""
 
-    page.get_by_role("button", name=re.compile(r"Visa grupphistorik", re.IGNORECASE)).click()
+    page.locator('[data-test="grouping-history"]').click()
+
+
+def _close_history_drawer(page: Any) -> None:
+    """Close the visible history drawer without hitting unrelated close buttons."""
+
+    history_drawer = page.locator("aside").filter(
+        has=page.get_by_role("heading", name=re.compile(r"Grupper", re.IGNORECASE))
+    )
+    history_drawer.get_by_role("button", name="×").click()
+
+
+def _verify_grouping_history_starts_empty(page: Any) -> None:
+    """Verify the grouping drawer starts empty before a second draft exists."""
+
+    _open_grouping_history(page)
     expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).to_be_visible()
-    page.get_by_role("button", name="×").click()
+    _close_history_drawer(page)
     expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).not_to_be_visible()
 
 
@@ -170,11 +223,57 @@ def _exercise_grouping_fundamentals(page: Any) -> None:
     expect(first_group_name).to_have_value("Arbetslag Alfa")
 
 
+def _start_second_grouping_draft(page: Any) -> None:
+    """Create a second blank grouping draft so the first one moves to history."""
+
+    first_group_name = page.locator("input[type='text']").first
+
+    page.get_by_role("button", name=re.compile(r"Nytt grupputkast", re.IGNORECASE)).click()
+    expect(first_group_name).to_have_value("Grupp 1")
+    expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
+
+
+def _reopen_historic_grouping_draft(page: Any) -> None:
+    """Open the older grouping draft from the history drawer overlay."""
+
+    _open_grouping_history(page)
+    expect(page.get_by_text("Aktuellt grupputkast", exact=True)).to_be_visible()
+    history_button = page.get_by_role(
+        "button", name=re.compile(r"Revision \d+", re.IGNORECASE)
+    ).first
+    history_button.click()
+    expect(page.locator("input[type='text']").first).to_have_value("Arbetslag Alfa")
+
+
+def _delete_remaining_historic_grouping_draft(page: Any) -> None:
+    """Delete one historic grouping draft and keep the active draft intact."""
+
+    _open_grouping_history(page)
+    initial_history_count = page.get_by_role("button", name="Ta bort historiskt utkast").count()
+    page.get_by_role("button", name="Ta bort historiskt utkast").first.click()
+    expect(page.get_by_text("Ta bort utkast?", exact=True)).to_be_visible()
+    page.get_by_role("button", name=re.compile(r"^Ta bort$", re.IGNORECASE)).click()
+    page.wait_for_timeout(500)
+    _close_history_drawer(page)
+    _open_grouping_history(page)
+    remaining_history_count = page.get_by_role("button", name="Ta bort historiskt utkast").count()
+    assert remaining_history_count == initial_history_count - 1
+    if remaining_history_count == 0:
+        expect(page.get_by_text("Ingen grupphistorik ännu.", exact=True)).to_be_visible()
+    else:
+        expect(page.get_by_role("button", name="Ta bort historiskt utkast").first).to_be_visible()
+    _close_history_drawer(page)
+    expect(page.locator('[data-test="grouping-history"]')).to_be_visible()
+
+
 def _open_seating_workspace(page: Any, *, template_name: str) -> None:
     """Open seating directly from the selector, then choose a room in that workspace."""
 
     _focus_workspace_mode(page, label="Sittplatser")
-    template_select = page.get_by_role("combobox").first
+    setup_surface = page.locator('[data-test="seating-workspace-setup"]')
+    expect(setup_surface).to_be_visible()
+    expect(page.locator('[data-test="grouping-history"]')).to_have_count(0)
+    template_select = setup_surface.get_by_role("combobox")
     expect(template_select).to_be_visible()
     option_rows = template_select.evaluate(
         """element => Array.from(element.options).map(option => ({
@@ -186,13 +285,16 @@ def _open_seating_workspace(page: Any, *, template_name: str) -> None:
         option for option in option_rows if option["value"] and template_name in option["label"]
     )
     template_select.select_option(value=matching_option["value"])
-    expect(page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE))).to_be_visible()
+    expect(page.locator('[data-test="seating-workspace"]')).to_be_visible()
+    expect(page.locator('[data-test="edit-current-template"]')).to_be_visible()
 
 
 def _switch_seating_workspace_template(page: Any, *, template_name: str) -> None:
     """Switch room inside the same seating workspace."""
 
-    template_select = page.get_by_role("combobox").first
+    setup_surface = page.locator('[data-test="seating-workspace-setup"]')
+    expect(setup_surface).to_be_visible()
+    template_select = setup_surface.get_by_role("combobox")
     option_rows = template_select.evaluate(
         """element => Array.from(element.options).map(option => ({
             value: option.value,
@@ -203,7 +305,14 @@ def _switch_seating_workspace_template(page: Any, *, template_name: str) -> None
         option for option in option_rows if option["value"] and template_name in option["label"]
     )
     template_select.select_option(value=matching_option["value"])
-    expect(page.get_by_text(template_name, exact=True)).to_be_visible()
+    expect(page.locator('[data-test="seating-workspace"]')).to_be_visible()
+    expect(
+        page.locator('[data-test="seating-workspace-setup"]').get_by_role(
+            "heading",
+            name=re.compile(re.escape(template_name)),
+        ),
+    ).to_be_visible()
+    expect(page.locator('[data-test="edit-current-template"]')).to_be_visible()
 
 
 def _open_student_metadata(page: Any) -> None:
@@ -229,17 +338,16 @@ def _return_to_class_workspace(page: Any) -> None:
 
     _focus_workspace_mode(page, label="Översikt")
     expect(
-        page.get_by_role("heading", name=re.compile(r"Välj arbetsyta", re.IGNORECASE))
+        page.get_by_role("heading", name=re.compile(r"Klassöversikt", re.IGNORECASE))
     ).to_be_visible()
 
 
-def _verify_seating_history_stays_empty(page: Any) -> None:
-    """Ensure room switching does not silently create historical seating drafts."""
+def _verify_seating_toolbar(page: Any) -> None:
+    """Ensure seating exposes the intended minimal secondary action."""
 
-    page.get_by_role("button", name=re.compile(r"Visa sittplatshistorik", re.IGNORECASE)).click()
-    expect(page.get_by_text("Ingen sittplatshistorik ännu.", exact=True)).to_be_visible()
-    page.get_by_role("button", name="×").click()
-    expect(page.get_by_text("Ingen sittplatshistorik ännu.", exact=True)).not_to_be_visible()
+    edit_classroom_button = page.locator('[data-test="edit-current-template"]')
+    expect(edit_classroom_button).to_be_visible()
+    expect(edit_classroom_button).to_have_text(re.compile(r"Redigera klassrum", re.IGNORECASE))
 
 
 def _exit_to_landing(page: Any) -> None:
@@ -292,16 +400,19 @@ def main() -> None:
         _create_template(page, template_name=first_template_name)
         _create_template(page, template_name=second_template_name)
         _open_class_workspace(page, roster_name=roster_name)
-        _open_grouping_history(page)
         _open_grouping_workspace(page, template_name=first_template_name)
+        _verify_grouping_history_starts_empty(page)
         _exercise_grouping_fundamentals(page)
-        _return_to_class_workspace(page)
+        _start_second_grouping_draft(page)
+        _reopen_historic_grouping_draft(page)
+        _delete_remaining_historic_grouping_draft(page)
+        expect(page.locator("input[type='text']").first).to_have_value("Arbetslag Alfa")
         _open_seating_workspace(page, template_name=first_template_name)
         _switch_seating_workspace_template(page, template_name=second_template_name)
+        _verify_seating_toolbar(page)
         _open_student_metadata(page)
         _close_student_metadata(page)
         _return_to_class_workspace(page)
-        _verify_seating_history_stays_empty(page)
         _exit_to_landing(page)
         _resume_from_landing(page)
         _exit_to_landing(page)

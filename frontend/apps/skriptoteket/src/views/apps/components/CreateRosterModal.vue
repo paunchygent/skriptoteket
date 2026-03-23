@@ -171,7 +171,7 @@ async function removeRoster(): Promise<void> {
                 class="min-h-[280px] w-full resize-y border border-navy bg-white px-3 py-3 font-mono text-sm text-navy shadow-brutal-sm"
               />
               <p class="text-[11px] leading-relaxed text-navy/60">
-                Klistra in ett namn per rad. Vid redigering återanvänder verktyget befintliga elev-ID:n rad för rad så länge listan behåller sin ordning.
+                Skriv eller klistra in ett namn per rad.
               </p>
             </div>
           </div>

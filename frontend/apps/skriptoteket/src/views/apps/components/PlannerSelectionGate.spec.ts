@@ -24,7 +24,7 @@ describe("PlannerSelectionGate", () => {
 
     expect(wrapper.text()).toContain("Välj klass först");
     expect(wrapper.text()).toContain("Öppna en klass");
-    expect(wrapper.text()).toContain("Hantera rumsmallar");
+    expect(wrapper.text()).toContain("Hantera klassrum");
     expect(wrapper.text()).not.toContain("Öppna planeringen");
   });
 

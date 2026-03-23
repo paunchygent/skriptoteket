@@ -2,21 +2,16 @@
 /**
  * Class-first planner workspace.
  *
- * This component keeps the class workspace neutral on entry, lets the teacher
- * choose one task surface at a time, and keeps read-only history secondary via
- * task-specific drawers instead of always-open panels.
+ * This component keeps the class workspace neutral on entry and relies on the
+ * segmented toggle as the only way to enter groups or seating. The overview
+ * therefore stays class-focused instead of duplicating mode-entry or
+ * draft-history actions that belong to the active workspace.
  */
 
 import { computed, ref } from "vue";
 
-import type {
-  ClassWorkspaceSummary,
-  PlanDraftSummary,
-} from "../classroomPlannerTypes";
-import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
+import type { ClassWorkspaceSummary } from "../classroomPlannerTypes";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
-
-type HistoryDrawerMode = "grouping" | "seating" | null;
 
 const props = defineProps<{
   workspaceSummary: ClassWorkspaceSummary;
@@ -31,27 +26,6 @@ const emit = defineEmits<{
 }>();
 
 const workspaceMode = ref<"overview" | "grouping" | "seating">("overview");
-const historyDrawerMode = ref<HistoryDrawerMode>(null);
-
-const currentHistoryTitle = computed(() => {
-  return historyDrawerMode.value === "grouping" ? "Grupper" : "Sittplatser";
-});
-
-const currentHistorySummaries = computed<PlanDraftSummary[]>(() => {
-  if (historyDrawerMode.value === "grouping") {
-    return props.workspaceSummary.grouping_history;
-  }
-  if (historyDrawerMode.value === "seating") {
-    return props.workspaceSummary.seating_history;
-  }
-  return [];
-});
-
-const currentHistoryEmptyLabel = computed(() => {
-  return historyDrawerMode.value === "grouping"
-    ? "Ingen grupphistorik ännu."
-    : "Ingen sittplatshistorik ännu.";
-});
 
 const overviewCards = computed(() => {
   return [
@@ -59,44 +33,11 @@ const overviewCards = computed(() => {
       key: "students",
       eyebrow: "Elever",
       title: `${props.workspaceSummary.roster.student_count} elever`,
-      description: "Öppna klassen och ändra roster",
+      description: "Arbeta vidare med roster och elevlistan för den här klassen.",
       actionLabel: "Redigera klass",
-    },
-    {
-      key: "grouping",
-      eyebrow: "Grupper",
-      title: props.workspaceSummary.active_grouping_draft
-        ? "Aktiv gruppindelning"
-        : "Ingen aktiv gruppindelning",
-      description: props.workspaceSummary.active_grouping_draft
-        ? `Senast uppdaterad ${formatDraftTimestamp(props.workspaceSummary.active_grouping_draft)}`
-        : `${props.workspaceSummary.grouping_history.length} tidigare grupputkast`,
-      actionLabel: props.workspaceSummary.active_grouping_draft ? "Fortsätt grupper" : "Öppna grupper",
-      historyLabel: "Visa grupphistorik",
-    },
-    {
-      key: "seating",
-      eyebrow: "Sittplatser",
-      title: props.workspaceSummary.active_seating_draft?.template_name ?? "Ingen aktiv sittplacering",
-      description: props.workspaceSummary.active_seating_draft
-        ? `Senast uppdaterad ${formatDraftTimestamp(props.workspaceSummary.active_seating_draft)}`
-        : `${props.workspaceSummary.seating_history.length} tidigare sittutkast`,
-      actionLabel: props.workspaceSummary.active_seating_draft ? "Fortsätt sittplatser" : "Öppna sittplatser",
-      historyLabel: "Visa sittplatshistorik",
     },
   ];
 });
-
-function formatDraftTimestamp(summary: PlanDraftSummary | null | undefined): string | null {
-  if (!summary) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("sv-SE", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(summary.updated_at));
-}
 
 function selectWorkspaceMode(value: string): void {
   if (value === "overview") {
@@ -119,20 +60,6 @@ function selectWorkspaceMode(value: string): void {
 function activateOverviewCard(key: string): void {
   if (key === "students") {
     emit("edit-roster");
-    return;
-  }
-  if (key === "grouping") {
-    emit("open-grouping", { templateId: null });
-    return;
-  }
-  if (key === "seating") {
-    emit("open-seating", { templateId: null });
-  }
-}
-
-function openHistoryDrawer(key: string): void {
-  if (key === "grouping" || key === "seating") {
-    historyDrawerMode.value = key;
   }
 }
 </script>
@@ -141,11 +68,11 @@ function openHistoryDrawer(key: string): void {
   <section class="space-y-4">
     <PlannerTopPanel
       :title="workspaceSummary.roster.name"
-      context-label="Håll översikten neutral tills du vet om du ska arbeta med grupper eller sittplatser."
+      context-label="Klassöversikt"
       :mode-value="workspaceMode"
-      supporting-text="Översikten samlar klassens fasta information. Historik öppnas bara när du ber om den."
+      supporting-text="Välj Grupper eller Sittplatser i väljaren ovan när du vill fortsätta arbetet."
       status-label="Översikt"
-      status-message="Välj arbetsyta direkt i väljaren ovan."
+      status-message="Redigera klassen här eller öppna en arbetsyta i väljaren ovan."
       status-tone="neutral"
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('back-to-landing')"
@@ -167,14 +94,14 @@ function openHistoryDrawer(key: string): void {
           Översikt
         </p>
         <h3 class="font-serif text-2xl text-navy">
-          Välj arbetsyta
+          Klassöversikt
         </h3>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Använd väljaren ovan för att fokusera på grupper eller sittplatser. Historik hålls undan tills du ber om den.
+          Här kan du redigera klassen. Öppna Grupper eller Sittplatser i väljaren ovan när du vill fortsätta planeringen.
         </p>
       </div>
 
-      <div class="grid gap-3 md:grid-cols-3">
+      <div class="grid gap-3 md:max-w-[24rem]">
         <article
           v-for="card in overviewCards"
           :key="card.key"
@@ -200,26 +127,9 @@ function openHistoryDrawer(key: string): void {
             >
               {{ card.actionLabel }}
             </button>
-
-            <button
-              v-if="card.key === 'grouping' || card.key === 'seating'"
-              type="button"
-              class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/65 underline-offset-2 hover:text-navy hover:underline"
-              @click="openHistoryDrawer(card.key)"
-            >
-              {{ card.historyLabel }}
-            </button>
           </div>
         </article>
       </div>
     </article>
-
-    <PlannerHistoryDrawer
-      :open="historyDrawerMode !== null"
-      :title="currentHistoryTitle"
-      :summaries="currentHistorySummaries"
-      :empty-label="currentHistoryEmptyLabel"
-      @close="historyDrawerMode = null"
-    />
   </section>
 </template>

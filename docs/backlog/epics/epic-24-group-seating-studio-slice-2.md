@@ -47,7 +47,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md)
 - [x] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
 - [ ] [ST-24-03: Grouping fundamentals + draft history](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
-- [ ] [ST-24-04: Seating fundamentals + draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
+- [ ] [ST-24-04: Seating fundamentals, room-builder ergonomics, and draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 
 ## Implementation Summary (as of 2026-03-22)
 

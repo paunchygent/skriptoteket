@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { useClassroomState } from "./useClassroomState";
 
 const clientMocks = vi.hoisted(() => ({
+  apiDelete: vi.fn(),
   apiGet: vi.fn(),
   apiPatch: vi.fn(),
   apiPost: vi.fn(),
@@ -22,6 +23,7 @@ vi.mock("../../api/client", () => {
 
   return {
     ApiError,
+    apiDelete: clientMocks.apiDelete,
     apiGet: clientMocks.apiGet,
     apiPatch: clientMocks.apiPatch,
     apiPost: clientMocks.apiPost,
@@ -122,6 +124,7 @@ describe("useClassroomState", () => {
     clientMocks.apiGet.mockReset();
     clientMocks.apiPatch.mockReset();
     clientMocks.apiPost.mockReset();
+    clientMocks.apiDelete.mockReset();
     clientMocks.isApiError.mockReset();
     clientMocks.isApiError.mockReturnValue(false);
   });
@@ -367,6 +370,34 @@ describe("useClassroomState", () => {
     );
     expect(state.draft?.draft_kind).toBe("grouping");
     expect(state.groupAssignments).toEqual([]);
+  });
+
+  it("activates a historical grouping draft through the dedicated lifecycle endpoint", async () => {
+    const state = useClassroomState();
+    clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "grouping"));
+    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "grouping"));
+
+    await state.activateGroupingHistoryDraft("draft-history-1");
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/draft-history-1/activate",
+    );
+    expect(clientMocks.apiGet).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/workspace",
+    );
+    expect(state.draft?.draft_kind).toBe("grouping");
+  });
+
+  it("deletes a historical grouping draft through the dedicated lifecycle endpoint", async () => {
+    const state = useClassroomState();
+    clientMocks.apiDelete.mockResolvedValue(undefined);
+
+    await state.deleteGroupingHistoryDraft("draft-history-1");
+
+    expect(clientMocks.apiDelete).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/draft-history-1",
+    );
+    expect(state.saveStatus).toBe("saved");
   });
 
   it("hydrates undo and redo availability from the backend workspace contract", async () => {

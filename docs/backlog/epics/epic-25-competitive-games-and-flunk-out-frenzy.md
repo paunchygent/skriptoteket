@@ -1,11 +1,12 @@
 ---
 type: epic
 id: EPIC-25
-title: "Curated app family: competitive games foundations and Pinball Teacher"
-status: accepted
+title: "Curated app family: competitive games foundations and Flunk-Out Frenzy"
+status: active
 owners: "agents"
 created: 2026-03-22
-outcome: "Signed-in users can open Pinball Teacher as a bespoke curated app, play a polished local browser-based vertical slice inside the existing Skriptoteket SPA, and the platform has the backend seams required to add replay-backed official high scores without rewriting the app contract."
+updated: 2026-03-22
+outcome: "Signed-in users can open Flunk-Out Frenzy as a bespoke curated app, play a polished local browser-based vertical slice inside the existing Skriptoteket SPA, and the platform has the backend seams required to add official high scores without rewriting the app contract."
 dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 ---
 
@@ -13,7 +14,7 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 
 - **Family architecture**: establish the competitive-games curated-app shape so
   future games can reuse the same competition backend seams.
-- **Pinball Teacher app**: introduce the first game as a bespoke curated app
+- **Flunk-Out Frenzy app**: introduce the first game as a bespoke curated app
   under the existing app host.
 - **Frontend runtime**: keep live simulation browser-owned and isolated from the
   generic tool-run/session UI model.
@@ -40,8 +41,8 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 
 ## Stories
 
-- [ ] [ST-25-01: Competitive games substrate and Pinball Teacher bootstrap contract](../stories/story-25-01-competitive-games-substrate-and-pinball-teacher-bootstrap-contract.md)
-- [ ] [ST-25-02: Pinball Teacher local runtime vertical slice](../stories/story-25-02-pinball-teacher-local-runtime-vertical-slice.md)
+- [ ] [ST-25-01: Competitive games substrate and Flunk-Out Frenzy bootstrap contract](../stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md)
+- [ ] [ST-25-02: Flunk-Out Frenzy local runtime vertical slice](../stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md)
 - [ ] [ST-25-03: Competitive play pending score submission and typed leaderboards](../stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md)
 - [ ] [ST-25-04: Competitive play replay validation and official score promotion](../stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md)
 

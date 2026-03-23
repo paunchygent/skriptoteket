@@ -9,7 +9,7 @@ topic: "curated-apps"
 links:
   - ADR-0073
   - EPIC-25
-  - REF-curated-app-pinball-teacher-architecture-and-foundational-code
+  - REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code
 ---
 
 ## Purpose
@@ -72,7 +72,6 @@ Focus:
 - shell/runtime boundary
 - fixed-step simulation
 - input, physics, render, and audio seams
-- replay capture seam
 - runtime lifecycle and cleanup
 
 Typical output:
@@ -143,7 +142,7 @@ Typical output:
 ### Current epic
 
 - `EPIC-25` currently covers the first competitive-games family slice with
-  Pinball Teacher as the first app.
+  Flunk-Out Frenzy as the first app.
 
 ### Current stories
 
@@ -167,4 +166,4 @@ Good split candidates:
 ## Notes
 
 - This programme is cross-cutting delivery structure, not a user-facing hub.
-- Pinball Teacher remains the first app-specific implementation reference.
+- Flunk-Out Frenzy remains the first app-specific implementation reference.

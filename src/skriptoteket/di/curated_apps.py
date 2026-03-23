@@ -11,9 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
+    ActivateGroupingHistoryDraftHandler,
     CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
+    DeleteHistoricGroupingDraftHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
     GetClassWorkspaceSummaryHandler,
@@ -30,6 +32,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
+)
+from skriptoteket.application.curated_apps.flunk_out_frenzy import (
+    GetFlunkOutFrenzyBootstrapHandler,
 )
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
     ReagentPrepChefGetDefaultsHandler,
@@ -97,6 +102,7 @@ from skriptoteket.protocols.classroom_planner import (
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefChemicalsHandlerProtocol,
@@ -128,6 +134,10 @@ from skriptoteket.protocols.vault import (
 
 
 class CuratedAppsProvider(Provider):
+    @provide(scope=Scope.REQUEST)
+    def flunk_out_frenzy_bootstrap_handler(self) -> FlunkOutFrenzyBootstrapHandlerProtocol:
+        return GetFlunkOutFrenzyBootstrapHandler()
+
     @provide(scope=Scope.APP)
     def sir_convert_a_lot_client_settings_v2(
         self, settings: Settings
@@ -503,6 +513,23 @@ class CuratedAppsProvider(Provider):
             clock=clock,
             id_generator=id_generator,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def activate_grouping_history_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> ActivateGroupingHistoryDraftHandler:
+        return ActivateGroupingHistoryDraftHandler(uow=uow, drafts=drafts, clock=clock)
+
+    @provide(scope=Scope.REQUEST)
+    def delete_historic_grouping_draft_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+    ) -> DeleteHistoricGroupingDraftHandler:
+        return DeleteHistoricGroupingDraftHandler(uow=uow, drafts=drafts)
 
     @provide(scope=Scope.REQUEST)
     def undo_draft_handler(

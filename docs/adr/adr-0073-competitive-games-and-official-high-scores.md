@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-03-22
-links: ["ADR-0023", "ADR-0027", "EPIC-25", "REF-curated-app-pinball-teacher-architecture-and-foundational-code"]
+links: ["ADR-0023", "ADR-0027", "EPIC-25", "REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code"]
 ---
 
 ## Context
@@ -163,7 +163,7 @@ alias remains a future enhancement if needed.
 
 - If we let the first game persist too little metadata, later officialization
   may require migration or invalidating early runs.
-- If we overfit the shared subsystem to Pinball Teacher, future games may not
+- If we overfit the shared subsystem to Flunk-Out Frenzy, future games may not
   fit cleanly.
 - If we prematurely require Redis/WebSockets, the first slice may become heavier
   than necessary.

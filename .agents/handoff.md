@@ -11,11 +11,11 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-22
+- Date: 2026-03-23
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, `PR-0091`, and `PR-0092`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0094`, `PR-0095`, `PR-0096`, `PR-0097`, and `PR-0098`.
 
 ## Status
 
@@ -43,11 +43,42 @@ Keep this file updated so the next session can pick up work quickly.
   - `Fortsätt` resumes the active draft
   - `Stäng` dismisses the CTA reminder locally without deleting or resetting the draft
 - The full Playwright baseline is green again with the landing continue/dismiss behavior.
-- Next: implement `PR-0093` for grouping class history and draft continuity on top of the now-green planner baseline.
+- Seating builder follow-up is now split and implemented locally across `PR-0102` and `PR-0103`, keeping object visuals separate from viewport/ergonomics work.
 - PR-0093 planning/docs are now tightened around a desktop-first continuity model: grouping history should stay secondary in a right-side overlay drawer on full-sized viewports, while tablet/phone layouts are ports of that workflow rather than the source of the canonical design.
 - PR-0093 now explicitly includes a small historic-draft management addition: older grouping drafts may be deleted from the continuity drawer with a secondary trash-can action plus confirmation, while the active draft remains free of delete controls in the main workspace.
-- Competitive-games planning docs are corrected back to the intended meaning of "programme": a cross-cutting delivery/programme reference for epics, stories, and shared infrastructure work, not a user-facing curated app hub.
-- `docs/reference/ref-competitive-games-cross-cutting-programme.md` now tracks the shared workstreams across curated-app substrate, local runtime, competition infrastructure, official-score validation, and quality/operability.
+- PR-0093 is now implemented locally:
+  - backend: explicit grouping-history activate/delete handlers plus grouping-only API routes
+  - frontend: `PlannerHistoryDrawer.vue` now separates `Aktuellt grupputkast` from `Tidigare grupputkast`, can reopen older grouping drafts, and can delete historic grouping drafts with confirmation
+  - store/view: `useClassroomState.ts` and `ClassroomPlannerView.vue` now orchestrate historic draft activation/deletion without adding any delete control to the active workspace
+- Live browser continuity proof is green locally: create another grouping draft, reopen an older grouping draft from the overlay drawer, delete a historic grouping draft with confirmation, and confirm the active draft still reopens with the renamed group intact.
+- Planner shell follow-up is now implemented locally:
+  - `Översikt` is quiet and no longer duplicates `Grupper` / `Sittplatser` entry actions
+  - the segmented toggle is now the only mode switch
+  - grouping history now opens from the grouping action row in `GroupBoard.vue`
+  - seating now has its own minimal toolbar row with `Redigera klassrum`
+- Seating terminology and room-builder model are also updated locally:
+  - visible copy now prefers `Sittplatser`, `Sittschema`, and `Klassrum`
+  - `Whiteboard`, `Fönster`, and `Dörr` are now wall-bound objects in the room builder
+  - `Kateder`, `Runt bord`, `Fyrkantigt bord`, and `Bänk` are floor objects
+  - tables and benches are visual room objects only; seats remain separate placements
+- `PR-0101`, `PR-0102`, and `PR-0103` are DONE locally:
+  - saved room templates carry `grid_cols` / `grid_rows`, the room builder supports stepwise width/height resize plus ghost placement, and wall anchoring stays pointer-driven
+  - object rendering now uses shared fixture artwork, true round tables, centered `Whiteboard` / `Kateder` labels, bench coalescing, and dedicated wall-band rendering so wall objects never consume floor tiles
+  - the room-builder modal now uses a larger desktop footprint with a narrower tools column, explicit zoom (`-`, `+`, `Anpassa`), `Rensa`, and circular seats across builder, preview, and live seating
+- Competitive-games planning docs are corrected back to the intended meaning of "programme": a cross-cutting delivery/programme reference for epics, stories, and shared infrastructure work, tracked in `docs/reference/ref-competitive-games-cross-cutting-programme.md`.
+- Competitive-games planning is now formally open for implementation: `REV-EPIC-25` is approved, `ADR-0073` is accepted, and `EPIC-25` is active.
+- `ST-25-01` is now decomposed into `PR-0094` (registry/discoverability), `PR-0095` (bespoke route/shell), and `PR-0096` (minimal bootstrap contract).
+- `ST-25-02` is now decomposed into `PR-0097` (playable shell host/runtime lifecycle), `PR-0098` (runtime core + HUD boundary), `PR-0099` (prototype-alpha physics/rules), and `PR-0100` (renderer/audio + local playable proof).
+- `ST-25-02` planning decisions are now locked for decomposition:
+  - commit directly to PixiJS + Rapier 2D + Howler
+  - author the first table as typed TypeScript modules first, then extract later if needed
+  - remove replay work from the immediate slice entirely
+  - keep shell UI to HUD + Start/Pause/Restart/Mute
+  - defer drop targets, scoop behavior, ramps, backend score submission, and leaderboard UI
+- Competitive-games planning docs are now renamed around `games.flunk_out_frenzy` / `Flunk-Out Frenzy` instead of the earlier Pinball Teacher placeholder.
+- `PR-0094`, `PR-0095`, and `PR-0096` are DONE locally: Flunk-Out Frenzy is registered/discoverable as a bespoke curated app, resolves through `AppHostView.vue`, and exposes the minimal typed bootstrap via `src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py`.
+- `PR-0097` is DONE locally and corrected twice: the route now uses immersive top-bar-only chrome plus a single staged machine composition instead of the earlier generic/dashboard shell, while `GameHost.vue` owns a playfield-framed runtime placeholder seam for `PR-0098` and settings/bootstrap metadata stay hidden behind a drawer.
+- `PR-0098` is DONE locally, and `PR-0099` is now ACTIVE locally: the prototype-alpha slice has Rapier-backed physics, a pure rules engine, and a DOM-rendered playfield state inside `GameHost.vue`; the board-dominance regression is fixed and the right flipper now uses the corrected mirrored press angle instead of wrapping through a bogus full-spin path.
 
 ## Previous Sessions
 
@@ -78,7 +109,10 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
 - 2026-03-22: `pdm run docs-validate` (PASSED).
+- 2026-03-22: `pdm run docs-validate` (PASSED after adding `ST-25-02` PR planning docs `PR-0097` through `PR-0100`).
+- 2026-03-22: `pdm run docs-validate` (PASSED after renaming the competitive-games planning docs from the Pinball Teacher placeholder to Flunk-Out Frenzy and removing stale replay-seam wording from `ST-25-02`).
 - 2026-03-22: `pdm run docs-validate` (PASSED after correcting the competitive-games "programme" scope back to a cross-cutting delivery reference and removing the mistaken hub story).
+- 2026-03-22: `pdm run docs-validate` (PASSED after promoting `EPIC-25` to `active` and confirming the review/ADR/epic status chain is valid).
 - 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after adding reorder assertions; artifact in `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`).
 - 2026-03-22: `pdm run db-upgrade` (PASSED; required locally after adding the `name_is_custom` draft-group migration).
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupCard.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (34 PASSED).
@@ -108,6 +142,38 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-22: `pdm run docs-validate` (PASSED).
 - 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after switching the landing resumable CTA to continue + dismiss and hardening the smoke selectors around the CTA container).
+- 2026-03-22: `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q` (35 PASSED after adding grouping-history activate/delete handlers and API routes).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerHistoryDrawer.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts` (7 PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts` (PASSED as part of the focused PR-0093 view pass).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts -t "activates a historical grouping draft through the dedicated lifecycle endpoint|deletes a historical grouping draft through the dedicated lifecycle endpoint" --reporter=verbose` (2 PASSED; targeted store verification for new history actions).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerHistoryDrawer.vue src/views/apps/components/PlannerHistoryDrawer.spec.ts src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
+- 2026-03-22: `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_history.py src/skriptoteket/application/curated_apps/classroom_planner/__init__.py src/skriptoteket/di/curated_apps.py src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py` (PASSED).
+- 2026-03-22: `pdm run mypy src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_history.py src/skriptoteket/application/curated_apps/classroom_planner/__init__.py src/skriptoteket/di/curated_apps.py src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py` (PASSED).
+- 2026-03-22: `pdm run ruff check scripts/playwright_classroom_planner_smoke.py` (PASSED after extending the smoke to cover grouping continuity + historic delete).
+- 2026-03-22: local runtime corrected back to `.env` / Docker Postgres on `localhost:55432`; the accidental native `localhost:5432/skriptoteket` database was removed after confirming it only held throwaway smoke data.
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomCanvas.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (27 PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/CreateRoomTemplateModal.vue src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomCanvas.vue src/views/apps/components/RoomCanvas.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/ClassroomPlannerView.vue src/views/apps/roomFixtureLayout.ts src/views/apps/classroomPlannerTypes.ts` (PASSED).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-22: `pdm run ruff check src/skriptoteket/domain/curated_apps/classroom_planner/models.py scripts/playwright_classroom_planner_smoke.py` (PASSED).
+- 2026-03-22: `pdm run mypy src/skriptoteket/domain/curated_apps/classroom_planner/models.py` (PASSED).
+- 2026-03-22: `pdm run pytest tests/unit/web/apps/classroom_planner/test_api.py -q` (20 PASSED).
+- 2026-03-22: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED after moving the grouping-history trigger into the grouping toolbar and scoping the seating smoke to the seating surface; artifact in `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`).
+- 2026-03-22: `pdm run python - <<'PY' ... classroom builder proof ... PY` (PASSED; verified seat + door can share an edge cell, whiteboard rejects center placement, and `Runt bord` / `Fyrkantigt bord` / `Bänk` can be added live; artifact in `.artifacts/classroom-builder-proof/classroom-builder-proof.png`).
+- 2026-03-22: `pdm run docs-validate` (PASSED after tightening `ST-24-04` and adding `PR-0101` / `PR-0102`).
+- 2026-03-23: `pdm run db-upgrade`; `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/roomFixtureLayout.spec.ts src/views/apps/roomFixturePresentation.spec.ts src/views/apps/components/RoomFixtureArtwork.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomCanvas.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/roomFixturePresentation.ts src/views/apps/roomFixturePresentation.spec.ts src/views/apps/components/RoomFixtureArtwork.vue src/views/apps/components/RoomFixtureArtwork.spec.ts src/views/apps/components/CreateRoomTemplateModal.vue src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomCanvas.vue src/views/apps/components/RoomCanvas.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build`; `pdm run pytest tests/unit/web/apps/classroom_planner/test_api.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/application/apps/classroom_planner/test_asset_delete_guards.py -q`; live browser check against `http://127.0.0.1:5173/apps/classroom.group-seating-studio` with extra local SPA servers shut down (PASSED for `PR-0101` plus current `PR-0102` fixture-rendering work; screenshot copied to `.artifacts/classroom-builder-proof/pr0102-room-builder-5173.png`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/roomBuilderViewport.spec.ts src/views/apps/roomFixturePresentation.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomCanvas.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/roomBuilderViewport.ts src/views/apps/roomBuilderViewport.spec.ts src/views/apps/roomSeatPresentation.ts src/views/apps/components/RoomSeatToken.vue src/views/apps/components/SeatNode.vue src/views/apps/components/CreateRoomTemplateModal.vue src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomCanvas.vue src/views/apps/components/RoomCanvas.spec.ts src/views/apps/roomFixturePresentation.ts src/views/apps/roomFixturePresentation.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa build`; `pdm run ruff check scripts/playwright_classroom_planner_smoke.py`; `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED on the canonical local app route with only `:5173` + backend `:8000` active; artifacts in `.artifacts/classroom-planner-smoke/`).
+- 2026-03-22: `pdm run pytest tests/unit/infrastructure/curated_apps/test_registry.py tests/unit/web/test_apps_api_routes.py tests/unit/web/test_catalog_curated_app_discoverability.py -q`; `pdm run ruff check src/skriptoteket/infrastructure/curated_apps/registry.py tests/unit/infrastructure/curated_apps/test_registry.py tests/unit/web/test_apps_api_routes.py tests/unit/web/test_catalog_curated_app_discoverability.py`; `pdm run mypy src/skriptoteket/infrastructure/curated_apps/registry.py tests/unit/infrastructure/curated_apps/test_registry.py tests/unit/web/test_apps_api_routes.py tests/unit/web/test_catalog_curated_app_discoverability.py` (ALL PASSED for `PR-0094`).
+- 2026-03-22: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/AppHostView.spec.ts src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/AppHostView.vue src/views/apps/FlunkOutFrenzyView.vue src/views/AppHostView.spec.ts src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build` (ALL PASSED for `PR-0095`).
+- 2026-03-22: `pdm run python - <<'PY' ... Flunk-Out Frenzy protected-route browser proof ... PY` (PASSED; logged in via `/login`, opened `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`, verified the bespoke shell heading + `Spelyta` + runtime host placeholder, and wrote `.artifacts/flunk-out-frenzy-route-check/flunk-out-frenzy-route.png`).
+- 2026-03-23: `pdm run pytest tests/unit/application/apps/flunk_out_frenzy/test_bootstrap.py tests/unit/web/apps/flunk_out_frenzy/test_api.py -q`; `pdm run ruff check src/skriptoteket/application/curated_apps/flunk_out_frenzy src/skriptoteket/protocols/flunk_out_frenzy.py src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py src/skriptoteket/di/curated_apps.py src/skriptoteket/web/router.py tests/unit/application/apps/flunk_out_frenzy/test_bootstrap.py tests/unit/web/apps/flunk_out_frenzy/test_api.py`; `pdm run mypy src/skriptoteket/application/curated_apps/flunk_out_frenzy src/skriptoteket/protocols/flunk_out_frenzy.py src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py` (ALL PASSED for `PR-0096` backend).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts src/views/apps/useFlunkOutFrenzyBootstrap.ts src/views/apps/flunkOutFrenzyTypes.ts` (PASSED for `PR-0096` frontend).
+- 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy bootstrap browser proof ... PY` (PASSED; logged in via `/login`, opened `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`, verified the bootstrap-backed ready state including `flunk_out_frenzy.prototype_alpha.v1`, feature flags, and the runtime host placeholder, and wrote `.artifacts/flunk-out-frenzy-bootstrap-check/flunk-out-frenzy-bootstrap.png`).
+- 2026-03-23: `pdm run docs-validate`; `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/FlunkOutFrenzyView.spec.ts src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/components/layout/AuthLayout.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts src/components/apps/flunk-out-frenzy/GameHost.vue src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/components/apps/flunk-out-frenzy/gameHostTypes.ts src/components/layout/AuthLayout.vue src/components/layout/AuthLayout.spec.ts src/components/layout/AuthTopBar.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build` (docs/tests/lint/build PASSED for the PR-0097 redesign).
+- 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy immersive/composition browser proof ... PY` (PASSED after the redesign on both the built/backend route and a clean restarted Vite dev server; `http://127.0.0.1:8000/apps/games.flunk_out_frenzy` wrote `.artifacts/flunk-out-frenzy-composition-check/flunk-out-frenzy-composition-backend.png`, and `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` wrote `.artifacts/flunk-out-frenzy-composition-check/flunk-out-frenzy-composition-dev.png`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/components/apps/flunk-out-frenzy/game/core/FixedStepRunner.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts src/components/apps/flunk-out-frenzy/game/rules/RuleEngine.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/components/apps/flunk-out-frenzy/game src/components/apps/flunk-out-frenzy/GameHost.vue src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build`; `pdm run docs-validate` (PASSED for `PR-0098` close-out and current `PR-0099` local slice).
+- 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy runtime/viewport/right-flipper browser proofs ... PY` (PASSED against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`; verified Start plus mounted runtime, ball/flippers fully inside the viewport, and confirmed the right flipper style changes from `rotate(18deg)` to `rotate(-24deg)` under `ShiftRight`; artifacts in `.artifacts/pr-0099-viewport-fit-check/flunk-out-frenzy-viewport-fit-dev.png` and `.artifacts/pr-0099-right-flipper-check/flunk-out-frenzy-right-flipper-dev.png`).
 
 ## How to Run
 
@@ -130,4 +196,5 @@ pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useCl
 
 ## Next Steps
 
-- Finish `PR-0092` for `ST-24-03`: keep the verified redo fix, then correct the separate `Avsluta`/landing behavior so the full Klassrumskartan Playwright smoke is green again before starting `PR-0093`.
+- Review the local seating-builder worktree and commit when ready; the next seating slice beyond `PR-0103` is not planned yet.
+- Competitive-games lane: `PR-0099` is in progress locally; next step is finishing the playable 3-ball local proof and then moving into `PR-0100` renderer/audio work.

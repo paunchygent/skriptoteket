@@ -1,3 +1,10 @@
+"""Curated app registry entries and discoverability defaults.
+
+This module defines the in-memory curated app registry used by the current
+Skriptoteket monolith. It supplies the canonical app metadata that downstream
+catalog, deep-link, and bespoke app-host routes depend on.
+"""
+
 from __future__ import annotations
 
 from uuid import UUID
@@ -72,6 +79,22 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 ),
                 min_role=Role.USER,
                 placements=[
+                    CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
+                ],
+            ),
+            CuratedAppDefinition(
+                app_id="games.flunk_out_frenzy",
+                tool_id=curated_app_tool_id(app_id="games.flunk_out_frenzy"),
+                app_version=app_version,
+                ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED,
+                title="Flunk-Out Frenzy",
+                summary=(
+                    "Spela ett snabbt browser-baserat flipperspel med lokal runtime och "
+                    "framtida stod for officiella high scores."
+                ),
+                min_role=Role.USER,
+                placements=[
+                    CuratedAppPlacement(profession_slug="gemensamt", category_slug="ovrigt"),
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
                 ],
             ),

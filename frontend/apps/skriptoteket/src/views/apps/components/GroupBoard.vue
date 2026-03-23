@@ -20,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
   (e: "new-grouping-draft"): void;
+  (e: "open-history"): void;
 }>();
 
 const state = useClassroomState();
@@ -146,6 +147,15 @@ function onDragOver(event: DragEvent): void {
             @click="emit('new-grouping-draft')"
           >
             Nytt grupputkast
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="grouping-history"
+            :disabled="state.isWorkspaceBusy"
+            @click="emit('open-history')"
+          >
+            Historik
           </button>
           <button
             type="button"

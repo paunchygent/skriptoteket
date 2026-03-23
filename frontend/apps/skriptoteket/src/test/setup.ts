@@ -36,7 +36,7 @@ Object.defineProperty(globalThis, "localStorage", {
   writable: true,
 });
 
-if (typeof window.matchMedia !== "function") {
+if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   Object.defineProperty(window, "matchMedia", {
     value: (query: string) => ({
       matches: true,
@@ -49,6 +49,37 @@ if (typeof window.matchMedia !== "function") {
       dispatchEvent: vi.fn(),
     }),
     configurable: true,
+  });
+}
+
+const performanceLike = globalThis.performance ?? {
+  now: () => Date.now(),
+};
+
+if (typeof globalThis.performance?.now !== "function") {
+  Object.defineProperty(globalThis, "performance", {
+    value: performanceLike,
+    configurable: true,
+    enumerable: true,
+    writable: true,
+  });
+}
+
+if (typeof globalThis.self === "undefined") {
+  Object.defineProperty(globalThis, "self", {
+    value: globalThis,
+    configurable: true,
+    enumerable: true,
+    writable: true,
+  });
+}
+
+if (typeof globalThis.self.performance?.now !== "function") {
+  Object.defineProperty(globalThis.self, "performance", {
+    value: globalThis.performance,
+    configurable: true,
+    enumerable: true,
+    writable: true,
   });
 }
 

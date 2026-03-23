@@ -8,6 +8,13 @@ body {
   color: var(--color-navy);
 }
 
+body.app-shell-game-mode {
+  background:
+    radial-gradient(circle at 18% 10%, rgba(127, 219, 149, 0.12), transparent 20%),
+    linear-gradient(180deg, #2a3c33 0%, #26342e 16%, #6a4730 16%, #2b1b12 100%);
+  color: var(--color-canvas);
+}
+
 /* Grid background pattern - 24px baseline grid matching HuleEdu */
 body::before {
   content: '';
@@ -23,6 +30,10 @@ body::before {
   opacity: 0.04;
   pointer-events: none;
   z-index: -1;
+}
+
+body.app-shell-game-mode::before {
+  opacity: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

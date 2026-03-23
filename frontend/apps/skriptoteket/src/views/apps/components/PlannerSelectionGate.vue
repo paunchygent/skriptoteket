@@ -151,10 +151,10 @@ const emit = defineEmits<{
         <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              2. Klassrum i bakgrunden
+              2. Klassrum
             </p>
             <h2 class="font-serif text-2xl text-navy">
-              Hantera rumsmallar
+              Hantera klassrum
             </h2>
           </div>
           <button
@@ -195,7 +195,7 @@ const emit = defineEmits<{
                   {{ template.name }}
                 </h3>
                 <p class="mt-1 text-sm text-navy/70">
-                  {{ template.seats.length }} platser · {{ template.fixtures.length }} fixturer
+                  {{ template.seats.length }} sittplatser
                 </p>
               </div>
               <button

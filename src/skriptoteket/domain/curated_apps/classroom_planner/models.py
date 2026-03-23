@@ -14,6 +14,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+DEFAULT_ROOM_GRID_COLS = 14
+DEFAULT_ROOM_GRID_ROWS = 9
+
 
 class Student(BaseModel):
     """Represent one student in a teacher-owned roster."""
@@ -55,6 +58,9 @@ class RoomFixtureType(StrEnum):
     TEACHER_DESK = "teacher_desk"
     WINDOW = "window"
     DOOR = "door"
+    ROUND_TABLE = "round_table"
+    SQUARE_TABLE = "square_table"
+    BENCH = "bench"
 
 
 class RoomFixture(BaseModel):
@@ -79,6 +85,8 @@ class RoomTemplate(BaseModel):
     id: UUID
     owner_user_id: UUID
     name: str
+    grid_cols: int = Field(default=DEFAULT_ROOM_GRID_COLS, ge=1)
+    grid_rows: int = Field(default=DEFAULT_ROOM_GRID_ROWS, ge=1)
     seats: list[Seat]
     fixtures: list[RoomFixture] = Field(default_factory=list)
     created_at: datetime

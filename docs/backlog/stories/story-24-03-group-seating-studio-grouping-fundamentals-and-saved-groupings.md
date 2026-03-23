@@ -42,7 +42,11 @@ undo/redo without implying that seating and grouping are one combined workflow.
 - Grouping continuity and history should follow a desktop-first design language: the active
   workspace remains primary, while older drafts stay secondary in overlay/drawer-based UI on
   full-sized viewports rather than pushing the workspace down.
+- The segmented toggle is the only mode switch. `Översikt` should stay quiet and class-focused
+  instead of repeating separate “open grouping” or “open seating” actions.
 - Older superseded grouping drafts may later be deleted from that secondary continuity drawer with
   confirmation, but the active draft should not gain equivalent delete controls in the main
   workspace.
+- Seating copy should stay consistent: use `Sittplatser` for the mode, `Sittschema` for the active
+  work surface, and `Klassrum` for the room context.
 - A later optional helper may allow classroom-aware grouping to derive natural groups from an active seating arrangement, but that is not the default behavior of this story.

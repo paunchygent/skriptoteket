@@ -8,6 +8,7 @@ from skriptoteket.web.api.v1 import (
     apps_classroom_planner_grouping as api_v1_apps_classroom_planner_grouping,
 )
 from skriptoteket.web.api.v1 import apps_conversion_hub as api_v1_apps_conversion_hub
+from skriptoteket.web.api.v1 import apps_flunk_out_frenzy as api_v1_apps_flunk_out_frenzy
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as api_v1_apps_reagent_prep_chef
 from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
@@ -34,6 +35,7 @@ router.include_router(api_v1_my_tools.router)
 router.include_router(api_v1_apps.router)
 router.include_router(api_v1_apps_classroom_planner.router)
 router.include_router(api_v1_apps_classroom_planner_grouping.router)
+router.include_router(api_v1_apps_flunk_out_frenzy.router)
 router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
 router.include_router(api_v1_profile.router)

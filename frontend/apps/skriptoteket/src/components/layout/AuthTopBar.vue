@@ -1,15 +1,17 @@
 <script setup lang="ts">
+/**
+ * Authenticated top bar.
+ *
+ * This bar remains available across authenticated routes, but immersive game
+ * routes simplify it to the essentials so the platform chrome does not compete
+ * with bespoke game presentation.
+ */
+
 import { computed } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import BrandLogo from "../brand/BrandLogo.vue";
 import HelpButton from "../help/HelpButton.vue";
-
-defineProps<{
-  user: { email: string; role: string } | null;
-  logoutInProgress: boolean;
-  isFocusMode: boolean;
-}>();
 
 const emit = defineEmits<{
   logout: [];
@@ -17,7 +19,20 @@ const emit = defineEmits<{
 }>();
 
 const route = useRoute();
+const props = defineProps<{
+  user: { email: string; role: string } | null;
+  logoutInProgress: boolean;
+  isFocusMode: boolean;
+  isImmersiveRoute: boolean;
+}>();
+
 const navLink = computed(() => {
+  if (props.isImmersiveRoute) {
+    return {
+      to: "/browse",
+      label: "← Tillbaka till katalogen",
+    };
+  }
   if (route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor") {
     return {
       to: "/admin/tools",
@@ -26,6 +41,8 @@ const navLink = computed(() => {
   }
   return null;
 });
+
+const shouldShowBrand = computed(() => props.isFocusMode || props.isImmersiveRoute);
 
 function onLogout(): void {
   emit("logout");
@@ -37,7 +54,10 @@ function onToggleFocusMode(): void {
 </script>
 
 <template>
-  <header class="top-user-bar">
+  <header
+    class="top-user-bar"
+    :class="{ 'top-user-bar--immersive': isImmersiveRoute }"
+  >
     <div class="top-user-bar-left">
       <div class="topbar-brand-slot">
         <div
@@ -46,7 +66,7 @@ function onToggleFocusMode(): void {
         />
         <Transition name="topbar-brand">
           <RouterLink
-            v-if="isFocusMode"
+            v-if="shouldShowBrand"
             to="/"
             class="topbar-brand-link"
             aria-label="Skriptoteket"
@@ -65,6 +85,7 @@ function onToggleFocusMode(): void {
     </div>
     <div class="top-user-bar-right">
       <button
+        v-if="!isImmersiveRoute"
         type="button"
         class="focus-mode-toggle"
         :class="{ 'is-active': isFocusMode }"
@@ -85,7 +106,10 @@ function onToggleFocusMode(): void {
         </Transition>
       </button>
       <HelpButton />
-      <span class="user-separator">|</span>
+      <span
+        v-if="!isImmersiveRoute"
+        class="user-separator"
+      >|</span>
       <button
         type="button"
         class="logout-btn"
@@ -116,6 +140,12 @@ function onToggleFocusMode(): void {
   .top-user-bar {
     display: flex;
   }
+}
+
+.top-user-bar--immersive {
+  background: linear-gradient(180deg, rgba(18, 27, 24, 0.96), rgba(13, 18, 16, 0.9));
+  backdrop-filter: blur(18px);
+  color: var(--huleedu-canvas);
 }
 
 .top-user-bar-left {
@@ -223,6 +253,17 @@ function onToggleFocusMode(): void {
   text-decoration: underline;
   text-underline-offset: 3px;
   transition: color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.top-user-bar--immersive .top-nav-link,
+.top-user-bar--immersive .logout-btn,
+.top-user-bar--immersive .user-separator {
+  color: var(--huleedu-canvas);
+}
+
+.top-user-bar--immersive .top-nav-link:hover,
+.top-user-bar--immersive .logout-btn:hover {
+  color: #efc06c;
 }
 
 .top-nav-link:hover {

@@ -6,9 +6,11 @@ import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
+    ActivateGroupingHistoryDraftHandler,
     CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
+    DeleteHistoricGroupingDraftHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
     GetDraftHandler,
@@ -48,6 +50,53 @@ from tests.fixtures.identity_fixtures import make_user
 def _unwrap_dishka(fn):
     """Extract original function from Dishka-wrapped handlers."""
     return getattr(fn, "__dishka_orig_func__", fn)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_activate_grouping_history_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=ActivateGroupingHistoryDraftHandler)
+    draft_id = uuid4()
+    now = datetime.now(timezone.utc)
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.GROUPING,
+        template_id=None,
+        status=PlanDraftStatus.ACTIVE,
+        revision=4,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    handler.handle.return_value = draft
+
+    result = await _unwrap_dishka(api_grouping.activate_grouping_history_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        user=user,
+    )
+
+    assert result.id == draft_id
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_delete_historic_grouping_draft_calls_handler():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=DeleteHistoricGroupingDraftHandler)
+    draft_id = uuid4()
+
+    await _unwrap_dishka(api_grouping.delete_historic_grouping_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        user=user,
+    )
+
+    handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
 
 
 # Roster API Tests
@@ -274,6 +323,8 @@ async def test_create_template_calls_handler():
     handler.handle.assert_awaited_once_with(
         owner_user_id=user.id,
         name="Room 101",
+        grid_cols=14,
+        grid_rows=9,
         seats=req.seats,
         fixtures=[],
     )
@@ -310,6 +361,8 @@ async def test_update_template_calls_handler():
         template_id=template_id,
         owner_user_id=user.id,
         name="Updated Room",
+        grid_cols=14,
+        grid_rows=9,
         seats=[],
         fixtures=[],
     )

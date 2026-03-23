@@ -8,7 +8,9 @@
  * to the form logic.
  */
 
+import RoomSeatToken from "./RoomSeatToken.vue";
 import type { Seat, Student } from "../classroomPlannerTypes";
+import { getSeatFrameStyle } from "../roomSeatPresentation";
 
 const props = defineProps<{
   seat: Seat;
@@ -55,17 +57,9 @@ function onDragStart(event: DragEvent): void {
 
 <template>
   <div
-    class="absolute flex items-center justify-center border transition-transform transition-shadow"
-    :class="[
-      selected ? 'border-burgundy bg-burgundy/10 text-burgundy shadow-brutal' : '',
-      student ? 'cursor-grab bg-white text-navy shadow-brutal-sm hover:-translate-y-0.5 hover:shadow-brutal' : 'border-navy/30 bg-white/70 text-navy/40 border-dashed',
-    ]"
-    :style="{
-      left: `${seat.x + 12}px`,
-      top: `${seat.y + 12}px`,
-      width: '72px',
-      height: '72px',
-    }"
+    class="absolute transition-transform transition-shadow"
+    :class="student ? 'cursor-grab hover:-translate-y-0.5' : ''"
+    :style="getSeatFrameStyle(seat)"
     :draggable="Boolean(student)"
     @dragover="onDragOver"
     @drop="onDrop"
@@ -74,22 +68,20 @@ function onDragStart(event: DragEvent): void {
     <button
       v-if="student"
       type="button"
-      class="flex h-full w-full flex-col items-center justify-center px-1 text-center"
+      class="h-full w-full"
       @click="emit('student-selected', student.id)"
     >
-      <span class="line-clamp-2 text-xs font-semibold leading-tight">
-        {{ student.display_name }}
-      </span>
-      <span class="mt-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-        {{ seat.id }}
-      </span>
+      <RoomSeatToken
+        :seat-id="seat.id"
+        :student-name="student.display_name"
+        :selected="selected"
+      />
     </button>
-    <div
+    <RoomSeatToken
       v-else
-      class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
-    >
-      {{ seat.id }}
-    </div>
+      :seat-id="seat.id"
+      :selected="selected"
+    />
 
     <button
       v-if="student"

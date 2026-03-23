@@ -23,12 +23,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Observability correlation trace codemap: `docs/reference/reports/codemaps/observability-correlation-trace.md`
 - Tool editor framework codemap: `docs/reference/ref-tool-editor-framework-codemap.md`
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
-- Competitive games + Pinball Teacher reference:
-  `docs/reference/ref-curated-app-pinball-teacher-architecture-and-foundational-code.md`
+- Competitive games + Flunk-Out Frenzy reference:
+  `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
-- Proposed EPIC: `docs/backlog/epics/epic-25-competitive-games-and-pinball-teacher.md`
+- Proposed EPIC: `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
 - Riskunderlag praxis (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-riskunderlag-skolpraxis.md`
 - Hazards↔shortcards policy (Reagent Prep Chef): `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`
 - Llama kodassistent eval v1: `docs/reference/ref-llama-kodassistent-eval-v1.md`
@@ -164,7 +164,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/epics/epic-23-group-seating-studio.md`
 - `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
-- `docs/backlog/epics/epic-25-competitive-games-and-pinball-teacher.md`
+- `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
 
 ### Backlog Stories
 
@@ -180,8 +180,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-24-02-group-seating-studio-class-first-workspace.md`
 - `docs/backlog/stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md`
 - `docs/backlog/stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md`
-- `docs/backlog/stories/story-25-01-competitive-games-substrate-and-pinball-teacher-bootstrap-contract.md`
-- `docs/backlog/stories/story-25-02-pinball-teacher-local-runtime-vertical-slice.md`
+- `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md`
+- `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`
 - `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
 - `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md`
 
@@ -208,7 +208,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`
 - `docs/backlog/reviews/review-epic-23-group-seating-studio.md`
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
-- `docs/backlog/reviews/review-epic-25-competitive-games-and-pinball-teacher.md`
+- `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
 
 ### Backlog Sprints
 
@@ -293,6 +293,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0091-klassrumskartan-grouping-workspace-fundamentals.md`
 - `docs/backlog/prs/pr-0092-klassrumskartan-grouping-undo-redo-and-autosave-ux.md`
 - `docs/backlog/prs/pr-0093-klassrumskartan-grouping-class-history-and-draft-continuity.md`
+- `docs/backlog/prs/pr-0094-flunk-out-frenzy-curated-app-registration-and-discoverability.md`
+- `docs/backlog/prs/pr-0095-flunk-out-frenzy-bespoke-route-and-shell.md`
+- `docs/backlog/prs/pr-0096-flunk-out-frenzy-bootstrap-contract.md`
+- `docs/backlog/prs/pr-0097-flunk-out-frenzy-playable-shell-host-and-runtime-lifecycle.md`
+- `docs/backlog/prs/pr-0098-flunk-out-frenzy-runtime-core-and-hud-boundary.md`
+- `docs/backlog/prs/pr-0099-flunk-out-frenzy-prototype-alpha-physics-and-rules.md`
+- `docs/backlog/prs/pr-0100-flunk-out-frenzy-renderer-audio-and-playable-local-proof.md`
+- `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
+- `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
+- `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`
 - `docs/backlog/prs/pr-0067-curated-app-reagent-prep-chef-sds-corpus.md`
 - `docs/backlog/prs/pr-0068-reagent-prep-chef-sds-pdfs-manual-download.md`
 - `docs/backlog/prs/pr-0069-reagent-prep-chef-sds-index-available-in-docker.md`
@@ -537,7 +547,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Reference
 
 - `docs/reference/ref-competitive-games-cross-cutting-programme.md`
-- `docs/reference/ref-curated-app-pinball-teacher-architecture-and-foundational-code.md`
+- `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
 - `docs/reference/ref-ai-completion-architecture.md`
 - `docs/reference/ref-ai-inline-completion-harness.md`
 - `docs/reference/ref-ai-script-generation-kb-llm.md`

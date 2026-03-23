@@ -1,7 +1,7 @@
 ---
 type: review
 id: REV-EPIC-25
-title: "Review: Competitive games foundations and Pinball Teacher"
+title: "Review: Competitive games foundations and Flunk-Out Frenzy"
 status: approved
 owners: "agents"
 updated: 2026-03-22
@@ -20,7 +20,7 @@ stories:
 ## TL;DR
 
 This review approves introducing competitive browser games as a new curated-app
-family inside Skriptoteket, with Pinball Teacher as the first app. The key
+family inside Skriptoteket, with Flunk-Out Frenzy as the first app. The key
 architectural move is to keep live gameplay browser-owned while moving score
 submission, replay validation, and official leaderboard promotion into a shared
 backend subsystem.
@@ -48,7 +48,7 @@ app architecture.
 ## Proposed Solution
 
 Adopt `ui_mode=bespoke_required` for competitive game apps, add a shared
-`competitive_play` backend subsystem, and build Pinball Teacher as the first
+`competitive_play` backend subsystem, and build Flunk-Out Frenzy as the first
 consumer. The first implementation slice covers app registration, typed
 bootstrap, and a local runtime vertical slice. The follow-on stories add pending
 score submission, typed leaderboards, replay validation, and official score
@@ -59,10 +59,10 @@ promotion.
 | File | Focus | Time |
 |------|-------|------|
 | `docs/adr/adr-0073-competitive-games-and-official-high-scores.md` | Browser/runtime vs backend/competition boundary | 10 min |
-| `docs/backlog/epics/epic-25-competitive-games-and-pinball-teacher.md` | Scope and slice boundaries | 5 min |
+| `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md` | Scope and slice boundaries | 5 min |
 | `docs/reference/ref-competitive-games-cross-cutting-programme.md` | Cross-cutting workstream and backlog framing | 5 min |
-| `docs/backlog/stories/story-25-01-competitive-games-substrate-and-pinball-teacher-bootstrap-contract.md` | Curated-app entry seam | 5 min |
-| `docs/backlog/stories/story-25-02-pinball-teacher-local-runtime-vertical-slice.md` | Local runtime boundary | 5 min |
+| `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md` | Curated-app entry seam | 5 min |
+| `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md` | Local runtime boundary | 5 min |
 | `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md` | Submission + leaderboard contract | 5 min |
 | `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md` | Officialization policy | 5 min |
 
@@ -73,7 +73,7 @@ promotion.
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
 | Browser-owned live simulation | Protect game feel and keep network latency out of active play | [x] |
-| Shared `competitive_play` backend | Avoid one-off Pinball Teacher persistence logic and prepare for future games | [x] |
+| Shared `competitive_play` backend | Avoid one-off Flunk-Out Frenzy persistence logic and prepare for future games | [x] |
 | Pending-to-official score lifecycle | Keep global leaderboards trustworthy and auditable | [x] |
 | `ruleset_id` from the start | Prevent future scoring/balance changes from corrupting one shared board | [x] |
 
@@ -98,7 +98,6 @@ None. The proposal is thorough and aligns with the project's architectural princ
 ### Suggestions (Optional)
 
 - Consider how `ruleset_id` will be generated/managed (e.g., content-based hash or manual sequence) as this will be critical for the first score-capable slice in `ST-25-03`.
-- Ensure the replay capture seam in `ST-25-02` is isolated enough that it can be easily updated if the validation logic in `ST-25-04` requires more metadata than initially planned.
 
 ### Decision Approvals
 
