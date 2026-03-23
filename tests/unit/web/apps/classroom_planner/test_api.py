@@ -32,9 +32,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
+    DraftHistoryStatus,
     DraftWorkspace,
     GroupAssignment,
-    GroupingHistoryStatus,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -565,7 +565,7 @@ async def test_update_draft_calls_handler():
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         student_planning_meta=[],
-        history_status=GroupingHistoryStatus(can_undo=True, can_redo=False),
+        history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
     handler.handle.return_value = workspace
 
@@ -749,8 +749,8 @@ async def test_undo_draft_calls_handler():
         id=draft_id,
         owner_user_id=user.id,
         roster_id=uuid4(),
-        draft_kind=PlanDraftKind.GROUPING,
-        template_id=None,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=uuid4(),
         status=PlanDraftStatus.ACTIVE,
         revision=1,
         last_opened_at=now,
@@ -761,7 +761,8 @@ async def test_undo_draft_calls_handler():
         draft=draft,
         groups=[],
         group_assignments=[],
-        history_status=GroupingHistoryStatus(can_undo=True, can_redo=False),
+        seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat-1")],
+        history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
     handler.handle.return_value = workspace
     roster_repo.get_by_id.return_value = Roster(
@@ -769,6 +770,15 @@ async def test_undo_draft_calls_handler():
         owner_user_id=user.id,
         name="Class",
         students=[],
+        created_at=now,
+        updated_at=now,
+    )
+    template_repo.get_by_id.return_value = RoomTemplate(
+        id=draft.template_id,
+        owner_user_id=user.id,
+        name="Sal 101",
+        seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -783,7 +793,73 @@ async def test_undo_draft_calls_handler():
 
     assert result.draft.id == draft_id
     assert result.history_status.can_undo is True
+    assert result.template is not None
+    assert result.seat_assignments == [api.SeatAssignmentDto(student_id="s1", seat_id="seat-1")]
     handler.handle.assert_awaited_once_with(draft_id=draft_id, owner_user_id=user.id)
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_undo_draft_returns_latest_template_state_after_separate_room_edits():
+    user = make_user(role=Role.USER)
+    handler = AsyncMock(spec=UndoDraftHandler)
+    roster_repo = AsyncMock()
+    template_repo = AsyncMock()
+    draft_id = uuid4()
+    template_id = uuid4()
+    now = datetime.now(timezone.utc)
+
+    draft = PlanDraft(
+        id=draft_id,
+        owner_user_id=user.id,
+        roster_id=uuid4(),
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=template_id,
+        status=PlanDraftStatus.ACTIVE,
+        revision=2,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    workspace = DraftWorkspace(
+        draft=draft,
+        groups=[],
+        group_assignments=[],
+        seat_assignments=[],
+        history_status=DraftHistoryStatus(can_undo=False, can_redo=True),
+    )
+    handler.handle.return_value = workspace
+    roster_repo.get_by_id.return_value = Roster(
+        id=draft.roster_id,
+        owner_user_id=user.id,
+        name="Class",
+        students=[],
+        created_at=now,
+        updated_at=now,
+    )
+    template_repo.get_by_id.return_value = RoomTemplate(
+        id=template_id,
+        owner_user_id=user.id,
+        name="Sal 101 uppdaterad",
+        seats=[Seat(id="seat-1", x=320, y=180, zone="window")],
+        fixtures=[],
+        created_at=now,
+        updated_at=now,
+    )
+
+    result = await _unwrap_dishka(api.undo_draft)(
+        draft_id=draft_id,
+        handler=handler,
+        rosters=roster_repo,
+        templates=template_repo,
+        user=user,
+    )
+
+    assert result.template is not None
+    assert result.template.name == "Sal 101 uppdaterad"
+    assert result.template.seats == [api.SeatDto(id="seat-1", x=320, y=180, zone="window")]
+    assert result.seat_assignments == []
+    template_repo.get_by_id.assert_awaited_once_with(template_id=template_id)
 
 
 @pytest.mark.unit
@@ -812,7 +888,7 @@ async def test_redo_draft_calls_handler():
         draft=draft,
         groups=[],
         group_assignments=[],
-        history_status=GroupingHistoryStatus(can_undo=True, can_redo=True),
+        history_status=DraftHistoryStatus(can_undo=True, can_redo=True),
     )
     handler.handle.return_value = workspace
     roster_repo.get_by_id.return_value = Roster(

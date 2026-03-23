@@ -47,7 +47,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-05: Codebase realignment and superseded contract removal](../stories/story-24-05-group-seating-studio-codebase-realignment-and-superseded-contract-removal.md)
 - [x] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
 - [x] [ST-24-03: Grouping fundamentals + draft history](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
-- [ ] [ST-24-04: Seating fundamentals, room-builder ergonomics, and draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
+- [x] [ST-24-04: Seating fundamentals, room-builder ergonomics, and draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 
 ## Implementation Summary (as of 2026-03-23)
 
@@ -92,10 +92,10 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
     continuity through the secondary overlay drawer
   - historic grouping drafts can be reopened or deleted with confirmation without polluting the
     active grouping workspace
-- `ST-24-04` is only partially shipped so far:
+- `ST-24-04` is now shipped:
   - room-builder ergonomics and object-visual slices (`PR-0101` to `PR-0103`) are done
-  - `PR-0105` is now implemented locally: seating has a teacher-facing continuity drawer in
-    `Sittplatser`, classroom-required `Nytt sittschema`, and reopen/delete for historic seating
-    drafts with a dedicated browser proof
-  - only `PR-0106` remains to close the story: seating-specific undo/redo plus bounded in-draft
-    history
+  - `PR-0105` shipped the seating continuity drawer in `Sittplatser`, classroom-required `Nytt
+    sittschema`, and reopen/delete for historic seating drafts with a dedicated browser proof
+  - `PR-0106` shipped seating-specific `Ångra` / `Gör om`, bounded in-draft history, shared
+    backend undo/redo routes with neutral draft-history contracts, and a targeted browser proof
+    that continuity stays draft-level while classroom switching stays outside seating undo/redo

@@ -221,8 +221,8 @@ class ResumablePlanDraftDto(BaseModel):
     template_name: str | None = None
 
 
-class GroupingHistoryStatusDto(BaseModel):
-    """Serialize the undo/redo availability for a grouping draft."""
+class DraftHistoryStatusDto(BaseModel):
+    """Serialize the undo/redo availability for an active draft."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
@@ -242,7 +242,7 @@ class DraftWorkspaceResponse(BaseModel):
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
     student_planning_meta: list[StudentPlanningMetaDto]
-    history_status: GroupingHistoryStatusDto
+    history_status: DraftHistoryStatusDto
 
 
 class ResolvePlanDraftRequest(BaseModel):
@@ -339,7 +339,7 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
         student_planning_meta=[
             StudentPlanningMetaDto.model_validate(meta) for meta in workspace.student_planning_meta
         ],
-        history_status=GroupingHistoryStatusDto.model_validate(workspace.history_status),
+        history_status=DraftHistoryStatusDto.model_validate(workspace.history_status),
     )
 
 

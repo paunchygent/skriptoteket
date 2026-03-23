@@ -22,9 +22,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
+    DraftHistoryStatus,
     DraftWorkspace,
     GroupAssignment,
-    GroupingHistoryStatus,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -398,7 +398,7 @@ async def test_patch_draft_returns_hydrated_workspace_with_backend_history_statu
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        history_status=GroupingHistoryStatus(can_undo=False, can_redo=False),
+        history_status=DraftHistoryStatus(can_undo=False, can_redo=False),
     )
     persisted_workspace = DraftWorkspace(
         draft=existing.model_copy(update={"revision": 3, "updated_at": now}),
@@ -406,7 +406,7 @@ async def test_patch_draft_returns_hydrated_workspace_with_backend_history_statu
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        history_status=GroupingHistoryStatus(can_undo=True, can_redo=False),
+        history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
 
     drafts.get_workspace.side_effect = [existing_workspace, persisted_workspace]
@@ -604,11 +604,11 @@ async def test_get_resumable_draft_returns_repo_payload(drafts, now):
 
 
 @pytest.mark.asyncio
-async def test_undo_draft_rejects_non_grouping_drafts(uow, drafts, now):
+async def test_undo_draft_allows_active_seating_drafts(uow, drafts, now):
     handler = UndoDraftHandler(uow, drafts)
     owner_id = uuid4()
     draft_id = uuid4()
-    drafts.get_by_id.return_value = PlanDraft(
+    draft = PlanDraft(
         id=draft_id,
         owner_user_id=owner_id,
         roster_id=uuid4(),
@@ -620,13 +620,20 @@ async def test_undo_draft_rejects_non_grouping_drafts(uow, drafts, now):
         created_at=now,
         updated_at=now,
     )
+    workspace = DraftWorkspace(
+        draft=draft,
+        groups=[],
+        group_assignments=[],
+        seat_assignments=[],
+        student_planning_meta=[],
+    )
+    drafts.get_by_id.return_value = draft
+    drafts.undo.return_value = workspace
 
-    with pytest.raises(DomainError) as error:
-        await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
+    result = await handler.handle(draft_id=draft_id, owner_user_id=owner_id)
 
-    assert error.value.code == ErrorCode.NOT_FOUND
-    drafts.undo.assert_not_awaited()
-    drafts.get_workspace.assert_not_called()
+    assert result == workspace
+    drafts.undo.assert_awaited_once_with(draft_id=draft_id)
 
 
 @pytest.mark.asyncio

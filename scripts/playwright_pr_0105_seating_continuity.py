@@ -1,8 +1,10 @@
-"""Dedicated live browser proof for PR-0105 seating continuity.
+"""Dedicated live browser proof for PR-0105 and PR-0106 seating continuity.
 
 This script isolates the seating continuity/new-draft lifecycle from the
 broader classroom-planner baseline so `PR-0105` can be verified deterministically
 on the real local SPA without interference from grouping-history transitions.
+It now also proves the `PR-0106` seating-only undo/redo contract on top of the
+same teacher-facing continuity workflow.
 """
 
 from __future__ import annotations
@@ -16,12 +18,14 @@ from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
 from scripts.playwright_classroom_planner_smoke import (
+    _close_history_drawer,
     _create_roster,
     _create_template,
     _delete_remaining_historic_seating_draft,
     _open_class_workspace,
     _open_seating_workspace,
     _start_second_seating_draft,
+    _switch_seating_workspace_template,
     _verify_seating_history_starts_empty,
     _verify_seating_toolbar,
 )
@@ -96,6 +100,63 @@ def _assign_student_to_seat(page: Any, *, student_name: str, seat_id: str) -> No
     ).to_be_visible()
 
 
+def _wait_for_autosave(page: Any) -> None:
+    """Wait through autosave so backend history is the source of truth."""
+
+    page.wait_for_timeout(1400)
+    expect(page.get_by_text("Sparad", exact=True).first).to_be_visible()
+
+
+def _undo_current_seating_step(page: Any, *, student_name: str) -> None:
+    """Undo one in-draft seating change and prove the seat assignment is cleared."""
+
+    undo_button = page.locator('[data-test="undo-seating-draft"]')
+    expect(undo_button).to_be_enabled()
+    undo_button.click()
+    expect(_unseated_pool(page).get_by_role("button", name=re.compile(student_name))).to_be_visible()
+    expect(
+        page.locator('[data-test="room-seat-token"]').filter(
+            has=page.get_by_text(student_name, exact=True)
+        )
+    ).to_have_count(0)
+    expect(page.locator('[data-test="redo-seating-draft"]')).to_be_enabled()
+
+
+def _redo_current_seating_step(page: Any, *, student_name: str) -> None:
+    """Redo one in-draft seating change and prove the seat assignment returns."""
+
+    redo_button = page.locator('[data-test="redo-seating-draft"]')
+    expect(redo_button).to_be_enabled()
+    redo_button.click()
+    expect(_unseated_pool(page).get_by_role("button", name=re.compile(student_name))).to_have_count(
+        0
+    )
+    expect(
+        page.locator('[data-test="room-seat-token"]')
+        .filter(has=page.get_by_text(student_name, exact=True))
+        .first
+    ).to_be_visible()
+
+
+def _verify_undo_steps_do_not_pollute_continuity_drawer(page: Any) -> None:
+    """Continuity must stay draft-level rather than exposing undo/redo entries."""
+
+    page.locator('[data-test="seating-history"]').click()
+    expect(page.get_by_text("Ingen sitthistorik ännu.", exact=True)).to_be_visible()
+    _close_history_drawer(page, title="Sittplatser")
+
+
+def _verify_template_switch_stays_outside_undo(
+    page: Any, *, template_name: str, student_name: str
+) -> None:
+    """Changing classroom context should reset seating history instead of being undoable."""
+
+    _switch_seating_workspace_template(page, template_name=template_name)
+    expect(_unseated_pool(page).get_by_role("button", name=re.compile(student_name))).to_be_visible()
+    expect(page.locator('[data-test="undo-seating-draft"]')).to_be_disabled()
+    expect(page.locator('[data-test="redo-seating-draft"]')).to_be_disabled()
+
+
 def _verify_new_seating_draft_clears_assignments(page: Any, *, student_name: str) -> None:
     """Confirm a fresh seating draft resets seat assignments in the same classroom."""
 
@@ -134,12 +195,13 @@ def _reopen_historic_seating_draft_and_verify_assignment(page: Any, *, student_n
 
 
 def main() -> None:
-    """Run the PR-0105 live browser proof against the local SPA."""
+    """Run the PR-0105/PR-0106 live browser proof against the local SPA."""
 
     config = get_config()
     timestamp = int(time.time())
     roster_name = f"PR0105 Klass {timestamp}"
     template_name = f"PR0105 Sal {timestamp}"
+    template_name_secondary = f"PR0106 Sal {timestamp}"
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     screenshot_path = ARTIFACTS_DIR / "pr0105-seating-continuity-proof.png"
 
@@ -156,21 +218,31 @@ def main() -> None:
 
         _create_roster(page, roster_name=roster_name)
         _create_template(page, template_name=template_name)
+        _create_template(page, template_name=template_name_secondary)
         _open_class_workspace(page, roster_name=roster_name)
         _verify_new_seating_draft_requires_classroom(page)
         _open_seating_workspace(page, template_name=template_name)
         _verify_seating_toolbar(page)
         _verify_seating_history_starts_empty(page)
         _assign_student_to_seat(page, student_name="Ada Lovelace", seat_id="seat-1")
+        _wait_for_autosave(page)
+        _undo_current_seating_step(page, student_name="Ada Lovelace")
+        _redo_current_seating_step(page, student_name="Ada Lovelace")
+        _verify_undo_steps_do_not_pollute_continuity_drawer(page)
         _start_second_seating_draft(page)
         _verify_new_seating_draft_clears_assignments(page, student_name="Ada Lovelace")
         _reopen_historic_seating_draft_and_verify_assignment(page, student_name="Ada Lovelace")
         _delete_remaining_historic_seating_draft(page)
+        _verify_template_switch_stays_outside_undo(
+            page,
+            template_name=template_name_secondary,
+            student_name="Ada Lovelace",
+        )
 
         page.screenshot(path=str(screenshot_path), full_page=True)
         browser.close()
 
-    print(f"playwright-pr0105: ok -> {screenshot_path}")
+    print(f"playwright-pr0105-pr0106: ok -> {screenshot_path}")
 
 
 if __name__ == "__main__":

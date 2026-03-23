@@ -2,7 +2,7 @@
 type: pr
 id: PR-0106
 title: "Klassrumskartan: seating undo/redo and bounded draft history"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-23
 updated: 2026-03-23
@@ -10,7 +10,7 @@ stories:
   - "ST-24-04"
 tags: ["frontend", "backend", "integration", "ux"]
 acceptance_criteria:
-  - "The seating action row exposes `Historik`, `Ångra`, `Gör om`, `Nytt sitschema`, and `Redigera klassrum` in a cohesive desktop-first control strip."
+  - "The seating action row exposes `Historik`, `Ångra`, `Gör om`, `Nytt sittschema`, and `Redigera klassrum` in a cohesive desktop-first control strip."
   - "When the teacher changes the active seating draft, `Ångra` and `Gör om` step backward and forward through bounded seating draft history inside the seating workspace."
   - "Seating undo/redo uses backend-owned history state after flushing pending autosave first, rather than introducing a parallel client-only history model."
   - "Seating undo/redo applies to seating draft state only and does not include room-template editing inside `CreateRoomTemplateModal.vue`."
@@ -137,7 +137,8 @@ Reasoning:
   - generalize the bounded history contract so seating drafts can persist and step through history
     like grouping drafts
   - keep the draft-history depth configurable and shared across draft kinds where practical
-  - expose explicit seating undo/redo handlers/routes
+  - keep the shared `/drafts/{draft_id}/undo` and `/redo` routes while making their contracts
+    draft-kind honest
 - Frontend store:
   - extend `useClassroomState.ts` so `canUndo` / `canRedo` become draft-kind-aware rather than
     grouping-only
@@ -176,3 +177,14 @@ Reasoning:
 - Revert seating undo/redo and bounded history changes while keeping the already shipped continuity
   drawer/new seating-draft lifecycle from `PR-0105` and the room-builder improvements from
   `PR-0101` to `PR-0103`.
+
+## Implementation notes
+
+- The backend now stores a neutral draft-history status contract instead of grouping-specific
+  naming.
+- Seating snapshots persist `seat_assignments` and other draft-local state, but do not replay
+  `template_id`.
+- Changing classroom inside seating resets the in-draft history baseline instead of making the
+  classroom switch undoable.
+- The frontend store reuses the existing shared backend undo/redo routes and flushes pending
+  autosave before both grouping and seating history actions.

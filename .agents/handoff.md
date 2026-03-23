@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, and `PR-0105`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, and `PR-0106`.
 
 ## Status
 
@@ -34,7 +34,18 @@ Keep this file updated so the next session can pick up work quickly.
   - busy-state / reentrancy issue: fixed and covered by tests
   - non-null `template_id` contract gap: fixed and covered by tests
   - flaky shared smoke dependency: replaced with a dedicated `PR-0105` browser proof
-- `ST-24-04` stays open only for `PR-0106`: seating-specific undo/redo plus bounded in-draft history.
+- `PR-0106` is now implemented locally:
+  - backend/domain: draft history is now neutral across grouping and seating via `DraftHistoryStatus`
+  - repository: seating snapshots persist `seat_assignments`, remain bounded to 10 steps, ignore
+    `template_id` on replay, and reset history when the classroom changes so template switching is
+    not undoable
+  - application/web: shared `/drafts/{draft_id}/undo` and `/redo` handlers now allow seating drafts
+    without pretending the contract is grouping-only
+  - frontend: `PlannerWorkspaceShell.vue` now exposes seating `Ångra` / `Gör om`, and
+    `useClassroomState.ts` flushes autosave before both grouping and seating history actions
+  - proof: the dedicated browser script now verifies seating undo/redo, continuity staying
+    draft-level, and classroom switching staying outside seating undo/redo
+- `ST-24-04` is now closed.
 - Competitive-games lane is separate:
   - `ST-25-01` and `ST-25-02` are done through `PR-0104`
   - next planned chain there is `PR-0107` -> `PR-0108` -> `ST-25-03`
@@ -55,6 +66,13 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerHistoryDrawer.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build` (PASSED).
 - 2026-03-23: `pdm run python -m scripts.playwright_pr_0105_seating_continuity --base-url http://127.0.0.1:5173` (PASSED; proved classroom-required `Nytt sittschema`, verified a fresh seating draft clears a real seat assignment, reopened historic seating to restore that assignment, then deleted the remaining historic draft; artifact in `.artifacts/classroom-planner-smoke/pr0105-seating-continuity-proof.png`).
 - 2026-03-23: `pdm run docs-validate` (PASSED after closing out `PR-0105`, updating `ST-24-04`, `EPIC-24`, and this handoff).
+- 2026-03-23: `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_review_fixes.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q` (49 PASSED; includes repository coverage for seating history reset on classroom switch and non-replay of `template_id`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts --reporter=verbose` (43 PASSED; covers seating undo/redo store orchestration, seating action-row controls, and lifecycle busy-state locking).
+- 2026-03-23: `pdm run ruff check src/skriptoteket/domain/curated_apps/classroom_planner/models.py src/skriptoteket/protocols/classroom_planner.py src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py src/skriptoteket/web/api/v1/apps_classroom_planner.py tests/unit/infrastructure/repositories/test_classroom_planner_review_fixes.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0105_seating_continuity.py` (PASSED).
+- 2026-03-23: `pdm run mypy src/skriptoteket/domain/curated_apps/classroom_planner/models.py src/skriptoteket/protocols/classroom_planner.py src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/drafts.py src/skriptoteket/web/api/v1/apps_classroom_planner.py` (PASSED).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts` (PASSED).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-23: `pdm run python -m scripts.playwright_pr_0105_seating_continuity --base-url http://127.0.0.1:5173` (PASSED; proved seating `Ångra` / `Gör om`, confirmed undo/redo stays inside the active draft while the continuity drawer remains empty until a second seating draft exists, verified historic reopen/delete still works, and verified switching classroom resets seating history instead of making classroom changes undoable; artifact in `.artifacts/classroom-planner-smoke/pr0105-seating-continuity-proof.png`).
 
 ## How to Run
 
@@ -66,21 +84,16 @@ docker compose up -d db && pdm run db-upgrade
 ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
 
 # Focused verification
-pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q
+pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_review_fixes.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q
 pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts
 pdm run python -m scripts.playwright_pr_0105_seating_continuity --base-url http://127.0.0.1:5173
 ```
 
 ## Known Issues / Risks
 
-- `ST-24-04` remains open only for `PR-0106`: seating-specific undo/redo plus bounded in-draft history.
-- Room-template editing must stay outside seating undo/redo; only seating-draft state belongs to the future seating history stack.
+- Room-template editing must stay outside seating undo/redo; only seating-draft state belongs to the seating history stack.
 - `scripts/playwright_classroom_planner_smoke.py` still covers a broader surface than PR-level proofs; prefer the dedicated `PR-0105` browser proof for seating lifecycle regressions.
 
 ## Next Steps
 
-- Implement `PR-0106`: generalize the current backend-owned draft-history mechanics from grouping-only to draft-kind-aware behavior where needed, then surface `Ångra` / `Gör om` in the seating action row.
-- Reuse the shipped `PR-0105` continuity drawer/action row; do not reintroduce overview-level seating lifecycle controls.
-- Keep room-template editing in `CreateRoomTemplateModal.vue` outside seating undo/redo.
-- After `PR-0106`, re-run the dedicated seating proof plus a fresh browser pass for seating undo/redo before closing `ST-24-04`.
 - Competitive-games lane is separate: after `PR-0107` and `PR-0108`, the next product slice there is `ST-25-03`.

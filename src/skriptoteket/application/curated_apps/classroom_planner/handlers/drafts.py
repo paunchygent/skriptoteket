@@ -104,18 +104,16 @@ def _validate_workspace_structure(
             raise validation_error("Student notes must reference roster students.")
 
 
-async def _get_owned_active_grouping_draft(
+async def _get_owned_active_draft(
     *,
     drafts: PlanDraftRepositoryProtocol,
     draft_id: UUID,
     owner_user_id: UUID,
 ) -> PlanDraft:
-    """Load the current grouping draft and reject foreign or unsupported targets."""
+    """Load the current active draft and reject foreign or inactive targets."""
 
     draft = await drafts.get_by_id(draft_id=draft_id)
     if not draft or draft.owner_user_id != owner_user_id:
-        raise not_found("PlanDraft", str(draft_id))
-    if draft.draft_kind != PlanDraftKind.GROUPING:
         raise not_found("PlanDraft", str(draft_id))
     ensure_active_draft(draft=draft)
     return draft
@@ -223,7 +221,7 @@ class GetResumableDraftHandler:
 
 
 class UndoDraftHandler:
-    """Step backward in the grouping history stack."""
+    """Step backward in the active draft history stack."""
 
     def __init__(self, uow: UnitOfWorkProtocol, drafts: PlanDraftRepositoryProtocol) -> None:
         self._uow = uow
@@ -231,7 +229,7 @@ class UndoDraftHandler:
 
     async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> DraftWorkspace:
         async with self._uow:
-            await _get_owned_active_grouping_draft(
+            await _get_owned_active_draft(
                 drafts=self._drafts,
                 draft_id=draft_id,
                 owner_user_id=owner_user_id,
@@ -246,7 +244,7 @@ class UndoDraftHandler:
 
 
 class RedoDraftHandler:
-    """Step forward in the grouping history stack."""
+    """Step forward in the active draft history stack."""
 
     def __init__(self, uow: UnitOfWorkProtocol, drafts: PlanDraftRepositoryProtocol) -> None:
         self._uow = uow
@@ -254,7 +252,7 @@ class RedoDraftHandler:
 
     async def handle(self, *, draft_id: UUID, owner_user_id: UUID) -> DraftWorkspace:
         async with self._uow:
-            await _get_owned_active_grouping_draft(
+            await _get_owned_active_draft(
                 drafts=self._drafts,
                 draft_id=draft_id,
                 owner_user_id=owner_user_id,

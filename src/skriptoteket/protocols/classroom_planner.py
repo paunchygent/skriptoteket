@@ -89,11 +89,11 @@ class PlanDraftRepositoryProtocol(Protocol):
         ...
 
     async def undo(self, *, draft_id: UUID) -> DraftWorkspace | None:
-        """Step backward in the grouping history stack."""
+        """Step backward in the active draft history stack."""
         ...
 
     async def redo(self, *, draft_id: UUID) -> DraftWorkspace | None:
-        """Step forward in the grouping history stack."""
+        """Step forward in the active draft history stack."""
         ...
 
     async def mark_status(

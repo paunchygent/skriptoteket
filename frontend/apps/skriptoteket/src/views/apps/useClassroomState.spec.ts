@@ -523,12 +523,74 @@ describe("useClassroomState", () => {
     expect(state.canUndo).toBe(true);
   });
 
-  it("keeps undo and redo grouping-only", async () => {
+  it("hydrates seating undo and redo availability from the backend workspace contract", async () => {
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "seating");
+    state.historyStatus = {
+      can_undo: true,
+      can_redo: true,
+    };
+
+    expect(state.canUndo).toBe(true);
+    expect(state.canRedo).toBe(true);
+  });
+
+  it("flushes pending seating autosave before undoing", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    clientMocks.apiPatch.mockResolvedValue(
+      createWorkspaceResponse("template-1", "seating", {
+        can_undo: true,
+        can_redo: false,
+      }),
+    );
+    clientMocks.apiPost.mockResolvedValue(
+      createWorkspaceResponse("template-1", "seating", {
+        can_undo: false,
+        can_redo: true,
+      }),
+    );
+
+    state.assignStudentToSeat("s1", "seat-1");
+    expect(state.canUndo).toBe(true);
+    await state.undoSeatingDraft();
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/undo",
+    );
+    expect(clientMocks.apiPatch.mock.invocationCallOrder[0]).toBeLessThan(
+      clientMocks.apiPost.mock.invocationCallOrder[0],
+    );
+    expect(state.canUndo).toBe(false);
+    expect(state.canRedo).toBe(true);
+  });
+
+  it("replays backend history state after redoing a seating step", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    clientMocks.apiPost.mockResolvedValue(
+      createWorkspaceResponse("template-1", "seating", {
+        can_undo: true,
+        can_redo: false,
+      }),
+    );
+
+    await state.redoSeatingDraft();
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/redo",
+    );
+    expect(state.canUndo).toBe(true);
+    expect(state.canRedo).toBe(false);
+  });
+
+  it("does not run history actions without an active draft", async () => {
+    const state = useClassroomState();
 
     await state.undoGroupingDraft();
-    await state.redoGroupingDraft();
+    await state.redoSeatingDraft();
 
     expect(clientMocks.apiPost).not.toHaveBeenCalled();
   });
@@ -555,7 +617,7 @@ describe("useClassroomState", () => {
   it("ignores stale local group renames while undo is already in flight", async () => {
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "grouping");
-    let resolvePatch!: (value: ReturnType<typeof createDraft>) => void;
+    let resolvePatch!: (value: ReturnType<typeof createWorkspaceResponse>) => void;
     let resolveUndo!: (value: ReturnType<typeof createWorkspaceResponse>) => void;
     clientMocks.apiPatch.mockImplementation(
       () =>
@@ -574,7 +636,20 @@ describe("useClassroomState", () => {
     const undoPromise = state.undoGroupingDraft();
 
     expect(resolvePatch).toBeTypeOf("function");
-    resolvePatch({ ...createDraft("template-1", "grouping"), revision: 5 });
+    resolvePatch({
+      ...createWorkspaceResponse("template-1", "grouping", {
+        can_undo: true,
+        can_redo: false,
+      }),
+      draft: {
+        ...createDraft("template-1", "grouping"),
+        revision: 5,
+      },
+      groups: [
+        { id: "group-a", name: "Handledargrupp", sort_order: 0, name_is_custom: true },
+        { id: "group-b", name: "Grupp 2", sort_order: 1, name_is_custom: false },
+      ],
+    });
     while (clientMocks.apiPost.mock.calls.length === 0) {
       await Promise.resolve();
     }

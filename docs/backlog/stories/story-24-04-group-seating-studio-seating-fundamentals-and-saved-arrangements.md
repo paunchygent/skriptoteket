@@ -2,7 +2,7 @@
 type: story
 id: ST-24-04
 title: "Klassrumskartan — Seating fundamentals, room-builder ergonomics, and draft history"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-21
 updated: 2026-03-23
@@ -252,8 +252,6 @@ The latest clarified direction is specific enough to implement safely:
 
 ## Close-out review (2026-03-23)
 
-`ST-24-04` remains open after review.
-
 Shipped in this story so far:
 
 - `PR-0101`: room resize, ghost placement preview, and corrected wall anchoring
@@ -262,14 +260,12 @@ Shipped in this story so far:
 - `PR-0103`: larger desktop-first builder modal, zoom, `Anpassa`, `Rensa`, and circular seats
 - `PR-0105`: seating continuity drawer in `Sittplatser`, classroom-required `Nytt sittschema`,
   reopen/delete of historic seating drafts, and dedicated live browser proof of the new lifecycle
+- `PR-0106`: seating-specific `Ångra` / `Gör om`, bounded in-draft history shared with grouping,
+  backend-owned undo/redo status, and a targeted browser proof that the continuity drawer remains
+  draft-level while classroom switching stays outside seating undo/redo
 
-Still missing against the current acceptance criteria:
-
-- seating-specific undo/redo inside the seating workspace
-- bounded seating draft history exposed through the actual seating flow rather than only through
-  summary data
-
-`ST-24-04` therefore stays open only for `PR-0106`, not for continuity/drawer work.
+`ST-24-04` is now closed. The shipped work covers the remaining acceptance criteria for
+seating-specific undo/redo, bounded in-draft history, and resumed autosaved seating state.
 
 ## Notes
 

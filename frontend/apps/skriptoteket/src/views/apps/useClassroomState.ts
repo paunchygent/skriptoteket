@@ -145,14 +145,14 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
   const canUndo = computed(() => {
     return (
-      draft.value?.draft_kind === "grouping"
+      draft.value !== null
       && !isWorkspaceBusy.value
       && (historyStatus.value.can_undo || hasPendingAutosave.value)
     );
   });
 
   const canRedo = computed(() => {
-    return draft.value?.draft_kind === "grouping" && !isWorkspaceBusy.value && historyStatus.value.can_redo;
+    return draft.value !== null && !isWorkspaceBusy.value && historyStatus.value.can_redo;
   });
 
   function beginWorkspaceTransition(): void {
@@ -317,7 +317,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
   }
 
   async function runHistoryAction(action: "undo" | "redo"): Promise<void> {
-    if (!draft.value || draft.value.draft_kind !== "grouping" || historyActionInFlight.value) {
+    if (!draft.value || historyActionInFlight.value) {
       return;
     }
 
@@ -349,6 +349,14 @@ export const useClassroomState = defineStore("classroom-state", () => {
   }
 
   async function redoGroupingDraft(): Promise<void> {
+    await runHistoryAction("redo");
+  }
+
+  async function undoSeatingDraft(): Promise<void> {
+    await runHistoryAction("undo");
+  }
+
+  async function redoSeatingDraft(): Promise<void> {
     await runHistoryAction("redo");
   }
 
@@ -590,6 +598,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     flushPendingSave,
     undoGroupingDraft,
     redoGroupingDraft,
+    undoSeatingDraft,
+    redoSeatingDraft,
     getResumableDraft,
     getClassWorkspaceSummary,
     abandonDraft,

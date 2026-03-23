@@ -393,8 +393,14 @@ def _return_to_class_workspace(page: Any) -> None:
 
 
 def _verify_seating_toolbar(page: Any) -> None:
-    """Ensure seating exposes the intended continuity and classroom actions."""
+    """Ensure seating exposes the intended continuity, history, and classroom actions."""
 
+    undo_button = page.locator('[data-test="undo-seating-draft"]')
+    expect(undo_button).to_be_visible()
+    expect(undo_button).to_have_text(re.compile(r"Ångra", re.IGNORECASE))
+    redo_button = page.locator('[data-test="redo-seating-draft"]')
+    expect(redo_button).to_be_visible()
+    expect(redo_button).to_have_text(re.compile(r"Gör om", re.IGNORECASE))
     seating_history_button = page.locator('[data-test="seating-history"]')
     expect(seating_history_button).to_be_visible()
     expect(seating_history_button).to_have_text(re.compile(r"Historik", re.IGNORECASE))

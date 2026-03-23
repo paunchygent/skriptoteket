@@ -210,6 +210,20 @@ async function startNewSeatingDraft(): Promise<void> {
   emit("new-seating-draft", { templateId: plannerState.template.id });
 }
 
+async function undoSeatingDraft(): Promise<void> {
+  if (props.seatingLifecycleBusy) {
+    return;
+  }
+  await plannerState.undoSeatingDraft();
+}
+
+async function redoSeatingDraft(): Promise<void> {
+  if (props.seatingLifecycleBusy) {
+    return;
+  }
+  await plannerState.redoSeatingDraft();
+}
+
 function openGroupingHistoryDrawer(): void {
   openHistoryDrawerKind.value = "grouping";
 }
@@ -434,6 +448,24 @@ watch(
           </h3>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="undo-seating-draft"
+            :disabled="!plannerState.canUndo || props.seatingLifecycleBusy"
+            @click="void undoSeatingDraft()"
+          >
+            Ångra
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="redo-seating-draft"
+            :disabled="!plannerState.canRedo || props.seatingLifecycleBusy"
+            @click="void redoSeatingDraft()"
+          >
+            Gör om
+          </button>
           <button
             type="button"
             class="btn-ghost border-navy/30 bg-white shadow-none"

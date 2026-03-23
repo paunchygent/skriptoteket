@@ -18,9 +18,9 @@ from sqlalchemy.orm import selectinload
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassWorkspaceDraftSummary,
     DraftGroup,
+    DraftHistoryStatus,
     DraftWorkspace,
     GroupAssignment,
-    GroupingHistoryStatus,
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
@@ -55,6 +55,8 @@ from skriptoteket.protocols.classroom_planner import (
 
 class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
     """Persist draft roots and fundamentals workspace state in PostgreSQL."""
+
+    _HISTORY_LIMIT = 10
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -95,7 +97,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
 
         history_stack = model.history_stack or []
         undo_index = model.undo_index if model.undo_index is not None else 0
-        history_status = GroupingHistoryStatus(
+        history_status = DraftHistoryStatus(
             can_undo=undo_index > 0,
             can_redo=undo_index < len(history_stack) - 1,
         )
@@ -381,15 +383,16 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             workspace.group_assignments,
             key=lambda assignment: (assignment.student_id, assignment.group_id),
         )
+        ordered_seat_assignments = sorted(
+            workspace.seat_assignments,
+            key=lambda assignment: (assignment.student_id, assignment.seat_id),
+        )
         ordered_student_planning_meta = sorted(
             workspace.student_planning_meta,
             key=lambda meta: meta.student_id,
         )
 
-        return {
-            "template_id": str(workspace.draft.template_id)
-            if workspace.draft.template_id
-            else None,
+        snapshot = {
             "groups": [
                 {
                     "id": group.id,
@@ -403,6 +406,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 {"student_id": assignment.student_id, "group_id": assignment.group_id}
                 for assignment in ordered_group_assignments
             ],
+            "seat_assignments": [
+                {"student_id": assignment.student_id, "seat_id": assignment.seat_id}
+                for assignment in ordered_seat_assignments
+            ],
             "student_planning_meta": [
                 {
                     "student_id": meta.student_id,
@@ -415,6 +422,11 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 for meta in ordered_student_planning_meta
             ],
         }
+        if workspace.draft.draft_kind == PlanDraftKind.GROUPING:
+            snapshot["template_id"] = (
+                str(workspace.draft.template_id) if workspace.draft.template_id else None
+            )
+        return snapshot
 
     async def save_workspace(self, *, workspace: DraftWorkspace) -> None:
         draft = workspace.draft
@@ -430,10 +442,15 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
 
         previous_workspace = None
+        reset_history_for_seating_context = (
+            model is not None
+            and draft.draft_kind == PlanDraftKind.SEATING
+            and model.template_id != draft.template_id
+        )
         if (
-            draft.draft_kind == PlanDraftKind.GROUPING
-            and model is not None
+            model is not None
             and not model.history_stack
+            and not reset_history_for_seating_context
         ):
             previous_workspace = self._to_workspace(model)
 
@@ -505,15 +522,17 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             ],
         )
 
-        if draft.draft_kind == PlanDraftKind.GROUPING:
-            if previous_workspace is not None:
-                await self._push_history(model, previous_workspace)
-            await self._push_history(model, workspace)
+        if reset_history_for_seating_context:
+            model.history_stack = []
+            model.undo_index = 0
+        elif previous_workspace is not None:
+            await self._push_history(model, previous_workspace)
+        await self._push_history(model, workspace)
 
         await self._session.flush()
 
     async def _push_history(self, model: PlanDraftModel, workspace: DraftWorkspace) -> None:
-        """Push a new snapshot to the grouping history stack."""
+        """Push a new snapshot to the bounded draft history stack."""
 
         snapshot = self._create_snapshot(workspace)
 
@@ -525,13 +544,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         # Only push if it's different from the current tip
         if not history or history[-1] != snapshot:
             history.append(snapshot)
-            # Bound history to last 10 steps
-            history = history[-10:]
+            history = history[-self._HISTORY_LIMIT :]
             model.history_stack = history
             model.undo_index = len(history) - 1
 
     async def undo(self, *, draft_id: UUID) -> DraftWorkspace | None:
-        """Step backward in the grouping history stack."""
+        """Step backward in the bounded draft history stack."""
 
         model = await self._session.get(
             PlanDraftModel,
@@ -555,7 +573,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         return self._to_workspace(model)
 
     async def redo(self, *, draft_id: UUID) -> DraftWorkspace | None:
-        """Step forward in the grouping history stack."""
+        """Step forward in the bounded draft history stack."""
 
         model = await self._session.get(
             PlanDraftModel,
@@ -585,7 +603,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
     async def _apply_history_snapshot(self, model: PlanDraftModel, snapshot: dict) -> None:
         """Apply a historical snapshot to the active draft model."""
 
-        model.template_id = snapshot.get("template_id")
+        if model.draft_kind == PlanDraftKind.GROUPING.value:
+            model.template_id = snapshot.get("template_id")
 
         await self._replace_related_collection(
             model=model,
@@ -609,6 +628,17 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                     group_id=a["group_id"],
                 )
                 for a in snapshot["group_assignments"]
+            ],
+        )
+        await self._replace_related_collection(
+            model=model,
+            attribute_name="seat_assignments",
+            new_items=[
+                SeatAssignmentModel(
+                    student_id=a["student_id"],
+                    seat_id=a["seat_id"],
+                )
+                for a in snapshot.get("seat_assignments", [])
             ],
         )
         if "student_planning_meta" in snapshot:

@@ -13,6 +13,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
+    SeatAssignment,
     StudentPlanningMeta,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
@@ -40,6 +41,30 @@ def _make_grouping_draft(
     )
 
 
+def _make_seating_draft(
+    *,
+    draft_id: object,
+    owner_user_id: object,
+    roster_id: object,
+    now: datetime,
+    template_id: object,
+) -> PlanDraft:
+    """Build a seating draft with stable defaults for repository tests."""
+
+    return PlanDraft(
+        id=draft_id,
+        owner_user_id=owner_user_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.SEATING,
+        template_id=template_id,
+        status=PlanDraftStatus.ACTIVE,
+        revision=0,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+
+
 def _make_draft_model(
     *,
     draft: PlanDraft,
@@ -54,6 +79,7 @@ def _make_draft_model(
         owner_user_id=draft.owner_user_id,
         roster_id=draft.roster_id,
         draft_kind=draft.draft_kind.value,
+        template_id=draft.template_id,
         status=draft.status.value,
         revision=draft.revision,
         last_opened_at=now,
@@ -279,3 +305,101 @@ async def test_logically_identical_snapshots_do_not_append_history() -> None:
     history = _require_history(model)
     assert len(history) == 2
     assert model.undo_index == 1
+
+
+@pytest.mark.asyncio
+async def test_seating_template_switch_resets_history_to_the_new_classroom_context() -> None:
+    """Switching classrooms in seating should start a fresh in-draft history baseline."""
+
+    session = AsyncMock()
+    repo = PostgreSQLPlanDraftRepository(session)
+
+    draft_id = uuid4()
+    owner_id = uuid4()
+    roster_id = uuid4()
+    current_template_id = uuid4()
+    previous_template_id = uuid4()
+    now = datetime.now(timezone.utc)
+    draft = _make_seating_draft(
+        draft_id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        now=now,
+        template_id=current_template_id,
+    )
+    model = _make_draft_model(
+        draft=draft.model_copy(update={"template_id": previous_template_id}),
+        now=now,
+    )
+    session.get.return_value = model
+
+    workspace = DraftWorkspace(
+        draft=draft,
+        groups=[],
+        group_assignments=[],
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-2")],
+        student_planning_meta=[StudentPlanningMeta(student_id="student-1", notes="front row")],
+    )
+
+    await repo.save_workspace(workspace=workspace)
+
+    history = _require_history(model)
+    assert len(history) == 1
+    assert "template_id" not in history[0]
+    assert history[0]["seat_assignments"] == [{"student_id": "student-1", "seat_id": "seat-2"}]
+    assert history[0]["student_planning_meta"] == [
+        {
+            "student_id": "student-1",
+            "teacher_proximity": 0,
+            "stability_preference": 0,
+            "preferred_zone": None,
+            "avoid_zone": None,
+            "notes": "front row",
+        }
+    ]
+    assert model.undo_index == 0
+
+
+@pytest.mark.asyncio
+async def test_seating_undo_restores_assignments_without_restoring_template_id() -> None:
+    """Undoing a seating change must restore seat state without undoing classroom selection."""
+
+    session = AsyncMock()
+    repo = PostgreSQLPlanDraftRepository(session)
+
+    draft_id = uuid4()
+    owner_id = uuid4()
+    roster_id = uuid4()
+    current_template_id = uuid4()
+    now = datetime.now(timezone.utc)
+    draft = _make_seating_draft(
+        draft_id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        now=now,
+        template_id=current_template_id,
+    )
+    history = [
+        {
+            "groups": [],
+            "group_assignments": [],
+            "seat_assignments": [],
+            "student_planning_meta": [],
+        },
+        {
+            "groups": [],
+            "group_assignments": [],
+            "seat_assignments": [{"student_id": "student-1", "seat_id": "seat-2"}],
+            "student_planning_meta": [],
+        },
+    ]
+    model = _make_draft_model(draft=draft, now=now, history_stack=history, undo_index=1)
+    session.get.return_value = model
+
+    restored_workspace = await repo.undo(draft_id=draft_id)
+
+    assert restored_workspace is not None
+    assert restored_workspace.draft.template_id == current_template_id
+    assert restored_workspace.seat_assignments == []
+    assert model.template_id == current_template_id
+    assert model.undo_index == 0
