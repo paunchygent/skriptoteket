@@ -115,6 +115,21 @@ export function buildRandomizedGroupAssignments(
   );
 }
 
+export function buildRandomizedSeatAssignments(
+  students: Student[],
+  seats: Seat[],
+): Record<string, string | null> {
+  const randomizedStudents = shuffleStudents(students);
+  const orderedSeatIds = seats.map((seat) => seat.id);
+
+  return Object.fromEntries(
+    randomizedStudents.map((student, index) => [
+      student.id,
+      orderedSeatIds[index] ?? null,
+    ]),
+  );
+}
+
 export function createPlannerMutationActions(context: MutationContext) {
   function assignStudentToGroup(studentId: string, groupId: string): void {
     if (!context.canMutate()) {
@@ -280,6 +295,17 @@ export function createPlannerMutationActions(context: MutationContext) {
     context.markDirty();
   }
 
+  function randomizeSeating(): void {
+    if (!context.canMutate()) {
+      return;
+    }
+    context.seatAssignmentsByStudentId.value = buildRandomizedSeatAssignments(
+      context.students.value,
+      Object.values(context.seatsById.value),
+    );
+    context.markDirty();
+  }
+
   function setStudentPlanningMeta(studentId: string, patch: Partial<StudentPlanningMeta>): void {
     if (!context.canMutate()) {
       return;
@@ -320,6 +346,7 @@ export function createPlannerMutationActions(context: MutationContext) {
     moveGroup,
     removeGroup,
     randomizeGroups,
+    randomizeSeating,
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
   };

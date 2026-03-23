@@ -29,6 +29,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
   `docs/backlog/prs/pr-0106-klassrumskartan-seating-undo-redo-and-bounded-draft-history.md`
+- Seating `Slumpa` follow-up:
+  `docs/backlog/prs/pr-0109-klassrumskartan-seating-slumpa-fundamentals.md`
+- Overview-first management follow-up:
+  `docs/backlog/stories/story-24-07-group-seating-studio-overview-first-workspace-management.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -184,6 +188,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-24-02-group-seating-studio-class-first-workspace.md`
 - `docs/backlog/stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md`
 - `docs/backlog/stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md`
+- `docs/backlog/stories/story-24-06-group-seating-studio-seating-slumpa-fundamentals.md`
+- `docs/backlog/stories/story-24-07-group-seating-studio-overview-first-workspace-management.md`
+- `docs/backlog/stories/story-24-08-group-seating-studio-landing-cutover-and-exit-to-origin.md`
 - `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md`
 - `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`
 - `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
@@ -238,6 +245,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Backlog PRs
 
 - `docs/backlog/prs/pr-0001-editor-working-copy-composable-srp-modularization.md`
+- `docs/backlog/prs/pr-0109-klassrumskartan-seating-slumpa-fundamentals.md`
+- `docs/backlog/prs/pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md`
+- `docs/backlog/prs/pr-0111-klassrumskartan-overview-resumable-cta-and-workspace-entry-polish.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`

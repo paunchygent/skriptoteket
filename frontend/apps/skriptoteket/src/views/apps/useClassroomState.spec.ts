@@ -305,6 +305,27 @@ describe("useClassroomState", () => {
     randomSpy.mockRestore();
   });
 
+  it("randomizes seating assignments across available seats and leaves overflow unplaced", () => {
+    const state = seedWorkspace();
+    const randomSpy = vi.spyOn(Math, "random");
+    randomSpy
+      .mockReturnValueOnce(0.85)
+      .mockReturnValueOnce(0.1);
+
+    state.draft = createDraft("template-1", "seating");
+    state.assignStudentToSeat("s1", "seat-1");
+
+    state.randomizeSeating();
+
+    expect(state.seatAssignmentsByStudentId).toEqual({
+      s1: "seat-2",
+      s2: "seat-1",
+      s3: null,
+    });
+    expect(state.hasPendingAutosave).toBe(true);
+    randomSpy.mockRestore();
+  });
+
   it("stores student planning metadata", () => {
     const state = seedWorkspace();
 

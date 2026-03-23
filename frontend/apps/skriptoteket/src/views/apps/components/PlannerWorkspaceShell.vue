@@ -117,6 +117,16 @@ const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping
 const activeSeatingSummary = computed(() => props.workspaceSummary?.active_seating_draft ?? null);
 const seatingHistorySummaries = computed(() => props.workspaceSummary?.seating_history ?? []);
 const canEditCurrentTemplate = computed(() => currentView.value === "seats" && plannerState.template !== null);
+const canRandomizeSeating = computed(() => {
+  return (
+    currentView.value === "seats"
+    && plannerState.template !== null
+    && plannerState.students.length > 0
+    && plannerState.seats.length > 0
+    && !plannerState.isWorkspaceBusy
+    && !props.seatingLifecycleBusy
+  );
+});
 const isHistoryDrawerOpen = computed(() => openHistoryDrawerKind.value !== null);
 const historyDrawerTitle = computed(() => {
   return openHistoryDrawerKind.value === "seating" ? "Sittplatser" : "Grupper";
@@ -222,6 +232,13 @@ async function redoSeatingDraft(): Promise<void> {
     return;
   }
   await plannerState.redoSeatingDraft();
+}
+
+function randomizeCurrentSeatingDraft(): void {
+  if (!canRandomizeSeating.value) {
+    return;
+  }
+  plannerState.randomizeSeating();
 }
 
 function openGroupingHistoryDrawer(): void {
@@ -474,6 +491,15 @@ watch(
             @click="openSeatingHistoryDrawer"
           >
             Historik
+          </button>
+          <button
+            type="button"
+            class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+            data-test="randomize-seating"
+            :disabled="!canRandomizeSeating"
+            @click="randomizeCurrentSeatingDraft"
+          >
+            Slumpa
           </button>
           <button
             type="button"

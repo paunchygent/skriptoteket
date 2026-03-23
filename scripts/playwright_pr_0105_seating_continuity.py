@@ -1,10 +1,13 @@
-"""Dedicated live browser proof for PR-0105 and PR-0106 seating continuity.
+"""Dedicated live browser proof for PR-0105, PR-0106, and PR-0109 seating flow.
 
 This script isolates the seating continuity/new-draft lifecycle from the
 broader classroom-planner baseline so `PR-0105` can be verified deterministically
 on the real local SPA without interference from grouping-history transitions.
-It now also proves the `PR-0106` seating-only undo/redo contract on top of the
-same teacher-facing continuity workflow.
+It now also proves the `PR-0106` seating-only undo/redo contract and `PR-0109`
+seating `Slumpa` wiring on top of the same teacher-facing continuity workflow.
+The exact full-reshuffle contract for `Slumpa` remains enforced by deterministic
+unit coverage; this browser proof stays focused on real UI wiring, autosave, and
+undo/redo compatibility.
 """
 
 from __future__ import annotations
@@ -113,7 +116,9 @@ def _undo_current_seating_step(page: Any, *, student_name: str) -> None:
     undo_button = page.locator('[data-test="undo-seating-draft"]')
     expect(undo_button).to_be_enabled()
     undo_button.click()
-    expect(_unseated_pool(page).get_by_role("button", name=re.compile(student_name))).to_be_visible()
+    expect(
+        _unseated_pool(page).get_by_role("button", name=re.compile(student_name))
+    ).to_be_visible()
     expect(
         page.locator('[data-test="room-seat-token"]').filter(
             has=page.get_by_text(student_name, exact=True)
@@ -138,6 +143,41 @@ def _redo_current_seating_step(page: Any, *, student_name: str) -> None:
     ).to_be_visible()
 
 
+def _expect_unseated_student_count(page: Any, *, expected_count: int) -> None:
+    """Assert the current unseated-students count inside the live seating pool."""
+
+    expect(_unseated_pool(page).get_by_role("button")).to_have_count(expected_count)
+
+
+def _randomize_current_seating_draft(page: Any) -> None:
+    """Run seating `Slumpa` and prove it fills all available seats deterministically."""
+
+    randomize_button = page.locator('[data-test="randomize-seating"]')
+    expect(randomize_button).to_be_enabled()
+    _expect_unseated_student_count(page, expected_count=1)
+    randomize_button.click()
+    _wait_for_autosave(page)
+    _expect_unseated_student_count(page, expected_count=0)
+
+
+def _undo_slumpa_step(page: Any) -> None:
+    """Undo the `Slumpa` reshuffle and restore the earlier single-seat arrangement."""
+
+    undo_button = page.locator('[data-test="undo-seating-draft"]')
+    expect(undo_button).to_be_enabled()
+    undo_button.click()
+    _expect_unseated_student_count(page, expected_count=1)
+
+
+def _redo_slumpa_step(page: Any) -> None:
+    """Redo the `Slumpa` reshuffle and restore the randomized seating state."""
+
+    redo_button = page.locator('[data-test="redo-seating-draft"]')
+    expect(redo_button).to_be_enabled()
+    redo_button.click()
+    _expect_unseated_student_count(page, expected_count=0)
+
+
 def _verify_undo_steps_do_not_pollute_continuity_drawer(page: Any) -> None:
     """Continuity must stay draft-level rather than exposing undo/redo entries."""
 
@@ -152,7 +192,9 @@ def _verify_template_switch_stays_outside_undo(
     """Changing classroom context should reset seating history instead of being undoable."""
 
     _switch_seating_workspace_template(page, template_name=template_name)
-    expect(_unseated_pool(page).get_by_role("button", name=re.compile(student_name))).to_be_visible()
+    expect(
+        _unseated_pool(page).get_by_role("button", name=re.compile(student_name))
+    ).to_be_visible()
     expect(page.locator('[data-test="undo-seating-draft"]')).to_be_disabled()
     expect(page.locator('[data-test="redo-seating-draft"]')).to_be_disabled()
 
@@ -228,6 +270,9 @@ def main() -> None:
         _wait_for_autosave(page)
         _undo_current_seating_step(page, student_name="Ada Lovelace")
         _redo_current_seating_step(page, student_name="Ada Lovelace")
+        _randomize_current_seating_draft(page)
+        _undo_slumpa_step(page)
+        _redo_slumpa_step(page)
         _verify_undo_steps_do_not_pollute_continuity_drawer(page)
         _start_second_seating_draft(page)
         _verify_new_seating_draft_clears_assignments(page, student_name="Ada Lovelace")

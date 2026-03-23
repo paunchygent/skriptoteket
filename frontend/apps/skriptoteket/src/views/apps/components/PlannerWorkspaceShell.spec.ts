@@ -15,6 +15,8 @@ type PlannerStateMock = {
   roster: Roster;
   template: RoomTemplate | null;
   draft: Pick<PlanDraft, "id" | "draft_kind" | "revision">;
+  students: Roster["students"];
+  seats: RoomTemplate["seats"];
   saveStatus: string;
   saveMessage: string | null;
   isWorkspaceBusy: boolean;
@@ -23,6 +25,7 @@ type PlannerStateMock = {
   reloadActiveWorkspace: ReturnType<typeof vi.fn>;
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
+  randomizeSeating: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -30,6 +33,14 @@ const stateMocks = vi.hoisted(() => ({
     roster: { id: "roster-1", name: "SA24D", students: [] },
     template: { id: "template-1", name: "Sal 101", seats: [], fixtures: [] },
     draft: { id: "draft-1", draft_kind: "grouping", revision: 3 },
+    students: [
+      { id: "student-1", display_name: "Ada Lovelace" },
+      { id: "student-2", display_name: "Alan Turing" },
+    ],
+    seats: [
+      { id: "seat-1", x: 0, y: 0, zone: null },
+      { id: "seat-2", x: 120, y: 0, zone: null },
+    ],
     saveStatus: "saved",
     saveMessage: null,
     isWorkspaceBusy: false,
@@ -38,6 +49,7 @@ const stateMocks = vi.hoisted(() => ({
     reloadActiveWorkspace: vi.fn(),
     undoSeatingDraft: vi.fn(),
     redoSeatingDraft: vi.fn(),
+    randomizeSeating: vi.fn(),
   }))(),
 }));
 
@@ -104,12 +116,21 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.reloadActiveWorkspace.mockReset();
     stateMocks.plannerState.undoSeatingDraft.mockReset();
     stateMocks.plannerState.redoSeatingDraft.mockReset();
+    stateMocks.plannerState.randomizeSeating.mockReset();
     stateMocks.plannerState.template = {
       id: "template-1",
       name: "Sal 101",
       seats: [],
       fixtures: [],
     };
+    stateMocks.plannerState.students = [
+      { id: "student-1", display_name: "Ada Lovelace" },
+      { id: "student-2", display_name: "Alan Turing" },
+    ];
+    stateMocks.plannerState.seats = [
+      { id: "seat-1", x: 0, y: 0, zone: null },
+      { id: "seat-2", x: 120, y: 0, zone: null },
+    ];
     stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
@@ -421,6 +442,66 @@ describe("PlannerWorkspaceShell", () => {
     await wrapper.get('[data-test="edit-current-template"]').trigger("click");
 
     expect(wrapper.emitted("edit-current-template")).toEqual([[stateMocks.plannerState.template]]);
+  });
+
+  it("runs seating Slumpa from the seating action row only when a classroom is selected", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="randomize-seating"]').attributes("disabled")).toBeUndefined();
+
+    await wrapper.get('[data-test="randomize-seating"]').trigger("click");
+
+    expect(stateMocks.plannerState.randomizeSeating).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables seating Slumpa when no classroom is selected", () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.template = null;
+    stateMocks.plannerState.seats = [];
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="randomize-seating"]').attributes("disabled")).toBeDefined();
   });
 
   it("runs seating undo and redo from the seating action row only when backend history allows it", async () => {

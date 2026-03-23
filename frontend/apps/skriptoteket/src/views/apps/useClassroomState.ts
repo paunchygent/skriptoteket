@@ -529,6 +529,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
   const {
     randomizeGroups,
+    randomizeSeating,
     assignStudentToGroup,
     removeStudentFromGroup,
     assignStudentToSeat,
@@ -613,6 +614,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     moveGroup,
     removeGroup,
     randomizeGroups,
+    randomizeSeating,
     setStudentPlanningMeta,
     resetStudentPlanningMeta,
   };
