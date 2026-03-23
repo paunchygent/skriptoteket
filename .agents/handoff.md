@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0094`, `PR-0095`, `PR-0096`, `PR-0097`, and `PR-0098`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0094`, `PR-0095`, `PR-0096`, `PR-0097`, `PR-0098`, `PR-0099`, and `PR-0100`.
 
 ## Status
 
@@ -67,8 +67,8 @@ Keep this file updated so the next session can pick up work quickly.
   - the room-builder modal now uses a larger desktop footprint with a narrower tools column, explicit zoom (`-`, `+`, `Anpassa`), `Rensa`, and circular seats across builder, preview, and live seating
 - Competitive-games planning docs are corrected back to the intended meaning of "programme": a cross-cutting delivery/programme reference for epics, stories, and shared infrastructure work, tracked in `docs/reference/ref-competitive-games-cross-cutting-programme.md`.
 - Competitive-games planning is now formally open for implementation: `REV-EPIC-25` is approved, `ADR-0073` is accepted, and `EPIC-25` is active.
-- `ST-25-01` is now decomposed into `PR-0094` (registry/discoverability), `PR-0095` (bespoke route/shell), and `PR-0096` (minimal bootstrap contract).
-- `ST-25-02` is now decomposed into `PR-0097` (playable shell host/runtime lifecycle), `PR-0098` (runtime core + HUD boundary), `PR-0099` (prototype-alpha physics/rules), and `PR-0100` (renderer/audio + local playable proof).
+- `ST-25-01` is DONE locally across `PR-0094`, `PR-0095`, and `PR-0096`: Flunk-Out Frenzy is registered/discoverable as a bespoke curated app, resolves through `AppHostView.vue`, and exposes the minimal typed bootstrap via `src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py`.
+- `ST-25-02` is DONE locally across `PR-0097` through `PR-0100`: the route now delivers the immersive shell, runtime boundary, prototype-alpha physics/rules, and Pixi/Howler integration with a verified local 3-ball loop.
 - `ST-25-02` planning decisions are now locked for decomposition:
   - commit directly to PixiJS + Rapier 2D + Howler
   - author the first table as typed TypeScript modules first, then extract later if needed
@@ -76,9 +76,9 @@ Keep this file updated so the next session can pick up work quickly.
   - keep shell UI to HUD + Start/Pause/Restart/Mute
   - defer drop targets, scoop behavior, ramps, backend score submission, and leaderboard UI
 - Competitive-games planning docs are now renamed around `games.flunk_out_frenzy` / `Flunk-Out Frenzy` instead of the earlier Pinball Teacher placeholder.
-- `PR-0094`, `PR-0095`, and `PR-0096` are DONE locally: Flunk-Out Frenzy is registered/discoverable as a bespoke curated app, resolves through `AppHostView.vue`, and exposes the minimal typed bootstrap via `src/skriptoteket/web/api/v1/apps_flunk_out_frenzy.py`.
 - `PR-0097` is DONE locally and corrected twice: the route now uses immersive top-bar-only chrome plus a single staged machine composition instead of the earlier generic/dashboard shell, while `GameHost.vue` owns a playfield-framed runtime placeholder seam for `PR-0098` and settings/bootstrap metadata stay hidden behind a drawer.
-- `PR-0098` is DONE locally, and `PR-0099` is now ACTIVE locally: the prototype-alpha slice has Rapier-backed physics, a pure rules engine, and a DOM-rendered playfield state inside `GameHost.vue`; the board-dominance regression is fixed and the right flipper now uses the corrected mirrored press angle instead of wrapping through a bogus full-spin path.
+- `PR-0098` and `PR-0099` are DONE locally: the prototype-alpha slice now has Rapier-backed physics, a pure rules engine, corrected mirrored flippers, viewport-safe board sizing, and a verified 3-ball loop with drain -> respawn -> game over plus score/multiplier progression.
+- `PR-0100` is DONE locally: `GameRuntime` now owns Pixi rendering and Howler audio adapters, `GameHost.vue` is a true runtime surface instead of a DOM simulation layer, and live route proof confirms Start/Pause/Restart/Mute plus clean route-leave disposal.
 
 ## Previous Sessions
 
@@ -172,8 +172,8 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy bootstrap browser proof ... PY` (PASSED; logged in via `/login`, opened `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`, verified the bootstrap-backed ready state including `flunk_out_frenzy.prototype_alpha.v1`, feature flags, and the runtime host placeholder, and wrote `.artifacts/flunk-out-frenzy-bootstrap-check/flunk-out-frenzy-bootstrap.png`).
 - 2026-03-23: `pdm run docs-validate`; `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/FlunkOutFrenzyView.spec.ts src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/components/layout/AuthLayout.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts src/components/apps/flunk-out-frenzy/GameHost.vue src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/components/apps/flunk-out-frenzy/gameHostTypes.ts src/components/layout/AuthLayout.vue src/components/layout/AuthLayout.spec.ts src/components/layout/AuthTopBar.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build` (docs/tests/lint/build PASSED for the PR-0097 redesign).
 - 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy immersive/composition browser proof ... PY` (PASSED after the redesign on both the built/backend route and a clean restarted Vite dev server; `http://127.0.0.1:8000/apps/games.flunk_out_frenzy` wrote `.artifacts/flunk-out-frenzy-composition-check/flunk-out-frenzy-composition-backend.png`, and `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` wrote `.artifacts/flunk-out-frenzy-composition-check/flunk-out-frenzy-composition-dev.png`).
-- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/components/apps/flunk-out-frenzy/game/core/FixedStepRunner.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts src/components/apps/flunk-out-frenzy/game/rules/RuleEngine.spec.ts src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/components/apps/flunk-out-frenzy/game src/components/apps/flunk-out-frenzy/GameHost.vue src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build`; `pdm run docs-validate` (PASSED for `PR-0098` close-out and current `PR-0099` local slice).
-- 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy runtime/viewport/right-flipper browser proofs ... PY` (PASSED against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`; verified Start plus mounted runtime, ball/flippers fully inside the viewport, and confirmed the right flipper style changes from `rotate(18deg)` to `rotate(-24deg)` under `ShiftRight`; artifacts in `.artifacts/pr-0099-viewport-fit-check/flunk-out-frenzy-viewport-fit-dev.png` and `.artifacts/pr-0099-right-flipper-check/flunk-out-frenzy-right-flipper-dev.png`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run $(rg --files frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy -g '*.spec.ts' | sed 's#^frontend/apps/skriptoteket/##') frontend/apps/skriptoteket/src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/components/apps/flunk-out-frenzy/game src/components/apps/flunk-out-frenzy/GameHost.vue src/components/apps/flunk-out-frenzy/GameHost.spec.ts src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pnpm -C frontend --filter @skriptoteket/spa build`; `pdm run docs-validate` (PASSED for `PR-0100` close-out).
+- 2026-03-23: `pdm run python - <<'PY' ... Flunk-Out Frenzy PR-0100 live route proof ... PY` (PASSED against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`; verified Start/Pause/Fortsätt/Starta om/Ljud, confirmed zero gameplay API calls after a short post-load settle, and confirmed route leave removes the runtime canvas; artifact in `.artifacts/pr-0100-playable-proof/flunk-out-frenzy-pr0100-dev.png`).
 
 ## How to Run
 
@@ -197,4 +197,4 @@ pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useCl
 ## Next Steps
 
 - Review the local seating-builder worktree and commit when ready; the next seating slice beyond `PR-0103` is not planned yet.
-- Competitive-games lane: `PR-0099` is in progress locally; next step is finishing the playable 3-ball local proof and then moving into `PR-0100` renderer/audio work.
+- Competitive-games lane: `ST-25-01` and `ST-25-02` are done locally; next step is `PR-0104` remediation, then `ST-25-03` pending-score submission and typed leaderboard planning/implementation.

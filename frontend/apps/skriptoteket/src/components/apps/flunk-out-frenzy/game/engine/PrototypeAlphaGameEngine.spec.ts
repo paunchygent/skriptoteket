@@ -100,6 +100,10 @@ describe("PrototypeAlphaGameEngine", () => {
     expect(state.multiplier).toBe(1);
     expect(state.roundFinished).toBe(false);
     expect(state.view.ball).not.toBeNull();
+    expect(state.effects).toEqual([
+      { type: "round-started" },
+      { type: "ball-spawned" },
+    ]);
   });
 
   it("applies score and multiplier progression from semantic machine events", () => {
@@ -117,6 +121,15 @@ describe("PrototypeAlphaGameEngine", () => {
 
     expect(lanesState.score).toBe(2200);
     expect(lanesState.multiplier).toBe(2);
+    expect(lanesState.effects).toEqual(
+      expect.arrayContaining([
+        { type: "rollover-lit", tag: "lane/top-l", label: "L" },
+        { type: "rollover-lit", tag: "lane/top-a", label: "A" },
+        { type: "rollover-lit", tag: "lane/top-t", label: "T" },
+        { type: "rollover-lit", tag: "lane/top-e", label: "E" },
+        { type: "late-bank-complete", multiplier: 2 },
+      ]),
+    );
 
     physics.enqueueEvents([
       { type: "bumper-fired", tag: "bumper/pop-top" },
@@ -150,6 +163,10 @@ describe("PrototypeAlphaGameEngine", () => {
     expect(thirdDrain.ballsRemaining).toBe(0);
     expect(thirdDrain.roundFinished).toBe(true);
     expect(thirdDrain.view.ball).toBeNull();
+    expect(thirdDrain.effects).toEqual([
+      { type: "ball-drained", ballsRemaining: 0 },
+      { type: "game-over", finalScore: 0 },
+    ]);
 
     expect(physics.spawnCount).toBe(3);
   });

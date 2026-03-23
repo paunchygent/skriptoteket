@@ -9,6 +9,45 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("../../components/apps/flunk-out-frenzy/game/render/PixiRenderer", () => {
+  class MockPixiRenderer {
+    private readonly canvas = document.createElement("canvas");
+
+    static async create(): Promise<MockPixiRenderer> {
+      return new MockPixiRenderer();
+    }
+
+    attach(hostElement: HTMLElement): void {
+      this.canvas.dataset.test = "runtime-renderer-canvas";
+      hostElement.appendChild(this.canvas);
+    }
+
+    render(): void {}
+
+    dispose(): void {
+      this.canvas.remove();
+    }
+  }
+
+  return { PixiRenderer: MockPixiRenderer };
+});
+
+vi.mock("../../components/apps/flunk-out-frenzy/game/audio/AudioDirector", () => {
+  class MockAudioDirector {
+    static async create(): Promise<MockAudioDirector> {
+      return new MockAudioDirector();
+    }
+
+    setMuted(): void {}
+
+    consumeEffects(): void {}
+
+    dispose(): void {}
+  }
+
+  return { AudioDirector: MockAudioDirector };
+});
+
 import FlunkOutFrenzyView from "./FlunkOutFrenzyView.vue";
 
 const { apiGet } = vi.hoisted(() => ({

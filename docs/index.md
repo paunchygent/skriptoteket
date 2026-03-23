@@ -300,6 +300,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0098-flunk-out-frenzy-runtime-core-and-hud-boundary.md`
 - `docs/backlog/prs/pr-0099-flunk-out-frenzy-prototype-alpha-physics-and-rules.md`
 - `docs/backlog/prs/pr-0100-flunk-out-frenzy-renderer-audio-and-playable-local-proof.md`
+- `docs/backlog/prs/pr-0104-flunk-out-frenzy-post-review-runtime-and-shell-remediation.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`

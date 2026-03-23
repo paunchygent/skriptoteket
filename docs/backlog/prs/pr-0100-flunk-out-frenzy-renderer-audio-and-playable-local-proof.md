@@ -2,10 +2,10 @@
 type: pr
 id: PR-0100
 title: "Flunk-Out Frenzy: renderer, audio, and playable local proof"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 stories:
   - "ST-25-02"
 tags: ["frontend", "games", "rendering", "audio"]

@@ -8,7 +8,12 @@
  */
 
 import { PrototypeAlphaGameEngine } from "../engine/PrototypeAlphaGameEngine";
+import { AudioDirector } from "../audio/AudioDirector";
 import type { MachineEvent } from "../physics/physicsTypes";
+import type { RuntimeAudioDirector } from "../audio/audioTypes";
+import type { GameEffectEvent } from "../presentation/gameEffectTypes";
+import { PixiRenderer } from "../render/PixiRenderer";
+import type { RuntimeRenderer } from "../render/renderTypes";
 import { CommandQueue } from "./CommandQueue";
 import { FixedStepRunner } from "./FixedStepRunner";
 import type { RuntimeEngine, RuntimeEngineState } from "./runtimeEngineTypes";
@@ -27,6 +32,8 @@ export interface GameRuntimeOptions {
   stepHz?: number;
   scheduler?: AnimationScheduler;
   engine?: RuntimeEngine;
+  renderer?: RuntimeRenderer;
+  audio?: RuntimeAudioDirector;
 }
 
 export class GameRuntime {
@@ -35,15 +42,25 @@ export class GameRuntime {
   private readonly commandQueue = new CommandQueue<RuntimeCommand>();
   private readonly runner: FixedStepRunner;
   private readonly engine: RuntimeEngine;
+  private readonly renderer: RuntimeRenderer;
+  private readonly audio: RuntimeAudioDirector;
   private hostElement: HTMLElement | null = null;
   private hudSnapshot: GameHudSnapshot;
   private viewSnapshot: GameViewSnapshot;
   private inputState = createInitialInputState();
 
   static async create(options: Omit<GameRuntimeOptions, "engine"> = {}): Promise<GameRuntime> {
+    const [engine, renderer, audio] = await Promise.all([
+      PrototypeAlphaGameEngine.create(),
+      options.renderer ? Promise.resolve(options.renderer) : PixiRenderer.create(),
+      options.audio ? Promise.resolve(options.audio) : AudioDirector.create(),
+    ]);
+
     return new GameRuntime({
       ...options,
-      engine: await PrototypeAlphaGameEngine.create(),
+      engine,
+      renderer,
+      audio,
     });
   }
 
@@ -54,8 +71,16 @@ export class GameRuntime {
     if (!options.engine) {
       throw new Error("GameRuntime requires an engine. Use GameRuntime.create() for the default runtime.");
     }
+    if (!options.renderer) {
+      throw new Error("GameRuntime requires a renderer. Use GameRuntime.create() for the default runtime.");
+    }
+    if (!options.audio) {
+      throw new Error("GameRuntime requires audio. Use GameRuntime.create() for the default runtime.");
+    }
 
     this.engine = options.engine;
+    this.renderer = options.renderer;
+    this.audio = options.audio;
 
     const initialState = this.engine.currentState();
     this.hudSnapshot = this.stateToHudSnapshot(initialState, "ready");
@@ -66,6 +91,8 @@ export class GameRuntime {
 
   mount(hostElement: HTMLElement): void {
     this.hostElement = hostElement;
+    this.renderer.attach(hostElement);
+    this.renderer.render(this.viewSnapshot, this.hudSnapshot, []);
     this.applyHostState();
   }
 
@@ -87,6 +114,7 @@ export class GameRuntime {
       status: "paused",
     };
     this.runner.stop();
+    this.renderer.render(this.viewSnapshot, this.hudSnapshot, []);
     this.publishHud();
     this.applyHostState();
   }
@@ -101,6 +129,7 @@ export class GameRuntime {
       status: "running",
     };
     this.runner.start();
+    this.renderer.render(this.viewSnapshot, this.hudSnapshot, []);
     this.publishHud();
     this.applyHostState();
   }
@@ -122,6 +151,8 @@ export class GameRuntime {
       ...this.hudSnapshot,
       muted,
     };
+    this.audio.setMuted(muted);
+    this.renderer.render(this.viewSnapshot, this.hudSnapshot, []);
     this.publishHud();
     this.applyHostState();
   }
@@ -154,6 +185,8 @@ export class GameRuntime {
     this.runner.stop();
     this.commandQueue.clear();
     this.engine.dispose();
+    this.audio.dispose();
+    this.renderer.dispose();
 
     if (this.hostElement) {
       delete this.hostElement.dataset.runtimeMounted;
@@ -206,28 +239,45 @@ export class GameRuntime {
       return;
     }
 
+    const effects: GameEffectEvent[] = [];
+
     for (const command of pendingCommands) {
+      const previousLaunchPressed = this.inputState.launchPressed;
+
       if (command.type === "left-flip") {
         this.inputState.leftFlipPressed = command.pressed;
+        if (command.pressed) {
+          effects.push({ type: "flipper-fired", side: "left" });
+        }
       } else if (command.type === "right-flip") {
         this.inputState.rightFlipPressed = command.pressed;
+        if (command.pressed) {
+          effects.push({ type: "flipper-fired", side: "right" });
+        }
       } else {
         this.inputState.launchPressed = command.pressed;
+        if (!command.pressed && previousLaunchPressed) {
+          effects.push({ type: "launch-released", chargeActive: true });
+        }
       }
 
       this.inputState.lastCommandLabel = describeRuntimeCommand(command);
       this.engine.applyCommand(command);
     }
 
-    this.applyEngineState(this.engine.currentState(), this.hudSnapshot.status);
+    this.applyEngineState(this.engine.currentState(), this.hudSnapshot.status, effects);
   }
 
   private applyEngineState(
     state: RuntimeEngineState,
     status: GameHudSnapshot["status"],
+    extraEffects: GameEffectEvent[] = [],
   ): void {
+    const effects = [...extraEffects, ...state.effects];
     this.hudSnapshot = this.stateToHudSnapshot(state, status);
     this.viewSnapshot = state.view;
+    this.audio.consumeEffects(effects);
+    this.renderer.render(this.viewSnapshot, this.hudSnapshot, effects);
     this.publishHud();
     this.publishView();
     this.applyHostState();

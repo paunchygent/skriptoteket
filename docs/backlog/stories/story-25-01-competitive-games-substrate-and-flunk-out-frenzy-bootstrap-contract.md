@@ -2,7 +2,7 @@
 type: story
 id: ST-25-01
 title: "Competitive games substrate and Flunk-Out Frenzy bootstrap contract"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
 epic: "EPIC-25"

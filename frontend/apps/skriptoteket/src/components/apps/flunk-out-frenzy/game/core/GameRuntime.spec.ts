@@ -16,7 +16,10 @@ import type {
   GameViewSnapshot,
   RuntimeCommand,
 } from "./runtimeTypes";
+import type { RuntimeAudioDirector } from "../audio/audioTypes";
 import type { MachineEvent } from "../physics/physicsTypes";
+import type { GameEffectEvent } from "../presentation/gameEffectTypes";
+import type { RuntimeRenderer } from "../render/renderTypes";
 
 interface ManualFrame {
   handle: number;
@@ -80,7 +83,13 @@ class FakeRuntimeEngine implements RuntimeEngine {
     this.multiplier = 1;
     this.roundFinished = false;
     this.ballVisible = true;
-    return this.currentState();
+    return {
+      ...this.currentState(),
+      effects: [
+        { type: "round-started" },
+        { type: "ball-spawned" },
+      ],
+    };
   }
 
   restartGame(): RuntimeEngineState {
@@ -116,6 +125,7 @@ class FakeRuntimeEngine implements RuntimeEngine {
       ballsRemaining: this.ballsRemaining,
       multiplier: this.multiplier,
       roundFinished: this.roundFinished,
+      effects: [],
       view: createViewSnapshot(this.leftAngle, this.rightAngle, this.ballVisible),
     };
   }
@@ -135,6 +145,18 @@ class FakeRuntimeEngine implements RuntimeEngine {
 
     return this.currentState();
   }
+}
+
+class FakeRenderer implements RuntimeRenderer {
+  public readonly attach = vi.fn();
+  public readonly dispose = vi.fn();
+  public readonly render = vi.fn();
+}
+
+class FakeAudioDirector implements RuntimeAudioDirector {
+  public readonly setMuted = vi.fn();
+  public readonly consumeEffects = vi.fn();
+  public readonly dispose = vi.fn();
 }
 
 function createViewSnapshot(
@@ -193,7 +215,12 @@ describe("GameRuntime", () => {
   it("publishes ready, running, paused, resumed, and game-over HUD snapshots", () => {
     const scheduler = new ManualAnimationScheduler();
     const engine = new FakeRuntimeEngine();
-    const runtime = new GameRuntime({ scheduler, engine });
+    const runtime = new GameRuntime({
+      scheduler,
+      engine,
+      renderer: new FakeRenderer(),
+      audio: new FakeAudioDirector(),
+    });
     const hudEvents: GameHudSnapshot[] = [];
 
     runtime.subscribeHud((hud) => {
@@ -220,7 +247,12 @@ describe("GameRuntime", () => {
   it("mirrors runtime state, ball presence, and processed input onto the mounted host element", () => {
     const scheduler = new ManualAnimationScheduler();
     const engine = new FakeRuntimeEngine();
-    const runtime = new GameRuntime({ scheduler, engine });
+    const runtime = new GameRuntime({
+      scheduler,
+      engine,
+      renderer: new FakeRenderer(),
+      audio: new FakeAudioDirector(),
+    });
     const hostElement = document.createElement("div");
 
     runtime.mount(hostElement);
@@ -249,7 +281,12 @@ describe("GameRuntime", () => {
   it("publishes view snapshots from the simulation engine", () => {
     const scheduler = new ManualAnimationScheduler();
     const engine = new FakeRuntimeEngine();
-    const runtime = new GameRuntime({ scheduler, engine });
+    const runtime = new GameRuntime({
+      scheduler,
+      engine,
+      renderer: new FakeRenderer(),
+      audio: new FakeAudioDirector(),
+    });
     const viewEvents: GameViewSnapshot[] = [];
 
     runtime.subscribeView((view) => {
@@ -268,7 +305,12 @@ describe("GameRuntime", () => {
   it("preserves mute state across restart and resets the game state", () => {
     const scheduler = new ManualAnimationScheduler();
     const engine = new FakeRuntimeEngine();
-    const runtime = new GameRuntime({ scheduler, engine });
+    const runtime = new GameRuntime({
+      scheduler,
+      engine,
+      renderer: new FakeRenderer(),
+      audio: new FakeAudioDirector(),
+    });
     const hudEvents: GameHudSnapshot[] = [];
 
     runtime.subscribeHud((hud) => {
@@ -290,7 +332,12 @@ describe("GameRuntime", () => {
   it("disposes the engine and clears host runtime markers", () => {
     const scheduler = new ManualAnimationScheduler();
     const engine = new FakeRuntimeEngine();
-    const runtime = new GameRuntime({ scheduler, engine });
+    const runtime = new GameRuntime({
+      scheduler,
+      engine,
+      renderer: new FakeRenderer(),
+      audio: new FakeAudioDirector(),
+    });
     const hostElement = document.createElement("div");
 
     runtime.mount(hostElement);
@@ -305,7 +352,9 @@ describe("GameRuntime", () => {
   it("can inject semantic machine events through the debug seam", () => {
     const scheduler = new ManualAnimationScheduler();
     const engine = new FakeRuntimeEngine();
-    const runtime = new GameRuntime({ scheduler, engine });
+    const renderer = new FakeRenderer();
+    const audio = new FakeAudioDirector();
+    const runtime = new GameRuntime({ scheduler, engine, renderer, audio });
     const hostElement = document.createElement("div");
 
     runtime.mount(hostElement);
@@ -319,5 +368,36 @@ describe("GameRuntime", () => {
     expect(hostElement.dataset.runtimeBallsRemaining).toBe("2");
     expect(hostElement.dataset.ballPresent).toBe("true");
     expect(hostElement.dataset.runtimeStatus).toBe("running");
+  });
+
+  it("feeds semantic effects into the renderer and audio adapters", () => {
+    const scheduler = new ManualAnimationScheduler();
+    const engine = new FakeRuntimeEngine();
+    const renderer = new FakeRenderer();
+    const audio = new FakeAudioDirector();
+    const runtime = new GameRuntime({ scheduler, engine, renderer, audio });
+    const hostElement = document.createElement("div");
+
+    runtime.mount(hostElement);
+    runtime.start();
+    runtime.enqueueCommand({ type: "left-flip", pressed: true });
+
+    scheduler.runFrame(0);
+    scheduler.runFrame(16);
+
+    expect(renderer.attach).toHaveBeenCalledWith(hostElement);
+    expect(audio.consumeEffects).toHaveBeenCalled();
+
+    const consumedEffects = audio.consumeEffects.mock.calls.flatMap(
+      ([effects]) => effects as GameEffectEvent[],
+    );
+
+    expect(consumedEffects).toEqual(
+      expect.arrayContaining([
+        { type: "round-started" },
+        { type: "ball-spawned" },
+        { type: "flipper-fired", side: "left" },
+      ]),
+    );
   });
 });

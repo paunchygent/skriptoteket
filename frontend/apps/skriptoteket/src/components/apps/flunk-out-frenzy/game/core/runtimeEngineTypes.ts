@@ -8,6 +8,7 @@
 
 import type { GameViewSnapshot, RuntimeCommand } from "./runtimeTypes";
 import type { MachineEvent } from "../physics/physicsTypes";
+import type { GameEffectEvent } from "../presentation/gameEffectTypes";
 
 export interface RuntimeEngineState {
   score: number;
@@ -15,6 +16,7 @@ export interface RuntimeEngineState {
   multiplier: number;
   roundFinished: boolean;
   view: GameViewSnapshot;
+  effects: GameEffectEvent[];
 }
 
 export interface RuntimeEngine {

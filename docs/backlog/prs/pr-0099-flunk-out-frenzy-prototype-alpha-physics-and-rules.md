@@ -2,7 +2,7 @@
 type: pr
 id: PR-0099
 title: "Flunk-Out Frenzy: prototype-alpha physics and rules"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-22
 updated: 2026-03-23

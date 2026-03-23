@@ -2,7 +2,7 @@
 type: story
 id: ST-25-02
 title: "Flunk-Out Frenzy local runtime vertical slice"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
 epic: "EPIC-25"
