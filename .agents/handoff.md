@@ -47,9 +47,9 @@ Keep this file updated so the next session can pick up work quickly.
     draft-level, and classroom switching staying outside seating undo/redo
 - `ST-24-04` is now closed, but `EPIC-24` remains active:
   - `ST-24-06` is now in progress as the remaining seating `Slumpa` fundamentals slice
-  - `ST-24-07` is now drafted as the compact overview-first management slice
+  - `ST-24-07` is now in progress as the compact overview-first management slice via `PR-0110`
   - `ST-24-08` is now drafted as the final landing cutover and exit-to-origin slice
-  - `PR-0109` is now in progress, with `PR-0110` -> `PR-0111` planned next before the later cutover story
+  - `PR-0109` is shipped, `PR-0110` is the active implementation slice, and `PR-0111` plus `PR-0112` are the next overview follow-ups before the later cutover story
 - `REV-EPIC-24` amendment is now approved and recorded in `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`.
 - `PR-0109` is now implemented locally:
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStoreMutations.ts` adds seating full-draft randomization
@@ -57,6 +57,13 @@ Keep this file updated so the next session can pick up work quickly.
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` adds the classroom-gated seating `Slumpa` action
   - deterministic unit coverage proves the full-reshuffle contract rather than only filling empty seats
   - the dedicated seating browser proof now covers `Slumpa` wiring plus autosave and undo/redo compatibility
+- `PR-0110` is now implemented locally:
+  - `PlannerClassWorkspace.vue` expands `Översikt` into a compact desktop-first class/classroom dashboard
+  - overview now exposes class switching, class creation/editing, classroom selection, compact preview, and explicit classroom create/edit/delete actions
+  - `ClassroomPlannerView.vue` now keeps an overview-local selected classroom state synced to the active seating draft when appropriate
+  - grouping remains classroom-agnostic on entry, while seating carries the overview-selected classroom forward
+  - the current polish pass also aligns counters to the title baseline, moves the selected classroom into the top panel context, and tightens overview spacing after the initial design review
+  - focused view/component tests cover roster switching from overview and opening classroom editing from the selected overview classroom
 - Competitive-games lane is separate:
   - `ST-25-01` and `ST-25-02` are done through `PR-0104`
   - next planned chain there is `PR-0107` -> `PR-0108` -> `ST-25-03`
@@ -91,6 +98,17 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts` (PASSED).
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
 - 2026-03-23: `pdm run python -m scripts.playwright_pr_0105_seating_continuity --base-url http://127.0.0.1:5173` (PASSED; proved seating `Ångra` / `Gör om`, confirmed undo/redo stays inside the active draft while the continuity drawer remains empty until a second seating draft exists, verified historic reopen/delete still works, and verified switching classroom resets seating history instead of making classroom changes undoable; artifact in `.artifacts/classroom-planner-smoke/pr0105-seating-continuity-proof.png`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (PASSED; 22 tests covering compact overview controls, overview class switching, overview class creation, overview classroom edit flow, and classroom-aware seating entry while grouping stays classroom-agnostic).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts` (PASSED).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-23: `BASE_URL=http://127.0.0.1:5173 pdm run python - <<'PY' ... PY` authenticated local Playwright probe against `http://127.0.0.1:5173/apps/classroom.group-seating-studio` (PASSED; created a real roster and classroom, opened `Klassöversikt`, verified `Byt klass`, `Välj klassrum`, and compact classroom preview rendering; nearby debug screenshot artifact in `.artifacts/classroom-planner-smoke/pr0110-overview-debug.png`).
+- 2026-03-23: `pdm run docs-validate` (PASSED after moving `ST-24-07` / `PR-0110` to `in_progress` and updating handoff for the local `PR-0110` implementation state).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/ClassroomPlannerView.spec.ts` (PASSED; 25 tests after overview spacing, counter typography/baseline alignment, and top-panel classroom-context polish).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerConfirmationDialog.vue` (PASSED).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit` (PASSED).
+- 2026-03-23: `BASE_URL=http://127.0.0.1:5173 pdm run python - <<'PY' ... PY` authenticated local Playwright probe against `http://127.0.0.1:5173/apps/classroom.group-seating-studio` (PASSED; opened `Testklass A`, verified the current `Klassöversikt` surface plus `Välj klassrum`, and saved `.artifacts/pr0110-live-check/overview-dashboard-current.png`).
+- 2026-03-23: `pdm run docs-validate` (PASSED after drafting `PR-0112` and recording the latest `PR-0110` overview-polish verification in handoff).
+- 2026-03-23: `pdm run docs-validate` (PASSED after drafting `PR-0112` for overview design simplification and seamless workspace transitions, updating `ST-24-07` decomposition, and indexing the new PR doc).
 
 ## How to Run
 
@@ -120,7 +138,8 @@ pdm run docs-validate
 ## Next Steps
 
 - EPIC-24 next planned implementation chain is:
-  - commit/push `PR-0109` after local approval and close-out
-  - `PR-0110` and `PR-0111` for `ST-24-07`
+  - present `PR-0110` for approval, then commit/push it
+  - then land `PR-0111` (duplicated resumable CTA + overview-entry/browser proof)
+  - then land `PR-0112` (overview design simplification + seamless workspace transitions)
   - `ST-24-08` only after overview-first management is fully proven
 - Competitive-games lane remains separate and should not be conflated with Klassrumskartan planning.

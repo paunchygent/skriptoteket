@@ -34,6 +34,7 @@ type PlannerStateMock = {
 };
 
 const clientMocks = vi.hoisted(() => ({
+  apiDelete: vi.fn(),
   apiGet: vi.fn(),
 }));
 
@@ -60,6 +61,7 @@ const stateMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../../api/client", () => ({
+  apiDelete: clientMocks.apiDelete,
   apiGet: clientMocks.apiGet,
 }));
 
@@ -83,6 +85,7 @@ function createDeferred<T>(): { promise: Promise<T>; resolve: (value: T) => void
 
 describe("ClassroomPlannerView", () => {
   beforeEach(() => {
+    clientMocks.apiDelete.mockReset();
     clientMocks.apiGet.mockReset();
     stateMocks.plannerState.abandonDraft.mockReset();
     stateMocks.plannerState.activateGroupingHistoryDraft.mockReset();
@@ -1140,6 +1143,326 @@ describe("ClassroomPlannerView", () => {
     expect(wrapper.text()).not.toContain("SA24D · Sal 101");
     expect(wrapper.find('button[aria-label="Stäng senaste utkastet"]').exists()).toBe(false);
     expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it("reopens the class workspace for another roster from the compact overview", async () => {
+    const firstSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: {
+        id: "draft-seating-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "active",
+        revision: 1,
+        last_opened_at: "2026-03-23T08:00:00Z",
+        updated_at: "2026-03-23T08:00:00Z",
+      },
+      grouping_history: [],
+      seating_history: [],
+    };
+    const secondSummary: ClassWorkspaceSummary = {
+      ...firstSummary,
+      roster: { id: "roster-2", name: "NA25A", student_count: 2 },
+      active_seating_draft: null,
+    };
+    stateMocks.plannerState.getClassWorkspaceSummary
+      .mockResolvedValueOnce(firstSummary)
+      .mockResolvedValueOnce(secondSummary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    clientMocks.apiGet
+      .mockResolvedValueOnce([
+        { id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] },
+        { id: "roster-2", name: "NA25A", students: [{ id: "s2", display_name: "Bo" }] },
+      ])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          PlannerSelectionGate: {
+            template:
+              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
+          },
+          PlannerClassWorkspace: {
+            props: ["workspaceSummary"],
+            template:
+              "<div><div data-test='workspace-name'>{{ workspaceSummary.roster.name }}</div><button type='button' data-test='switch-roster' @click=\"$emit('select-roster', 'roster-2')\">Byt klass</button></div>",
+          },
+          PlannerWorkspaceShell: true,
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: true,
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+    await wrapper.get("[data-test='select-roster']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='workspace-name']").text()).toBe("SA24D");
+
+    await wrapper.get("[data-test='switch-roster']").trigger("click");
+    await flushPromises();
+
+    expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenNthCalledWith(1, "roster-1");
+    expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenNthCalledWith(2, "roster-2");
+    expect(wrapper.get("[data-test='workspace-name']").text()).toBe("NA25A");
+
+    wrapper.unmount();
+  });
+
+  it("opens classroom editing from overview using the selected classroom", async () => {
+    const summary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    };
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(summary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          PlannerSelectionGate: {
+            template:
+              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
+          },
+          PlannerClassWorkspace: {
+            template:
+              "<div><button type='button' data-test='select-template' @click=\"$emit('select-template', 'template-1')\">Välj klassrum</button><button type='button' data-test='edit-current-template' @click=\"$emit('edit-current-template')\">Redigera klassrum</button></div>",
+          },
+          PlannerWorkspaceShell: true,
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: {
+            props: ["template"],
+            template: "<div data-test='template-modal'>{{ template?.name }}</div>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+    await wrapper.get("[data-test='select-roster']").trigger("click");
+    await flushPromises();
+
+    await wrapper.get("[data-test='select-template']").trigger("click");
+    await wrapper.get("[data-test='edit-current-template']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='template-modal']").text()).toContain("Sal 101");
+
+    wrapper.unmount();
+  });
+
+  it("confirms classroom deletion from overview without opening the edit modal", async () => {
+    const summary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: {
+        id: "draft-seating-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "active",
+        revision: 1,
+        last_opened_at: "2026-03-23T08:00:00Z",
+        updated_at: "2026-03-23T08:00:00Z",
+      },
+      grouping_history: [],
+      seating_history: [],
+    };
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(summary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    clientMocks.apiDelete.mockResolvedValue(undefined);
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          PlannerSelectionGate: {
+            template:
+              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
+          },
+          PlannerClassWorkspace: {
+            template:
+              "<div><button type='button' data-test='delete-current-template' @click=\"$emit('delete-current-template')\">Ta bort klassrum</button></div>",
+          },
+          PlannerWorkspaceShell: true,
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: {
+            template: "<div data-test='template-modal'>template-modal</div>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+    await wrapper.get("[data-test='select-roster']").trigger("click");
+    await flushPromises();
+
+    await wrapper.get("[data-test='delete-current-template']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Är du säker?");
+    expect(wrapper.find("[data-test='template-modal']").exists()).toBe(false);
+
+    await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
+    await flushPromises();
+
+    expect(clientMocks.apiDelete).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/templates/template-1",
+    );
+    expect(wrapper.text()).not.toContain("Är du säker?");
+
+    wrapper.unmount();
+  });
+
+  it("confirms roster deletion from overview without opening the roster modal", async () => {
+    const summary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    };
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(summary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    clientMocks.apiDelete.mockResolvedValue(undefined);
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          PlannerSelectionGate: {
+            template:
+              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
+          },
+          PlannerClassWorkspace: {
+            template:
+              "<div><button type='button' data-test='delete-current-roster' @click=\"$emit('delete-current-roster')\">Ta bort klasslista</button></div>",
+          },
+          PlannerWorkspaceShell: true,
+          CreateRoomTemplateModal: true,
+          CreateRosterModal: {
+            template: "<div data-test='roster-modal'>roster-modal</div>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+    await wrapper.get("[data-test='select-roster']").trigger("click");
+    await flushPromises();
+
+    await wrapper.get("[data-test='delete-current-roster']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Är du säker?");
+    expect(wrapper.find("[data-test='roster-modal']").exists()).toBe(false);
+
+    await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
+    await flushPromises();
+
+    expect(clientMocks.apiDelete).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1",
+    );
+    expect(wrapper.text()).not.toContain("Är du säker?");
+
+    wrapper.unmount();
+  });
+
+  it("opens the newly created class workspace directly from overview creation", async () => {
+    const originalSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    };
+    const newSummary: ClassWorkspaceSummary = {
+      ...originalSummary,
+      roster: { id: "roster-2", name: "NA25A", student_count: 2 },
+    };
+    stateMocks.plannerState.getClassWorkspaceSummary
+      .mockResolvedValueOnce(originalSummary)
+      .mockResolvedValueOnce(newSummary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    clientMocks.apiGet
+      .mockResolvedValueOnce([
+        { id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] },
+        { id: "roster-2", name: "NA25A", students: [{ id: "s2", display_name: "Bo" }] },
+      ])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          PlannerSelectionGate: {
+            template:
+              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
+          },
+          PlannerClassWorkspace: {
+            props: ["workspaceSummary"],
+            template:
+              "<div><div data-test='workspace-name'>{{ workspaceSummary.roster.name }}</div><button type='button' data-test='create-roster' @click=\"$emit('create-roster')\">Ny klasslista</button></div>",
+          },
+          PlannerWorkspaceShell: true,
+          CreateRoomTemplateModal: true,
+          CreateRosterModal: {
+            template:
+              "<button type='button' data-test='save-new-roster' @click=\"$emit('saved', { id: 'roster-2', name: 'NA25A', students: [{ id: 's2', display_name: 'Bo' }, { id: 's3', display_name: 'Cleo' }] })\">Spara klass</button>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+    await wrapper.get("[data-test='select-roster']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='workspace-name']").text()).toBe("SA24D");
+
+    await wrapper.get("[data-test='create-roster']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='save-new-roster']").trigger("click");
+    await flushPromises();
+
+    expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenNthCalledWith(1, "roster-1");
+    expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenNthCalledWith(2, "roster-2");
+    expect(wrapper.get("[data-test='workspace-name']").text()).toBe("NA25A");
 
     wrapper.unmount();
   });

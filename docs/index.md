@@ -33,6 +33,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0109-klassrumskartan-seating-slumpa-fundamentals.md`
 - Overview-first management follow-up:
   `docs/backlog/stories/story-24-07-group-seating-studio-overview-first-workspace-management.md`
+- Overview design simplification follow-up:
+  `docs/backlog/prs/pr-0112-klassrumskartan-overview-design-simplification-and-seamless-workspace-transitions.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`

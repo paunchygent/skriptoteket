@@ -9,9 +9,10 @@
 
 import { computed, onMounted, ref } from "vue";
 
-import { apiGet, isApiError } from "../../api/client";
+import { apiDelete, apiGet, isApiError } from "../../api/client";
 import CreateRosterModal from "./components/CreateRosterModal.vue";
 import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
+import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
 import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
 import PlannerSelectionGate from "./components/PlannerSelectionGate.vue";
 import PlannerWorkspaceShell from "./components/PlannerWorkspaceShell.vue";
@@ -44,6 +45,11 @@ const isRosterModalOpen = ref(false);
 const isTemplateModalOpen = ref(false);
 const activeRosterModal = ref<Roster | null>(null);
 const activeTemplateModal = ref<RoomTemplate | null>(null);
+const selectedWorkspaceTemplateId = ref<string | null>(null);
+const overviewDeleteRosterTarget = ref<Roster | null>(null);
+const overviewDeleteTemplateTarget = ref<RoomTemplate | null>(null);
+const isDeletingOverviewRoster = ref(false);
+const isDeletingOverviewTemplate = ref(false);
 const isSeatingLifecycleBusy = ref(false);
 const busySeatingHistoryDraftId = ref<string | null>(null);
 
@@ -107,12 +113,30 @@ async function loadClassWorkspaceSummary(rosterId: string): Promise<void> {
   classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
 }
 
+function syncWorkspaceTemplateSelection(options?: { preserveCurrent?: boolean }): void {
+  const preserveCurrent = options?.preserveCurrent ?? false;
+  if (
+    preserveCurrent
+    && selectedWorkspaceTemplateId.value
+    && availableTemplates.value.some((template) => template.id === selectedWorkspaceTemplateId.value)
+  ) {
+    return;
+  }
+
+  const activeTemplateId = classWorkspaceSummary.value?.active_seating_draft?.template_id ?? null;
+  const hasActiveTemplate =
+    activeTemplateId !== null
+    && availableTemplates.value.some((template) => template.id === activeTemplateId);
+  selectedWorkspaceTemplateId.value = hasActiveTemplate ? activeTemplateId : null;
+}
+
 async function refreshClassWorkspaceSummaryForSelectedRoster(): Promise<void> {
   const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
   if (!rosterId) {
     return;
   }
   classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
+  syncWorkspaceTemplateSelection({ preserveCurrent: true });
 }
 
 async function openClassWorkspace(rosterId: string): Promise<void> {
@@ -121,9 +145,11 @@ async function openClassWorkspace(rosterId: string): Promise<void> {
   isLoadingClassWorkspace.value = true;
   try {
     await loadClassWorkspaceSummary(rosterId);
+    syncWorkspaceTemplateSelection();
     currentScreen.value = "class-workspace";
   } catch (error: unknown) {
     classWorkspaceSummary.value = null;
+    selectedWorkspaceTemplateId.value = null;
     plannerActionError.value = normalizeUiError(
       error,
       "Kunde inte öppna klassarbetsytan just nu.",
@@ -137,6 +163,7 @@ function returnToLanding(): void {
   currentScreen.value = "landing";
   selectedRosterId.value = null;
   classWorkspaceSummary.value = null;
+  selectedWorkspaceTemplateId.value = null;
 }
 
 async function resumeDraft(): Promise<void> {
@@ -250,6 +277,7 @@ async function returnToClassWorkspace(): Promise<void> {
     await loadClassWorkspaceSummary(rosterId);
     setResumableDraft(await plannerState.getResumableDraft());
     selectedRosterId.value = rosterId;
+    syncWorkspaceTemplateSelection();
     currentScreen.value = "class-workspace";
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
@@ -277,6 +305,7 @@ async function exitPlannerToLanding(): Promise<void> {
     setResumableDraft(await plannerState.getResumableDraft());
     selectedRosterId.value = null;
     classWorkspaceSummary.value = null;
+    selectedWorkspaceTemplateId.value = null;
     currentScreen.value = "landing";
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
@@ -512,11 +541,12 @@ async function selectPlannerWorkspaceMode(mode: "overview" | "grouping" | "seati
   await openSeatingWorkspace({ templateId: null });
 }
 
-function upsertRoster(roster: Roster): void {
+async function upsertRoster(roster: Roster): Promise<void> {
+  const wasCreatingRoster = activeRosterModal.value === null;
+  const wasEditingCurrentRoster = activeRosterModal.value?.id === classWorkspaceSummary.value?.roster.id;
   const next = availableRosters.value.filter((item) => item.id !== roster.id);
   availableRosters.value = [...next, roster].sort((left, right) => left.name.localeCompare(right.name, "sv"));
-  selectedRosterId.value = roster.id;
-  if (classWorkspaceSummary.value?.roster.id === roster.id) {
+  if (wasEditingCurrentRoster && classWorkspaceSummary.value) {
     classWorkspaceSummary.value = {
       ...classWorkspaceSummary.value,
       roster: {
@@ -525,9 +555,16 @@ function upsertRoster(roster: Roster): void {
         student_count: roster.students.length,
       },
     };
+    selectedRosterId.value = roster.id;
+  } else if (currentScreen.value !== "class-workspace") {
+    selectedRosterId.value = roster.id;
   }
   isRosterModalOpen.value = false;
   activeRosterModal.value = null;
+
+  if (currentScreen.value === "class-workspace" && wasCreatingRoster) {
+    await openClassWorkspace(roster.id);
+  }
 }
 
 function deleteRoster(rosterId: string): void {
@@ -539,17 +576,36 @@ function deleteRoster(rosterId: string): void {
   activeRosterModal.value = null;
 }
 
+function closeOverviewRosterDelete(): void {
+  if (isDeletingOverviewRoster.value) {
+    return;
+  }
+  overviewDeleteRosterTarget.value = null;
+}
+
 function upsertTemplate(template: RoomTemplate): void {
   const next = availableTemplates.value.filter((item) => item.id !== template.id);
   availableTemplates.value = [...next, template].sort((left, right) => left.name.localeCompare(right.name, "sv"));
+  selectedWorkspaceTemplateId.value = template.id;
   isTemplateModalOpen.value = false;
   activeTemplateModal.value = null;
 }
 
 function deleteTemplate(templateId: string): void {
   availableTemplates.value = availableTemplates.value.filter((template) => template.id !== templateId);
+  if (selectedWorkspaceTemplateId.value === templateId) {
+    selectedWorkspaceTemplateId.value = null;
+    syncWorkspaceTemplateSelection();
+  }
   isTemplateModalOpen.value = false;
   activeTemplateModal.value = null;
+}
+
+function closeOverviewTemplateDelete(): void {
+  if (isDeletingOverviewTemplate.value) {
+    return;
+  }
+  overviewDeleteTemplateTarget.value = null;
 }
 
 function openRosterCreate(): void {
@@ -570,6 +626,14 @@ function openSelectedRosterEdit(): void {
   openRosterEdit(activeRoster);
 }
 
+function openSelectedRosterDelete(): void {
+  const selectedRoster = availableRosters.value.find((roster) => roster.id === selectedRosterId.value) ?? null;
+  if (!selectedRoster) {
+    return;
+  }
+  overviewDeleteRosterTarget.value = selectedRoster;
+}
+
 function openTemplateCreate(): void {
   activeTemplateModal.value = null;
   isTemplateModalOpen.value = true;
@@ -578,6 +642,83 @@ function openTemplateCreate(): void {
 function openTemplateEdit(template: RoomTemplate): void {
   activeTemplateModal.value = template;
   isTemplateModalOpen.value = true;
+}
+
+function selectWorkspaceRoster(rosterId: string): void {
+  if (rosterId === selectedRosterId.value) {
+    return;
+  }
+  void openClassWorkspace(rosterId);
+}
+
+function selectWorkspaceTemplate(templateId: string | null): void {
+  selectedWorkspaceTemplateId.value = templateId;
+}
+
+function openSelectedTemplateEdit(): void {
+  const selectedTemplate = availableTemplates.value.find(
+    (template) => template.id === selectedWorkspaceTemplateId.value,
+  );
+  if (!selectedTemplate) {
+    return;
+  }
+  openTemplateEdit(selectedTemplate);
+}
+
+function openSelectedTemplateDelete(): void {
+  const selectedTemplate = availableTemplates.value.find(
+    (template) => template.id === selectedWorkspaceTemplateId.value,
+  );
+  if (!selectedTemplate) {
+    return;
+  }
+  overviewDeleteTemplateTarget.value = selectedTemplate;
+}
+
+async function confirmOverviewTemplateDelete(): Promise<void> {
+  if (!overviewDeleteTemplateTarget.value) {
+    return;
+  }
+
+  isDeletingOverviewTemplate.value = true;
+  plannerActionError.value = null;
+  try {
+    await apiDelete<void>(
+      `/api/v1/apps/classroom.group-seating-studio/templates/${overviewDeleteTemplateTarget.value.id}`,
+    );
+    deleteTemplate(overviewDeleteTemplateTarget.value.id);
+    overviewDeleteTemplateTarget.value = null;
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte ta bort klassrummet just nu.",
+    );
+  } finally {
+    isDeletingOverviewTemplate.value = false;
+  }
+}
+
+async function confirmOverviewRosterDelete(): Promise<void> {
+  if (!overviewDeleteRosterTarget.value) {
+    return;
+  }
+
+  isDeletingOverviewRoster.value = true;
+  plannerActionError.value = null;
+  try {
+    await apiDelete<void>(
+      `/api/v1/apps/classroom.group-seating-studio/rosters/${overviewDeleteRosterTarget.value.id}`,
+    );
+    deleteRoster(overviewDeleteRosterTarget.value.id);
+    overviewDeleteRosterTarget.value = null;
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte ta bort klasslistan just nu.",
+    );
+  } finally {
+    isDeletingOverviewRoster.value = false;
+  }
 }
 </script>
 
@@ -640,10 +781,22 @@ function openTemplateEdit(template: RoomTemplate): void {
 
     <PlannerClassWorkspace
       v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace' && classWorkspaceSummary"
+      :key="classWorkspaceSummary.roster.id"
       :workspace-summary="classWorkspaceSummary"
+      :available-rosters="availableRosters"
+      :available-templates="availableTemplates"
+      :selected-roster-id="selectedRosterId"
+      :selected-template-id="selectedWorkspaceTemplateId"
       :is-loading-workspace="isLoadingClassWorkspace"
       @back-to-landing="returnToLanding"
+      @create-roster="openRosterCreate"
       @edit-roster="openSelectedRosterEdit"
+      @delete-current-roster="openSelectedRosterDelete"
+      @select-roster="selectWorkspaceRoster"
+      @create-template="openTemplateCreate"
+      @select-template="selectWorkspaceTemplate"
+      @edit-current-template="openSelectedTemplateEdit"
+      @delete-current-template="openSelectedTemplateDelete"
       @open-grouping="void openGroupingWorkspace($event)"
       @open-seating="void openSeatingWorkspace($event)"
     />
@@ -672,7 +825,7 @@ function openTemplateEdit(template: RoomTemplate): void {
       v-if="isRosterModalOpen"
       :roster="activeRosterModal"
       @close="isRosterModalOpen = false; activeRosterModal = null"
-      @saved="upsertRoster($event)"
+      @saved="void upsertRoster($event)"
       @deleted="deleteRoster($event)"
     />
 
@@ -682,6 +835,28 @@ function openTemplateEdit(template: RoomTemplate): void {
       @close="isTemplateModalOpen = false; activeTemplateModal = null"
       @saved="upsertTemplate($event)"
       @deleted="deleteTemplate($event)"
+    />
+
+    <PlannerConfirmationDialog
+      v-if="overviewDeleteRosterTarget"
+      eyebrow="Ta bort klasslista"
+      title="Är du säker?"
+      :message="`Klasslistan ${overviewDeleteRosterTarget.name} tas bort från översikten. Aktiva utkast som fortfarande använder klassen skyddas av backend-reglerna och kan stoppa borttagningen.`"
+      confirm-label="Ta bort klasslista"
+      :is-submitting="isDeletingOverviewRoster"
+      @cancel="closeOverviewRosterDelete"
+      @confirm="void confirmOverviewRosterDelete()"
+    />
+
+    <PlannerConfirmationDialog
+      v-if="overviewDeleteTemplateTarget"
+      eyebrow="Ta bort klassrum"
+      title="Är du säker?"
+      :message="`Klassrummet ${overviewDeleteTemplateTarget.name} tas bort från översikten. Utkast som fortfarande använder klassrummet skyddas av backend-reglerna och kan stoppa borttagningen.`"
+      confirm-label="Ta bort klassrum"
+      :is-submitting="isDeletingOverviewTemplate"
+      @cancel="closeOverviewTemplateDelete"
+      @confirm="void confirmOverviewTemplateDelete()"
     />
   </div>
 </template>

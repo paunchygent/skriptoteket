@@ -2,7 +2,7 @@
 type: story
 id: ST-24-07
 title: "Klassrumskartan — Overview-first workspace management"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-23
 updated: 2026-03-23
@@ -13,6 +13,7 @@ dependencies:
 acceptance_criteria:
   - "Given the teacher opens the class workspace, when `Översikt` renders, then it behaves as a compact desktop-first dashboard rather than as a sparse placeholder card."
   - "Given the teacher is in `Översikt`, when they need to manage the current class, then they can clearly see the active class, edit it, create a new class, or switch to another class without leaving the workspace flow."
+  - "Given the teacher is in `Översikt`, when they inspect the current class, then the class card shows a compact fixed-size preview of the roster in three columns and allows class deletion through the same app-native confirmation pattern as other destructive overview actions."
   - "Given the teacher is in `Översikt`, when they need to manage classroom context, then they can clearly see the current classroom, preview it, switch it with a compact selector, edit it, create a new classroom, or delete it without relying on long expanded lists."
   - "Given the teacher switches class from `Översikt`, when active grouping or seating drafts already exist for the current class, then that switch happens only from the neutral overview state, waits for any in-flight workspace transition to finish, and leaves the earlier class drafts resumable rather than silently discarding them."
   - "Given a resumable draft exists, when the teacher is in `Översikt`, then a resumable CTA appears at the top of the workspace while the legacy landing-page CTA may remain duplicated during the transition."
@@ -57,6 +58,10 @@ That means the app still teaches two different “home” ideas instead of one.
 - Duplicate the resumable CTA in both landing and overview during this transition story.
 - Do not embed destructive delete actions inside the classroom selector itself; keep delete
   adjacent to the selector as an explicit action.
+- Keep the class and classroom cards visually balanced:
+  - fixed preview surfaces
+  - useful count indicators beside the selected names
+  - no decorative metadata cards that do not help teachers act
 
 ## Notes
 
@@ -87,3 +92,11 @@ Focus:
 - add the duplicated resumable CTA to the overview top area
 - tighten class switching and compact workspace-entry polish
 - add targeted browser proof for the overview-first management flow while leaving landing intact
+
+### PR-0112
+
+Focus:
+
+- simplify overview and planner chrome after the capability expansion lands
+- remove duplicated guidance and unnecessary panel separations that do not add local meaning
+- make workspace-mode transitions feel seamless rather than snapping through avoidable intermediate states
