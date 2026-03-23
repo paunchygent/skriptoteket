@@ -7,13 +7,9 @@
  * owns physics and rules behind a narrower simulation boundary.
  */
 
-import { PrototypeAlphaGameEngine } from "../engine/PrototypeAlphaGameEngine";
-import { AudioDirector } from "../audio/AudioDirector";
-import { NoopAudioDirector } from "../audio/NoopAudioDirector";
 import type { MachineEvent } from "../physics/physicsTypes";
 import type { RuntimeAudioDirector } from "../audio/audioTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
-import { PixiRenderer } from "../render/PixiRenderer";
 import type { RuntimeRenderer } from "../render/renderTypes";
 import { CommandQueue } from "./CommandQueue";
 import { FixedStepRunner } from "./FixedStepRunner";
@@ -53,8 +49,8 @@ export class GameRuntime {
 
   static async create(options: Omit<GameRuntimeOptions, "engine"> = {}): Promise<GameRuntime> {
     const [engine, renderer, audio] = await Promise.all([
-      PrototypeAlphaGameEngine.create(),
-      options.renderer ? Promise.resolve(options.renderer) : PixiRenderer.create(),
+      createDefaultEngine(),
+      options.renderer ? Promise.resolve(options.renderer) : createDefaultRenderer(),
       resolveRuntimeAudio(options),
     ]);
 
@@ -342,8 +338,21 @@ async function resolveRuntimeAudio(
   }
 
   if (options.audioEnabled === false) {
+    const { NoopAudioDirector } = await import("../audio/NoopAudioDirector");
     return NoopAudioDirector.create();
   }
 
+  const { AudioDirector } = await import("../audio/AudioDirector");
   return AudioDirector.create();
+}
+
+async function createDefaultEngine(): Promise<RuntimeEngine> {
+  const { PrototypeAlphaGameEngine } = await import("../engine/PrototypeAlphaGameEngine");
+  return PrototypeAlphaGameEngine.create();
+}
+
+async function createDefaultRenderer(): Promise<RuntimeRenderer> {
+  // Keep Pixi out of jsdom unit-test imports; browser/live checks remain renderer truth.
+  const { PixiRenderer } = await import("../render/PixiRenderer");
+  return PixiRenderer.create();
 }

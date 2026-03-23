@@ -17,6 +17,7 @@ type PlannerStateMock = {
   draft: Pick<PlanDraft, "id" | "draft_kind" | "revision">;
   students: Roster["students"];
   seats: RoomTemplate["seats"];
+  seatAssignments: Array<{ student_id: string; seat_id: string }>;
   saveStatus: string;
   saveMessage: string | null;
   isWorkspaceBusy: boolean;
@@ -26,6 +27,7 @@ type PlannerStateMock = {
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
   randomizeSeating: ReturnType<typeof vi.fn>;
+  clearSeatingAssignments: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -41,6 +43,7 @@ const stateMocks = vi.hoisted(() => ({
       { id: "seat-1", x: 0, y: 0, zone: null },
       { id: "seat-2", x: 120, y: 0, zone: null },
     ],
+    seatAssignments: [{ student_id: "student-1", seat_id: "seat-1" }],
     saveStatus: "saved",
     saveMessage: null,
     isWorkspaceBusy: false,
@@ -50,6 +53,7 @@ const stateMocks = vi.hoisted(() => ({
     undoSeatingDraft: vi.fn(),
     redoSeatingDraft: vi.fn(),
     randomizeSeating: vi.fn(),
+    clearSeatingAssignments: vi.fn(),
   }))(),
 }));
 
@@ -117,6 +121,7 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.undoSeatingDraft.mockReset();
     stateMocks.plannerState.redoSeatingDraft.mockReset();
     stateMocks.plannerState.randomizeSeating.mockReset();
+    stateMocks.plannerState.clearSeatingAssignments.mockReset();
     stateMocks.plannerState.template = {
       id: "template-1",
       name: "Sal 101",
@@ -131,6 +136,7 @@ describe("PlannerWorkspaceShell", () => {
       { id: "seat-1", x: 0, y: 0, zone: null },
       { id: "seat-2", x: 120, y: 0, zone: null },
     ];
+    stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
     stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
@@ -332,6 +338,69 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(false);
     expect(wrapper.text()).toContain("Sal 101");
     expect(wrapper.find('[data-test="seating-actions-menu"]').exists()).toBe(true);
+  });
+
+  it("confirms before clearing the current seating draft in place", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="reset-seating-draft"]').trigger("click");
+
+    expect(wrapper.text()).toContain("Töm sittplaceringarna?");
+
+    await wrapper.get('[data-test="confirm-dialog-confirm"]').trigger("click");
+
+    expect(stateMocks.plannerState.clearSeatingAssignments).toHaveBeenCalledTimes(1);
+    expect(wrapper.emitted("new-seating-draft")).toBeUndefined();
+    expect((wrapper.get('[data-test="seating-template-select"]').element as HTMLSelectElement).value).toBe("template-1");
+  });
+
+  it("disables börja om for seating when there is nothing to clear", () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.seatAssignments = [];
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect((wrapper.get('[data-test="reset-seating-draft"]').element as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("uses the top panel exit action instead of workspace-local navigation buttons", async () => {

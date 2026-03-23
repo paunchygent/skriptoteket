@@ -13,8 +13,10 @@ const stateMocks = vi.hoisted(() => ({
     studentsByGroupId: {
       "group-a": [{ id: "student-2", display_name: "Bo" }],
     },
+    groupAssignments: [{ student_id: "student-2", group_id: "group-a" }],
     addGroup: vi.fn(),
     randomizeGroups: vi.fn(),
+    clearGroupingAssignments: vi.fn(),
     undoGroupingDraft: vi.fn(),
     redoGroupingDraft: vi.fn(),
     assignStudentToGroup: vi.fn(),
@@ -37,11 +39,13 @@ describe("GroupBoard", () => {
   beforeEach(() => {
     stateMocks.plannerState.addGroup.mockReset();
     stateMocks.plannerState.randomizeGroups.mockReset();
+    stateMocks.plannerState.clearGroupingAssignments.mockReset();
     stateMocks.plannerState.undoGroupingDraft.mockReset();
     stateMocks.plannerState.redoGroupingDraft.mockReset();
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
     stateMocks.plannerState.isWorkspaceBusy = false;
+    stateMocks.plannerState.groupAssignments = [{ student_id: "student-2", group_id: "group-a" }];
   });
 
   it("does not leak seat labels into the grouping surface", () => {
@@ -92,13 +96,34 @@ describe("GroupBoard", () => {
     expect(stateMocks.plannerState.redoGroupingDraft).toHaveBeenCalledTimes(1);
   });
 
+  it("confirms before clearing the current grouping draft in place", async () => {
+    const wrapper = mount(GroupBoard);
+
+    await wrapper.get('[data-test="reset-grouping-draft"]').trigger("click");
+
+    expect(wrapper.text()).toContain("Töm gruppindelningen?");
+
+    await wrapper.get('[data-test="confirm-dialog-confirm"]').trigger("click");
+
+    expect(stateMocks.plannerState.clearGroupingAssignments).toHaveBeenCalledTimes(1);
+    expect(wrapper.emitted("new-grouping-draft")).toBeUndefined();
+  });
+
   it("locks grouping interactions while the workspace is transitioning", () => {
     stateMocks.plannerState.isWorkspaceBusy = true;
     const wrapper = mount(GroupBoard);
 
     expect((wrapper.get('[data-test="new-grouping-draft"]').element as HTMLButtonElement).disabled).toBe(true);
     expect((wrapper.get('[data-test="randomize-groups"]').element as HTMLButtonElement).disabled).toBe(true);
+    expect((wrapper.get('[data-test="reset-grouping-draft"]').element as HTMLButtonElement).disabled).toBe(true);
     expect((wrapper.get('[data-test="add-group"]').element as HTMLButtonElement).disabled).toBe(true);
     expect((wrapper.get('input[type="text"]').element as HTMLInputElement).disabled).toBe(true);
+  });
+
+  it("disables börja om when there is nothing to clear", () => {
+    stateMocks.plannerState.groupAssignments = [];
+    const wrapper = mount(GroupBoard);
+
+    expect((wrapper.get('[data-test="reset-grouping-draft"]').element as HTMLButtonElement).disabled).toBe(true);
   });
 });

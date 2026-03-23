@@ -130,6 +130,22 @@ export function buildRandomizedSeatAssignments(
   );
 }
 
+function clearAssignmentsInPlace(
+  assignments: Record<string, string | null>,
+): Record<string, string | null> | null {
+  let didChange = false;
+  const nextAssignments = { ...assignments };
+
+  for (const [studentId, assignedValue] of Object.entries(nextAssignments)) {
+    if (assignedValue !== null) {
+      nextAssignments[studentId] = null;
+      didChange = true;
+    }
+  }
+
+  return didChange ? nextAssignments : null;
+}
+
 export function createPlannerMutationActions(context: MutationContext) {
   function assignStudentToGroup(studentId: string, groupId: string): void {
     if (!context.canMutate()) {
@@ -156,6 +172,18 @@ export function createPlannerMutationActions(context: MutationContext) {
       ...context.groupAssignmentsByStudentId.value,
       [studentId]: null,
     };
+    context.markDirty();
+  }
+
+  function clearGroupingAssignments(): void {
+    if (!context.canMutate()) {
+      return;
+    }
+    const nextAssignments = clearAssignmentsInPlace(context.groupAssignmentsByStudentId.value);
+    if (!nextAssignments) {
+      return;
+    }
+    context.groupAssignmentsByStudentId.value = nextAssignments;
     context.markDirty();
   }
 
@@ -201,6 +229,18 @@ export function createPlannerMutationActions(context: MutationContext) {
       ...context.seatAssignmentsByStudentId.value,
       [studentId]: null,
     };
+    context.markDirty();
+  }
+
+  function clearSeatingAssignments(): void {
+    if (!context.canMutate()) {
+      return;
+    }
+    const nextAssignments = clearAssignmentsInPlace(context.seatAssignmentsByStudentId.value);
+    if (!nextAssignments) {
+      return;
+    }
+    context.seatAssignmentsByStudentId.value = nextAssignments;
     context.markDirty();
   }
 
@@ -338,9 +378,11 @@ export function createPlannerMutationActions(context: MutationContext) {
   return {
     assignStudentToGroup,
     removeStudentFromGroup,
+    clearGroupingAssignments,
     assignStudentToSeat,
     swapSeatAssignments,
     clearSeatAssignment,
+    clearSeatingAssignments,
     addGroup,
     renameGroup,
     moveGroup,

@@ -326,6 +326,80 @@ describe("useClassroomState", () => {
     randomSpy.mockRestore();
   });
 
+  it("clears grouping assignments in place without touching group structure or metadata", () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+    state.groupAssignmentsByStudentId = {
+      s1: "group-a",
+      s2: null,
+      s3: "group-b",
+    };
+    state.studentPlanningMetaByStudentId = {
+      s1: {
+        student_id: "s1",
+        teacher_proximity: 0,
+        stability_preference: 0,
+        preferred_zone: null,
+        avoid_zone: null,
+        notes: "Behåll anteckningen",
+      },
+    };
+
+    state.clearGroupingAssignments();
+
+    expect(state.draft?.id).toBe("draft-1");
+    expect(state.groups.map((group) => group.id)).toEqual(["group-a", "group-b"]);
+    expect(state.groupAssignmentsByStudentId).toEqual({
+      s1: null,
+      s2: null,
+      s3: null,
+    });
+    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Behåll anteckningen");
+    expect(state.hasPendingAutosave).toBe(true);
+  });
+
+  it("clears seating assignments in place without changing the selected classroom", () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    state.seatAssignmentsByStudentId = {
+      s1: "seat-1",
+      s2: null,
+      s3: "seat-2",
+    };
+    state.studentPlanningMetaByStudentId = {
+      s2: {
+        student_id: "s2",
+        teacher_proximity: 0,
+        stability_preference: 0,
+        preferred_zone: "front",
+        avoid_zone: null,
+        notes: "Behåll anteckningen",
+      },
+    };
+
+    state.clearSeatingAssignments();
+
+    expect(state.template?.id).toBe("template-1");
+    expect(state.seatAssignmentsByStudentId).toEqual({
+      s1: null,
+      s2: null,
+      s3: null,
+    });
+    expect(state.studentPlanningMetaByStudentId["s2"]?.preferred_zone).toBe("front");
+    expect(state.hasPendingAutosave).toBe(true);
+  });
+
+  it("does not dirty the draft when börja om is used on an already empty workspace", () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "grouping");
+
+    state.clearGroupingAssignments();
+    state.clearSeatingAssignments();
+
+    expect(state.hasPendingAutosave).toBe(false);
+    expect(state.saveStatus).toBe("idle");
+  });
+
   it("stores student planning metadata", () => {
     const state = seedWorkspace();
 

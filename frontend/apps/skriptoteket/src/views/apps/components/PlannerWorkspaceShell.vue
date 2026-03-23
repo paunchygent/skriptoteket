@@ -13,6 +13,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
 import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
 import GroupBoard from "./GroupBoard.vue";
+import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
@@ -75,6 +76,7 @@ const pendingGroupingTemplateId = ref("");
 const pendingSeatingTemplateId = ref("");
 const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
+const isResetSeatingDialogOpen = ref(false);
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
 const workspaceModeValue = computed<"overview" | "grouping" | "seating">(() => {
   return currentView.value === "groups" ? "grouping" : "seating";
@@ -128,6 +130,7 @@ const canRandomizeSeating = computed(() => {
     && !props.seatingLifecycleBusy
   );
 });
+const hasSeatingAssignments = computed(() => plannerState.seatAssignments.length > 0);
 const isHistoryDrawerOpen = computed(() => openHistoryDrawerKind.value !== null);
 const historyDrawerTitle = computed(() => {
   return openHistoryDrawerKind.value === "seating" ? "Sittplatser" : "Grupper";
@@ -255,6 +258,22 @@ function randomizeCurrentSeatingDraft(): void {
   plannerState.randomizeSeating();
 }
 
+function openResetSeatingDialog(): void {
+  if (props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value) {
+    return;
+  }
+  isResetSeatingDialogOpen.value = true;
+}
+
+function closeResetSeatingDialog(): void {
+  isResetSeatingDialogOpen.value = false;
+}
+
+function confirmResetSeatingDraft(): void {
+  plannerState.clearSeatingAssignments();
+  closeResetSeatingDialog();
+}
+
 function openGroupingHistoryDrawer(): void {
   openHistoryDrawerKind.value = "grouping";
 }
@@ -316,6 +335,7 @@ watch(
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
     showSeatingTemplateRequiredHint.value = false;
+    isResetSeatingDialogOpen.value = false;
   },
 );
 
@@ -329,6 +349,7 @@ watch(
     pendingGroupingTemplateId.value = plannerState.template?.id ?? "";
     pendingSeatingTemplateId.value = plannerState.template?.id ?? "";
     showSeatingTemplateRequiredHint.value = false;
+    isResetSeatingDialogOpen.value = false;
   },
 );
 
@@ -458,6 +479,15 @@ watch(
         </button>
         <button
           type="button"
+          class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+          data-test="reset-seating-draft"
+          :disabled="props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
+          @click="openResetSeatingDialog"
+        >
+          Börja om
+        </button>
+        <button
+          type="button"
           class="btn-ghost border-navy/30 bg-white shadow-none"
           data-test="new-seating-draft"
           :disabled="props.seatingLifecycleBusy"
@@ -485,6 +515,16 @@ watch(
         Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
       </div>
     </section>
+
+    <PlannerConfirmationDialog
+      v-if="isResetSeatingDialogOpen"
+      eyebrow="Börja om sittschema"
+      title="Töm sittplaceringarna?"
+      message="Det här rensar sittplaceringarna i det aktuella sittschemat och flyttar tillbaka alla elever till Ej placerade. Själva utkastet och klassrummet finns kvar."
+      confirm-label="Börja om"
+      @cancel="closeResetSeatingDialog"
+      @confirm="confirmResetSeatingDraft"
+    />
 
     <PlannerMetadataDrawer
       :selected-student-id="selectedStudentId"

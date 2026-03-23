@@ -8,11 +8,12 @@
  * remain centralized.
  */
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import GroupCard from "./GroupCard.vue";
+import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import { useClassroomState } from "../useClassroomState";
@@ -34,6 +35,8 @@ const emit = defineEmits<{
 const state = useClassroomState();
 
 const orderedGroups = computed(() => [...state.groups].sort((left, right) => left.sort_order - right.sort_order));
+const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
+const isResetGroupingDialogOpen = ref(false);
 const secondaryActionItems = computed(() => [
   {
     id: "history",
@@ -90,6 +93,22 @@ function changeGroupingTemplate(event: Event): void {
     return;
   }
   emit("change-grouping-template", target.value || null);
+}
+
+function openResetGroupingDialog(): void {
+  if (state.isWorkspaceBusy || !hasGroupingAssignments.value) {
+    return;
+  }
+  isResetGroupingDialogOpen.value = true;
+}
+
+function closeResetGroupingDialog(): void {
+  isResetGroupingDialogOpen.value = false;
+}
+
+function confirmResetGroupingDraft(): void {
+  state.clearGroupingAssignments();
+  closeResetGroupingDialog();
 }
 </script>
 
@@ -226,6 +245,15 @@ function changeGroupingTemplate(event: Event): void {
         </button>
         <button
           type="button"
+          class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+          data-test="reset-grouping-draft"
+          :disabled="state.isWorkspaceBusy || !hasGroupingAssignments"
+          @click="openResetGroupingDialog"
+        >
+          Börja om
+        </button>
+        <button
+          type="button"
           class="btn-primary"
           data-test="add-group"
           :disabled="state.isWorkspaceBusy"
@@ -259,5 +287,15 @@ function changeGroupingTemplate(event: Event): void {
         />
       </div>
     </section>
+
+    <PlannerConfirmationDialog
+      v-if="isResetGroupingDialogOpen"
+      eyebrow="Börja om grupper"
+      title="Töm gruppindelningen?"
+      message="Det här rensar gruppplaceringarna i det aktuella grupputkastet och flyttar tillbaka alla elever till Ej grupperade. Själva utkastet finns kvar."
+      confirm-label="Börja om"
+      @cancel="closeResetGroupingDialog"
+      @confirm="confirmResetGroupingDraft"
+    />
   </div>
 </template>
