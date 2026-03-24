@@ -89,18 +89,14 @@ def build_job_spec(
 ) -> dict[str, object]:
     """Build the Sir Convert v2 job spec for one poster export."""
 
-    pdf_layout_size = "a3" if paper_size is SeatingExportPaperSize.A3_LANDSCAPE else "a4"
+    del paper_size
     return {
         "api_version": "v2",
         "source": {"kind": "upload", "filename": source_filename, "format": "html"},
         "conversion": {
             "output_format": "pdf",
             "css_filenames": [css_filename],
-            "pdf_layout": {
-                "paper_size": pdf_layout_size,
-                "orientation": "landscape",
-                "margins_mm": 12,
-            },
+            "page_css_mode": "author_owned",
             "template": None,
             "reference_docx_filename": None,
         },

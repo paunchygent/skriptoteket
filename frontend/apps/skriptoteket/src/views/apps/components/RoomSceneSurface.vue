@@ -15,6 +15,8 @@ import {
   getRoomFloorLayerStyle,
   getRoomSurfaceStyle,
   getWallFixtureFrameStyle,
+  normalizePresentedFixtures,
+  type PresentedRoomFixture,
 } from "../roomFixturePresentation";
 import { getSeatFrameStyle } from "../roomSeatPresentation";
 import { isWallFixtureType, type RoomGridDimensions } from "../roomFixtureLayout";
@@ -25,9 +27,11 @@ const props = withDefaults(defineProps<{
   grid: RoomGridDimensions;
   seats: Seat[];
   fixtures: RoomFixture[];
+  normalizePresentation?: boolean;
   showBackdropGrid?: boolean;
   fixtureSurface?: "absolute" | "builder-grid" | "ghost";
 }>(), {
+  normalizePresentation: true,
   showBackdropGrid: false,
   fixtureSurface: "absolute",
 });
@@ -36,11 +40,16 @@ const slots = useSlots();
 
 const roomSurfaceStyle = computed(() => getRoomSurfaceStyle(props.grid));
 const roomFloorLayerStyle = computed(() => getRoomFloorLayerStyle(props.grid));
+const renderedFixtures = computed<PresentedRoomFixture[]>(() => {
+  return props.normalizePresentation
+    ? normalizePresentedFixtures(props.fixtures, props.grid)
+    : [...props.fixtures] as PresentedRoomFixture[];
+});
 const floorFixtures = computed(() => {
-  return props.fixtures.filter((fixture) => !isWallFixtureType(fixture.type));
+  return renderedFixtures.value.filter((fixture) => !isWallFixtureType(fixture.type));
 });
 const wallFixtures = computed(() => {
-  return props.fixtures.filter((fixture) => isWallFixtureType(fixture.type));
+  return renderedFixtures.value.filter((fixture) => isWallFixtureType(fixture.type));
 });
 const hasFloorBase = computed(() => Boolean(slots["floor-base"]));
 const hasFloorOverlay = computed(() => Boolean(slots["floor-overlay"]));
@@ -52,21 +61,24 @@ const hasWallOverlay = computed(() => Boolean(slots["wall-overlay"]));
     class="relative"
     :style="roomSurfaceStyle"
   >
-    <div
-      v-if="showBackdropGrid"
-      class="absolute opacity-15"
-      :style="{
-        ...roomFloorLayerStyle,
-        backgroundImage: 'linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px)',
-        backgroundSize: '24px 24px',
-      }"
-    />
+    <div class="absolute inset-0 border border-navy/40 bg-white" />
 
     <div
       class="absolute"
       :style="roomFloorLayerStyle"
     >
       <div class="relative h-full w-full">
+        <div class="absolute inset-0 border border-navy bg-white" />
+
+        <div
+          v-if="showBackdropGrid"
+          class="absolute inset-0 opacity-15"
+          :style="{
+            backgroundImage: 'linear-gradient(var(--huleedu-navy) 1px, transparent 1px), linear-gradient(90deg, var(--huleedu-navy) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }"
+        />
+
         <slot
           v-if="hasFloorBase"
           name="floor-base"
@@ -81,7 +93,7 @@ const hasWallOverlay = computed(() => Boolean(slots["wall-overlay"]));
           >
             <RoomFixtureArtwork
               :fixture="fixture"
-              :fixtures="fixtures"
+              :fixtures="renderedFixtures"
               :grid="grid"
               :surface="fixtureSurface"
             />
@@ -113,7 +125,7 @@ const hasWallOverlay = computed(() => Boolean(slots["wall-overlay"]));
       >
         <RoomFixtureArtwork
           :fixture="fixture"
-          :fixtures="fixtures"
+          :fixtures="renderedFixtures"
           :grid="grid"
           :surface="fixtureSurface"
         />

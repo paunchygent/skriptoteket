@@ -11,9 +11,15 @@ from skriptoteket.cli.commands.clear_all_session_files import clear_all_session_
 from skriptoteket.cli.commands.healthcheck_execution_worker import healthcheck_execution_worker
 from skriptoteket.cli.commands.provision_user import provision_user
 from skriptoteket.cli.commands.prune_artifacts import prune_artifacts
+from skriptoteket.cli.commands.reconcile_seating_export_webhooks import (
+    reconcile_seating_export_webhooks,
+)
 from skriptoteket.cli.commands.run_execution_worker import run_execution_worker
 from skriptoteket.cli.commands.seed_script_bank import seed_script_bank
 from skriptoteket.cli.commands.send_feedback_emails import send_feedback_emails
+from skriptoteket.cli.commands.smoke_seating_export_readiness import (
+    smoke_seating_export_readiness,
+)
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -29,3 +35,5 @@ app.command()(seed_script_bank)
 app.command()(run_execution_worker)
 app.command()(healthcheck_execution_worker)
 app.command()(send_feedback_emails)
+app.command()(reconcile_seating_export_webhooks)
+app.command()(smoke_seating_export_readiness)

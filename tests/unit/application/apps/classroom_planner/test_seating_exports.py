@@ -18,7 +18,10 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 )
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     PosterSceneFixtureKind,
+    PosterSceneFixturePlacement,
+    PosterSceneFixtureTone,
     PosterSceneFixtureVariant,
+    PosterSceneLabelOrientation,
     PosterSceneWallSide,
     format_student_poster_label,
     translate_workspace_to_poster_scene,
@@ -125,6 +128,15 @@ def _build_template(*, owner_user_id, template_id) -> RoomTemplate:
                 label="Whiteboard",
             ),
             RoomFixture(
+                id="fixture-whiteboard-2",
+                type=RoomFixtureType.WHITEBOARD,
+                x=7 * ROOM_GRID_UNIT,
+                y=0,
+                width=2 * ROOM_GRID_UNIT,
+                height=1 * ROOM_GRID_UNIT,
+                label="Whiteboard",
+            ),
+            RoomFixture(
                 id="fixture-door",
                 type=RoomFixtureType.DOOR,
                 x=0,
@@ -145,6 +157,14 @@ def _build_template(*, owner_user_id, template_id) -> RoomTemplate:
                 id="fixture-bench",
                 type=RoomFixtureType.BENCH,
                 x=9 * ROOM_GRID_UNIT,
+                y=6 * ROOM_GRID_UNIT,
+                width=1 * ROOM_GRID_UNIT,
+                height=1 * ROOM_GRID_UNIT,
+            ),
+            RoomFixture(
+                id="fixture-bench-2",
+                type=RoomFixtureType.BENCH,
+                x=10 * ROOM_GRID_UNIT,
                 y=6 * ROOM_GRID_UNIT,
                 width=1 * ROOM_GRID_UNIT,
                 height=1 * ROOM_GRID_UNIT,
@@ -318,17 +338,43 @@ def test_translate_workspace_to_poster_scene_preserves_export_markers_and_geomet
     assert scene.room.grid_cols == 14
     assert scene.room.grid_rows == 9
     fixture_by_id = {fixture.fixture_id: fixture for fixture in scene.fixtures}
-    assert fixture_by_id["fixture-whiteboard"].kind == PosterSceneFixtureKind.WHITEBOARD
-    assert fixture_by_id["fixture-whiteboard"].wall_side == PosterSceneWallSide.TOP
+    merged_whiteboard = next(
+        fixture
+        for fixture in scene.fixtures
+        if fixture.source_fixture_ids == ("fixture-whiteboard", "fixture-whiteboard-2")
+    )
+    assert merged_whiteboard.kind == PosterSceneFixtureKind.WHITEBOARD
+    assert merged_whiteboard.wall_side == PosterSceneWallSide.TOP
+    assert merged_whiteboard.placement == PosterSceneFixturePlacement.WALL
+    assert merged_whiteboard.label == "Whiteboard"
+    assert merged_whiteboard.label_orientation == PosterSceneLabelOrientation.HORIZONTAL
+    assert merged_whiteboard.tone == PosterSceneFixtureTone.OUTLINE
+    assert merged_whiteboard.x == 3
+    assert merged_whiteboard.width == 6
     assert fixture_by_id["fixture-door"].kind == PosterSceneFixtureKind.DOOR
     assert fixture_by_id["fixture-door"].wall_side == PosterSceneWallSide.LEFT
+    assert fixture_by_id["fixture-door"].label == "Dörr"
+    assert fixture_by_id["fixture-door"].label_orientation == PosterSceneLabelOrientation.VERTICAL
     assert fixture_by_id["fixture-window"].kind == PosterSceneFixtureKind.WINDOW
     assert fixture_by_id["fixture-window"].wall_side == PosterSceneWallSide.RIGHT
+    assert fixture_by_id["fixture-window"].label == "Fönster"
+    assert fixture_by_id["fixture-window"].label_orientation == PosterSceneLabelOrientation.VERTICAL
     assert fixture_by_id["fixture-teacher-desk"].kind == PosterSceneFixtureKind.TEACHER_DESK
     assert fixture_by_id["fixture-teacher-desk"].wall_side is None
-    assert fixture_by_id["fixture-bench"].kind == PosterSceneFixtureKind.BENCH
+    assert fixture_by_id["fixture-teacher-desk"].label == "Kateder"
+    assert fixture_by_id["fixture-teacher-desk"].tone == PosterSceneFixtureTone.STRONG
+    merged_bench = next(
+        fixture
+        for fixture in scene.fixtures
+        if fixture.source_fixture_ids == ("fixture-bench", "fixture-bench-2")
+    )
+    assert merged_bench.kind == PosterSceneFixtureKind.BENCH
+    assert merged_bench.placement == PosterSceneFixturePlacement.FLOOR
+    assert merged_bench.label == "Bänk"
+    assert merged_bench.width == 2
     assert fixture_by_id["fixture-round-table"].kind == PosterSceneFixtureKind.TABLE
     assert fixture_by_id["fixture-round-table"].variant == PosterSceneFixtureVariant.ROUND
+    assert fixture_by_id["fixture-round-table"].label is None
     assert fixture_by_id["fixture-square-table"].variant == PosterSceneFixtureVariant.SQUARE
 
 
@@ -353,6 +399,75 @@ def test_translate_workspace_to_poster_scene_rejects_unknown_seat_assignment_tar
         translate_workspace_to_poster_scene(workspace=workspace)
 
     assert error.value.code == ErrorCode.VALIDATION_ERROR
+
+
+@pytest.mark.unit
+def test_translate_workspace_to_poster_scene_does_not_merge_across_gaps_or_wall_changes():
+    owner_user_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    draft = _build_active_seating_draft(
+        owner_user_id=owner_user_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+    template = _build_template(owner_user_id=owner_user_id, template_id=template_id).model_copy(
+        update={
+            "fixtures": [
+                RoomFixture(
+                    id="bench-left",
+                    type=RoomFixtureType.BENCH,
+                    x=2 * ROOM_GRID_UNIT,
+                    y=5 * ROOM_GRID_UNIT,
+                    width=1 * ROOM_GRID_UNIT,
+                    height=1 * ROOM_GRID_UNIT,
+                ),
+                RoomFixture(
+                    id="bench-right",
+                    type=RoomFixtureType.BENCH,
+                    x=4 * ROOM_GRID_UNIT,
+                    y=5 * ROOM_GRID_UNIT,
+                    width=1 * ROOM_GRID_UNIT,
+                    height=1 * ROOM_GRID_UNIT,
+                ),
+                RoomFixture(
+                    id="whiteboard-top",
+                    type=RoomFixtureType.WHITEBOARD,
+                    x=3 * ROOM_GRID_UNIT,
+                    y=0,
+                    width=2 * ROOM_GRID_UNIT,
+                    height=1 * ROOM_GRID_UNIT,
+                ),
+                RoomFixture(
+                    id="whiteboard-right",
+                    type=RoomFixtureType.WHITEBOARD,
+                    x=13 * ROOM_GRID_UNIT,
+                    y=2 * ROOM_GRID_UNIT,
+                    width=1 * ROOM_GRID_UNIT,
+                    height=2 * ROOM_GRID_UNIT,
+                ),
+            ]
+        }
+    )
+    workspace = ClassroomPlannerWorkspace(
+        draft=draft,
+        roster=_build_roster(owner_user_id=owner_user_id, roster_id=roster_id),
+        template=template,
+        seat_assignments=[],
+    )
+
+    scene = translate_workspace_to_poster_scene(workspace=workspace)
+
+    assert {fixture.source_fixture_ids for fixture in scene.fixtures} == {
+        ("whiteboard-top",),
+        ("whiteboard-right",),
+        ("bench-left",),
+        ("bench-right",),
+    }
+    whiteboard_right = next(
+        fixture for fixture in scene.fixtures if fixture.source_fixture_ids == ("whiteboard-right",)
+    )
+    assert whiteboard_right.label_orientation == PosterSceneLabelOrientation.VERTICAL
 
 
 @pytest.mark.unit

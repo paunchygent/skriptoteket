@@ -13,6 +13,7 @@ from starlette.requests import Request
 from skriptoteket.application.curated_apps.classroom_planner import (
     CreateSeatingExportJobHandler,
     DownloadSeatingExportJobHandler,
+    GetRecoverableSeatingExportJobForDraftHandler,
     GetSeatingExportJobHandler,
     SeatingExportKind,
     SeatingExportLayoutId,
@@ -96,6 +97,45 @@ async def test_get_seating_export_job_serializes_status_response():
     )
 
     assert result.status == SeatingExportJobStatus.PROCESSING
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_recoverable_seating_export_job_for_draft_serializes_job_response():
+    user = make_user()
+    draft_id = uuid4()
+    handler = AsyncMock(spec=GetRecoverableSeatingExportJobForDraftHandler)
+    handler.handle.return_value = _job_result().model_copy(
+        update={"status": SeatingExportJobStatus.SUCCEEDED}
+    )
+
+    result = await _unwrap_dishka(api.get_recoverable_seating_export_job_for_draft)(
+        draft_id=draft_id,
+        request=_request(),
+        handler=handler,
+        user=user,
+    )
+
+    assert result is not None
+    assert result.status == SeatingExportJobStatus.SUCCEEDED
+    handler.handle.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_recoverable_seating_export_job_for_draft_returns_none_when_empty():
+    user = make_user()
+    handler = AsyncMock(spec=GetRecoverableSeatingExportJobForDraftHandler)
+    handler.handle.return_value = None
+
+    result = await _unwrap_dishka(api.get_recoverable_seating_export_job_for_draft)(
+        draft_id=uuid4(),
+        request=_request(),
+        handler=handler,
+        user=user,
+    )
+
+    assert result is None
 
 
 @pytest.mark.unit

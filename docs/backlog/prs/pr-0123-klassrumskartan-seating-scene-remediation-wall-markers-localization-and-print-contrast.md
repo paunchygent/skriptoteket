@@ -2,7 +2,7 @@
 type: pr
 id: PR-0123
 title: "Klassrumskartan: seating scene remediation for wall markers, localization, and print contrast"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
@@ -14,6 +14,7 @@ acceptance_criteria:
   - "Fixture labels are localized to Swedish where appropriate and remain consistent between preview and export."
   - "Adjacent benches and whiteboards coalesce at presentation time into one labeled visual object with the label centered across the merged span."
   - "The seating poster and its preview are optimized for grayscale printing first: white floor/background, strong contrast, and no beige room field that reduces legibility."
+  - "The existing A4/A3 landscape poster layouts shrink the classroom scene to fit on one page and use more of the printable page area instead of oversizing borders/chrome."
   - "The in-scope surfaces for this slice — overview preview, seating preview surface, and export renderer — all follow the same locked presentation-normalization rules."
 ---
 
@@ -82,6 +83,10 @@ Out of scope:
 - Grayscale printing is the primary readability target: page background and room
   floor should be white, with contrast coming from linework, typography, and a
   few controlled accents.
+- The existing `A4 landscape` and `A3 landscape` poster contracts must remain
+  single-page outputs for large classrooms by shrinking the classroom scene to
+  fit the printable area rather than letting the poster spill over multiple
+  pages.
 - Adjacent same-type fixtures that form one continuous visual object should
   coalesce at presentation time only; editing/storage remain independently
   editable.
@@ -127,6 +132,8 @@ for this slice, or explicitly mark that fixture as intentionally unlabeled.
   `Whiteboard` label.
 - Replace the beige floor/background with a white, high-contrast
   grayscale-first surface.
+- Tighten poster chrome so the classroom map uses the majority of the printable
+  page area while still fitting on one `A4/A3 landscape` page.
 - Keep preview/export parity explicit: any drift across the in-scope surfaces is
   considered a failure for this PR.
 
@@ -194,6 +201,9 @@ export-only CSS tweak.
   normalization seam.
 - Switch the poster/preview floor field to white and tune contrast for
   grayscale-friendly printing.
+- Add a deterministic shrink-to-fit rule for the existing `A4/A3 landscape`
+  poster renderer so large classrooms stay on one page and do not waste page
+  area on oversized margins or borders.
 
 ## Follow-ups deliberately out of scope
 
@@ -214,6 +224,8 @@ export-only CSS tweak.
   export renderer all consume that seam correctly.
 - Dedicated visual/browser proof that exercises corrected wall annotations and
   coalesced whiteboards/benches on each in-scope surface.
+- A rendered large-room poster proof that confirms both `A4 landscape` and
+  `A3 landscape` stay on one page with the tightened page-fit contract.
 
 ## Rollback plan
 

@@ -14,6 +14,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     PosterSceneFixture,
     PosterSceneFixtureKind,
+    PosterSceneFixturePlacement,
     PosterSceneRoom,
     PosterSceneSeat,
     PreparedSeatingExportContract,
@@ -62,11 +63,13 @@ async def test_prepare_seating_export_calls_handler_with_explicit_draft_id():
             fixtures=[
                 PosterSceneFixture(
                     fixture_id="fixture-1",
+                    source_fixture_ids=("fixture-1",),
                     kind=PosterSceneFixtureKind.WHITEBOARD,
                     x=2,
                     y=0,
                     width=4,
                     height=1,
+                    placement=PosterSceneFixturePlacement.WALL,
                     label="Whiteboard",
                 )
             ],

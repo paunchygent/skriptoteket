@@ -14,6 +14,7 @@ import { useToast } from "../../composables/useToast";
 import {
   createSeatingExportJob,
   downloadSeatingExportJob,
+  getRecoverableSeatingExportJob,
   getSeatingExportJob,
   type SeatingExportJob,
   type SeatingExportPaperSize,
@@ -38,12 +39,10 @@ const DEFAULT_POLL_DELAY_MS = 1200;
 const DEFAULT_MAX_POLL_ATTEMPTS = 75;
 const RECOVERY_STATUS_MESSAGE = "PDF-exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.";
 const RECOVERY_READY_MESSAGE = "PDF klar för nedladdning.";
-const EXPORT_RECOVERY_STORAGE_KEY = "skriptoteket:classroom-planner:seating-export-recovery";
 
-type PersistedExportRecoveryState = {
+type ExportScope = {
   draftId: string;
-  activeJobId: string | null;
-  latestCompletedJobId: string | null;
+  token: number;
 };
 
 function wait(delayMs: number): Promise<void> {
@@ -60,59 +59,6 @@ function normalizeExportError(error: unknown, fallbackMessage: string): string {
   return fallbackMessage;
 }
 
-function getSessionStorage(): Storage | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  try {
-    return window.sessionStorage;
-  } catch {
-    return null;
-  }
-}
-
-function readPersistedExportRecoveryState(): PersistedExportRecoveryState | null {
-  const storage = getSessionStorage();
-  const rawValue = storage?.getItem(EXPORT_RECOVERY_STORAGE_KEY);
-  if (!rawValue) {
-    return null;
-  }
-  try {
-    const parsed = JSON.parse(rawValue) as Record<string, unknown>;
-    if (
-      typeof parsed.draftId !== "string"
-      || (parsed.activeJobId !== null && typeof parsed.activeJobId !== "string")
-      || (parsed.latestCompletedJobId !== null
-        && typeof parsed.latestCompletedJobId !== "string")
-    ) {
-      return null;
-    }
-    return {
-      draftId: parsed.draftId,
-      activeJobId: parsed.activeJobId,
-      latestCompletedJobId: parsed.latestCompletedJobId,
-    };
-  } catch {
-    return null;
-  }
-}
-
-function writePersistedExportRecoveryState(state: PersistedExportRecoveryState | null): void {
-  const storage = getSessionStorage();
-  if (!storage) {
-    return;
-  }
-  if (
-    !state
-    || (state.activeJobId === null && state.latestCompletedJobId === null)
-    || state.draftId.trim() === ""
-  ) {
-    storage.removeItem(EXPORT_RECOVERY_STORAGE_KEY);
-    return;
-  }
-  storage.setItem(EXPORT_RECOVERY_STORAGE_KEY, JSON.stringify(state));
-}
-
 class ExportPollingTimeoutError extends Error {
   jobId: string;
 
@@ -120,6 +66,13 @@ class ExportPollingTimeoutError extends Error {
     super(RECOVERY_STATUS_MESSAGE);
     this.name = "ExportPollingTimeoutError";
     this.jobId = jobId;
+  }
+}
+
+class ExportFlowScopeChangedError extends Error {
+  constructor() {
+    super("Seating export scope changed.");
+    this.name = "ExportFlowScopeChangedError";
   }
 }
 
@@ -157,30 +110,50 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
   const errorMessage = ref<string | null>(null);
   const backgroundPollJobId = ref<string | null>(null);
   const recoveryRestoreDraftId = ref<string | null>(null);
+  const draftScopeToken = ref(0);
 
   const isBusy = computed(() => isStarting.value || activeJob.value !== null);
   const canDownloadLatest = computed(() => latestCompletedJob.value !== null && !isBusy.value);
 
-  function persistRecoveryState(): void {
-    const draftId =
-      activeJob.value?.draft_id
-      ?? latestCompletedJob.value?.draft_id
-      ?? (options.plannerState.draft?.draft_kind === "seating" ? options.plannerState.draft.id : null);
-    writePersistedExportRecoveryState(
-      draftId
-        ? {
-            draftId,
-            activeJobId: activeJob.value?.job_id ?? null,
-            latestCompletedJobId: latestCompletedJob.value?.job_id ?? null,
-          }
-        : null,
+  function getActiveSeatingDraftId(): string | null {
+    const activeDraft = options.plannerState.draft;
+    if (!activeDraft || activeDraft.draft_kind !== "seating") {
+      return null;
+    }
+    return activeDraft.id;
+  }
+
+  function resetExportState(): void {
+    isStarting.value = false;
+    activeJob.value = null;
+    latestCompletedJob.value = null;
+    backgroundPollJobId.value = null;
+    statusLabel.value = null;
+    errorMessage.value = null;
+  }
+
+  function isActiveScope(scope: ExportScope): boolean {
+    return (
+      draftScopeToken.value === scope.token
+      && getActiveSeatingDraftId() === scope.draftId
     );
   }
 
-  async function pollUntilComplete(jobId: string, maxAttempts: number): Promise<SeatingExportJob> {
+  function ensureActiveScope(scope: ExportScope): void {
+    if (!isActiveScope(scope)) {
+      throw new ExportFlowScopeChangedError();
+    }
+  }
+
+  async function pollUntilComplete(
+    jobId: string,
+    maxAttempts: number,
+    scope: ExportScope,
+  ): Promise<SeatingExportJob> {
     let attemptsRemaining = maxAttempts;
     while (attemptsRemaining > 0) {
       const job = await getSeatingExportJob(jobId);
+      ensureActiveScope(scope);
       activeJob.value = job;
       statusLabel.value = statusLabelForJob(job);
       if (job.status === "succeeded") {
@@ -205,6 +178,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
 
   async function finalizeCompletedJob(
     job: SeatingExportJob,
+    scope: ExportScope,
     options: {
       autoDownload: boolean;
       successMessage?: string;
@@ -217,21 +191,29 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       toastOnSuccess: true,
     },
   ): Promise<void> {
+    ensureActiveScope(scope);
     latestCompletedJob.value = job;
     activeJob.value = null;
     backgroundPollJobId.value = null;
-    persistRecoveryState();
     if (!options.autoDownload) {
       statusLabel.value = options.readyMessage ?? RECOVERY_READY_MESSAGE;
       return;
     }
     try {
+      ensureActiveScope(scope);
       await downloadJob(job);
+      ensureActiveScope(scope);
       statusLabel.value = options.successMessage ?? "PDF hämtad och sparad i Mina filer.";
       if (options.toastOnSuccess ?? true) {
         toast.success(options.successMessage ?? "PDF hämtad och sparad i Mina filer.");
       }
     } catch (error: unknown) {
+      if (error instanceof ExportFlowScopeChangedError) {
+        return;
+      }
+      if (!isActiveScope(scope)) {
+        return;
+      }
       statusLabel.value = options.readyMessage ?? RECOVERY_READY_MESSAGE;
       errorMessage.value = normalizeExportError(
         error,
@@ -242,6 +224,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
 
   async function continuePollingInBackground(
     jobId: string,
+    scope: ExportScope,
     options: {
       autoDownload: boolean;
       readyMessage?: string;
@@ -250,19 +233,26 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       readyMessage: RECOVERY_READY_MESSAGE,
     },
   ): Promise<void> {
-    if (backgroundPollJobId.value === jobId) {
+    const backgroundPollKey = `${scope.draftId}:${jobId}`;
+    if (backgroundPollJobId.value === backgroundPollKey) {
       return;
     }
-    backgroundPollJobId.value = jobId;
+    backgroundPollJobId.value = backgroundPollKey;
     try {
-      const completedJob = await pollUntilComplete(jobId, Number.MAX_SAFE_INTEGER);
-      await finalizeCompletedJob(completedJob, {
+      const completedJob = await pollUntilComplete(jobId, Number.MAX_SAFE_INTEGER, scope);
+      await finalizeCompletedJob(completedJob, scope, {
         autoDownload: options.autoDownload,
         readyMessage: options.readyMessage,
         successMessage: "PDF hämtad och sparad i Mina filer.",
         toastOnSuccess: options.autoDownload,
       });
     } catch (error: unknown) {
+      if (error instanceof ExportFlowScopeChangedError) {
+        return;
+      }
+      if (!isActiveScope(scope)) {
+        return;
+      }
       if (error instanceof ExportPollingTimeoutError) {
         statusLabel.value = RECOVERY_STATUS_MESSAGE;
         return;
@@ -270,7 +260,6 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       activeJob.value = null;
       backgroundPollJobId.value = null;
       statusLabel.value = null;
-      persistRecoveryState();
       errorMessage.value = normalizeExportError(
         error,
         "Det gick inte att exportera affischen just nu.",
@@ -278,75 +267,49 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     }
   }
 
-  async function restorePersistedExportRecovery(): Promise<void> {
-    const activeDraft = options.plannerState.draft;
-    if (!activeDraft || activeDraft.draft_kind !== "seating") {
+  async function restoreRecoverableExportForActiveDraft(scope: ExportScope): Promise<void> {
+    ensureActiveScope(scope);
+    if (recoveryRestoreDraftId.value === scope.draftId) {
       return;
     }
-    if (recoveryRestoreDraftId.value === activeDraft.id) {
-      return;
-    }
-    recoveryRestoreDraftId.value = activeDraft.id;
+    recoveryRestoreDraftId.value = scope.draftId;
     if (isStarting.value || activeJob.value !== null) {
-      persistRecoveryState();
-      return;
-    }
-
-    const persisted = readPersistedExportRecoveryState();
-    if (!persisted || persisted.draftId !== activeDraft.id) {
-      return;
-    }
-
-    errorMessage.value = null;
-
-    if (persisted.latestCompletedJobId) {
-      try {
-        const latestJob = await getSeatingExportJob(persisted.latestCompletedJobId);
-        if (latestJob.status === "succeeded") {
-          latestCompletedJob.value = latestJob;
-          statusLabel.value = RECOVERY_READY_MESSAGE;
-          persistRecoveryState();
-        }
-      } catch {
-        latestCompletedJob.value = null;
-        persistRecoveryState();
-      }
-    }
-
-    if (!persisted.activeJobId) {
       return;
     }
 
     try {
-      const recoveredJob = await getSeatingExportJob(persisted.activeJobId);
+      const recoveredJob = await getRecoverableSeatingExportJob(scope.draftId);
+      ensureActiveScope(scope);
+      if (!recoveredJob) {
+        return;
+      }
       if (recoveredJob.status === "succeeded") {
-        await finalizeCompletedJob(recoveredJob, {
+        await finalizeCompletedJob(recoveredJob, scope, {
           autoDownload: false,
           readyMessage: RECOVERY_READY_MESSAGE,
           toastOnSuccess: false,
         });
         return;
       }
-      if (recoveredJob.status === "failed") {
-        activeJob.value = null;
-        statusLabel.value = null;
-        persistRecoveryState();
-        errorMessage.value = recoveredJob.error ?? "Det gick inte att exportera affischen just nu.";
-        return;
-      }
 
       activeJob.value = recoveredJob;
+      latestCompletedJob.value = null;
       statusLabel.value = RECOVERY_STATUS_MESSAGE;
-      persistRecoveryState();
-      void continuePollingInBackground(recoveredJob.job_id, {
+      void continuePollingInBackground(recoveredJob.job_id, scope, {
         autoDownload: false,
         readyMessage: RECOVERY_READY_MESSAGE,
       });
     } catch (error: unknown) {
+      if (error instanceof ExportFlowScopeChangedError) {
+        return;
+      }
+      if (!isActiveScope(scope)) {
+        return;
+      }
       activeJob.value = null;
+      latestCompletedJob.value = null;
       backgroundPollJobId.value = null;
-      statusLabel.value = latestCompletedJob.value ? RECOVERY_READY_MESSAGE : null;
-      persistRecoveryState();
+      statusLabel.value = null;
       errorMessage.value = normalizeExportError(
         error,
         "Kunde inte återställa PDF-exporten efter omladdning.",
@@ -359,11 +322,17 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       return;
     }
 
-    if (!options.plannerState.draft || options.plannerState.draft.draft_kind !== "seating") {
+    const initialDraftId = getActiveSeatingDraftId();
+    if (!initialDraftId) {
       errorMessage.value = "Öppna ett sittschema innan du exporterar.";
       statusLabel.value = null;
       return;
     }
+
+    const scope = {
+      draftId: initialDraftId,
+      token: draftScopeToken.value,
+    } satisfies ExportScope;
 
     errorMessage.value = null;
     statusLabel.value = "Förbereder affisch…";
@@ -374,43 +343,56 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       fallbackMessage: "Kunde inte spara ändringarna innan export.",
     });
     if (saveOutcome.status === "blocked") {
+      if (!isActiveScope(scope)) {
+        return;
+      }
       isStarting.value = false;
       errorMessage.value = saveOutcome.message;
       statusLabel.value = null;
       return;
     }
 
+    if (!isActiveScope(scope)) {
+      return;
+    }
     const activeDraft = options.plannerState.draft;
     if (!activeDraft || activeDraft.draft_kind !== "seating") {
-      isStarting.value = false;
-      errorMessage.value = "Öppna ett sittschema innan du exporterar.";
-      statusLabel.value = null;
-      return;
+      throw new ExportFlowScopeChangedError();
     }
 
     try {
       const createdJob = await createSeatingExportJob(activeDraft.id, paperSize);
+      ensureActiveScope(scope);
       isStarting.value = false;
       activeJob.value = createdJob;
-      persistRecoveryState();
+      latestCompletedJob.value = null;
       statusLabel.value = statusLabelForJob(createdJob);
       try {
-        const completedJob = await pollUntilComplete(createdJob.job_id, maxPollAttempts);
-        await finalizeCompletedJob(completedJob);
+        const completedJob = await pollUntilComplete(createdJob.job_id, maxPollAttempts, scope);
+        await finalizeCompletedJob(completedJob, scope);
       } catch (error: unknown) {
+        if (error instanceof ExportFlowScopeChangedError) {
+          return;
+        }
         if (error instanceof ExportPollingTimeoutError) {
+          ensureActiveScope(scope);
           statusLabel.value = RECOVERY_STATUS_MESSAGE;
-          void continuePollingInBackground(error.jobId);
+          void continuePollingInBackground(error.jobId, scope);
           return;
         }
         throw error;
       }
     } catch (error: unknown) {
+      if (error instanceof ExportFlowScopeChangedError) {
+        return;
+      }
+      if (!isActiveScope(scope)) {
+        return;
+      }
       isStarting.value = false;
       activeJob.value = null;
       backgroundPollJobId.value = null;
       statusLabel.value = null;
-      persistRecoveryState();
       errorMessage.value = normalizeExportError(
         error,
         "Det gick inte att exportera affischen just nu.",
@@ -432,8 +414,19 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
 
   watch(
     () => options.plannerState.draft?.id ?? null,
-    () => {
-      void restorePersistedExportRecovery();
+    (draftId) => {
+      draftScopeToken.value += 1;
+      recoveryRestoreDraftId.value = null;
+      if (!draftId || options.plannerState.draft?.draft_kind !== "seating") {
+        resetExportState();
+        return;
+      }
+      resetExportState();
+      const scope = {
+        draftId,
+        token: draftScopeToken.value,
+      } satisfies ExportScope;
+      void restoreRecoverableExportForActiveDraft(scope);
     },
     { immediate: true },
   );

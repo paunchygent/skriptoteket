@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     PosterSceneFixture,
     PosterSceneFixtureKind,
+    PosterSceneFixturePlacement,
+    PosterSceneLabelOrientation,
     PosterSceneRoom,
     PosterSceneSeat,
+    PosterSceneWallSide,
     SeatingExportPaperSize,
     SeatingPosterRenderRequest,
     SeatingPosterScene,
@@ -33,13 +38,29 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
                 fixtures=[
                     PosterSceneFixture(
                         fixture_id="fixture-1",
+                        source_fixture_ids=("fixture-1",),
                         kind=PosterSceneFixtureKind.WHITEBOARD,
                         x=0,
                         y=0,
                         width=4,
                         height=1,
+                        placement=PosterSceneFixturePlacement.WALL,
                         label="Whiteboard",
-                    )
+                        label_orientation=PosterSceneLabelOrientation.HORIZONTAL,
+                    ),
+                    PosterSceneFixture(
+                        fixture_id="fixture-2",
+                        source_fixture_ids=("fixture-2",),
+                        kind=PosterSceneFixtureKind.DOOR,
+                        x=0,
+                        y=3,
+                        width=1,
+                        height=1,
+                        placement=PosterSceneFixturePlacement.WALL,
+                        wall_side=PosterSceneWallSide.LEFT,
+                        label="Dörr",
+                        label_orientation=PosterSceneLabelOrientation.VERTICAL,
+                    ),
                 ],
             ),
         )
@@ -49,8 +70,16 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert 'href="poster.css"' in bundle.html_content
     assert "Alice A." in bundle.html_content
     assert "Whiteboard" in bundle.html_content
+    assert "Dörr" in bundle.html_content
+    assert "poster__floor" in bundle.html_content
+    assert "poster-fixture--label-vertical" in bundle.html_content
     assert "@page" in bundle.css_content
     assert "A3 landscape" in bundle.css_content
+    assert "margin: 0;" in bundle.css_content
+    assert "rotate(-90deg)" in bundle.css_content
+    assert "writing-mode: vertical-rl" not in bundle.css_content
+    assert "--page-width-mm:420.0" in bundle.html_content
+    assert "justify-content: center;" in bundle.css_content
 
 
 @pytest.mark.unit
@@ -72,3 +101,31 @@ def test_renderer_switches_page_contract_for_a4_landscape():
 
     assert "A4 landscape" in bundle.css_content
     assert bundle.output_filename.endswith("a4_landscape.pdf")
+
+
+@pytest.mark.unit
+def test_renderer_fits_large_classrooms_into_one_landscape_page_box():
+    renderer = BrutalistPosterRenderer()
+
+    bundle = renderer.render(
+        request=SeatingPosterRenderRequest(
+            roster_name="Klass 9B",
+            template_name="Stor sal",
+            paper_size=SeatingExportPaperSize.A4_LANDSCAPE,
+            scene=SeatingPosterScene(
+                room=PosterSceneRoom(grid_cols=22, grid_rows=14),
+                seats=[],
+                fixtures=[],
+            ),
+        )
+    )
+
+    width_match = re.search(r"--scene-width-mm:([0-9.]+);", bundle.html_content)
+    height_match = re.search(r"--scene-height-mm:([0-9.]+);", bundle.html_content)
+    assert width_match is not None
+    assert height_match is not None
+    assert float(width_match.group(1)) <= 281.0
+    assert float(height_match.group(1)) <= 179.0
+    assert "repeat(var(--grid-rows), 1fr)" in bundle.css_content
+    assert "minmax(24mm, 1fr)" not in bundle.css_content
+    assert "--page-width-mm:297.0" in bundle.html_content

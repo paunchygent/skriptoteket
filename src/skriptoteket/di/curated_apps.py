@@ -27,6 +27,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
+    GetRecoverableSeatingExportJobForDraftHandler,
     GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
@@ -646,6 +647,23 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
     ) -> GetSeatingExportJobHandler:
         return GetSeatingExportJobHandler(
+            jobs=jobs,
+            vault_files=vault_files,
+            client=client,
+            finalizer=finalizer,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_recoverable_seating_export_job_for_draft_handler(
+        self,
+        jobs: SeatingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        finalizer: SeatingExportJobFinalizer,
+        uow: UnitOfWorkProtocol,
+    ) -> GetRecoverableSeatingExportJobForDraftHandler:
+        return GetRecoverableSeatingExportJobForDraftHandler(
             jobs=jobs,
             vault_files=vault_files,
             client=client,

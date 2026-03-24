@@ -63,11 +63,15 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 
 ## Implementation Summary (as of 2026-03-24)
 
-- `ST-26-01` is implemented locally through `PR-0118` and `PR-0119`.
+- `ST-26-01` is implemented through `PR-0118`, `PR-0119`, `PR-0120`,
+  `PR-0122`, `PR-0123`, and `PR-0124`.
 - Seating exports now have an explicit prepare-contract seam plus an async PDF
   export-job lane with standalone poster-scene translation, export-owned
-  HTML/CSS rendering, Sir Convert-a-Lot delivery, Vault persistence, and typed
-  status/download routes.
+  HTML/CSS rendering, Sir Convert-a-Lot delivery, Vault persistence, typed
+  status/download routes, reload recovery, production webhook reconciliation,
+  and a shared preview/export scene-normalization seam.
+- Remaining close-out for this story is the real Hemma production proof for the
+  `PR-0122` deploy gate and callback-capable export smoke.
 
 ## Notes
 

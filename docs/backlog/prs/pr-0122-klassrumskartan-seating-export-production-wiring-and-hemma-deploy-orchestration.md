@@ -2,7 +2,7 @@
 type: pr
 id: PR-0122
 title: "Klassrumskartan: seating export production wiring and Hemma deploy orchestration"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
@@ -98,9 +98,13 @@ then runs export-capable verification.
   - deploy/restart Skriptoteket on Hemma
   - verify/restart Sir Convert-a-Lot as needed
   - run export-capable verification
+- The locked execution model for this slice is on-host:
+  - the repo-owned script lives in Skriptoteket
+  - operators run it directly from `~/apps/skriptoteket` on Hemma after pull
+  - it is not a laptop-side SSH wrapper
 - The PR implementation must lock:
   - where that artifact lives
-  - whether it executes locally and SSHes to Hemma or runs directly on Hemma
+  - that it runs directly on Hemma from the checked-out Skriptoteket repo
   - its non-zero exit behavior when Sir Convert or export verification fails
 - Ad hoc shell snippets in docs are not sufficient as the primary deploy path.
 
@@ -149,8 +153,8 @@ which stage.
 - The PR must define:
   - what stale state means
   - how stale bindings/subscriptions are detected
-  - whether the canonical deploy wrapper repairs them automatically or fails
-    with a documented operator remediation step
+  - that the canonical deploy wrapper repairs legacy/stale seating-export
+    subscriptions automatically before the smoke gate
 - A production rollout is not considered complete unless this binding
   reconciliation path is exercised or explicitly verified unnecessary.
 

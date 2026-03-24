@@ -616,11 +616,14 @@ containers.
 - LLM provider keys as needed
 - `SIR_CONVERT_A_LOT_V2_BASE_URL`
 - `SIR_CONVERT_A_LOT_V2_API_KEY`
+- `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL`
+- `BOOTSTRAP_SUPERUSER_EMAIL`
 
 Hemma reference values for Conversion Hub:
 
 - `SIR_CONVERT_A_LOT_V2_BASE_URL=https://convert.hule.education`
 - `SIR_CONVERT_A_LOT_V2_API_KEY=<same secret used by Sir Convert-a-Lot v2>`
+- `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=https://skriptoteket.hule.education`
 
 Why the public URL: Sir Convert-a-Lot is published on Hemma as `127.0.0.1:28085` on the host. That loopback-only
 binding is not reachable from inside `skriptoteket-web` via `host.docker.internal:28085`, so the curated app must use
@@ -633,7 +636,27 @@ ssh hemma "sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_'
 ssh hemma "sudo docker exec skriptoteket-web getent hosts host.docker.internal"
 ```
 
-### Standard Deploy (Code Changes)
+### Canonical Deploy + Readiness Gate
+
+The production operator entrypoint for Klassrumskartan seating export is the on-host script:
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh"
+```
+
+The script is intentionally fail-closed. It:
+
+- probes Sir Convert-a-Lot on the Hemma host lane (`http://127.0.0.1:28085`) with `/readyz`
+- performs the lightweight authenticated probe by listing webhook subscriptions
+- recreates `sir_convert_a_lot_prod` through the supported Sir Convert Hemma surface if that preflight fails
+- builds/redeploys Skriptoteket with `compose.prod.yaml`
+- runs `pdm run db-upgrade` inside `skriptoteket-web`
+- verifies the required `SIR_CONVERT_A_LOT_V2_*` env vars are present inside `skriptoteket-web`
+- reconciles shared seating-export webhook state, including legacy per-job subscription deletion
+- runs the mandatory callback-capable seating-export smoke and fails if the export does not reach callback-driven
+  terminal success with a Vault-backed download
+
+### Manual Deploy Steps (fallback / debugging)
 
 ```bash
 # Build runner image (required for tool/editor sandbox runs)
@@ -647,6 +670,15 @@ If you only changed Conversion Hub env vars, recreating `web` is sufficient:
 
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
+```
+
+If you need to run the production export verification steps manually after a deploy:
+
+```bash
+ssh hemma "curl -fsS http://127.0.0.1:28085/readyz"
+ssh hemma "curl -fsS -H 'X-API-Key: <sir-convert-key>' http://127.0.0.1:28085/v2/push/webhooks/subscriptions >/dev/null"
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli reconcile-seating-export-webhooks"
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli smoke-seating-export-readiness --timeout-seconds 240"
 ```
 
 If migrations are needed:

@@ -9,7 +9,10 @@
 import { onMounted, ref } from "vue";
 
 import { apiGet, isApiError } from "../../api/client";
-import type { FlunkOutFrenzyBootstrap } from "./flunkOutFrenzyTypes";
+import {
+  parseFlunkOutFrenzyBootstrap,
+  type FlunkOutFrenzyBootstrap,
+} from "./flunkOutFrenzyTypes";
 
 const BOOTSTRAP_PATH = "/api/v1/apps/games.flunk_out_frenzy/bootstrap";
 
@@ -23,7 +26,8 @@ export function useFlunkOutFrenzyBootstrap() {
     bootstrapError.value = null;
 
     try {
-      bootstrap.value = await apiGet<FlunkOutFrenzyBootstrap>(BOOTSTRAP_PATH);
+      const payload = await apiGet<unknown>(BOOTSTRAP_PATH);
+      bootstrap.value = parseFlunkOutFrenzyBootstrap(payload);
     } catch (error: unknown) {
       bootstrap.value = null;
       bootstrapError.value = isApiError(error)

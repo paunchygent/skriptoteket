@@ -15,6 +15,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CompleteSeatingExportJobFromWebhookHandler,
     CreateSeatingExportJobHandler,
     DownloadSeatingExportJobHandler,
+    GetRecoverableSeatingExportJobForDraftHandler,
     GetSeatingExportJobHandler,
     PrepareSeatingExportHandler,
     SeatingExportJobFinalizer,
@@ -364,6 +365,181 @@ async def test_get_seating_export_job_recovers_finished_upstream_job_without_web
 
     assert result.status is SeatingExportJobStatus.SUCCEEDED
     finalizer.complete_success.assert_awaited_once_with(job=job, correlation_id="corr-1")
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_recoverable_seating_export_job_for_draft_prefers_in_flight_job() -> None:
+    actor = make_user()
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
+    client = AsyncMock(spec=SirConvertALotClientV2Protocol)
+    finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
+    in_flight_job = _job(owner_user_id=actor.id, status=SeatingExportJobStatus.PROCESSING)
+    jobs.get_latest_in_flight_for_draft.return_value = in_flight_job
+    jobs.get_latest_downloadable_for_draft.return_value = _job(
+        owner_user_id=actor.id,
+        status=SeatingExportJobStatus.SUCCEEDED,
+        vault_file_id=uuid4(),
+    )
+    client.get_job.return_value = SimpleNamespace(job_id="upstream-1", status="running")
+
+    handler = GetRecoverableSeatingExportJobForDraftHandler(
+        jobs=jobs,
+        vault_files=vault_files,
+        client=client,
+        finalizer=finalizer,
+        uow=_DummyUow(),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        draft_id=in_flight_job.draft_id,
+        correlation_id="corr-1",
+    )
+
+    assert result is not None
+    assert result.job_id == in_flight_job.id
+    assert result.status is SeatingExportJobStatus.PROCESSING
+    jobs.get_latest_downloadable_for_draft.assert_not_awaited()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_recoverable_seating_export_job_for_draft_falls_back_to_latest_downloadable() -> (
+    None
+):
+    actor = make_user()
+    downloadable_file_id = uuid4()
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
+    client = AsyncMock(spec=SirConvertALotClientV2Protocol)
+    finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
+    failed_in_flight_job = _job(owner_user_id=actor.id, status=SeatingExportJobStatus.PROCESSING)
+    downloadable_job = _job(
+        owner_user_id=actor.id,
+        status=SeatingExportJobStatus.SUCCEEDED,
+        vault_file_id=downloadable_file_id,
+        upstream_job_id="upstream-2",
+    )
+    jobs.get_latest_in_flight_for_draft.return_value = failed_in_flight_job
+    jobs.get_latest_downloadable_for_draft.return_value = downloadable_job
+    client.get_job.return_value = SimpleNamespace(job_id="upstream-1", status="failed")
+    finalizer.mark_failed.return_value = failed_in_flight_job.model_copy(
+        update={
+            "status": SeatingExportJobStatus.FAILED,
+            "error_message": "PDF-exporten kunde inte slutföras.",
+        }
+    )
+    vault_files.get_by_id.return_value = VaultFile(
+        id=downloadable_file_id,
+        user_id=actor.id,
+        name="klass-7a-a3.pdf",
+        bytes=12345,
+        source_kind=VaultFileSourceKind.APP_EXPORT,
+        source_run_id=None,
+        source_artifact_id="classroom.group-seating-studio",
+        created_at=datetime(2026, 3, 24, tzinfo=timezone.utc),
+        deleted_at=None,
+    )
+
+    handler = GetRecoverableSeatingExportJobForDraftHandler(
+        jobs=jobs,
+        vault_files=vault_files,
+        client=client,
+        finalizer=finalizer,
+        uow=_DummyUow(),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        draft_id=failed_in_flight_job.draft_id,
+        correlation_id="corr-1",
+    )
+
+    assert result is not None
+    assert result.job_id == downloadable_job.id
+    assert result.status is SeatingExportJobStatus.SUCCEEDED
+    assert result.vault_artifact is not None
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_recoverable_seating_export_job_for_draft_returns_none_when_no_job_exists() -> (
+    None
+):
+    actor = make_user()
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
+    client = AsyncMock(spec=SirConvertALotClientV2Protocol)
+    finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
+    jobs.get_latest_in_flight_for_draft.return_value = None
+    jobs.get_latest_downloadable_for_draft.return_value = None
+
+    handler = GetRecoverableSeatingExportJobForDraftHandler(
+        jobs=jobs,
+        vault_files=vault_files,
+        client=client,
+        finalizer=finalizer,
+        uow=_DummyUow(),
+    )
+
+    result = await handler.handle(actor=actor, draft_id=uuid4(), correlation_id="corr-1")
+
+    assert result is None
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_recoverable_seating_export_job_for_draft_falls_back_when_refresh_raises() -> (
+    None
+):
+    actor = make_user()
+    downloadable_file_id = uuid4()
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
+    client = AsyncMock(spec=SirConvertALotClientV2Protocol)
+    finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
+    in_flight_job = _job(owner_user_id=actor.id, status=SeatingExportJobStatus.PROCESSING)
+    downloadable_job = _job(
+        owner_user_id=actor.id,
+        status=SeatingExportJobStatus.SUCCEEDED,
+        vault_file_id=downloadable_file_id,
+        upstream_job_id="upstream-2",
+    )
+    jobs.get_latest_in_flight_for_draft.return_value = in_flight_job
+    jobs.get_latest_downloadable_for_draft.return_value = downloadable_job
+    client.get_job.side_effect = RuntimeError("sir-convert unavailable")
+    vault_files.get_by_id.return_value = VaultFile(
+        id=downloadable_file_id,
+        user_id=actor.id,
+        name="klass-7a-a3.pdf",
+        bytes=12345,
+        source_kind=VaultFileSourceKind.APP_EXPORT,
+        source_run_id=None,
+        source_artifact_id="classroom.group-seating-studio",
+        created_at=datetime(2026, 3, 24, tzinfo=timezone.utc),
+        deleted_at=None,
+    )
+
+    handler = GetRecoverableSeatingExportJobForDraftHandler(
+        jobs=jobs,
+        vault_files=vault_files,
+        client=client,
+        finalizer=finalizer,
+        uow=_DummyUow(),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        draft_id=in_flight_job.draft_id,
+        correlation_id="corr-1",
+    )
+
+    assert result is not None
+    assert result.job_id == downloadable_job.id
+    assert result.status is SeatingExportJobStatus.SUCCEEDED
+    finalizer.mark_failed.assert_not_awaited()
 
 
 @pytest.mark.unit

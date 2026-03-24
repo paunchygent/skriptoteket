@@ -93,6 +93,7 @@ services:
       # Conversion Hub -> Sir Convert-a-Lot v2
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-https://convert.hule.education}
       SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
+      SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
       SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}
       # nginx-proxy integration
       VIRTUAL_HOST: skriptoteket.hule.education

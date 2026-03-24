@@ -9,18 +9,18 @@
 
 import { computed, type CSSProperties } from "vue";
 
-import type { RoomFixture } from "../classroomPlannerTypes";
 import {
   getBenchNeighbors,
+  getCanonicalFixtureLabel,
   getFixtureWallSide,
-  shouldRenderFixtureLabel,
   type FixtureRenderSurface,
+  type PresentedRoomFixture,
 } from "../roomFixturePresentation";
 import type { RoomGridDimensions } from "../roomFixtureLayout";
 
 const props = withDefaults(defineProps<{
-  fixture: RoomFixture;
-  fixtures?: readonly RoomFixture[];
+  fixture: PresentedRoomFixture;
+  fixtures?: readonly PresentedRoomFixture[];
   grid: RoomGridDimensions;
   surface?: FixtureRenderSurface;
 }>(), {
@@ -29,25 +29,43 @@ const props = withDefaults(defineProps<{
 });
 
 const wallSide = computed(() => getFixtureWallSide(props.fixture, props.grid));
+const displayLabel = computed(() => {
+  return props.fixture.displayLabel ?? props.fixture.label ?? getCanonicalFixtureLabel(props.fixture.type);
+});
 const showLabel = computed(() => {
-  return Boolean(props.fixture.label && shouldRenderFixtureLabel(props.fixture.type));
+  return props.fixture.labelVisible ?? Boolean(displayLabel.value);
 });
 const benchNeighbors = computed(() => getBenchNeighbors(props.fixture, props.fixtures));
 
 const labelClass = computed(() => {
-  return props.fixture.type === "teacher_desk" ? "text-burgundy" : "text-navy";
+  return props.fixture.tone === "strong" || props.fixture.type === "teacher_desk"
+    ? "text-white"
+    : "text-navy";
 });
 
-const labelStyle = computed(() => {
+const labelStyle = computed<CSSProperties>(() => {
+  const verticalLabel = props.fixture.labelOrientation === "vertical";
   switch (wallSide.value) {
     case "top":
       return { left: "50%", top: "-20px", transform: "translateX(-50%)" };
     case "bottom":
       return { left: "50%", top: "calc(100% + 6px)", transform: "translateX(-50%)" };
     case "left":
-      return { right: "calc(100% + 6px)", top: "50%", transform: "translateY(-50%)" };
+      return {
+        right: "calc(100% + 6px)",
+        top: "50%",
+        transform: "translateY(-50%)",
+        writingMode: verticalLabel ? "vertical-rl" : undefined,
+        textOrientation: verticalLabel ? "mixed" : undefined,
+      };
     case "right":
-      return { left: "calc(100% + 6px)", top: "50%", transform: "translateY(-50%)" };
+      return {
+        left: "calc(100% + 6px)",
+        top: "50%",
+        transform: "translateY(-50%)",
+        writingMode: verticalLabel ? "vertical-rl" : undefined,
+        textOrientation: verticalLabel ? "mixed" : undefined,
+      };
     default:
       return { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
   }
@@ -56,13 +74,13 @@ const labelStyle = computed(() => {
 const wallBodyClass = computed(() => {
   switch (props.fixture.type) {
     case "whiteboard":
-      return "bg-white border border-stone-500 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)]";
+      return "bg-white border border-navy shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)]";
     case "window":
-      return "bg-sky-50 border border-sky-400/90";
+      return "bg-white border border-navy";
     case "door":
-      return "bg-amber-100 border border-amber-700/80";
+      return "bg-white border border-navy";
     default:
-      return "bg-white border border-navy/30";
+      return "bg-white border border-navy/40";
   }
 });
 
@@ -71,9 +89,9 @@ const wallDividerClass = computed(() => {
     return "";
   }
   if (wallSide.value === "left" || wallSide.value === "right") {
-    return "absolute inset-x-[2px] top-1/2 h-px -translate-y-1/2 bg-sky-400/90";
+    return "absolute inset-x-[2px] top-1/2 h-px -translate-y-1/2 bg-navy/50";
   }
-  return "absolute inset-y-[2px] left-1/2 w-px -translate-x-1/2 bg-sky-400/90";
+  return "absolute inset-y-[2px] left-1/2 w-px -translate-x-1/2 bg-navy/50";
 });
 
 const doorSwingClass = computed(() => {
@@ -82,14 +100,14 @@ const doorSwingClass = computed(() => {
   }
   switch (wallSide.value) {
     case "left":
-      return "absolute inset-y-[2px] right-[2px] w-[8px] rounded-r-full border-r border-t border-b border-amber-700/70";
+      return "absolute inset-y-[2px] right-[2px] w-[8px] rounded-r-full border-r border-t border-b border-navy/60";
     case "right":
-      return "absolute inset-y-[2px] left-[2px] w-[8px] rounded-l-full border-l border-t border-b border-amber-700/70";
+      return "absolute inset-y-[2px] left-[2px] w-[8px] rounded-l-full border-l border-t border-b border-navy/60";
     case "bottom":
-      return "absolute inset-x-[2px] top-[2px] h-[8px] rounded-t-full border-l border-r border-t border-amber-700/70";
+      return "absolute inset-x-[2px] top-[2px] h-[8px] rounded-t-full border-l border-r border-t border-navy/60";
     case "top":
     default:
-      return "absolute inset-x-[2px] bottom-[2px] h-[8px] rounded-b-full border-l border-r border-b border-amber-700/70";
+      return "absolute inset-x-[2px] bottom-[2px] h-[8px] rounded-b-full border-l border-r border-b border-navy/60";
   }
 });
 
@@ -108,7 +126,7 @@ const benchStyle = computed<CSSProperties>(() => {
 const benchClass = computed(() => {
   const roundedLeft = benchNeighbors.value.left ? "" : "rounded-l-md";
   const roundedRight = benchNeighbors.value.right ? "" : "rounded-r-md";
-  return `absolute top-1/2 h-6 -translate-y-1/2 border border-stone-600 bg-stone-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] ${roundedLeft} ${roundedRight}`;
+  return `absolute top-1/2 h-6 -translate-y-1/2 border border-navy/70 bg-navy/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] ${roundedLeft} ${roundedRight}`;
 });
 </script>
 
@@ -121,7 +139,7 @@ const benchClass = computed(() => {
       />
       <div
         v-if="fixture.type === 'whiteboard'"
-        class="absolute inset-x-1 bottom-[1px] h-[3px] rounded bg-stone-400"
+        class="absolute inset-x-1 bottom-[1px] h-[3px] rounded bg-navy/40"
       />
       <div
         v-if="fixture.type === 'window'"
@@ -134,18 +152,18 @@ const benchClass = computed(() => {
     </template>
 
     <template v-else-if="fixture.type === 'teacher_desk'">
-      <div class="absolute inset-0 rounded-sm border-2 border-burgundy bg-burgundy/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]" />
-      <div class="absolute inset-x-2 top-2 h-2 rounded bg-burgundy/35" />
+      <div class="absolute inset-0 rounded-sm border-2 border-navy bg-navy/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]" />
+      <div class="absolute inset-x-2 top-2 h-2 rounded bg-white/25" />
     </template>
 
     <template v-else-if="fixture.type === 'round_table'">
-      <div class="absolute inset-0 rounded-full border-2 border-navy bg-[#f5f1e5] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" />
-      <div class="absolute inset-[10%] rounded-full border border-navy/40 bg-white/50" />
+      <div class="absolute inset-0 rounded-full border-2 border-navy bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" />
+      <div class="absolute inset-[10%] rounded-full border border-navy/30 bg-white" />
     </template>
 
     <template v-else-if="fixture.type === 'square_table'">
-      <div class="absolute inset-0 border-2 border-navy bg-[#f5f1e5] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" />
-      <div class="absolute inset-[10%] border border-navy/30 bg-white/35" />
+      <div class="absolute inset-0 border-2 border-navy bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" />
+      <div class="absolute inset-[10%] border border-navy/30 bg-white" />
     </template>
 
     <template v-else-if="fixture.type === 'bench'">
@@ -161,7 +179,7 @@ const benchClass = computed(() => {
       :class="labelClass"
       :style="labelStyle"
     >
-      {{ fixture.label }}
+      {{ displayLabel }}
     </div>
   </div>
 </template>

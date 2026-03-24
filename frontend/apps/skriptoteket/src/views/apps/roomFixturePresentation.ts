@@ -1,10 +1,10 @@
 /**
  * Shared room-fixture presentation helpers.
  *
- * This module keeps wall objects on dedicated wall bands around the classroom
- * floor so the builder, preview surface, and live seating canvas can render
- * one consistent room model without letting wall-bound objects consume floor
- * tiles.
+ * This module is the canonical scene-presentation seam for classroom planner
+ * surfaces. It keeps wall objects on dedicated wall bands, localizes visible
+ * labels, coalesces presentation-only spans, and exposes grayscale-first
+ * inputs so preview and export-adjacent surfaces render one consistent room.
  */
 
 import type { RoomFixture, RoomFixtureType } from "./classroomPlannerTypes";
@@ -29,6 +29,37 @@ export type GridFixturePlacement = {
 };
 
 export type FixtureRenderSurface = "absolute" | "builder-grid" | "ghost";
+export type FixtureLabelOrientation = "horizontal" | "vertical";
+export type FixturePresentationTone = "outline" | "muted" | "strong";
+
+export type PresentedRoomFixture = RoomFixture & {
+  sourceIds?: readonly string[];
+  displayLabel?: string | null;
+  labelVisible?: boolean;
+  labelOrientation?: FixtureLabelOrientation;
+  wallSide?: WallSide | null;
+  tone?: FixturePresentationTone;
+};
+
+const CANONICAL_FIXTURE_LABELS: Record<RoomFixtureType, string | null> = {
+  whiteboard: "Whiteboard",
+  teacher_desk: "Kateder",
+  window: "Fönster",
+  door: "Dörr",
+  round_table: null,
+  square_table: null,
+  bench: "Bänk",
+};
+
+const FIXTURE_TONES: Record<RoomFixtureType, FixturePresentationTone> = {
+  whiteboard: "outline",
+  teacher_desk: "strong",
+  window: "outline",
+  door: "outline",
+  round_table: "outline",
+  square_table: "outline",
+  bench: "muted",
+};
 
 function getFloorWidth(grid: RoomGridDimensions): number {
   return grid.cols * ROOM_GRID_UNIT;
@@ -135,7 +166,7 @@ export function getWallFixtureFrameStyle(
 }
 
 export function shouldRenderFixtureLabel(type: RoomFixtureType): boolean {
-  return type === "whiteboard" || type === "teacher_desk";
+  return getCanonicalFixtureLabel(type) !== null;
 }
 
 export function getFixtureWallSide(
@@ -143,6 +174,149 @@ export function getFixtureWallSide(
   grid: RoomGridDimensions,
 ): WallSide | null {
   return resolveWallSideFromFixture(fixture, grid);
+}
+
+export function getCanonicalFixtureLabel(type: RoomFixtureType): string | null {
+  return CANONICAL_FIXTURE_LABELS[type];
+}
+
+export function normalizePresentedFixtures(
+  fixtures: readonly RoomFixture[],
+  grid: RoomGridDimensions,
+): PresentedRoomFixture[] {
+  const normalized = fixtures.map((fixture) => normalizePresentedFixture(fixture, grid));
+  const benches = mergePresentedFixtures(
+    normalized.filter((fixture) => fixture.type === "bench"),
+    canMergeBenches,
+    mergePresentedFixtureSpan,
+  );
+  const whiteboards = mergePresentedFixtures(
+    normalized.filter((fixture) => fixture.type === "whiteboard"),
+    canMergeWhiteboards,
+    mergePresentedFixtureSpan,
+  );
+  const passthrough = normalized.filter((fixture) => fixture.type !== "bench" && fixture.type !== "whiteboard");
+
+  return [...passthrough, ...benches, ...whiteboards].sort((left, right) => {
+    const leftWall = left.wallSide ?? "";
+    const rightWall = right.wallSide ?? "";
+    return (
+      left.y - right.y
+      || left.x - right.x
+      || leftWall.localeCompare(rightWall)
+      || left.type.localeCompare(right.type)
+      || left.id.localeCompare(right.id)
+    );
+  });
+}
+
+function normalizePresentedFixture(
+  fixture: RoomFixture,
+  grid: RoomGridDimensions,
+): PresentedRoomFixture {
+  const wallSide = resolveWallSideFromFixture(fixture, grid);
+  const displayLabel = getCanonicalFixtureLabel(fixture.type);
+  return {
+    ...fixture,
+    sourceIds: [fixture.id],
+    displayLabel,
+    labelVisible: displayLabel !== null,
+    labelOrientation: wallSide === "left" || wallSide === "right" ? "vertical" : "horizontal",
+    wallSide,
+    tone: FIXTURE_TONES[fixture.type],
+  };
+}
+
+function mergePresentedFixtures(
+  fixtures: PresentedRoomFixture[],
+  canMerge: (left: PresentedRoomFixture, right: PresentedRoomFixture) => boolean,
+  merge: (left: PresentedRoomFixture, right: PresentedRoomFixture) => PresentedRoomFixture,
+): PresentedRoomFixture[] {
+  if (fixtures.length === 0) {
+    return [];
+  }
+
+  const ordered = [...fixtures].sort((left, right) => {
+    const leftWall = left.wallSide ?? "";
+    const rightWall = right.wallSide ?? "";
+    return (
+      leftWall.localeCompare(rightWall)
+      || left.y - right.y
+      || left.x - right.x
+      || left.id.localeCompare(right.id)
+    );
+  });
+
+  const merged: PresentedRoomFixture[] = [];
+  let current = ordered[0];
+  for (const candidate of ordered.slice(1)) {
+    if (canMerge(current, candidate)) {
+      current = merge(current, candidate);
+      continue;
+    }
+    merged.push(current);
+    current = candidate;
+  }
+  merged.push(current);
+  return merged;
+}
+
+function mergePresentedFixtureSpan(
+  left: PresentedRoomFixture,
+  right: PresentedRoomFixture,
+): PresentedRoomFixture {
+  const sourceIds = [
+    ...(left.sourceIds ?? [left.id]),
+    ...(right.sourceIds ?? [right.id]),
+  ];
+  if (left.wallSide === "left" || left.wallSide === "right") {
+    const y = Math.min(left.y, right.y);
+    const height = Math.max(left.y + left.height, right.y + right.height) - y;
+    return {
+      ...left,
+      id: sourceIds.join("__"),
+      sourceIds,
+      y,
+      height,
+    };
+  }
+
+  const x = Math.min(left.x, right.x);
+  const width = Math.max(left.x + left.width, right.x + right.width) - x;
+  return {
+    ...left,
+    id: sourceIds.join("__"),
+    sourceIds,
+    x,
+    width,
+  };
+}
+
+function canMergeBenches(left: PresentedRoomFixture, right: PresentedRoomFixture): boolean {
+  return (
+    left.type === "bench"
+    && right.type === "bench"
+    && left.y === right.y
+    && left.height === right.height
+    && left.x + left.width === right.x
+  );
+}
+
+function canMergeWhiteboards(left: PresentedRoomFixture, right: PresentedRoomFixture): boolean {
+  if (
+    left.type !== "whiteboard"
+    || right.type !== "whiteboard"
+    || left.wallSide === null
+    || left.wallSide !== right.wallSide
+  ) {
+    return false;
+  }
+
+  if (left.wallSide === "top" || left.wallSide === "bottom") {
+    return left.y === right.y && left.height === right.height && left.x + left.width === right.x;
+  }
+
+  return left.x === right.x && left.width === right.width && left.y + left.height === right.y;
 }
 
 export function getBenchNeighbors(

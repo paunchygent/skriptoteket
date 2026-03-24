@@ -36,6 +36,7 @@ from .handlers.seating_export_job_completion import (
 )
 from .handlers.seating_export_jobs import (
     CreateSeatingExportJobHandler,
+    GetRecoverableSeatingExportJobForDraftHandler,
     GetSeatingExportJobHandler,
 )
 from .handlers.seating_exports import PrepareSeatingExportHandler
@@ -73,6 +74,7 @@ __all__ = [
     "GetResumableDraftHandler",
     "GetRoomTemplateHandler",
     "GetRosterHandler",
+    "GetRecoverableSeatingExportJobForDraftHandler",
     "GetSeatingExportJobHandler",
     "ListRoomTemplatesHandler",
     "ListRostersHandler",

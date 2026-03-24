@@ -67,7 +67,7 @@ describe("RoomCanvas", () => {
     expect(wrapper.text()).not.toContain("Grupp A");
   });
 
-  it("shows labels only for fixtures that need them", () => {
+  it("renders shared presentation labels and merged seating-scene fixtures", () => {
     stateMocks.plannerState.fixtures = [
       {
         id: "fixture-1",
@@ -96,6 +96,24 @@ describe("RoomCanvas", () => {
         height: 96,
         label: null,
       },
+      {
+        id: "fixture-4",
+        type: "bench",
+        x: 384,
+        y: 384,
+        width: 96,
+        height: 96,
+        label: null,
+      },
+      {
+        id: "fixture-5",
+        type: "bench",
+        x: 480,
+        y: 384,
+        width: 96,
+        height: 96,
+        label: null,
+      },
     ];
 
     const wrapper = mount(RoomCanvas, {
@@ -108,7 +126,8 @@ describe("RoomCanvas", () => {
 
     expect(wrapper.text()).toContain("Kateder");
     expect(wrapper.text()).toContain("Whiteboard");
-    expect(wrapper.text()).not.toContain("Dörr");
+    expect(wrapper.text()).toContain("Dörr");
+    expect(wrapper.text().match(/Bänk/g)).toHaveLength(1);
   });
 
   it("renders seats as circular tokens in the live seating canvas", () => {

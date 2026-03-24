@@ -4,10 +4,12 @@ import {
   ROOM_WALL_BAND,
   ROOM_WALL_THICKNESS,
   getFloorFixtureFrameStyle,
+  getCanonicalFixtureLabel,
   getRoomFloorLayerStyle,
   getRoomSurfaceMetrics,
   getRoomSurfaceStyle,
   getWallFixtureFrameStyle,
+  normalizePresentedFixtures,
 } from "./roomFixturePresentation";
 
 const grid = { cols: 14, rows: 9 };
@@ -76,6 +78,40 @@ describe("roomFixturePresentation", () => {
       top: `${ROOM_WALL_BAND + 96}px`,
       width: `${ROOM_WALL_THICKNESS}px`,
       height: "192px",
+    });
+  });
+
+  it("normalizes localized labels and coalesces benches and whiteboards for shared surfaces", () => {
+    const fixtures = normalizePresentedFixtures([
+      { id: "bench-1", type: "bench", x: 96, y: 384, width: 96, height: 96, label: null },
+      { id: "bench-2", type: "bench", x: 192, y: 384, width: 96, height: 96, label: null },
+      { id: "whiteboard-1", type: "whiteboard", x: 288, y: 0, width: 192, height: 96, label: "Old" },
+      { id: "whiteboard-2", type: "whiteboard", x: 480, y: 0, width: 96, height: 96, label: null },
+      { id: "door-1", type: "door", x: 0, y: 288, width: 96, height: 96, label: null },
+    ], grid);
+
+    expect(getCanonicalFixtureLabel("window")).toBe("Fönster");
+
+    const bench = fixtures.find((fixture) => fixture.type === "bench");
+    const whiteboard = fixtures.find((fixture) => fixture.type === "whiteboard");
+    const door = fixtures.find((fixture) => fixture.type === "door");
+
+    expect(bench).toMatchObject({
+      sourceIds: ["bench-1", "bench-2"],
+      displayLabel: "Bänk",
+      width: 192,
+      tone: "muted",
+    });
+    expect(whiteboard).toMatchObject({
+      sourceIds: ["whiteboard-1", "whiteboard-2"],
+      displayLabel: "Whiteboard",
+      width: 288,
+      wallSide: "top",
+    });
+    expect(door).toMatchObject({
+      displayLabel: "Dörr",
+      labelOrientation: "vertical",
+      wallSide: "left",
     });
   });
 });

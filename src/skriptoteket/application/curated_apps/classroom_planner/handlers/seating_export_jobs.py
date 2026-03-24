@@ -25,6 +25,10 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportPaperSize,
     SeatingPosterRenderRequest,
 )
+from skriptoteket.application.curated_apps.classroom_planner.exports.webhook_contract import (
+    SEATING_EXPORT_WEBHOOK_EVENT_TYPES,
+    build_seating_export_callback_url,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
@@ -50,9 +54,6 @@ from .seating_export_job_support import (
     map_upstream_status,
 )
 from .seating_exports import PrepareSeatingExportHandler
-
-_WEBHOOK_EVENT_TYPES = ["job.succeeded", "job.failed", "job.canceled"]
-_SHARED_WEBHOOK_PATH = "/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs"
 
 
 class CreateSeatingExportJobHandler:
@@ -192,7 +193,9 @@ class CreateSeatingExportJobHandler:
         callback_base_url: str,
         correlation_id: str | None,
     ) -> SeatingExportJob:
-        expected_callback_url = f"{callback_base_url.rstrip('/')}{_SHARED_WEBHOOK_PATH}"
+        expected_callback_url = build_seating_export_callback_url(
+            callback_base_url=callback_base_url
+        )
         async with self._uow:
             shared_binding = await self._webhook_bindings.get_shared_for_update()
             if await self._can_reuse_shared_binding(
@@ -207,7 +210,7 @@ class CreateSeatingExportJobHandler:
             else:
                 subscription = await self._client.create_webhook_subscription(
                     callback_url=expected_callback_url,
-                    event_types=_WEBHOOK_EVENT_TYPES,
+                    event_types=list(SEATING_EXPORT_WEBHOOK_EVENT_TYPES),
                     correlation_id=correlation_id,
                 )
                 shared_binding = await self._webhook_bindings.update_shared(
@@ -264,8 +267,8 @@ class CreateSeatingExportJobHandler:
             )
 
 
-class GetSeatingExportJobHandler:
-    """Load one export job for the owning teacher."""
+class _BaseSeatingExportJobReadHandler:
+    """Shared read/refresh support for seating export job status handlers."""
 
     def __init__(
         self,
@@ -282,16 +285,7 @@ class GetSeatingExportJobHandler:
         self._finalizer = finalizer
         self._uow = uow
 
-    async def handle(
-        self,
-        *,
-        actor: User,
-        job_id: UUID,
-        correlation_id: str | None,
-    ) -> SeatingExportJobResult:
-        job = await self._load_owner_job(actor=actor, job_id=job_id)
-        if job.status in {SeatingExportJobStatus.SUBMITTED, SeatingExportJobStatus.PROCESSING}:
-            job = await self._refresh_status(job=job, correlation_id=correlation_id)
+    async def _build_result(self, *, job: SeatingExportJob) -> SeatingExportJobResult:
         return await build_job_result(job=job, vault_files=self._vault_files)
 
     async def _load_owner_job(self, *, actor: User, job_id: UUID) -> SeatingExportJob:
@@ -327,3 +321,76 @@ class GetSeatingExportJobHandler:
         updated = job.model_copy(update={"status": mapped})
         async with self._uow:
             return await self._jobs.update(job=updated)
+
+
+class GetSeatingExportJobHandler(_BaseSeatingExportJobReadHandler):
+    """Load one export job for the owning teacher."""
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        job_id: UUID,
+        correlation_id: str | None,
+    ) -> SeatingExportJobResult:
+        job = await self._load_owner_job(actor=actor, job_id=job_id)
+        if job.status in {SeatingExportJobStatus.SUBMITTED, SeatingExportJobStatus.PROCESSING}:
+            job = await self._refresh_status(job=job, correlation_id=correlation_id)
+        return await self._build_result(job=job)
+
+
+class GetRecoverableSeatingExportJobForDraftHandler(_BaseSeatingExportJobReadHandler):
+    """Load the latest recoverable export job for the active seating draft."""
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        draft_id: UUID,
+        correlation_id: str | None,
+    ) -> SeatingExportJobResult | None:
+        in_flight_job = await self._load_latest_in_flight_job(actor=actor, draft_id=draft_id)
+        refresh_error: Exception | None = None
+        if in_flight_job is not None:
+            try:
+                refreshed_job = await self._refresh_status(
+                    job=in_flight_job,
+                    correlation_id=correlation_id,
+                )
+            except Exception as error:
+                refresh_error = error
+            else:
+                if refreshed_job.status is not SeatingExportJobStatus.FAILED:
+                    return await self._build_result(job=refreshed_job)
+
+        downloadable_job = await self._load_latest_downloadable_job(actor=actor, draft_id=draft_id)
+        if downloadable_job is None:
+            if refresh_error is not None:
+                raise refresh_error
+            return None
+        result = await self._build_result(job=downloadable_job)
+        return result if result.download_url is not None else None
+
+    async def _load_latest_in_flight_job(
+        self,
+        *,
+        actor: User,
+        draft_id: UUID,
+    ) -> SeatingExportJob | None:
+        async with self._uow:
+            return await self._jobs.get_latest_in_flight_for_draft(
+                owner_user_id=actor.id,
+                draft_id=draft_id,
+            )
+
+    async def _load_latest_downloadable_job(
+        self,
+        *,
+        actor: User,
+        draft_id: UUID,
+    ) -> SeatingExportJob | None:
+        async with self._uow:
+            return await self._jobs.get_latest_downloadable_for_draft(
+                owner_user_id=actor.id,
+                draft_id=draft_id,
+            )

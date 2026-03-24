@@ -2,7 +2,7 @@
 type: pr
 id: PR-0124
 title: "Klassrumskartan: seating export reload recovery and draft-scoped rehydration"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24

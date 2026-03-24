@@ -28,7 +28,7 @@ defineProps<{
       </span>
     </summary>
 
-    <div class="relative mt-4 overflow-auto border border-navy/20 bg-canvas p-4">
+    <div class="relative mt-4 overflow-auto border border-navy/20 bg-white p-4">
       <RoomSceneSurface
         :grid="roomGrid"
         :seats="seats"

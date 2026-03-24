@@ -41,6 +41,28 @@ class PosterSceneWallSide(StrEnum):
     LEFT = "left"
 
 
+class PosterSceneFixturePlacement(StrEnum):
+    """Describe whether a rendered fixture lives on the floor or wall margin."""
+
+    FLOOR = "floor"
+    WALL = "wall"
+
+
+class PosterSceneLabelOrientation(StrEnum):
+    """Describe the rendered label orientation for one poster fixture."""
+
+    HORIZONTAL = "horizontal"
+    VERTICAL = "vertical"
+
+
+class PosterSceneFixtureTone(StrEnum):
+    """Describe the grayscale-first contrast tone used for one fixture."""
+
+    OUTLINE = "outline"
+    MUTED = "muted"
+    STRONG = "strong"
+
+
 class PosterSceneFixtureKind(StrEnum):
     """Enumerate fixture kinds surfaced to the poster renderer."""
 
@@ -87,13 +109,17 @@ class PosterSceneFixture(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     fixture_id: str
+    source_fixture_ids: tuple[str, ...] = ()
     kind: PosterSceneFixtureKind
     x: int = Field(ge=0)
     y: int = Field(ge=0)
     width: int = Field(ge=1)
     height: int = Field(ge=1)
+    placement: PosterSceneFixturePlacement
     wall_side: PosterSceneWallSide | None = None
     label: str | None = None
+    label_orientation: PosterSceneLabelOrientation = PosterSceneLabelOrientation.HORIZONTAL
+    tone: PosterSceneFixtureTone = PosterSceneFixtureTone.OUTLINE
     variant: PosterSceneFixtureVariant | None = None
 
 

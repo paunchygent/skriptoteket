@@ -190,6 +190,7 @@ const shouldCenterSurface = computed(() => {
               :grid="roomGrid"
               :seats="seats"
               :fixtures="fixtures"
+              :normalize-presentation="false"
               fixture-surface="builder-grid"
             >
               <template #floor-base>

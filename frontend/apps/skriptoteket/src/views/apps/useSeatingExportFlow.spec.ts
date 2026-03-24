@@ -6,6 +6,7 @@
  * explicit and easy to reason about.
  */
 
+import { reactive } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useSeatingExportFlow } from "./useSeatingExportFlow";
@@ -14,6 +15,7 @@ import type { PlanDraft, SaveStatus } from "./classroomPlannerTypes";
 
 const exportApiMocks = vi.hoisted(() => ({
   createSeatingExportJob: vi.fn(),
+  getRecoverableSeatingExportJob: vi.fn(),
   getSeatingExportJob: vi.fn(),
   downloadSeatingExportJob: vi.fn(),
 }));
@@ -24,6 +26,7 @@ const toastMocks = vi.hoisted(() => ({
 
 vi.mock("./classroomPlannerExportApi", () => ({
   createSeatingExportJob: exportApiMocks.createSeatingExportJob,
+  getRecoverableSeatingExportJob: exportApiMocks.getRecoverableSeatingExportJob,
   getSeatingExportJob: exportApiMocks.getSeatingExportJob,
   downloadSeatingExportJob: exportApiMocks.downloadSeatingExportJob,
 }));
@@ -90,10 +93,11 @@ function createDeferred<T>() {
 describe("useSeatingExportFlow", () => {
   beforeEach(() => {
     exportApiMocks.createSeatingExportJob.mockReset();
+    exportApiMocks.getRecoverableSeatingExportJob.mockReset();
     exportApiMocks.getSeatingExportJob.mockReset();
     exportApiMocks.downloadSeatingExportJob.mockReset();
     toastMocks.success.mockReset();
-    window.sessionStorage.clear();
+    exportApiMocks.getRecoverableSeatingExportJob.mockResolvedValue(null);
     vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:export");
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
@@ -268,13 +272,8 @@ describe("useSeatingExportFlow", () => {
 
   it("rehydrates an in-flight export after reload and preserves a later download path", async () => {
     const plannerState = createPlannerState();
-    window.sessionStorage.setItem(
-      "skriptoteket:classroom-planner:seating-export-recovery",
-      JSON.stringify({
-        draftId: "draft-1",
-        activeJobId: "job-1",
-        latestCompletedJobId: null,
-      }),
+    exportApiMocks.getRecoverableSeatingExportJob.mockResolvedValueOnce(
+      createJob({ status: "processing" }),
     );
     exportApiMocks.getSeatingExportJob
       .mockResolvedValueOnce(createJob({ status: "processing" }))
@@ -303,12 +302,130 @@ describe("useSeatingExportFlow", () => {
     expect(flow.isBusy.value).toBe(false);
     expect(flow.canDownloadLatest.value).toBe(true);
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
-    expect(JSON.parse(window.sessionStorage.getItem(
-      "skriptoteket:classroom-planner:seating-export-recovery",
-    ) ?? "{}")).toEqual({
-      draftId: "draft-1",
-      activeJobId: null,
-      latestCompletedJobId: "job-1",
+  });
+
+  it("rehydrates the latest successful export for the active draft without auto-downloading", async () => {
+    const plannerState = createPlannerState();
+    exportApiMocks.getRecoverableSeatingExportJob.mockResolvedValueOnce(
+      createJob({
+        status: "succeeded",
+        vault_artifact: {
+          file_id: "file-6",
+          name: "klassrumskarta-a3.pdf",
+          bytes: 1234,
+          created_at: "2026-03-24T10:00:05Z",
+        },
+      }),
+    );
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
     });
+
+    await vi.waitFor(() => {
+      expect(flow.statusLabel.value).toBe("PDF klar för nedladdning.");
+    });
+
+    expect(flow.isBusy.value).toBe(false);
+    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
+  });
+
+  it("does not leak a recovered export into a different seating draft", async () => {
+    const plannerState = reactive(createPlannerState()) as PlannerStateMock;
+    const deferredRecoveredCompletion = createDeferred<SeatingExportJob>();
+    exportApiMocks.getRecoverableSeatingExportJob
+      .mockResolvedValueOnce(createJob({ status: "processing" }))
+      .mockResolvedValueOnce(null);
+    exportApiMocks.getSeatingExportJob.mockReturnValueOnce(deferredRecoveredCompletion.promise);
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await vi.waitFor(() => {
+      expect(flow.statusLabel.value).toBe(
+        "PDF-exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.",
+      );
+    });
+
+    plannerState.draft = {
+      ...createDraft(),
+      id: "draft-2",
+    };
+
+    await vi.waitFor(() => {
+      expect(flow.statusLabel.value).toBeNull();
+    });
+
+    deferredRecoveredCompletion.resolve(
+      createJob({
+        status: "succeeded",
+        vault_artifact: {
+          file_id: "file-7",
+          name: "klassrumskarta-a3.pdf",
+          bytes: 1234,
+          created_at: "2026-03-24T10:00:05Z",
+        },
+      }),
+    );
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(flow.statusLabel.value).toBeNull();
+    expect(flow.canDownloadLatest.value).toBe(false);
+    expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
+  });
+
+  it("re-runs backend recovery when returning to the same seating draft", async () => {
+    const plannerState = reactive(createPlannerState()) as PlannerStateMock;
+    exportApiMocks.getRecoverableSeatingExportJob
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(
+        createJob({
+          status: "succeeded",
+          vault_artifact: {
+            file_id: "file-8",
+            name: "klassrumskarta-a3.pdf",
+            bytes: 1234,
+            created_at: "2026-03-24T10:00:05Z",
+          },
+        }),
+      );
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await vi.waitFor(() => {
+      expect(exportApiMocks.getRecoverableSeatingExportJob).toHaveBeenCalledWith("draft-1");
+    });
+
+    plannerState.draft = {
+      ...createDraft(),
+      id: "draft-2",
+    };
+
+    await vi.waitFor(() => {
+      expect(exportApiMocks.getRecoverableSeatingExportJob).toHaveBeenCalledWith("draft-2");
+    });
+
+    plannerState.draft = createDraft();
+
+    await vi.waitFor(() => {
+      expect(exportApiMocks.getRecoverableSeatingExportJob).toHaveBeenNthCalledWith(3, "draft-1");
+      expect(flow.statusLabel.value).toBe("PDF klar för nedladdning.");
+    });
+
+    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 });

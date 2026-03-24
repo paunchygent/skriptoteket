@@ -20,6 +20,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CreateSeatingExportJobHandler,
     DeleteHistoricSeatingDraftHandler,
     DownloadSeatingExportJobHandler,
+    GetRecoverableSeatingExportJobForDraftHandler,
     GetSeatingExportJobHandler,
     PrepareSeatingExportHandler,
 )
@@ -132,6 +133,26 @@ async def create_seating_export_job(
         correlation_id=str(correlation_id_uuid) if correlation_id_uuid is not None else None,
     )
     return serialize_seating_export_job(result)
+
+
+@router.get(
+    "/drafts/seating/{draft_id}/exports/jobs/recover",
+    response_model=SeatingExportJobDto | None,
+)
+@inject
+async def get_recoverable_seating_export_job_for_draft(
+    draft_id: UUID,
+    request: Request,
+    handler: FromDishka[GetRecoverableSeatingExportJobForDraftHandler],
+    user: User = Depends(require_user_api),
+) -> SeatingExportJobDto | None:
+    correlation_id_uuid = get_correlation_id(request)
+    result = await handler.handle(
+        actor=user,
+        draft_id=draft_id,
+        correlation_id=str(correlation_id_uuid) if correlation_id_uuid is not None else None,
+    )
+    return serialize_seating_export_job(result) if result is not None else None
 
 
 @router.get("/exports/jobs/{job_id}", response_model=SeatingExportJobDto)

@@ -334,4 +334,21 @@ describe("FlunkOutFrenzyView", () => {
     expect(wrapper.text()).toContain("Bootstrap failed");
     expect(wrapper.find("[data-test='runtime-host-placeholder']").exists()).toBe(false);
   });
+
+  it("fails closed when the bootstrap payload is malformed", async () => {
+    apiGet.mockResolvedValue({
+      app_id: "games.flunk_out_frenzy",
+      title: "Flunk-Out Frenzy",
+      summary: "Local browser pinball with future official high scores.",
+      app_version: "app:0.2.0",
+      ruleset_id: "flunk_out_frenzy.prototype_alpha.v1",
+    });
+
+    const wrapper = mount(FlunkOutFrenzyView);
+    await flushBootstrap();
+
+    expect(wrapper.find("[data-test='bootstrap-error']").exists()).toBe(true);
+    expect(wrapper.text()).toContain('feature_flags');
+    expect(wrapper.find("[data-test='runtime-host-placeholder']").exists()).toBe(false);
+  });
 });

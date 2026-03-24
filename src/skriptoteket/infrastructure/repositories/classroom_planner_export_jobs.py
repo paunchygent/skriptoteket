@@ -100,6 +100,56 @@ class PostgreSQLSeatingExportJobRepository(SeatingExportJobRepositoryProtocol):
         model = result.scalar_one_or_none()
         return self._to_job(model) if model else None
 
+    async def get_latest_in_flight_for_draft(
+        self,
+        *,
+        owner_user_id: UUID,
+        draft_id: UUID,
+    ) -> SeatingExportJob | None:
+        result = await self._session.execute(
+            select(SeatingExportJobModel)
+            .where(
+                SeatingExportJobModel.owner_user_id == owner_user_id,
+                SeatingExportJobModel.draft_id == draft_id,
+                SeatingExportJobModel.status.in_(
+                    [
+                        SeatingExportJobStatus.SUBMITTED.value,
+                        SeatingExportJobStatus.PROCESSING.value,
+                    ]
+                ),
+            )
+            .order_by(
+                SeatingExportJobModel.created_at.desc(),
+                SeatingExportJobModel.updated_at.desc(),
+            )
+            .limit(1)
+        )
+        model = result.scalar_one_or_none()
+        return self._to_job(model) if model else None
+
+    async def get_latest_downloadable_for_draft(
+        self,
+        *,
+        owner_user_id: UUID,
+        draft_id: UUID,
+    ) -> SeatingExportJob | None:
+        result = await self._session.execute(
+            select(SeatingExportJobModel)
+            .where(
+                SeatingExportJobModel.owner_user_id == owner_user_id,
+                SeatingExportJobModel.draft_id == draft_id,
+                SeatingExportJobModel.status == SeatingExportJobStatus.SUCCEEDED.value,
+                SeatingExportJobModel.vault_file_id.is_not(None),
+            )
+            .order_by(
+                SeatingExportJobModel.created_at.desc(),
+                SeatingExportJobModel.updated_at.desc(),
+            )
+            .limit(1)
+        )
+        model = result.scalar_one_or_none()
+        return self._to_job(model) if model else None
+
     async def update(self, *, job: SeatingExportJob) -> SeatingExportJob:
         model = await self._session.get(SeatingExportJobModel, job.id)
         if model is None:

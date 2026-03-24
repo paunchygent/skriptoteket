@@ -14,6 +14,18 @@ import AppHostView from "./AppHostView.vue";
 import type { components } from "../api/openapi";
 
 type AppDetailResponse = components["schemas"]["AppDetailResponse"];
+type FlunkOutFrenzyBootstrap = {
+  app_id: string;
+  title: string;
+  summary: string;
+  app_version: string;
+  ruleset_id: string;
+  feature_flags: {
+    audio_enabled: boolean;
+    replay_capture_enabled: boolean;
+    score_submission_enabled: boolean;
+  };
+};
 
 const routeMocks = vi.hoisted(() => ({
   route: {
@@ -66,6 +78,24 @@ function createAppDetail(
   };
 }
 
+function createBootstrap(
+  overrides: Partial<FlunkOutFrenzyBootstrap> = {},
+): FlunkOutFrenzyBootstrap {
+  return {
+    app_id: "games.flunk_out_frenzy",
+    title: "Flunk-Out Frenzy",
+    summary: "Local browser pinball with future official high scores.",
+    app_version: "app:0.2.0",
+    ruleset_id: "flunk_out_frenzy.prototype_alpha.v1",
+    feature_flags: {
+      audio_enabled: true,
+      replay_capture_enabled: false,
+      score_submission_enabled: false,
+    },
+    ...overrides,
+  };
+}
+
 describe("AppHostView", () => {
   beforeEach(() => {
     routeMocks.route.params.appId = "games.flunk_out_frenzy";
@@ -75,14 +105,24 @@ describe("AppHostView", () => {
   });
 
   it("renders the dedicated Flunk-Out Frenzy shell for the bespoke app route", async () => {
-    clientMocks.apiGet.mockResolvedValue(createAppDetail());
+    clientMocks.apiGet.mockImplementation(async (path: string) => {
+      if (path === "/api/v1/apps/games.flunk_out_frenzy") {
+        return createAppDetail();
+      }
+      if (path === "/api/v1/apps/games.flunk_out_frenzy/bootstrap") {
+        return createBootstrap();
+      }
+      throw new Error(`Unexpected apiGet path: ${path}`);
+    });
 
     const wrapper = mount(AppHostView);
     await flushPromises();
     await flushPromises();
 
     expect(clientMocks.apiGet).toHaveBeenCalledWith("/api/v1/apps/games.flunk_out_frenzy");
+    expect(clientMocks.apiGet).toHaveBeenCalledWith("/api/v1/apps/games.flunk_out_frenzy/bootstrap");
     expect(wrapper.text()).toContain("Flunk-Out Frenzy");
+    expect(wrapper.find("[data-test='bootstrap-ready']").exists()).toBe(true);
     expect(wrapper.text()).not.toContain("AppDetailViewStub");
 
     wrapper.unmount();

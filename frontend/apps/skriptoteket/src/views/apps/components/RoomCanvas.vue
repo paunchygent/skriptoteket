@@ -17,6 +17,7 @@ import {
   getRoomFloorLayerStyle,
   getRoomSurfaceStyle,
   getWallFixtureFrameStyle,
+  normalizePresentedFixtures,
 } from "../roomFixturePresentation";
 import { isWallFixtureType, normalizeRoomGrid } from "../roomFixtureLayout";
 import { useClassroomState } from "../useClassroomState";
@@ -49,11 +50,12 @@ const roomSurfaceTransformStyle = computed(() => {
   };
 });
 const roomFloorLayerStyle = computed(() => getRoomFloorLayerStyle(roomGrid.value));
+const presentedFixtures = computed(() => normalizePresentedFixtures(state.fixtures, roomGrid.value));
 const floorFixtures = computed(() => {
-  return state.fixtures.filter((fixture) => !isWallFixtureType(fixture.type));
+  return presentedFixtures.value.filter((fixture) => !isWallFixtureType(fixture.type));
 });
 const wallFixtures = computed(() => {
-  return state.fixtures.filter((fixture) => isWallFixtureType(fixture.type));
+  return presentedFixtures.value.filter((fixture) => isWallFixtureType(fixture.type));
 });
 const shouldCenterSurface = computed(() => {
   const scaledWidth = Number.parseFloat(props.scaledSurfaceStyle.width ?? "0");
@@ -156,7 +158,7 @@ onBeforeUnmount(() => {
     <div
       ref="canvasViewport"
       data-test="room-canvas-viewport"
-      class="mt-4 min-h-[560px] overflow-auto border border-navy/20 bg-canvas p-4"
+      class="mt-4 min-h-[560px] overflow-auto border border-navy/20 bg-white p-4"
     >
       <div
         data-test="room-canvas-scroll-frame"
@@ -173,14 +175,18 @@ onBeforeUnmount(() => {
             :style="roomSurfaceTransformStyle"
           >
             <div
-              class="absolute room-canvas-grid opacity-15"
-              :style="roomFloorLayerStyle"
+              class="absolute inset-0 border border-navy/40 bg-white"
             />
 
             <div
               class="absolute"
               :style="roomFloorLayerStyle"
             >
+              <div class="absolute inset-0 border border-navy bg-white" />
+              <div
+                class="absolute inset-0 room-canvas-grid opacity-15"
+              />
+
               <div
                 v-for="fixture in floorFixtures"
                 :key="fixture.id"
@@ -189,7 +195,7 @@ onBeforeUnmount(() => {
               >
                 <RoomFixtureArtwork
                   :fixture="fixture"
-                  :fixtures="state.fixtures"
+                  :fixtures="presentedFixtures"
                   :grid="roomGrid"
                 />
               </div>
@@ -215,7 +221,7 @@ onBeforeUnmount(() => {
             >
               <RoomFixtureArtwork
                 :fixture="fixture"
-                :fixtures="state.fixtures"
+                :fixtures="presentedFixtures"
                 :grid="roomGrid"
               />
             </div>

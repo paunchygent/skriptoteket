@@ -2,25 +2,34 @@
 
 This script validates the live teacher-facing seating export flow through the
 real planner UI. It checks the compact export subsection, the default
-`Exportera` happy path, the alternate `Affisch (A4)` option, and the resulting
-browser downloads without introducing a separate export panel.
+`Exportera` happy path, and a forced reload/reopen recovery path where the
+backend must fall back from a broken newer in-flight job to the latest
+downloadable PDF for the same draft.
 """
 
 from __future__ import annotations
 
+import asyncio
 import re
+import sys
+import threading
 import time
+from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlparse
+from uuid import uuid4
 
+import requests
 from playwright.sync_api import Download, Page, expect, sync_playwright
+from sqlalchemy import select
 
 from scripts._playwright_classroom_planner import (
     APP_PATH,
     create_roster,
     create_template,
     focus_workspace_mode,
-    login_to_app,
     open_class_workspace,
+    wait_for_app_heading,
 )
 from scripts._playwright_config import get_config
 from scripts.playwright_ui_smoke import _launch_chromium
@@ -99,6 +108,43 @@ def _assert_suggested_filename(
     assert suggested_name == f"{_slugify(roster_name)}-{paper_size}.pdf"
 
 
+def _create_authenticated_context(
+    browser,
+    *,
+    base_url: str,
+    email: str,
+    password: str,
+):
+    """Authenticate through the real API and preload the browser session cookie."""
+
+    response = requests.post(
+        f"{base_url}/api/v1/auth/login",
+        json={"email": email, "password": password},
+        timeout=30,
+    )
+    response.raise_for_status()
+    session_cookie = response.cookies.get("skriptoteket_session")
+    assert session_cookie, "Expected skriptoteket_session cookie after API login."
+
+    parsed_base_url = urlparse(base_url)
+    context = browser.new_context(
+        viewport={"width": 1440, "height": 960},
+        accept_downloads=True,
+    )
+    context.add_cookies(
+        [
+            {
+                "name": "skriptoteket_session",
+                "value": session_cookie,
+                "domain": parsed_base_url.hostname or "127.0.0.1",
+                "path": "/",
+                "httpOnly": True,
+            }
+        ]
+    )
+    return context
+
+
 def _export_default_a3(page: Page, *, roster_name: str) -> Path:
     """Run the default `Exportera` path and save the downloaded PDF."""
 
@@ -123,28 +169,117 @@ def _export_default_a3(page: Page, *, roster_name: str) -> Path:
     return _save_download(download, target_name="seating-export-a3.pdf")
 
 
-def _export_alternate_a4(page: Page, *, roster_name: str) -> Path:
-    """Run the alternate `Affisch (A4)` export path and save the download."""
+async def _insert_broken_in_flight_job(*, output_filename: str) -> None:
+    """Insert a newer fake in-flight job so recovery must survive refresh failure."""
 
-    page.locator('[data-test="seating-export-menu-trigger"]').click()
-    expect(page.locator('[data-test="seating-export-option-a4"]')).to_be_visible()
-    with page.expect_download(timeout=120000) as download_info:
-        page.locator('[data-test="seating-export-option-a4"]').click()
-    download = download_info.value
-    suggested_name = download.suggested_filename
-    _assert_suggested_filename(
-        suggested_name=suggested_name,
-        roster_name=roster_name,
-        paper_size="a4_landscape",
+    project_root = Path(__file__).resolve().parents[1]
+    source_root = str(project_root / "src")
+    if source_root not in sys.path:
+        sys.path.insert(0, source_root)
+
+    from skriptoteket.cli._db import open_session
+    from skriptoteket.config import Settings
+    from skriptoteket.infrastructure.db.models import (
+        classroom_planner_plan_draft as plan_draft_model,
     )
+    from skriptoteket.infrastructure.db.models import user as user_model
+    from skriptoteket.infrastructure.db.models import user_vault_file as user_vault_file_model
+    from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_job import (
+        SeatingExportJobModel,
+    )
+
+    _registered_models = (plan_draft_model, user_model, user_vault_file_model)
+
+    settings = Settings()
+    async with open_session(settings) as session:
+        result = await session.execute(
+            select(SeatingExportJobModel)
+            .where(
+                SeatingExportJobModel.output_filename == output_filename,
+                SeatingExportJobModel.status == "succeeded",
+            )
+            .order_by(
+                SeatingExportJobModel.created_at.desc(),
+                SeatingExportJobModel.updated_at.desc(),
+            )
+            .limit(1)
+        )
+        successful_job = result.scalar_one()
+        injected_at = datetime.now(UTC)
+        session.add(
+            SeatingExportJobModel(
+                id=uuid4(),
+                owner_user_id=successful_job.owner_user_id,
+                draft_id=successful_job.draft_id,
+                roster_id=successful_job.roster_id,
+                template_id=successful_job.template_id,
+                export_kind=successful_job.export_kind,
+                layout_id=successful_job.layout_id,
+                paper_size=successful_job.paper_size,
+                output_filename=successful_job.output_filename,
+                status="processing",
+                upstream_job_id=f"missing-upstream-{uuid4()}",
+                webhook_subscription_id=successful_job.webhook_subscription_id,
+                webhook_secret=successful_job.webhook_secret,
+                vault_file_id=None,
+                error_message=None,
+                created_at=injected_at,
+                updated_at=injected_at,
+            )
+        )
+        await session.commit()
+
+
+def _insert_broken_in_flight_job_sync(*, output_filename: str) -> None:
+    """Run the async DB injection outside Playwright's active event loop."""
+
+    error: Exception | None = None
+
+    def _runner() -> None:
+        nonlocal error
+        try:
+            asyncio.run(_insert_broken_in_flight_job(output_filename=output_filename))
+        except Exception as exc:  # pragma: no cover - surfaced to caller
+            error = exc
+
+    thread = threading.Thread(target=_runner, daemon=True)
+    thread.start()
+    thread.join()
+    if error is not None:
+        raise error
+
+
+def _reload_and_redownload_latest_export(
+    page: Page,
+    *,
+    roster_name: str,
+    template_name: str,
+) -> Path:
+    """Reload, reopen the same seating draft context, and verify fallback recovery."""
+
+    page.reload(wait_until="domcontentloaded")
+    open_class_workspace(page, roster_name=roster_name)
+    _open_seating_workspace(page, template_name=template_name)
     expect(page.locator('[data-test="seating-export-download-latest"]')).to_be_visible(
         timeout=120000
     )
-    return _save_download(download, target_name="seating-export-a4.pdf")
+    expect(page.locator('[data-test="seating-export-status"]')).to_contain_text(
+        re.compile(r"PDF klar för nedladdning", re.IGNORECASE),
+        timeout=120000,
+    )
+    with page.expect_download(timeout=120000) as download_info:
+        page.locator('[data-test="seating-export-download-latest"]').click()
+    download = download_info.value
+    _assert_suggested_filename(
+        suggested_name=download.suggested_filename,
+        roster_name=roster_name,
+        paper_size="a3_landscape",
+    )
+    return _save_download(download, target_name="seating-export-a3-reloaded.pdf")
 
 
 def main() -> None:
-    """Run the focused PR-0120 seating export browser proof."""
+    """Run the focused reload-recovery fallback browser proof."""
 
     config = get_config()
     base_url = config.base_url.rstrip("/")
@@ -156,13 +291,16 @@ def main() -> None:
 
     with sync_playwright() as playwright:
         browser = _launch_chromium(playwright)
-        context = browser.new_context(
-            viewport={"width": 1440, "height": 960},
-            accept_downloads=True,
+        context = _create_authenticated_context(
+            browser,
+            base_url=base_url,
+            email=config.email,
+            password=config.password,
         )
         page = context.new_page()
 
-        login_to_app(page, base_url=base_url, email=config.email, password=config.password)
+        page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
+        wait_for_app_heading(page)
         create_roster(page, roster_name=roster_name)
         create_template(page, template_name=template_name)
         page.goto(f"{base_url}{APP_PATH}", wait_until="domcontentloaded")
@@ -171,7 +309,14 @@ def main() -> None:
         _assign_first_student_to_first_seat(page)
 
         a3_download = _export_default_a3(page, roster_name=roster_name)
-        a4_download = _export_alternate_a4(page, roster_name=roster_name)
+        _insert_broken_in_flight_job_sync(
+            output_filename=f"{_slugify(roster_name)}-a3_landscape.pdf",
+        )
+        a3_reload_download = _reload_and_redownload_latest_export(
+            page,
+            roster_name=roster_name,
+            template_name=template_name,
+        )
 
         page.screenshot(
             path=str(ARTIFACTS_DIR / "seating-export-ui.png"),
@@ -183,7 +328,7 @@ def main() -> None:
 
     print(f"Playwright artifacts written to: {ARTIFACTS_DIR}")
     print(f"A3 download: {a3_download}")
-    print(f"A4 download: {a4_download}")
+    print(f"A3 download after reload: {a3_reload_download}")
 
 
 if __name__ == "__main__":  # pragma: no cover

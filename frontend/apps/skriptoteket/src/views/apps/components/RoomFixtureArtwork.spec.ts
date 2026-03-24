@@ -7,7 +7,7 @@ import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
 const grid = { cols: 14, rows: 9 };
 
 describe("RoomFixtureArtwork", () => {
-  it("shows labels only for whiteboard and kateder", () => {
+  it("shows canonical labels for wall markers and teacher desk", () => {
     const whiteboard = mount(RoomFixtureArtwork, {
       props: {
         fixture: {
@@ -32,7 +32,30 @@ describe("RoomFixtureArtwork", () => {
           y: 384,
           width: 96,
           height: 96,
-          label: "Dörr",
+          label: null,
+          displayLabel: "Dörr",
+          labelVisible: true,
+          labelOrientation: "vertical",
+          wallSide: "left",
+          tone: "outline",
+        },
+        fixtures: [],
+        grid,
+      },
+    });
+    const teacherDesk = mount(RoomFixtureArtwork, {
+      props: {
+        fixture: {
+          id: "desk-1",
+          type: "teacher_desk",
+          x: 96,
+          y: 96,
+          width: 192,
+          height: 96,
+          label: null,
+          displayLabel: "Kateder",
+          labelVisible: true,
+          tone: "strong",
         },
         fixtures: [],
         grid,
@@ -40,7 +63,10 @@ describe("RoomFixtureArtwork", () => {
     });
 
     expect(whiteboard.text()).toContain("Whiteboard");
-    expect(door.text()).not.toContain("Dörr");
+    expect(door.text()).toContain("Dörr");
+    expect(door.html()).toContain("writing-mode: vertical-rl;");
+    expect(teacherDesk.text()).toContain("Kateder");
+    expect(teacherDesk.html()).toContain("text-white");
   });
 
   it("renders round tables as truly round", () => {

@@ -61,6 +61,14 @@ export async function getSeatingExportJob(jobId: string): Promise<SeatingExportJ
   );
 }
 
+export async function getRecoverableSeatingExportJob(
+  draftId: string,
+): Promise<SeatingExportJob | null> {
+  return await apiGet<SeatingExportJob | null>(
+    `/api/v1/apps/classroom.group-seating-studio/drafts/seating/${encodeURIComponent(draftId)}/exports/jobs/recover`,
+  );
+}
+
 export async function downloadSeatingExportJob(jobId: string): Promise<Blob> {
   return await apiFetchBlob(getSeatingExportJobDownloadHref(jobId));
 }

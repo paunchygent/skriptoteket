@@ -28,12 +28,14 @@ from skriptoteket.domain.errors import validation_error
 from .models import (
     PosterSceneFixture,
     PosterSceneFixtureKind,
+    PosterSceneFixturePlacement,
     PosterSceneFixtureVariant,
     PosterSceneRoom,
     PosterSceneSeat,
     PosterSceneWallSide,
     SeatingPosterScene,
 )
+from .scene_presentation import normalize_scene_fixtures
 
 ROOM_GRID_UNIT = 96
 
@@ -83,12 +85,15 @@ def translate_workspace_to_poster_scene(
         )
         for seat in sorted(template.seats, key=lambda seat: (seat.y, seat.x, seat.id))
     ]
-    fixtures = [
-        _translate_fixture(fixture=fixture, template=template)
-        for fixture in sorted(
-            template.fixtures, key=lambda fixture: (fixture.y, fixture.x, fixture.type, fixture.id)
-        )
-    ]
+    fixtures = normalize_scene_fixtures(
+        [
+            _translate_fixture(fixture=fixture, template=template)
+            for fixture in sorted(
+                template.fixtures,
+                key=lambda fixture: (fixture.y, fixture.x, fixture.type, fixture.id),
+            )
+        ]
+    )
 
     return SeatingPosterScene(
         room=PosterSceneRoom(
@@ -133,11 +138,22 @@ def _translate_fixture(
     kind, variant = _map_fixture_kind(fixture.type)
     return PosterSceneFixture(
         fixture_id=fixture.id,
+        source_fixture_ids=(fixture.id,),
         kind=kind,
         x=_normalize_grid_unit(fixture.x),
         y=_normalize_grid_unit(fixture.y),
         width=_normalize_fixture_span(fixture.width),
         height=_normalize_fixture_span(fixture.height),
+        placement=(
+            PosterSceneFixturePlacement.WALL
+            if fixture.type
+            in {
+                RoomFixtureType.WHITEBOARD,
+                RoomFixtureType.WINDOW,
+                RoomFixtureType.DOOR,
+            }
+            else PosterSceneFixturePlacement.FLOOR
+        ),
         wall_side=_resolve_wall_side(fixture=fixture, template=template),
         label=fixture.label,
         variant=variant,

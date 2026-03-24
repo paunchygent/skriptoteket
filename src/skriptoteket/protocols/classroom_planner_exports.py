@@ -36,6 +36,20 @@ class SeatingExportJobRepositoryProtocol(Protocol):
 
     async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> SeatingExportJob | None: ...
 
+    async def get_latest_in_flight_for_draft(
+        self,
+        *,
+        owner_user_id: UUID,
+        draft_id: UUID,
+    ) -> SeatingExportJob | None: ...
+
+    async def get_latest_downloadable_for_draft(
+        self,
+        *,
+        owner_user_id: UUID,
+        draft_id: UUID,
+    ) -> SeatingExportJob | None: ...
+
     async def update(self, *, job: SeatingExportJob) -> SeatingExportJob: ...
 
 
