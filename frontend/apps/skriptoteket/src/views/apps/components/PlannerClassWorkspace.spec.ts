@@ -73,6 +73,8 @@ function mountWorkspace(props?: Record<string, unknown>) {
       availableTemplates: buildTemplates(),
       selectedRosterId: "roster-1",
       selectedTemplateId: "template-1",
+      visibleGroupingDraft: null,
+      visibleSeatingDraft: null,
       ...props,
     },
   });
@@ -121,7 +123,7 @@ describe("PlannerClassWorkspace", () => {
       throw new Error("Expected the overview to expose classroom editing.");
     }
     await editTemplateButton.trigger("click");
-    expect(wrapper.emitted("edit-current-template")).toEqual([[]]);
+    expect(wrapper.emitted("edit-current-template")).toEqual([[buildTemplates()[0]]]);
 
     const deleteRosterButton = wrapper.get("[data-test='overview-delete-roster']");
     await deleteRosterButton.trigger("click");
@@ -156,6 +158,51 @@ describe("PlannerClassWorkspace", () => {
     await seatingToggle.trigger("click");
     expect(seatingToggle.attributes("aria-pressed")).toBe("false");
     expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: "template-2" }]]);
+  });
+
+  it("renders compact resumable cards with continue, settings, and dismiss actions", async () => {
+    const wrapper = mountWorkspace({
+      selectedTemplateId: "template-2",
+      visibleGroupingDraft: {
+        id: "draft-grouping-1",
+        draft_kind: "grouping",
+        template_id: null,
+        template_name: null,
+        status: "active",
+        revision: 4,
+        last_opened_at: "2026-03-23T09:00:00Z",
+        updated_at: "2026-03-23T09:10:00Z",
+      },
+      visibleSeatingDraft: {
+        id: "draft-seating-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "active",
+        revision: 7,
+        last_opened_at: "2026-03-23T10:00:00Z",
+        updated_at: "2026-03-23T10:10:00Z",
+      },
+    });
+
+    expect(wrapper.get('[data-test="overview-resumable-surface"]').text()).toContain("Fortsätt grupper");
+    expect(wrapper.get('[data-test="overview-resumable-surface"]').text()).toContain("Fortsätt sittschema");
+    expect(wrapper.get('[data-test="overview-grouping-resume-card"]').text()).toContain("Revision 4");
+    expect(wrapper.get('[data-test="overview-seating-resume-card"]').text()).toContain("Sal 101");
+
+    await wrapper.get('[data-test="continue-grouping-draft"]').trigger("click");
+    await wrapper.get('[data-test="continue-seating-draft"]').trigger("click");
+    await wrapper.get('[data-test="grouping-draft-settings"]').trigger("click");
+    await wrapper.get('[data-test="seating-draft-settings"]').trigger("click");
+    await wrapper.get('[data-test="dismiss-grouping-resume"]').trigger("click");
+    await wrapper.get('[data-test="dismiss-seating-resume"]').trigger("click");
+
+    expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
+    expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: "template-1" }]]);
+    expect(wrapper.emitted("edit-roster")).toEqual([[]]);
+    expect(wrapper.emitted("edit-current-template")).toEqual([[buildTemplates()[0]]]);
+    expect(wrapper.emitted("dismiss-grouping-draft")).toEqual([[]]);
+    expect(wrapper.emitted("dismiss-seating-draft")).toEqual([[]]);
   });
 
   it("shows an explicit empty classroom state without exposing overview history controls", () => {

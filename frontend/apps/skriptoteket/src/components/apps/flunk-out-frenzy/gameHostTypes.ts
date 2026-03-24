@@ -19,11 +19,13 @@ export type {
   GameViewSnapshot,
 } from "./game/core/runtimeTypes";
 
+export type GameRuntimeLoadState = "idle" | "loading" | "ready" | "error";
+
 export interface GameHostApi {
-  startGame(): void;
+  startGame(): Promise<void>;
   pauseGame(): void;
   resumeGame(): void;
-  restartGame(): void;
+  restartGame(): Promise<void>;
   setMuted(muted: boolean): void;
 }
 

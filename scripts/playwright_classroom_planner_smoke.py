@@ -165,7 +165,18 @@ def _create_template(page: Any, *, template_name: str) -> None:
     expect(builder_viewport.get_by_text("seat-2", exact=True)).to_be_visible()
 
     page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
-    expect(page.get_by_role("heading", name=re.compile(re.escape(template_name)))).to_be_visible()
+    template_heading = page.get_by_role("heading", name=re.compile(re.escape(template_name)))
+    template_text = page.get_by_text(template_name, exact=True)
+    for _ in range(20):
+        if template_heading.count() > 0 and template_heading.first.is_visible():
+            return
+        if template_text.count() > 0 and template_text.first.is_visible():
+            return
+        page.wait_for_timeout(250)
+
+    raise AssertionError(
+        f"Created classroom {template_name!r} did not become visible in the live UI."
+    )
 
 
 def _open_class_workspace(page: Any, *, roster_name: str) -> None:

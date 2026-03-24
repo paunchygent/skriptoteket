@@ -9,11 +9,12 @@
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
-import { GameRuntime } from "./game/core/GameRuntime";
+import { loadGameRuntime } from "./game/core/loadGameRuntime";
 import { createInitialHudSnapshot } from "./game/core/runtimeTypes";
 import { KeyboardInputController } from "./game/input/KeyboardInputController";
 import type { MachineEvent } from "./game/physics/physicsTypes";
 import {
+  type GameRuntimeLoadState,
   labelGameSessionStatus,
   type GameHostApi,
   type GameHudSnapshot,
@@ -40,15 +41,17 @@ const referencePlayfieldUrl = new URL(
 const emit = defineEmits<{
   hudChange: [hud: GameHudSnapshot];
   bootError: [message: string | null];
+  loadStateChange: [state: GameRuntimeLoadState];
 }>();
 
 const hostElement = ref<HTMLDivElement | null>(null);
 const hudSnapshot = ref<GameHudSnapshot>(createInitialHudSnapshot());
-const runtimeBooting = ref(true);
+const runtimeLoadState = ref<GameRuntimeLoadState>("idle");
 const runtimeError = ref<string | null>(null);
 let runtime: GameRuntimeLike | null = null;
 let keyboardController: KeyboardInputController | null = null;
 let unsubscribeHud: (() => void) | null = null;
+let runtimeCreation: Promise<GameRuntimeLike | null> | null = null;
 let disposed = false;
 
 interface FlunkOutFrenzyDebugHandle {
@@ -66,49 +69,44 @@ const statusLabel = computed(() => {
   if (runtimeError.value) {
     return "Startfel";
   }
-  if (runtimeBooting.value) {
+  if (runtimeLoadState.value === "loading") {
     return "Startar";
   }
   return labelGameSessionStatus(hudSnapshot.value.status);
 });
 
-function startGame(): void {
-  runtime?.start();
+function updateLoadState(nextState: GameRuntimeLoadState): void {
+  runtimeLoadState.value = nextState;
+  emit("loadStateChange", nextState);
 }
 
-function pauseGame(): void {
-  runtime?.pause();
-}
+async function ensureRuntimeReady(): Promise<GameRuntimeLike | null> {
+  if (runtime) {
+    updateLoadState("ready");
+    return runtime;
+  }
 
-function resumeGame(): void {
-  runtime?.resume();
-}
-
-function restartGame(): void {
-  runtime?.restart();
-}
-
-function setMuted(nextMuted: boolean): void {
-  runtime?.setMuted(nextMuted);
-}
-
-onMounted(() => {
-  if (!hostElement.value) {
-    return;
+  if (runtimeCreation) {
+    return runtimeCreation;
   }
 
   const mountedHost = hostElement.value;
-  disposed = false;
-  runtimeBooting.value = true;
+  if (!mountedHost) {
+    return null;
+  }
+
   runtimeError.value = null;
+  emit("bootError", null);
+  updateLoadState("loading");
 
-  const createRuntime = props.runtimeFactory ?? ((options) => GameRuntime.create(options));
-
-  void createRuntime({ audioEnabled: props.audioEnabled })
+  const createRuntime = props.runtimeFactory ?? loadGameRuntime;
+  runtimeCreation = createRuntime({ audioEnabled: props.audioEnabled })
     .then((createdRuntime) => {
+      runtimeCreation = null;
+
       if (disposed || hostElement.value !== mountedHost) {
         createdRuntime.dispose();
-        return;
+        return null;
       }
 
       runtime = createdRuntime;
@@ -132,18 +130,66 @@ onMounted(() => {
         };
       }
 
-      runtimeBooting.value = false;
-      runtimeError.value = null;
-      emit("bootError", null);
+      updateLoadState("ready");
+      return createdRuntime;
     })
     .catch((error: unknown) => {
-      runtimeBooting.value = false;
+      runtimeCreation = null;
       runtimeError.value = error instanceof Error
         ? error.message
         : "Spelmotorn kunde inte starta.";
+      updateLoadState("error");
       emit("bootError", runtimeError.value);
       console.error("Failed to initialize Flunk-Out Frenzy runtime.", error);
+      return null;
     });
+
+  return runtimeCreation;
+}
+
+async function startGame(): Promise<void> {
+  const currentRuntime = await ensureRuntimeReady();
+  currentRuntime?.start();
+}
+
+function pauseGame(): void {
+  if (runtimeLoadState.value !== "ready") {
+    return;
+  }
+
+  runtime?.pause();
+}
+
+function resumeGame(): void {
+  if (runtimeLoadState.value !== "ready") {
+    return;
+  }
+
+  runtime?.resume();
+}
+
+async function restartGame(): Promise<void> {
+  if (runtimeLoadState.value !== "ready") {
+    return;
+  }
+
+  runtime?.restart();
+}
+
+function setMuted(nextMuted: boolean): void {
+  if (runtimeLoadState.value !== "ready") {
+    return;
+  }
+
+  runtime?.setMuted(nextMuted);
+}
+
+onMounted(() => {
+  disposed = false;
+  runtimeError.value = null;
+  updateLoadState("idle");
+  emit("bootError", null);
+  emit("hudChange", hudSnapshot.value);
 });
 
 onBeforeUnmount(() => {
@@ -154,6 +200,7 @@ onBeforeUnmount(() => {
   unsubscribeHud = null;
   runtime?.dispose();
   runtime = null;
+  runtimeCreation = null;
 
   if (import.meta.env.DEV) {
     delete window.__FOF_DEBUG__;
@@ -175,6 +222,7 @@ defineExpose<GameHostApi>({
       ref="hostElement"
       :aria-label="`${props.title} playfield`"
       data-test="runtime-host-placeholder"
+      :data-runtime-load-state="runtimeLoadState"
       class="fof-host__playfield"
     >
       <img
@@ -208,11 +256,19 @@ defineExpose<GameHostApi>({
       </div>
 
       <div
-        v-else-if="runtimeBooting"
+        v-else-if="runtimeLoadState === 'loading'"
         class="fof-host__message fof-host__message--subtle"
       >
         <p>Startar fysiken</p>
         <span>Laddar renderare, ljud och spelregler.</span>
+      </div>
+
+      <div
+        v-else-if="runtimeLoadState === 'idle'"
+        class="fof-host__message fof-host__message--subtle"
+      >
+        <p>Tryck Start</p>
+        <span>Spelskalet är klart. Själva spelmotorn laddas först när du börjar spela.</span>
       </div>
     </div>
   </section>

@@ -11,7 +11,13 @@
 
 import { computed, ref } from "vue";
 
-import type { ClassWorkspaceSummary, RoomTemplate, Roster } from "../classroomPlannerTypes";
+import { IconSettings, IconX } from "../../../components/icons";
+import type {
+  ClassWorkspaceSummary,
+  PlanDraftSummary,
+  RoomTemplate,
+  Roster,
+} from "../classroomPlannerTypes";
 import { ROOM_GRID_UNIT, normalizeRoomGrid } from "../roomFixtureLayout";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
@@ -27,6 +33,8 @@ const props = defineProps<{
   selectedRosterId: string | null;
   selectedTemplateId: string | null;
   isLoadingWorkspace: boolean;
+  visibleGroupingDraft: PlanDraftSummary | null;
+  visibleSeatingDraft: PlanDraftSummary | null;
 }>();
 
 const emit = defineEmits<{
@@ -37,10 +45,12 @@ const emit = defineEmits<{
   (e: "select-roster", rosterId: string): void;
   (e: "create-template"): void;
   (e: "select-template", templateId: string | null): void;
-  (e: "edit-current-template"): void;
+  (e: "edit-current-template", template?: RoomTemplate): void;
   (e: "delete-current-template"): void;
   (e: "open-grouping", payload: { templateId: string | null }): void;
   (e: "open-seating", payload: { templateId: string | null }): void;
+  (e: "dismiss-grouping-draft"): void;
+  (e: "dismiss-seating-draft"): void;
 }>();
 
 const workspaceMode = ref<"overview" | "grouping" | "seating">("overview");
@@ -90,6 +100,30 @@ const workspaceContextLabel = computed(() => {
   }
   return `Klassrum: ${selectedTemplate.value.name}`;
 });
+const hasVisibleResumableDrafts = computed(() => {
+  return props.visibleGroupingDraft !== null || props.visibleSeatingDraft !== null;
+});
+const visibleSeatingDraftTemplate = computed(() => {
+  const templateId = props.visibleSeatingDraft?.template_id ?? null;
+  if (!templateId) {
+    return null;
+  }
+  return props.availableTemplates.find((template) => template.id === templateId) ?? null;
+});
+
+function describeGroupingDraft(draft: PlanDraftSummary): string {
+  if (draft.template_name) {
+    return `${draft.template_name} · Revision ${draft.revision}`;
+  }
+  return `Utan klassrum · Revision ${draft.revision}`;
+}
+
+function describeSeatingDraft(draft: PlanDraftSummary): string {
+  if (draft.template_name) {
+    return `${draft.template_name} · Revision ${draft.revision}`;
+  }
+  return `Välj klassrum för att fortsätta · Revision ${draft.revision}`;
+}
 
 function selectWorkspaceMode(value: string): void {
   if (value === "overview") {
@@ -157,6 +191,109 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('back-to-landing')"
     />
+
+    <section
+      v-if="hasVisibleResumableDrafts"
+      class="grid gap-3 xl:grid-cols-2"
+      data-test="overview-resumable-surface"
+    >
+      <article
+        v-if="visibleGroupingDraft"
+        class="relative space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
+        data-test="overview-grouping-resume-card"
+      >
+        <button
+          type="button"
+          class="absolute right-3 top-3 text-navy/45 transition-colors hover:text-navy"
+          aria-label="Stäng fortsätt grupper"
+          data-test="dismiss-grouping-resume"
+          @click="emit('dismiss-grouping-draft')"
+        >
+          <IconX :size="16" />
+        </button>
+
+        <div class="space-y-1 pr-8">
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Grupper
+          </p>
+          <h3 class="font-serif text-xl text-navy">
+            Fortsätt grupper
+          </h3>
+          <p class="text-sm text-navy/70">
+            {{ describeGroupingDraft(visibleGroupingDraft) }}
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="btn-primary justify-center"
+            data-test="continue-grouping-draft"
+            @click="emit('open-grouping', { templateId: null })"
+          >
+            Fortsätt grupper
+          </button>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center rounded-none border border-navy/20 bg-white px-3 text-navy transition-colors hover:border-navy/35 hover:bg-canvas"
+            aria-label="Inställningar för grupper"
+            data-test="grouping-draft-settings"
+            @click="emit('edit-roster')"
+          >
+            <IconSettings :size="16" />
+          </button>
+        </div>
+      </article>
+
+      <article
+        v-if="visibleSeatingDraft"
+        class="relative space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
+        data-test="overview-seating-resume-card"
+      >
+        <button
+          type="button"
+          class="absolute right-3 top-3 text-navy/45 transition-colors hover:text-navy"
+          aria-label="Stäng fortsätt sittschema"
+          data-test="dismiss-seating-resume"
+          @click="emit('dismiss-seating-draft')"
+        >
+          <IconX :size="16" />
+        </button>
+
+        <div class="space-y-1 pr-8">
+          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Sittplatser
+          </p>
+          <h3 class="font-serif text-xl text-navy">
+            Fortsätt sittschema
+          </h3>
+          <p class="text-sm text-navy/70">
+            {{ describeSeatingDraft(visibleSeatingDraft) }}
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="btn-primary justify-center"
+            data-test="continue-seating-draft"
+            @click="emit('open-seating', { templateId: visibleSeatingDraft?.template_id ?? null })"
+          >
+            Fortsätt sittschema
+          </button>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center rounded-none border border-navy/20 bg-white px-3 text-navy transition-colors hover:border-navy/35 hover:bg-canvas"
+            aria-label="Inställningar för sittplatser"
+            data-test="seating-draft-settings"
+            :disabled="!visibleSeatingDraftTemplate"
+            @click="emit('edit-current-template', visibleSeatingDraftTemplate ?? undefined)"
+          >
+            <IconSettings :size="16" />
+          </button>
+        </div>
+      </article>
+    </section>
 
     <div
       v-if="isLoadingWorkspace"
@@ -346,7 +483,7 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
             type="button"
             class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
             :disabled="!selectedTemplate"
-            @click="emit('edit-current-template')"
+            @click="emit('edit-current-template', selectedTemplate ?? undefined)"
           >
             Redigera klassrum
           </button>

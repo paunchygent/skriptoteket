@@ -16,10 +16,10 @@ acceptance_criteria:
   - "Given the teacher is in `Översikt`, when they inspect the current class, then the class card shows a compact fixed-size preview of the roster in three columns and allows class deletion through the same app-native confirmation pattern as other destructive overview actions."
   - "Given the teacher is in `Översikt`, when they need to manage classroom context, then they can clearly see the current classroom, preview it, switch it with a compact selector, edit it, create a new classroom, or delete it without relying on long expanded lists."
   - "Given the teacher switches class from `Översikt`, when active grouping or seating drafts already exist for the current class, then that switch happens only from the neutral overview state, waits for any in-flight workspace transition to finish, and leaves the earlier class drafts resumable rather than silently discarding them."
-  - "Given a resumable draft exists, when the teacher is in `Översikt`, then a resumable CTA appears at the top of the workspace while the legacy landing-page CTA may remain duplicated during the transition."
+  - "Given a resumable draft exists, when the teacher is in `Översikt`, then the workspace can host compact resumable entry surfaces that are ready to replace the superseded landing CTA rather than prolonging a dual-home transition."
   - "Given the teacher wants to continue work, when they use the fixed top toggle, then they can enter `Grupper` or `Sittplatser` from the compact overview without a separate launcher surface."
   - "Given grouping remains classroom-agnostic by default, when the teacher enters `Grupper` from overview, then classroom context is still optional and not silently forced by the overview's current classroom selection."
-  - "Given the slice ships, when browser proof is run on the current SPA, then it proves the compact overview class/classroom management flow and the duplicated resumable CTA without removing the separate landing page yet."
+  - "Given the slice ships, when browser proof is run on the current SPA, then it proves the compact overview class/classroom management flow and leaves the app ready for the immediate landing-page cutover handled in tandem with `ST-24-08`."
 ---
 
 ## Context
@@ -28,11 +28,12 @@ acceptance_criteria:
 current `Översikt` is still too quiet to become the real dashboard surface. The separate landing
 page still carries too much of the create/select/resume burden.
 
-This story intentionally stops one step before the big cutover:
+This story still builds the replacement surface first, but the product direction is now to avoid a
+long duplicate-home transition:
 
 - make `Översikt` fully capable first
-- keep the current landing surface alive during transition
-- then remove that landing surface cleanly in `ST-24-08`
+- copy only the minimum resumable/home logic that must survive
+- then move directly into the landing cutover in tandem with `ST-24-08`
 
 ## Problem
 
@@ -55,7 +56,8 @@ That means the app still teaches two different “home” ideas instead of one.
   - `Översikt`
   - `Grupper`
   - `Sittplatser`
-- Duplicate the resumable CTA in both landing and overview during this transition story.
+- Any resumable/home surface added here must be cutover-ready, not a long-lived duplicate that
+  requires shared state with the old landing page.
 - Do not embed destructive delete actions inside the classroom selector itself; keep delete
   adjacent to the selector as an explicit action.
 - Keep the class and classroom cards visually balanced:
@@ -89,9 +91,10 @@ Focus:
 
 Focus:
 
-- add the duplicated resumable CTA to the overview top area
-- tighten class switching and compact workspace-entry polish
-- add targeted browser proof for the overview-first management flow while leaving landing intact
+- add the improved compact resumable/home surface to overview/main page
+- keep explicit grouping and seating continuation affordances, settings entry, and dismiss `×`
+- tighten workspace entry and `Avsluta` so the page is immediately ready for landing removal
+- add targeted browser proof for the cutover-ready overview entry flow
 
 ### PR-0112
 

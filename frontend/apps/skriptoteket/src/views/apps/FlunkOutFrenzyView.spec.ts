@@ -153,6 +153,14 @@ async function waitForRuntimeMount(wrapper: ReturnType<typeof mount>): Promise<v
   });
 }
 
+function findButton(wrapper: ReturnType<typeof mount>, label: string): ReturnType<typeof wrapper.get> {
+  const button = wrapper.findAll("button").find((candidate) => candidate.text().includes(label));
+  if (!button) {
+    throw new Error(`Expected button containing ${label} to exist.`);
+  }
+  return button;
+}
+
 function bootstrapPayload() {
   return {
     app_id: "games.flunk_out_frenzy",
@@ -187,12 +195,17 @@ describe("FlunkOutFrenzyView", () => {
       },
     });
     await flushBootstrap();
-    await waitForRuntimeMount(wrapper);
 
     expect(apiGet).toHaveBeenCalledWith("/api/v1/apps/games.flunk_out_frenzy/bootstrap");
     expect(wrapper.find("[data-test='bootstrap-ready']").exists()).toBe(true);
     expect(wrapper.text()).toContain("Flunk-Out Frenzy");
     expect(wrapper.find("[data-test='runtime-host-placeholder']").exists()).toBe(true);
+    expect(
+      wrapper.get("[data-test='runtime-host-placeholder']").attributes("data-runtime-load-state"),
+    ).toBe("idle");
+    expect(
+      wrapper.get("[data-test='runtime-host-placeholder']").attributes("data-runtime-mounted"),
+    ).toBeUndefined();
     expect(wrapper.text()).toContain("Starta om");
     expect(wrapper.find("[data-test='settings-panel']").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("flunk_out_frenzy.prototype_alpha.v1");
@@ -207,7 +220,6 @@ describe("FlunkOutFrenzyView", () => {
       },
     });
     await flushBootstrap();
-    await waitForRuntimeMount(wrapper);
 
     await wrapper.get("[data-test='settings-toggle']").trigger("click");
 
@@ -224,22 +236,14 @@ describe("FlunkOutFrenzyView", () => {
       },
     });
     await flushBootstrap();
-    await waitForRuntimeMount(wrapper);
 
-    const startButton = wrapper.findAll("button").find((button) => button.text().trim() === "Start");
-    if (!startButton) {
-      throw new Error("Expected Start button to exist.");
-    }
-
+    const startButton = findButton(wrapper, "Start");
     await startButton.trigger("click");
+    await waitForRuntimeMount(wrapper);
 
     expect(wrapper.text()).toContain("Pågående runda");
 
-    const muteButton = wrapper.findAll("button").find((button) => button.text().includes("Ljud"));
-    if (!muteButton) {
-      throw new Error("Expected mute button to exist.");
-    }
-
+    const muteButton = findButton(wrapper, "Ljud");
     await muteButton.trigger("click");
     expect(wrapper.text()).toContain("Ljud av");
   });
@@ -258,11 +262,7 @@ describe("FlunkOutFrenzyView", () => {
       expect(wrapper.get("[data-test='runtime-route-error']").text()).toContain("Pixi failed to initialize.");
     });
 
-    const startButton = wrapper.findAll("button").find((button) => button.text().trim() === "Start");
-    if (!startButton) {
-      throw new Error("Expected Start button to exist.");
-    }
-
+    const startButton = findButton(wrapper, "Start");
     expect(startButton.attributes("disabled")).toBeDefined();
   });
 
@@ -286,15 +286,16 @@ describe("FlunkOutFrenzyView", () => {
       },
     });
     await flushBootstrap();
+
+    expect(runtimeFactory).not.toHaveBeenCalled();
+
+    const startButton = findButton(wrapper, "Start");
+    await startButton.trigger("click");
     await waitForRuntimeMount(wrapper);
 
     expect(runtimeFactory).toHaveBeenCalledWith({ audioEnabled: false });
 
-    const muteButton = wrapper.findAll("button").find((button) => button.text().includes("Ljud"));
-    if (!muteButton) {
-      throw new Error("Expected mute button to exist.");
-    }
-
+    const muteButton = findButton(wrapper, "Ljud");
     expect(muteButton.text()).toContain("Ljud avstängt");
     expect(muteButton.attributes("disabled")).toBeDefined();
   });
