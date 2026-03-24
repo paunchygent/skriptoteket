@@ -12,7 +12,6 @@ Relationships:
 
 from __future__ import annotations
 
-import base64
 from dataclasses import dataclass
 from html import escape
 from pathlib import Path
@@ -28,29 +27,25 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.models impo
 )
 from skriptoteket.application.curated_apps.classroom_planner.exports.rendering import (
     RenderedSeatingPosterBundle,
+    RenderedSeatingPosterResource,
     SeatingPosterRenderRequest,
 )
 from skriptoteket.protocols.classroom_planner_exports import SeatingPosterRendererProtocol
 
-SEATING_POSTER_LOGO_SVG_PATH = (
-    Path(__file__).resolve().parents[6] / "frontend/apps/skriptoteket/public/logo-horizontal.svg"
+SEATING_POSTER_LOGO_PNG_PATH = (
+    Path(__file__).resolve().parents[6] / "frontend/apps/skriptoteket/public/logo-horizontal.png"
 )
-
-
-def _svg_data_uri(*, svg_bytes: bytes) -> str:
-    encoded = base64.b64encode(svg_bytes).decode("ascii")
-    return f"data:image/svg+xml;base64,{encoded}"
 
 
 class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
     """Render a seating poster as export-owned HTML plus a dedicated CSS file."""
 
     def __init__(self) -> None:
-        self._logo_data_uri: str | None = None
+        self._logo_png_bytes: bytes | None = None
         try:
-            self._logo_data_uri = _svg_data_uri(svg_bytes=SEATING_POSTER_LOGO_SVG_PATH.read_bytes())
+            self._logo_png_bytes = SEATING_POSTER_LOGO_PNG_PATH.read_bytes()
         except FileNotFoundError:
-            self._logo_data_uri = None
+            self._logo_png_bytes = None
 
     def render(self, *, request: SeatingPosterRenderRequest) -> RenderedSeatingPosterBundle:
         title = f"{request.roster_name} - {request.template_name}"
@@ -120,18 +115,29 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
             html_content=html,
             css_filename="poster.css",
             css_content=_build_css(request.paper_size, layout=layout),
+            resource_files=self._build_resource_files(),
             output_filename=f"{_slugify(request.roster_name)}-{request.paper_size.value}.pdf",
         )
 
     def _render_header_branding(self) -> str:
-        if self._logo_data_uri is None:
+        if self._logo_png_bytes is None:
             return ""
 
         return (
             '<div class="poster__header-brand" aria-hidden="true">'
-            f'<img alt="Skriptoteket" src="{escape(self._logo_data_uri, quote=True)}"/>'
+            '<img alt="" src="logo-horizontal.png"/>'
             "</div>"
         )
+
+    def _build_resource_files(self) -> list[RenderedSeatingPosterResource]:
+        if self._logo_png_bytes is None:
+            return []
+        return [
+            RenderedSeatingPosterResource(
+                filename="logo-horizontal.png",
+                content_bytes=self._logo_png_bytes,
+            )
+        ]
 
     def _render_seats(self, seats: list[PosterSceneSeat]) -> str:
         rendered: list[str] = []
@@ -431,13 +437,14 @@ body {{
 .poster__header-brand {{
   justify-self: end;
   align-self: start;
-  opacity: 0.08;
+  opacity: 0.18;
 }}
 .poster__header-brand img {{
   display: block;
-  width: 40mm;
-  max-width: 40mm;
-  height: auto;
+  width: 38mm;
+  height: 8.35mm;
+  max-width: none;
+  object-fit: contain;
 }}
 .poster__scene {{
   display: grid;

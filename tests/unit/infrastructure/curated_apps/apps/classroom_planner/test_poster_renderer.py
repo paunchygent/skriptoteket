@@ -74,7 +74,8 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "poster__floor" in bundle.html_content
     assert "poster-fixture--label-vertical" in bundle.html_content
     assert "poster__header-brand" in bundle.html_content
-    assert "data:image/svg+xml;base64" in bundle.html_content
+    assert 'src="logo-horizontal.png"' in bundle.html_content
+    assert [resource.filename for resource in bundle.resource_files] == ["logo-horizontal.png"]
     assert "@page" in bundle.css_content
     assert "A3 landscape" in bundle.css_content
     assert "margin: 0;" in bundle.css_content
@@ -84,7 +85,7 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "--top-bottom-wall-band-mm:6.5" in bundle.html_content
     assert "--page-width-mm:420.0" in bundle.html_content
     assert "justify-content: center;" in bundle.css_content
-    assert "opacity: 0.08;" in bundle.css_content
+    assert "opacity: 0.18;" in bundle.css_content
 
 
 @pytest.mark.unit

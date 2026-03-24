@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+from collections.abc import Iterable
 from io import BytesIO
 from typing import Any
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
@@ -106,14 +107,15 @@ def build_job_spec(
     }
 
 
-def build_resources_zip(*, filename: str, content: bytes) -> bytes:
-    """Build a deterministic resources zip for the renderer-owned CSS asset."""
+def build_resources_zip(*, files: Iterable[tuple[str, bytes]]) -> bytes:
+    """Build a deterministic resources zip for renderer-owned poster assets."""
 
     buffer = BytesIO()
     with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as archive:
-        info = ZipInfo(filename=filename)
-        info.compress_type = ZIP_DEFLATED
-        archive.writestr(info, content)
+        for filename, content in sorted(files, key=lambda item: item[0]):
+            info = ZipInfo(filename=filename)
+            info.compress_type = ZIP_DEFLATED
+            archive.writestr(info, content)
     return buffer.getvalue()
 
 

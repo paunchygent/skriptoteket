@@ -1,4 +1,5 @@
 import { createPinia, setActivePinia } from "pinia";
+import { nextTick } from "vue";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { useClassroomPlannerOverviewStore } from "./classroomPlannerOverviewStore";
@@ -6,6 +7,7 @@ import { useClassroomPlannerOverviewStore } from "./classroomPlannerOverviewStor
 describe("useClassroomPlannerOverviewStore", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    localStorage.clear();
   });
 
   it("prefers the requested home roster when it exists in the catalog", () => {
@@ -111,5 +113,32 @@ describe("useClassroomPlannerOverviewStore", () => {
 
     expect(store.visibleOverviewGroupingDraft).toBeNull();
     expect(store.visibleOverviewSeatingDraft).toBeNull();
+  });
+
+  it("hydrates and persists the selected roster and classroom across store resets", async () => {
+    localStorage.setItem("skriptoteket:classroom-planner:selected-roster-id", "roster-2");
+    localStorage.setItem("skriptoteket:classroom-planner:selected-template-id", "template-3");
+
+    const store = useClassroomPlannerOverviewStore();
+
+    expect(store.selectedRosterId).toBe("roster-2");
+    expect(store.selectedWorkspaceTemplateId).toBe("template-3");
+
+    store.selectedRosterId = "roster-4";
+    store.selectedWorkspaceTemplateId = "template-5";
+    await nextTick();
+
+    expect(localStorage.getItem("skriptoteket:classroom-planner:selected-roster-id")).toBe(
+      "roster-4",
+    );
+    expect(localStorage.getItem("skriptoteket:classroom-planner:selected-template-id")).toBe(
+      "template-5",
+    );
+
+    store.reset();
+    await nextTick();
+
+    expect(store.selectedRosterId).toBe("roster-4");
+    expect(store.selectedWorkspaceTemplateId).toBe("template-5");
   });
 });

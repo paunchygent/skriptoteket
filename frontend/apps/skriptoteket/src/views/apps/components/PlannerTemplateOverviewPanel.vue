@@ -7,14 +7,20 @@
  * parent overview shell owns selection state and modal orchestration.
  */
 
+import { computed, type CSSProperties } from "vue";
+
 import type { RoomTemplate } from "../classroomPlannerTypes";
-import { ROOM_GRID_UNIT, normalizeRoomGrid } from "../roomFixtureLayout";
+import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
+import { normalizeRoomGrid } from "../roomFixtureLayout";
+import RoomSceneSurface from "./RoomSceneSurface.vue";
 
 const OVERVIEW_PREVIEW_HEIGHT_CLASS = "h-[20rem]";
 const OVERVIEW_HEADER_HEIGHT_CLASS = "h-[6rem]";
 const OVERVIEW_SELECTOR_HEIGHT_CLASS = "h-[4rem]";
+const OVERVIEW_PREVIEW_TARGET_WIDTH_PX = 520;
+const OVERVIEW_PREVIEW_TARGET_HEIGHT_PX = 288;
 
-defineProps<{
+const props = defineProps<{
   selectedTemplate: RoomTemplate | null;
   selectedTemplateId: string | null;
   availableTemplates: RoomTemplate[];
@@ -37,31 +43,46 @@ function selectTemplate(event: Event): void {
   emit("select-template", target.value.length > 0 ? target.value : null);
 }
 
-function buildSeatPreviewStyle(template: RoomTemplate, seatId: string): Record<string, string> {
-  const grid = normalizeRoomGrid(template);
-  const seat = template.seats.find((entry) => entry.id === seatId);
-  if (!seat) {
-    return {};
-  }
-  return {
-    left: `${((seat.x + ROOM_GRID_UNIT / 2) / (grid.cols * ROOM_GRID_UNIT)) * 100}%`,
-    top: `${((seat.y + ROOM_GRID_UNIT / 2) / (grid.rows * ROOM_GRID_UNIT)) * 100}%`,
-  };
-}
+const previewGrid = computed(() => {
+  return props.selectedTemplate ? normalizeRoomGrid(props.selectedTemplate) : null;
+});
 
-function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Record<string, string> {
-  const grid = normalizeRoomGrid(template);
-  const fixture = template.fixtures.find((entry) => entry.id === fixtureId);
-  if (!fixture) {
+const previewMetrics = computed(() => {
+  return previewGrid.value ? getRoomSurfaceMetrics(previewGrid.value) : null;
+});
+
+const previewScale = computed(() => {
+  if (!previewMetrics.value) {
+    return 1;
+  }
+  return Math.min(
+    1,
+    OVERVIEW_PREVIEW_TARGET_WIDTH_PX / previewMetrics.value.width,
+    OVERVIEW_PREVIEW_TARGET_HEIGHT_PX / previewMetrics.value.height,
+  );
+});
+
+const previewStageStyle = computed<CSSProperties>(() => {
+  if (!previewMetrics.value) {
     return {};
   }
   return {
-    left: `${(fixture.x / (grid.cols * ROOM_GRID_UNIT)) * 100}%`,
-    top: `${(fixture.y / (grid.rows * ROOM_GRID_UNIT)) * 100}%`,
-    width: `${(fixture.width / (grid.cols * ROOM_GRID_UNIT)) * 100}%`,
-    height: `${(fixture.height / (grid.rows * ROOM_GRID_UNIT)) * 100}%`,
+    width: `${previewMetrics.value.width * previewScale.value}px`,
+    height: `${previewMetrics.value.height * previewScale.value}px`,
   };
-}
+});
+
+const previewSurfaceStyle = computed<CSSProperties>(() => {
+  if (!previewMetrics.value) {
+    return {};
+  }
+  return {
+    width: `${previewMetrics.value.width}px`,
+    height: `${previewMetrics.value.height}px`,
+    transform: `scale(${previewScale.value})`,
+    transformOrigin: "top left",
+  };
+});
 </script>
 
 <template>
@@ -116,18 +137,23 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
         :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
         data-test="overview-classroom-preview"
       >
-        <div class="absolute inset-2 border border-dashed border-navy/10" />
         <div
-          v-for="fixture in selectedTemplate.fixtures"
-          :key="fixture.id"
-          class="absolute border border-navy/25 bg-navy/10"
-          :style="buildFixturePreviewStyle(selectedTemplate, fixture.id)"
-        />
+          v-if="previewGrid"
+          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          :style="previewStageStyle"
+        >
+          <div :style="previewSurfaceStyle">
+            <RoomSceneSurface
+              :grid="previewGrid"
+              :seats="selectedTemplate.seats"
+              :fixtures="selectedTemplate.fixtures"
+              show-backdrop-grid
+            />
+          </div>
+        </div>
         <div
-          v-for="seat in selectedTemplate.seats"
-          :key="seat.id"
-          class="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-burgundy/40 bg-burgundy/70"
-          :style="buildSeatPreviewStyle(selectedTemplate, seat.id)"
+          v-else
+          class="absolute inset-2 border border-dashed border-navy/10"
         />
       </div>
     </div>

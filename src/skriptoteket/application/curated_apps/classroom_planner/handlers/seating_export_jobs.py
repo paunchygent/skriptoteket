@@ -13,6 +13,7 @@ Relationships:
 
 from __future__ import annotations
 
+from pathlib import Path
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -130,8 +131,13 @@ class CreateSeatingExportJobHandler:
                     file_bytes=rendered.html_content.encode("utf-8"),
                     resources_filename="resources.zip",
                     resources_bytes=build_resources_zip(
-                        filename=rendered.css_filename,
-                        content=rendered.css_content.encode("utf-8"),
+                        files=[
+                            (rendered.css_filename, rendered.css_content.encode("utf-8")),
+                            *[
+                                (resource.filename, resource.content_bytes)
+                                for resource in rendered.resource_files
+                            ],
+                        ],
                     ),
                     job_spec=build_job_spec(
                         paper_size=paper_size,
@@ -169,10 +175,11 @@ class CreateSeatingExportJobHandler:
         output_filename: str,
     ) -> SeatingExportJob:
         now = self._clock.now()
+        job_id = self._id_generator.new_uuid()
         async with self._uow:
             return await self._jobs.create(
                 job=SeatingExportJob(
-                    id=self._id_generator.new_uuid(),
+                    id=job_id,
                     owner_user_id=actor.id,
                     draft_id=prepared.seating_draft_id,
                     roster_id=prepared.roster_id,
@@ -180,7 +187,10 @@ class CreateSeatingExportJobHandler:
                     export_kind=prepared.export_kind,
                     layout_id=prepared.layout_id,
                     paper_size=paper_size,
-                    output_filename=output_filename,
+                    output_filename=_stamp_output_filename(
+                        filename=output_filename,
+                        stamp_source=job_id,
+                    ),
                     status=SeatingExportJobStatus.SUBMITTED,
                     created_at=now,
                     updated_at=now,
@@ -427,3 +437,13 @@ class GetRecoverableSeatingExportJobForDraftHandler(_BaseSeatingExportJobReadHan
                 owner_user_id=actor.id,
                 draft_id=draft_id,
             )
+
+
+def _stamp_output_filename(*, filename: str, stamp_source: UUID) -> str:
+    """Append a short deterministic stamp so repeated exports keep unique names."""
+
+    parsed = Path(filename or "klassrumskarta.pdf")
+    suffix = parsed.suffix or ".pdf"
+    stem = parsed.stem or "klassrumskarta"
+    stamp = str(stamp_source).split("-", maxsplit=1)[0]
+    return f"{stem}-{stamp}{suffix}"

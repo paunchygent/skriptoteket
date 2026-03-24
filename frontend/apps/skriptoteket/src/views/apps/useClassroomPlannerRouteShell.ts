@@ -62,7 +62,7 @@ export function useClassroomPlannerRouteShell() {
     isLoadingClassWorkspace.value = true;
     try {
       await loadClassWorkspaceSummary(rosterId);
-      overviewStore.syncWorkspaceTemplateSelection();
+      overviewStore.syncWorkspaceTemplateSelection({ preserveCurrent: true });
       currentScreen.value = "class-workspace";
     } catch (error: unknown) {
       classWorkspaceSummary.value = null;
@@ -153,7 +153,7 @@ export function useClassroomPlannerRouteShell() {
         fetchCatalog(),
         plannerState.getResumableDraft(),
       ]);
-      await openInitialHomeWorkspace(resumableDraft?.draft.roster_id ?? null);
+      await openInitialHomeWorkspace(selectedRosterId.value ?? resumableDraft?.draft.roster_id ?? null);
     } catch (error: unknown) {
       bootstrapError.value = error instanceof Error ? error.message : "Kunde inte ladda Klassrumskartan.";
     } finally {

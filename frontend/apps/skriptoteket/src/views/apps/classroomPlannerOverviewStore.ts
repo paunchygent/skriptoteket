@@ -6,7 +6,7 @@
  * loading/errors, and the dismiss state for resumable overview cards.
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { defineStore } from "pinia";
 
 import type {
@@ -17,6 +17,9 @@ import type {
 
 export type PlannerScreen = "class-workspace" | "planner";
 export type PlannerWorkspaceInitialView = "groups" | "seats";
+
+const SELECTED_ROSTER_STORAGE_KEY = "skriptoteket:classroom-planner:selected-roster-id";
+const SELECTED_TEMPLATE_STORAGE_KEY = "skriptoteket:classroom-planner:selected-template-id";
 
 export const useClassroomPlannerOverviewStore = defineStore("classroom-planner-overview", () => {
   const availableRosters = ref<Roster[]>([]);
@@ -49,11 +52,18 @@ export const useClassroomPlannerOverviewStore = defineStore("classroom-planner-o
     return draft;
   });
 
+  hydrateWorkspaceSelection();
+
+  watch(selectedRosterId, (value) => {
+    persistWorkspaceSelection(SELECTED_ROSTER_STORAGE_KEY, value);
+  });
+  watch(selectedWorkspaceTemplateId, (value) => {
+    persistWorkspaceSelection(SELECTED_TEMPLATE_STORAGE_KEY, value);
+  });
+
   function reset(): void {
     availableRosters.value = [];
     availableTemplates.value = [];
-    selectedRosterId.value = null;
-    selectedWorkspaceTemplateId.value = null;
     currentScreen.value = "class-workspace";
     plannerInitialView.value = "groups";
     isBootstrapping.value = true;
@@ -63,6 +73,7 @@ export const useClassroomPlannerOverviewStore = defineStore("classroom-planner-o
     dismissedOverviewGroupingDraftId.value = null;
     dismissedOverviewSeatingDraftId.value = null;
     classWorkspaceSummary.value = null;
+    hydrateWorkspaceSelection();
   }
 
   function setCatalog(rosters: Roster[], templates: RoomTemplate[]): void {
@@ -76,6 +87,13 @@ export const useClassroomPlannerOverviewStore = defineStore("classroom-planner-o
     selectedWorkspaceTemplateId.value = null;
     dismissedOverviewGroupingDraftId.value = null;
     dismissedOverviewSeatingDraftId.value = null;
+  }
+
+  function hydrateWorkspaceSelection(): void {
+    selectedRosterId.value = readPersistedWorkspaceSelection(SELECTED_ROSTER_STORAGE_KEY);
+    selectedWorkspaceTemplateId.value = readPersistedWorkspaceSelection(
+      SELECTED_TEMPLATE_STORAGE_KEY,
+    );
   }
 
   function resolveHomeRosterId(preferredRosterId: string | null): string | null {
@@ -148,3 +166,22 @@ export const useClassroomPlannerOverviewStore = defineStore("classroom-planner-o
     dismissOverviewSeatingDraft,
   };
 });
+
+function readPersistedWorkspaceSelection(storageKey: string): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const stored = window.localStorage.getItem(storageKey);
+  return stored && stored.length > 0 ? stored : null;
+}
+
+function persistWorkspaceSelection(storageKey: string, value: string | null): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (value && value.length > 0) {
+    window.localStorage.setItem(storageKey, value);
+    return;
+  }
+  window.localStorage.removeItem(storageKey);
+}

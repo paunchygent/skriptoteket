@@ -221,10 +221,13 @@ async def test_create_seating_export_job_submits_rendered_html_and_css_bundle():
     )
 
     submit_request = client.submit_job.await_args.kwargs["request"]
+    created_job_payload = jobs.create.await_args.kwargs["job"]
     assert submit_request.filename == "index.html"
     assert submit_request.resources_filename == "resources.zip"
     assert b"poster.css" in submit_request.resources_bytes
     assert submit_request.job_spec["conversion"]["css_filenames"] == ["poster.css"]
+    expected_filename = f"klass-7a-a3-{str(job_id).split('-', maxsplit=1)[0]}.pdf"
+    assert created_job_payload.output_filename == expected_filename
     assert result.status == SeatingExportJobStatus.SUBMITTED
 
 

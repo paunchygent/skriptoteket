@@ -13,10 +13,19 @@ Relationships:
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .jobs import SeatingExportPaperSize
 from .models import SeatingPosterScene
+
+
+class RenderedSeatingPosterResource(BaseModel):
+    """Describe one extra poster resource bundled alongside HTML and CSS."""
+
+    model_config = ConfigDict(frozen=True)
+
+    filename: str
+    content_bytes: bytes
 
 
 class RenderedSeatingPosterBundle(BaseModel):
@@ -28,6 +37,7 @@ class RenderedSeatingPosterBundle(BaseModel):
     html_content: str
     css_filename: str
     css_content: str
+    resource_files: list[RenderedSeatingPosterResource] = Field(default_factory=list)
     output_filename: str
 
 

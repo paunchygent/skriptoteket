@@ -123,6 +123,7 @@ describe("ClassroomPlannerView", () => {
     stateMocks.plannerState.template = null;
     stateMocks.plannerState.draft = null;
     stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
+    localStorage.clear();
     vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([]);
     window.history.replaceState(null, "");
   });
@@ -182,6 +183,63 @@ describe("ClassroomPlannerView", () => {
     expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenCalledWith("roster-1");
     expect(wrapper.text()).not.toContain("Laddar planeringsmiljön");
     expect(stateMocks.plannerState.resolveDraft).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it("prefers the persisted workspace selection over an older resumable draft on reload", async () => {
+    localStorage.setItem("skriptoteket:classroom-planner:selected-roster-id", "roster-2");
+    localStorage.setItem("skriptoteket:classroom-planner:selected-template-id", "template-2");
+
+    const workspaceSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-2", name: "SA24E", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    };
+    clientMocks.apiGet
+      .mockResolvedValueOnce([
+        { id: "roster-1", name: "SA24D", students: [] },
+        { id: "roster-2", name: "SA24E", students: [] },
+      ])
+      .mockResolvedValueOnce([
+        { id: "template-1", name: "Sal 101", seats: [], fixtures: [] },
+        { id: "template-2", name: "Sal 202", seats: [], fixtures: [] },
+      ]);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue({
+      draft: {
+        id: "draft-1",
+        roster_id: "roster-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        status: "active",
+        revision: 3,
+        last_opened_at: "2026-03-21T10:00:00Z",
+      },
+      roster_name: "SA24D",
+      template_name: "Sal 101",
+    });
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: true,
+          PlannerClassWorkspace: true,
+          PlannerWorkspaceShell: true,
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenCalledWith("roster-2");
 
     wrapper.unmount();
   });
