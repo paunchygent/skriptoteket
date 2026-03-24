@@ -7,6 +7,7 @@
  */
 
 import { mount } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -99,6 +100,7 @@ function createDeferred<T>(): { promise: Promise<T>; resolve: (value: T) => void
 
 describe("ClassroomPlannerView", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.restoreAllMocks();
     clientMocks.apiDelete.mockReset();
     clientMocks.apiGet.mockReset();

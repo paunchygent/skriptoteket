@@ -2,7 +2,7 @@
 type: pr
 id: PR-0115
 title: "Klassrumskartan: route-shell orchestration and catalog-home state extraction"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
@@ -93,3 +93,39 @@ focused on active workspace concerns.
 
 - Revert to the current route-shell local-ref orchestration while preserving the active
   cutover-ready UI and the existing draft workspace store behavior.
+
+## Implementation summary
+
+- `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue` is now a 217-line composition
+  layer that wires the overview shell, planner shell, and planner modals instead of acting as a
+  second hidden store.
+- Overview/catalog state now lives in
+  `frontend/apps/skriptoteket/src/views/apps/classroomPlannerOverviewStore.ts` and owns:
+  - rosters/templates catalog
+  - selected overview roster/template
+  - overview summary + resumable-card dismiss state
+  - overview-first boot/loading/error state
+- Route-shell orchestration is split into planner-local modules:
+  - `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerRouteShell.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerCatalogApi.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerRouteShellErrors.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerRouteShellSaveGuards.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerRouteShellExit.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerRouteShellWorkspace.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerRouteShellOverviewCrud.ts`
+- The repeated flush-and-block transition behavior now goes through
+  `classroomPlannerRouteShellSaveGuards.ts` instead of being duplicated inside the root view.
+- The active draft Pinia store in `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`
+  remains focused on active planner workspace state only.
+
+## Verification
+
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/classroomPlannerOverviewStore.spec.ts src/views/apps/classroomPlannerRouteShellSaveGuards.spec.ts`
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/classroomPlannerOverviewStore.spec.ts src/views/apps/classroomPlannerRouteShellSaveGuards.spec.ts`
+- `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/ClassroomPlannerView.vue src/views/apps/useClassroomPlannerRouteShell.ts src/views/apps/classroomPlannerCatalogApi.ts src/views/apps/classroomPlannerOverviewStore.ts src/views/apps/classroomPlannerRouteShellErrors.ts src/views/apps/classroomPlannerRouteShellExit.ts src/views/apps/classroomPlannerRouteShellWorkspace.ts src/views/apps/classroomPlannerRouteShellOverviewCrud.ts`
+- `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
+- `pdm run docs-validate`
+- Live/browser:
+  - verified overview-first entry from catalog-state navigation, entered `Grupper`, returned to
+    `Översikt`, entered `Sittplatser`, and confirmed `Avsluta` returned to `/browse`
+  - artifact: `.artifacts/pr-0115-live-check/pr0115-overview-exit-proof.png`
