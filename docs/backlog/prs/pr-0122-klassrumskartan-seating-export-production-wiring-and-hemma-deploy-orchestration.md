@@ -2,7 +2,7 @@
 type: pr
 id: PR-0122
 title: "Klassrumskartan: seating export production wiring and Hemma deploy orchestration"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24

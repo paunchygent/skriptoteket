@@ -70,8 +70,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
   HTML/CSS rendering, Sir Convert-a-Lot delivery, Vault persistence, typed
   status/download routes, reload recovery, production webhook reconciliation,
   and a shared preview/export scene-normalization seam.
-- Remaining close-out for this story is the real Hemma production proof for the
-  `PR-0122` deploy gate and callback-capable export smoke.
+- The `PR-0122` Hemma deploy gate is now production-proven through the on-host
+  callback-capable export smoke and Vault-backed download.
 
 ## Notes
 
