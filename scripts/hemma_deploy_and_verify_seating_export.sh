@@ -54,6 +54,7 @@ require_env "SIR_CONVERT_A_LOT_V2_BASE_URL"
 require_env "SIR_CONVERT_A_LOT_V2_API_KEY"
 require_env "SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL"
 require_env "BOOTSTRAP_SUPERUSER_EMAIL"
+require_env "BOOTSTRAP_SUPERUSER_PASSWORD"
 require_env "SKRIPTOTEKET_DB_PASSWORD"
 require_env "SECRET_KEY"
 
@@ -91,6 +92,8 @@ sudo docker exec \
 echo "==> Running callback-capable seating export smoke"
 sudo docker exec \
   -e PYTHONPATH=/app/src \
+  -e BOOTSTRAP_SUPERUSER_EMAIL="${BOOTSTRAP_SUPERUSER_EMAIL}" \
+  -e BOOTSTRAP_SUPERUSER_PASSWORD="${BOOTSTRAP_SUPERUSER_PASSWORD}" \
   skriptoteket-web \
   pdm run python -m skriptoteket.cli smoke-seating-export-readiness \
   --timeout-seconds 240 \
