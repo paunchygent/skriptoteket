@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, and `PR-0106`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, `PR-0106`, and `PR-0107`.
 
 ## Status
 
@@ -73,7 +73,8 @@ Keep this file updated so the next session can pick up work quickly.
   - focused view/component tests cover roster switching from overview and opening classroom editing from the selected overview classroom
 - Competitive-games lane is separate:
   - `ST-25-01` and `ST-25-02` are done through `PR-0104`
-  - next planned chain there is `PR-0107` -> `PR-0108` -> `ST-25-03`
+  - `PR-0107` is now done: importing `GameRuntime.ts` no longer imports Pixi at jsdom test-module load time, so the focused Flunk-Out Vitest suite runs without `HTMLCanvasElement.getContext()` warnings and without a test-setup canvas shim
+  - next planned chain there is `PR-0108` -> `ST-25-03`
 
 ## Previous Sessions
 
@@ -119,6 +120,8 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerToolbarIconButton.vue src/views/apps/components/PlannerToolbarOverflowMenu.vue src/views/apps/components/RoomCanvas.vue src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED for the accepted `PR-0112` ruthless-review fixes and docs refresh).
 - 2026-03-23: `pdm run ruff check scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0112_design_transition_check.py`; `pdm run python -m scripts.playwright_pr_0112_design_transition_check --base-url http://127.0.0.1:5173` (PASSED; proved honest overview/grouping/seating transitions on the canonical local SPA, kept grouping/seating `Slumpa` visible while `Historik` / edit actions stayed in overflow, and saved fresh artifacts in `.artifacts/pr-0112-live-check/overview.png`, `.artifacts/pr-0112-live-check/groups.png`, and `.artifacts/pr-0112-live-check/seating.png`).
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/classroomPlannerStoreMutations.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerConfirmationDialog.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run ruff check scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0105_seating_continuity.py scripts/playwright_pr_0113_reset_current_draft.py`; `pdm run python -m scripts.playwright_pr_0113_reset_current_draft --base-url http://127.0.0.1:5173` (PASSED for local `PR-0113`; proved in-place `Börja om` reset for both grouping and seating plus undo restoration on the canonical local SPA; artifact in `.artifacts/pr-0113-live-check/pr0113-reset-current-draft.png`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run 'src/components/apps/flunk-out-frenzy/**/*.spec.ts' src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/components/apps/flunk-out-frenzy src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts src/test/setup.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED for `PR-0107`; focused Flunk-Out Vitest suite is now free of jsdom `HTMLCanvasElement.getContext()` warnings after lazy-loading the default Pixi renderer inside `GameRuntime.create()`).
+- 2026-03-23: authenticated local Playwright probe against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` (PASSED for `PR-0107`; reused the current local proof artifact in `.artifacts/pr-0107-live-check/flunk-out-frenzy-pr0107-dev.png` to confirm the route still mounts the runtime host, advances to `data-runtime-status=running`, and renders one runtime canvas).
 
 ## How to Run
 

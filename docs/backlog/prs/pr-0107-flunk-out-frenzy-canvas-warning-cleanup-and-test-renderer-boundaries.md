@@ -2,7 +2,7 @@
 type: pr
 id: PR-0107
 title: "Flunk-Out Frenzy: canvas-warning cleanup and test renderer boundaries"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-23
 updated: 2026-03-23
@@ -56,9 +56,9 @@ boundary explicit:
 
 ### 1. Audit the remaining real-canvas test paths
 
-- [ ] Identify exactly which Flunk-Out specs still trigger real Pixi/canvas
+- [x] Identify exactly which Flunk-Out specs still trigger real Pixi/canvas
       initialization or canvas context lookup.
-- [ ] Confirm whether the warning comes from:
+- [x] Confirm whether the warning comes from:
       - runtime creation paths that still fall through to `PixiRenderer.create`
       - shared test setup
       - import-time side effects
@@ -69,31 +69,45 @@ Suggested solution:
 - Keep the audit small and feature-local; do not broaden into unrelated SPA
   test cleanup.
 
+Actual result:
+
+- The smallest reproducible path was `GameRuntime.spec.ts`.
+- The warning came from import-time coupling inside `GameRuntime.ts`, which
+  eagerly imported `PixiRenderer.ts` even when the spec injected a fake
+  renderer and never called `GameRuntime.create()`.
+
 ### 2. Tighten renderer boundaries in unit tests
 
-- [ ] Ensure all Flunk-Out unit/component specs that do not explicitly test
+- [x] Ensure all Flunk-Out unit/component specs that do not explicitly test
       real renderer behavior use fake `RuntimeRenderer` or injected
       `runtimeFactory` seams.
-- [ ] Remove any remaining accidental dependency on Pixi boot from:
+- [x] Remove any remaining accidental dependency on Pixi boot from:
       - `GameRuntime.spec.ts`
       - host/view specs
       - future feature-local test helpers
-- [ ] Keep the runtime/renderer contract protocol-first.
+- [x] Keep the runtime/renderer contract protocol-first.
 
 Suggested solution:
 
 - Prefer protocol-level fakes over global module interception.
 - Treat unit tests as runtime-boundary tests, not renderer smoke tests.
 
+Actual result:
+
+- `GameRuntime.ts` now lazy-loads its default engine, renderer, and audio
+  adapters inside `GameRuntime.create()` and `resolveRuntimeAudio()`.
+- Importing `GameRuntime` in jsdom unit tests no longer imports Pixi at module
+  load time, so fake renderers remain the active seam.
+
 ### 3. Add a minimal canvas-context shim only if still needed
 
-- [ ] If warnings remain after boundary cleanup, add a minimal
+- [x] If warnings remain after boundary cleanup, add a minimal
       `HTMLCanvasElement.prototype.getContext` shim in
       `frontend/apps/skriptoteket/src/test/setup.ts`.
-- [ ] Keep the shim intentionally narrow:
+- [x] Keep the shim intentionally narrow:
       - enough to silence jsdom capability noise
       - not rich enough to mask real renderer mistakes
-- [ ] Document why the shim exists and when it should not be used as a reason to
+- [x] Document why the shim exists and when it should not be used as a reason to
       boot real Pixi in unit tests.
 
 Suggested solution:
@@ -101,17 +115,39 @@ Suggested solution:
 - Return a light fake object for known context types.
 - Do not try to emulate full canvas behavior in Vitest.
 
+Actual result:
+
+- No shim was needed after the import boundary cleanup.
+- `frontend/apps/skriptoteket/src/test/setup.ts` stays unchanged so jsdom still
+  fails loudly if a future spec accidentally boots real Pixi/canvas again.
+
 ### 4. Preserve browser-level renderer truth
 
-- [ ] Keep at least one live/browser verification step proving the real route
+- [x] Keep at least one live/browser verification step proving the real route
       still boots the runtime canvas correctly after the cleanup.
-- [ ] Record the browser proof in `.agents/handoff.md`.
+- [x] Record the browser proof in `.agents/handoff.md`.
 
 Suggested solution:
 
 - Use the existing local route proof workflow on
   `/apps/games.flunk_out_frenzy`.
 - Do not treat the shim as a substitute for browser proof.
+
+## Verification outcome
+
+Automated:
+
+- `pnpm -C frontend --filter @skriptoteket/spa exec vitest run 'src/components/apps/flunk-out-frenzy/**/*.spec.ts' src/views/apps/FlunkOutFrenzyView.spec.ts`
+- `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/components/apps/flunk-out-frenzy src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts src/test/setup.ts`
+- `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
+- `pdm run docs-validate`
+
+Manual/live:
+
+- Authenticated Playwright probe against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy`
+- Confirmed runtime host `data-runtime-mounted=true`, `Start` advances to
+  `data-runtime-status=running`, and one runtime canvas is present
+- Artifact: `.artifacts/pr-0107-live-check/flunk-out-frenzy-pr0107-dev.png`
 
 ## Test plan
 
