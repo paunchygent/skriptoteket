@@ -4,26 +4,25 @@
  *
  * This component is now the only home surface for Klassrumskartan. It keeps
  * overview as the default entry state, folds the no-class empty state into the
- * same surface, and relies on the segmented toggle as the only way to enter
- * groups or seating.
+ * same surface, relies on the segmented toggle as the only way to enter
+ * task work, and composes overview-specific subcomponents instead of mixing
+ * resumable cards, roster controls, and classroom controls in one file.
  */
 
 import { computed, ref } from "vue";
 
-import { IconSettings, IconX } from "../../../components/icons";
 import type {
   ClassWorkspaceSummary,
   PlanDraftSummary,
   RoomTemplate,
   Roster,
 } from "../classroomPlannerTypes";
-import { ROOM_GRID_UNIT, normalizeRoomGrid } from "../roomFixtureLayout";
+import PlannerOverviewResumeCards from "./PlannerOverviewResumeCards.vue";
+import PlannerRosterOverviewPanel from "./PlannerRosterOverviewPanel.vue";
+import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
 const CLASS_PREVIEW_NAME_LIMIT = 33;
-const OVERVIEW_PREVIEW_HEIGHT_CLASS = "h-[20rem]";
-const OVERVIEW_HEADER_HEIGHT_CLASS = "h-[6rem]";
-const OVERVIEW_SELECTOR_HEIGHT_CLASS = "h-[4rem]";
 
 const props = defineProps<{
   workspaceSummary: ClassWorkspaceSummary | null;
@@ -115,9 +114,6 @@ const selectedRosterCountLabel = computed(() => {
   }
   return "Välj en klasslista";
 });
-const hasVisibleResumableDrafts = computed(() => {
-  return props.visibleGroupingDraft !== null || props.visibleSeatingDraft !== null;
-});
 const visibleSeatingDraftTemplate = computed(() => {
   const templateId = props.visibleSeatingDraft?.template_id ?? null;
   if (!templateId) {
@@ -125,20 +121,6 @@ const visibleSeatingDraftTemplate = computed(() => {
   }
   return props.availableTemplates.find((template) => template.id === templateId) ?? null;
 });
-
-function describeGroupingDraft(draft: PlanDraftSummary): string {
-  if (draft.template_name) {
-    return `${draft.template_name} · Revision ${draft.revision}`;
-  }
-  return `Utan klassrum · Revision ${draft.revision}`;
-}
-
-function describeSeatingDraft(draft: PlanDraftSummary): string {
-  if (draft.template_name) {
-    return `${draft.template_name} · Revision ${draft.revision}`;
-  }
-  return `Välj klassrum för att fortsätta · Revision ${draft.revision}`;
-}
 
 function selectWorkspaceMode(value: string): void {
   if (value === "overview") {
@@ -156,43 +138,6 @@ function selectWorkspaceMode(value: string): void {
   }
 }
 
-function selectRoster(event: Event): void {
-  const nextRosterId = (event.target as HTMLSelectElement).value;
-  if (nextRosterId && nextRosterId !== props.selectedRosterId) {
-    emit("select-roster", nextRosterId);
-  }
-}
-
-function selectTemplate(event: Event): void {
-  const nextTemplateId = (event.target as HTMLSelectElement).value;
-  emit("select-template", nextTemplateId.length > 0 ? nextTemplateId : null);
-}
-
-function buildSeatPreviewStyle(template: RoomTemplate, seatId: string): Record<string, string> {
-  const grid = normalizeRoomGrid(template);
-  const seat = template.seats.find((entry) => entry.id === seatId);
-  if (!seat) {
-    return {};
-  }
-  return {
-    left: `${((seat.x + ROOM_GRID_UNIT / 2) / (grid.cols * ROOM_GRID_UNIT)) * 100}%`,
-    top: `${((seat.y + ROOM_GRID_UNIT / 2) / (grid.rows * ROOM_GRID_UNIT)) * 100}%`,
-  };
-}
-
-function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Record<string, string> {
-  const grid = normalizeRoomGrid(template);
-  const fixture = template.fixtures.find((entry) => entry.id === fixtureId);
-  if (!fixture) {
-    return {};
-  }
-  return {
-    left: `${(fixture.x / (grid.cols * ROOM_GRID_UNIT)) * 100}%`,
-    top: `${(fixture.y / (grid.rows * ROOM_GRID_UNIT)) * 100}%`,
-    width: `${(fixture.width / (grid.cols * ROOM_GRID_UNIT)) * 100}%`,
-    height: `${(fixture.height / (grid.rows * ROOM_GRID_UNIT)) * 100}%`,
-  };
-}
 </script>
 
 <template>
@@ -207,108 +152,17 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
       @exit="emit('exit-app')"
     />
 
-    <section
-      v-if="hasVisibleResumableDrafts"
-      class="grid gap-3 xl:grid-cols-2"
-      data-test="overview-resumable-surface"
-    >
-      <article
-        v-if="visibleGroupingDraft"
-        class="relative space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
-        data-test="overview-grouping-resume-card"
-      >
-        <button
-          type="button"
-          class="absolute right-3 top-3 text-navy/45 transition-colors hover:text-navy"
-          aria-label="Stäng fortsätt grupper"
-          data-test="dismiss-grouping-resume"
-          @click="emit('dismiss-grouping-draft')"
-        >
-          <IconX :size="16" />
-        </button>
-
-        <div class="space-y-1 pr-8">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Grupper
-          </p>
-          <h3 class="font-serif text-xl text-navy">
-            Fortsätt grupper
-          </h3>
-          <p class="text-sm text-navy/70">
-            {{ describeGroupingDraft(visibleGroupingDraft) }}
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="btn-primary justify-center"
-            data-test="continue-grouping-draft"
-            @click="emit('open-grouping', { templateId: null })"
-          >
-            Fortsätt grupper
-          </button>
-          <button
-            type="button"
-            class="inline-flex h-10 items-center justify-center rounded-none border border-navy/20 bg-white px-3 text-navy transition-colors hover:border-navy/35 hover:bg-canvas"
-            aria-label="Inställningar för grupper"
-            data-test="grouping-draft-settings"
-            @click="emit('edit-roster')"
-          >
-            <IconSettings :size="16" />
-          </button>
-        </div>
-      </article>
-
-      <article
-        v-if="visibleSeatingDraft"
-        class="relative space-y-3 border border-navy/20 bg-white p-4 shadow-brutal-sm"
-        data-test="overview-seating-resume-card"
-      >
-        <button
-          type="button"
-          class="absolute right-3 top-3 text-navy/45 transition-colors hover:text-navy"
-          aria-label="Stäng fortsätt sittschema"
-          data-test="dismiss-seating-resume"
-          @click="emit('dismiss-seating-draft')"
-        >
-          <IconX :size="16" />
-        </button>
-
-        <div class="space-y-1 pr-8">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Sittplatser
-          </p>
-          <h3 class="font-serif text-xl text-navy">
-            Fortsätt sittschema
-          </h3>
-          <p class="text-sm text-navy/70">
-            {{ describeSeatingDraft(visibleSeatingDraft) }}
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="btn-primary justify-center"
-            data-test="continue-seating-draft"
-            @click="emit('open-seating', { templateId: visibleSeatingDraft?.template_id ?? null })"
-          >
-            Fortsätt sittschema
-          </button>
-          <button
-            type="button"
-            class="inline-flex h-10 items-center justify-center rounded-none border border-navy/20 bg-white px-3 text-navy transition-colors hover:border-navy/35 hover:bg-canvas"
-            aria-label="Inställningar för sittplatser"
-            data-test="seating-draft-settings"
-            :disabled="!visibleSeatingDraftTemplate"
-            @click="emit('edit-current-template', visibleSeatingDraftTemplate ?? undefined)"
-          >
-            <IconSettings :size="16" />
-          </button>
-        </div>
-      </article>
-    </section>
+    <PlannerOverviewResumeCards
+      :visible-grouping-draft="visibleGroupingDraft"
+      :visible-seating-draft="visibleSeatingDraft"
+      :visible-seating-draft-template="visibleSeatingDraftTemplate"
+      @open-grouping="emit('open-grouping', { templateId: null })"
+      @open-seating="emit('open-seating', { templateId: $event })"
+      @edit-roster="emit('edit-roster')"
+      @edit-current-template="emit('edit-current-template', $event)"
+      @dismiss-grouping-draft="emit('dismiss-grouping-draft')"
+      @dismiss-seating-draft="emit('dismiss-seating-draft')"
+    />
 
     <div
       v-if="isLoadingWorkspace"
@@ -321,205 +175,32 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
       v-else
       class="grid gap-4 xl:grid-cols-2"
     >
-      <article
-        class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4"
-      >
-        <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klass
-          </p>
-          <div class="flex flex-wrap items-baseline gap-2">
-            <p class="text-xl font-semibold text-navy">
-              {{ selectedRoster?.name ?? activeRosterSummary?.name ?? "Ingen klass vald" }}
-            </p>
-            <span class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
-              {{ selectedRosterCountLabel }}
-            </span>
-          </div>
-          <p class="text-sm text-navy/70">
-            {{ classPanelDescription }}
-          </p>
-        </div>
+      <PlannerRosterOverviewPanel
+        :title="selectedRoster?.name ?? activeRosterSummary?.name ?? 'Ingen klass vald'"
+        :count-label="selectedRosterCountLabel"
+        :description="classPanelDescription"
+        :selected-roster="selectedRoster"
+        :selected-roster-id="selectedRosterId"
+        :available-rosters="availableRosters"
+        :selected-roster-preview-names="selectedRosterPreviewNames"
+        :is-loading-workspace="isLoadingWorkspace"
+        @select-roster="emit('select-roster', $event)"
+        @create-roster="emit('create-roster')"
+        @edit-roster="emit('edit-roster')"
+        @delete-current-roster="emit('delete-current-roster')"
+      />
 
-        <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
-          <span class="font-semibold">Byt klass</span>
-          <select
-            class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
-            :disabled="isLoadingWorkspace"
-            :value="selectedRosterId ?? ''"
-            data-test="overview-roster-select"
-            @change="selectRoster"
-          >
-            <option
-              v-if="!selectedRosterId"
-              value=""
-            >
-              Välj klasslista
-            </option>
-            <option
-              v-for="roster in availableRosters"
-              :key="roster.id"
-              :value="roster.id"
-            >
-              {{ roster.name }}
-            </option>
-          </select>
-        </label>
-
-        <div
-          :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-          data-test="overview-roster-preview"
-        >
-          <div
-            v-if="selectedRoster && selectedRosterPreviewNames.length > 0"
-            class="grid h-full grid-cols-3 content-start gap-x-4 gap-y-1 overflow-hidden p-4 text-[0.8rem] leading-5 text-navy/72"
-          >
-            <span
-              v-for="name in selectedRosterPreviewNames"
-              :key="name"
-              class="truncate"
-            >
-              {{ name }}
-            </span>
-          </div>
-          <div
-            v-else
-            class="flex h-full items-center justify-center p-4 text-center text-sm text-navy/55"
-          >
-            Välj en klasslista för att visa en kompakt elevöversikt här.
-          </div>
-        </div>
-
-        <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
-          <button
-            type="button"
-            class="btn-primary w-full justify-center"
-            @click="emit('create-roster')"
-          >
-            Ny klasslista
-          </button>
-          <button
-            type="button"
-            class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
-            :disabled="!selectedRoster"
-            @click="emit('edit-roster')"
-          >
-            Redigera klass
-          </button>
-          <button
-            type="button"
-            class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
-            :disabled="!selectedRoster"
-            data-test="overview-delete-roster"
-            @click="emit('delete-current-roster')"
-          >
-            Ta bort klasslista
-          </button>
-        </div>
-      </article>
-
-      <article class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4">
-        <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
-          <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klassrum
-          </p>
-          <div class="flex flex-wrap items-baseline gap-2">
-            <p class="text-xl font-semibold text-navy">
-              {{ selectedTemplate?.name ?? "Inget klassrum valt" }}
-            </p>
-            <span
-              v-if="selectedTemplate"
-              class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55"
-            >
-              {{ selectedTemplate.seats.length }} platser
-            </span>
-          </div>
-          <p class="text-sm text-navy/70">
-            {{ classroomPanelDescription }}
-          </p>
-        </div>
-
-        <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
-          <span class="font-semibold">Välj klassrum</span>
-          <select
-            class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
-            :disabled="isLoadingWorkspace"
-            :value="selectedTemplateId ?? ''"
-            data-test="overview-template-select"
-            @change="selectTemplate"
-          >
-            <option value="">
-              Utan klassrum
-            </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.id"
-              :value="template.id"
-            >
-              {{ template.name }}
-            </option>
-          </select>
-        </label>
-
-        <div
-          v-if="selectedTemplate"
-          class="space-y-3"
-        >
-          <div
-            :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-            data-test="overview-classroom-preview"
-          >
-            <div class="absolute inset-2 border border-dashed border-navy/10" />
-            <div
-              v-for="fixture in selectedTemplate.fixtures"
-              :key="fixture.id"
-              class="absolute border border-navy/25 bg-navy/10"
-              :style="buildFixturePreviewStyle(selectedTemplate, fixture.id)"
-            />
-            <div
-              v-for="seat in selectedTemplate.seats"
-              :key="seat.id"
-              class="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-burgundy/40 bg-burgundy/70"
-              :style="buildSeatPreviewStyle(selectedTemplate, seat.id)"
-            />
-          </div>
-        </div>
-
-        <div
-          v-else
-          :class="['flex items-center justify-center border border-dashed border-navy/25 bg-white px-4 py-8 text-center text-sm text-navy/55', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-          data-test="overview-classroom-empty"
-        >
-          Välj ett klassrum i listan ovan för att visa en kompakt förhandsgranskning här.
-        </div>
-
-        <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
-          <button
-            type="button"
-            class="btn-primary w-full justify-center"
-            @click="emit('create-template')"
-          >
-            Nytt klassrum
-          </button>
-          <button
-            type="button"
-            class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
-            :disabled="!selectedTemplate"
-            @click="emit('edit-current-template', selectedTemplate ?? undefined)"
-          >
-            Redigera klassrum
-          </button>
-          <button
-            type="button"
-            class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
-            :disabled="!selectedTemplate"
-            data-test="overview-delete-template"
-            @click="emit('delete-current-template')"
-          >
-            Ta bort klassrum
-          </button>
-        </div>
-      </article>
+      <PlannerTemplateOverviewPanel
+        :selected-template="selectedTemplate"
+        :selected-template-id="selectedTemplateId"
+        :available-templates="availableTemplates"
+        :description="classroomPanelDescription"
+        :is-loading-workspace="isLoadingWorkspace"
+        @select-template="emit('select-template', $event)"
+        @create-template="emit('create-template')"
+        @edit-current-template="emit('edit-current-template', $event)"
+        @delete-current-template="emit('delete-current-template')"
+      />
     </div>
   </section>
 </template>

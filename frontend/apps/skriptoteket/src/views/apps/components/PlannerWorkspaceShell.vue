@@ -8,18 +8,14 @@
  * whole-workspace mental model.
  */
 
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
-import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
 import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
-import GroupBoard from "./GroupBoard.vue";
-import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
+import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
 import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
+import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
-import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
-import RoomCanvas from "./RoomCanvas.vue";
 import { useClassroomState } from "../useClassroomState";
 
 type PlannerView = "groups" | "seats";
@@ -72,11 +68,8 @@ const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
 const selectedStudentId = ref<string | null>(null);
 const isMetadataDrawerOpen = ref(false);
 const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
-const pendingGroupingTemplateId = ref("");
-const pendingSeatingTemplateId = ref("");
-const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
-const showSeatingTemplateRequiredHint = ref(false);
-const isResetSeatingDialogOpen = ref(false);
+const pendingGroupingTemplateId = ref(plannerState.template?.id ?? "");
+const pendingSeatingTemplateId = ref(plannerState.template?.id ?? "");
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
 const workspaceModeValue = computed<"overview" | "grouping" | "seating">(() => {
   return currentView.value === "groups" ? "grouping" : "seating";
@@ -119,18 +112,6 @@ const activeGroupingSummary = computed(() => props.workspaceSummary?.active_grou
 const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping_history ?? []);
 const activeSeatingSummary = computed(() => props.workspaceSummary?.active_seating_draft ?? null);
 const seatingHistorySummaries = computed(() => props.workspaceSummary?.seating_history ?? []);
-const canEditCurrentTemplate = computed(() => currentView.value === "seats" && plannerState.template !== null);
-const canRandomizeSeating = computed(() => {
-  return (
-    currentView.value === "seats"
-    && plannerState.template !== null
-    && plannerState.students.length > 0
-    && plannerState.seats.length > 0
-    && !plannerState.isWorkspaceBusy
-    && !props.seatingLifecycleBusy
-  );
-});
-const hasSeatingAssignments = computed(() => plannerState.seatAssignments.length > 0);
 const isHistoryDrawerOpen = computed(() => openHistoryDrawerKind.value !== null);
 const historyDrawerTitle = computed(() => {
   return openHistoryDrawerKind.value === "seating" ? "Sittplatser" : "Grupper";
@@ -160,25 +141,6 @@ const historyDrawerLabel = computed(() => {
     ? "Tidigare sittscheman"
     : "Tidigare grupputkast";
 });
-const seatingSecondaryActionItems = computed(() => [
-  {
-    id: "history",
-    label: "Historik",
-    icon: IconHistory,
-    disabled: props.seatingLifecycleBusy,
-    testId: "seating-history",
-    onSelect: openSeatingHistoryDrawer,
-  },
-  {
-    id: "edit-template",
-    label: "Redigera klassrum",
-    icon: IconSettings,
-    disabled: !canEditCurrentTemplate.value || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
-    testId: "edit-current-template",
-    onSelect: editCurrentTemplate,
-  },
-]);
-
 const currentViewHint = computed(() => {
   if (isSeatWorkspaceWithoutTemplate.value) {
     return "Välj eller byt klassrum direkt här i sittschemat.";
@@ -202,15 +164,9 @@ async function reloadAfterConflict(): Promise<void> {
   await plannerState.reloadActiveWorkspace();
 }
 
-function changeSeatingTemplateFromEvent(event: Event): void {
-  const target = event.target;
-  if (!(target instanceof HTMLSelectElement)) {
-    return;
-  }
-
-  showSeatingTemplateRequiredHint.value = false;
-  pendingSeatingTemplateId.value = target.value;
-  emit("change-seating-template", { templateId: pendingSeatingTemplateId.value || null });
+function changeSeatingTemplate(templateId: string | null): void {
+  pendingSeatingTemplateId.value = templateId ?? "";
+  emit("change-seating-template", { templateId });
 }
 
 function changeGroupingTemplate(templateId: string | null): void {
@@ -220,58 +176,6 @@ function changeGroupingTemplate(templateId: string | null): void {
 
 function startNewGroupingDraft(): void {
   emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
-}
-
-async function startNewSeatingDraft(): Promise<void> {
-  if (props.seatingLifecycleBusy) {
-    return;
-  }
-  if (!plannerState.template?.id) {
-    showSeatingTemplateRequiredHint.value = true;
-    await nextTick();
-    seatingTemplateSelect.value?.focus();
-    return;
-  }
-
-  showSeatingTemplateRequiredHint.value = false;
-  emit("new-seating-draft", { templateId: plannerState.template.id });
-}
-
-async function undoSeatingDraft(): Promise<void> {
-  if (props.seatingLifecycleBusy) {
-    return;
-  }
-  await plannerState.undoSeatingDraft();
-}
-
-async function redoSeatingDraft(): Promise<void> {
-  if (props.seatingLifecycleBusy) {
-    return;
-  }
-  await plannerState.redoSeatingDraft();
-}
-
-function randomizeCurrentSeatingDraft(): void {
-  if (!canRandomizeSeating.value) {
-    return;
-  }
-  plannerState.randomizeSeating();
-}
-
-function openResetSeatingDialog(): void {
-  if (props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value) {
-    return;
-  }
-  isResetSeatingDialogOpen.value = true;
-}
-
-function closeResetSeatingDialog(): void {
-  isResetSeatingDialogOpen.value = false;
-}
-
-function confirmResetSeatingDraft(): void {
-  plannerState.clearSeatingAssignments();
-  closeResetSeatingDialog();
 }
 
 function openGroupingHistoryDrawer(): void {
@@ -315,10 +219,8 @@ function deleteSeatingHistoryDraft(draftId: string): void {
   emit("delete-seating-history-draft", draftId);
 }
 
-function editCurrentTemplate(): void {
-  if (plannerState.template) {
-    emit("edit-current-template", plannerState.template);
-  }
+function editCurrentTemplate(template: RoomTemplate): void {
+  emit("edit-current-template", template);
 }
 
 function selectWorkspaceMode(value: string): void {
@@ -334,8 +236,6 @@ watch(
     openHistoryDrawerKind.value = null;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
-    showSeatingTemplateRequiredHint.value = false;
-    isResetSeatingDialogOpen.value = false;
   },
 );
 
@@ -348,8 +248,6 @@ watch(
     selectedStudentId.value = null;
     pendingGroupingTemplateId.value = plannerState.template?.id ?? "";
     pendingSeatingTemplateId.value = plannerState.template?.id ?? "";
-    showSeatingTemplateRequiredHint.value = false;
-    isResetSeatingDialogOpen.value = false;
   },
 );
 
@@ -385,145 +283,28 @@ watch(
       @exit="emit('exit-app')"
     />
 
-    <GroupBoard
+    <PlannerGroupingWorkspacePane
       v-if="currentView === 'groups'"
       :selected-student-id="selectedStudentId"
       :available-templates="availableTemplates"
-      :selected-template-id="plannerState.template?.id ?? pendingGroupingTemplateId"
+      :selected-template-id="pendingGroupingTemplateId"
       @new-grouping-draft="startNewGroupingDraft"
       @open-history="openGroupingHistoryDrawer"
       @edit-roster="emit('edit-roster')"
       @student-selected="selectStudent"
       @change-grouping-template="changeGroupingTemplate"
     />
-    <section
+    <PlannerSeatingWorkspacePane
       v-if="currentView === 'seats'"
-      class="space-y-4"
-    >
-      <div class="flex flex-wrap items-end justify-end gap-2 border border-navy bg-white p-4 shadow-brutal-sm">
-        <label
-          class="block min-w-[16rem] space-y-1"
-          data-test="seating-workspace-setup"
-        >
-          <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klassrum
-          </span>
-          <select
-            ref="seatingTemplateSelect"
-            data-test="seating-template-select"
-            class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
-            :value="plannerState.template?.id ?? pendingSeatingTemplateId"
-            @change="changeSeatingTemplateFromEvent"
-          >
-            <option value="">
-              Välj klassrum
-            </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.id"
-              :value="template.id"
-            >
-              {{ template.name }} · {{ template.seats.length }} platser
-            </option>
-          </select>
-          <p
-            v-if="showSeatingTemplateRequiredHint"
-            class="text-xs font-semibold text-burgundy"
-          >
-            Välj klassrum innan du startar ett nytt sittschema.
-          </p>
-        </label>
-        <PlannerToolbarIconButton
-          label="Ångra"
-          class="2xl:hidden"
-          data-test="undo-seating-draft"
-          :disabled="!plannerState.canUndo || props.seatingLifecycleBusy"
-          @click="void undoSeatingDraft()"
-        >
-          <IconUndo :size="18" />
-        </PlannerToolbarIconButton>
-        <button
-          type="button"
-          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
-          :disabled="!plannerState.canUndo || props.seatingLifecycleBusy"
-          @click="void undoSeatingDraft()"
-        >
-          Ångra
-        </button>
-        <PlannerToolbarIconButton
-          label="Gör om"
-          class="2xl:hidden"
-          data-test="redo-seating-draft"
-          :disabled="!plannerState.canRedo || props.seatingLifecycleBusy"
-          @click="void redoSeatingDraft()"
-        >
-          <IconRedo :size="18" />
-        </PlannerToolbarIconButton>
-        <button
-          type="button"
-          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
-          :disabled="!plannerState.canRedo || props.seatingLifecycleBusy"
-          @click="void redoSeatingDraft()"
-        >
-          Gör om
-        </button>
-        <button
-          type="button"
-          class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-          data-test="randomize-seating"
-          :disabled="!canRandomizeSeating"
-          @click="randomizeCurrentSeatingDraft"
-        >
-          <IconShuffle :size="16" />
-          <span>Slumpa</span>
-        </button>
-        <button
-          type="button"
-          class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-          data-test="reset-seating-draft"
-          :disabled="props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
-          @click="openResetSeatingDialog"
-        >
-          Börja om
-        </button>
-        <button
-          type="button"
-          class="btn-ghost border-navy/30 bg-white shadow-none"
-          data-test="new-seating-draft"
-          :disabled="props.seatingLifecycleBusy"
-          @click="void startNewSeatingDraft()"
-        >
-          Nytt sittschema
-        </button>
-        <PlannerToolbarOverflowMenu
-          label="Fler sittplatsåtgärder"
-          :items="seatingSecondaryActionItems"
-          test-id="seating-actions-menu"
-        />
-      </div>
-
-      <RoomCanvas
-        v-if="!isSeatWorkspaceWithoutTemplate"
-        data-test="seating-workspace"
-        :selected-student-id="selectedStudentId"
-        @student-selected="selectStudent"
-      />
-      <div
-        v-else
-        class="border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
-      >
-        Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
-      </div>
-    </section>
-
-    <PlannerConfirmationDialog
-      v-if="isResetSeatingDialogOpen"
-      eyebrow="Börja om sittschema"
-      title="Töm sittplaceringarna?"
-      message="Det här rensar sittplaceringarna i det aktuella sittschemat och flyttar tillbaka alla elever till Ej placerade. Själva utkastet och klassrummet finns kvar."
-      confirm-label="Börja om"
-      @cancel="closeResetSeatingDialog"
-      @confirm="confirmResetSeatingDraft"
+      :selected-student-id="selectedStudentId"
+      :available-templates="availableTemplates"
+      :selected-template-id="pendingSeatingTemplateId"
+      :seating-lifecycle-busy="seatingLifecycleBusy"
+      @student-selected="selectStudent"
+      @change-seating-template="changeSeatingTemplate"
+      @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
+      @edit-current-template="editCurrentTemplate"
+      @open-history="openSeatingHistoryDrawer"
     />
 
     <PlannerMetadataDrawer

@@ -15,7 +15,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `ST-24-06`, `ST-24-07`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, `PR-0106`, `PR-0107`, `PR-0109`, `PR-0110`, `PR-0111`, `PR-0112`, and `PR-0113`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `ST-24-06`, `ST-24-07`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, `PR-0106`, `PR-0107`, `PR-0109`, `PR-0110`, `PR-0111`, `PR-0112`, `PR-0113`, and `PR-0114`.
 
 ## Status
 
@@ -23,6 +23,11 @@ Keep this file updated so the next session can pick up work quickly.
   - grouping has blank `Nytt grupputkast`, grouping-only undo/redo, and a continuity drawer with reopen/delete for historic grouping drafts
   - overview is now quiet; the segmented toggle is the single mode switch
   - seating builder slices `PR-0101` to `PR-0103` are done (resize, ghost preview, wall-vs-floor rendering, artwork, zoom, `Anpassa`, `Rensa`, circular seats)
+- `PR-0114` is now implemented locally:
+  - `PlannerWorkspaceShell.vue` is down to 340 LOC and now delegates task chrome to `PlannerGroupingWorkspacePane.vue` and `PlannerSeatingWorkspacePane.vue`
+  - `PlannerClassWorkspace.vue` is down to 206 LOC and now delegates overview content to `PlannerOverviewResumeCards.vue`, `PlannerRosterOverviewPanel.vue`, and `PlannerTemplateOverviewPanel.vue`
+  - shared local planner primitives now exist in `PlannerStudentPool.vue` and `PlannerWorkspaceActionBar.vue`
+  - `GroupBoard.vue` and `RoomCanvas.vue` now focus on the board/canvas surfaces instead of carrying duplicated sidebar/action-row structure
 - `PR-0105` is now implemented locally:
   - backend: explicit seating lifecycle routes in `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`
   - application: `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_drafts.py` and `seating_history.py`
@@ -139,6 +144,8 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-24: `curl -i http://127.0.0.1:5173/api/v1/auth/csrf`; `docker compose ps`; `docker compose logs web --tail=120`; `docker compose logs frontend --tail=60` (revealed the canonical Docker-backed local stack was unhealthy before planner verification: Vite on `:5173` was proxying auth to a crashed web container missing `starlette_dishka`).
 - 2026-03-24: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/App.spec.ts src/router/index.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/classroomPlannerNavigation.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/App.vue src/App.spec.ts src/router/index.ts src/router/index.spec.ts src/composables/useLoginModal.ts src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/classroomPlannerNavigation.ts src/views/apps/classroomPlannerNavigation.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED after the auth-redirect preservation fix for `ST-24-08`; regression coverage now includes router/app-shell preservation of Klassrumskartan entry origin through login/session handoffs).
 - 2026-03-24: `pdm run python -m scripts.playwright_pr_0111_overview_resumable_entry --base-url http://127.0.0.1:5173` (PASSED on the canonical local SPA after the Docker stack repair; re-proved direct overview-first entry, resumable grouping/seating cards, `Avsluta` back to `/browse` from catalog entry, `Avsluta` back to `/` from dashboard entry, and fallback back to `/browse` for missing origin; artifact in `.artifacts/pr-0111-live-check/pr0111-overview-resumable-entry.png`).
+- 2026-03-24: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/GroupBoard.vue src/views/apps/components/RoomCanvas.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED for local `PR-0114`; 52 focused frontend tests passed and the required refactor verification set is green).
+- 2026-03-24: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerStudentPool.vue src/views/apps/components/PlannerWorkspaceActionBar.vue src/views/apps/components/PlannerGroupingWorkspacePane.vue src/views/apps/components/PlannerSeatingWorkspacePane.vue src/views/apps/components/PlannerOverviewResumeCards.vue src/views/apps/components/PlannerRosterOverviewPanel.vue src/views/apps/components/PlannerTemplateOverviewPanel.vue src/views/apps/components/GroupBoard.spec.ts`; `lsof -nP -iTCP:5173 -sTCP:LISTEN`; `lsof -nP -iTCP:8000 -sTCP:LISTEN`; `curl -I --max-time 5 http://127.0.0.1:5173/apps/classroom.group-seating-studio`; `curl -I --max-time 5 http://127.0.0.1:8000/healthz`; `pdm run python - <<'PY' ... PY` (PASSED; extra lint on the new planner subcomponents is clean, canonical local SPA/backend were confirmed on `127.0.0.1:5173` and `127.0.0.1:8000`, and the authenticated live browser check verified overview panels + resumable cards, a small grouping interaction with return to overview, and the seating setup/action row; artifact in `.artifacts/pr-0114-live-check/pr0114-overview-groups-seating.png`).
 
 ## How to Run
 
@@ -150,9 +157,9 @@ docker compose up -d db && pdm run db-upgrade
 ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local
 
 # Focused verification
-pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_review_fixes.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/web/apps/classroom_planner/test_api.py -q
-pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts
-pdm run python -m scripts.playwright_pr_0105_seating_continuity --base-url http://127.0.0.1:5173
+pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/ClassroomPlannerView.spec.ts
+pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/GroupBoard.vue src/views/apps/components/RoomCanvas.vue
+pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit
 pdm run docs-validate
 ```
 
@@ -168,7 +175,6 @@ pdm run docs-validate
 ## Next Steps
 
 - EPIC-24 next planned implementation chain is:
-  - `PR-0113` is shipped
-  - `PR-0111` is merged
-  - `ST-24-08` is locally implemented and verified; next step is commit/review/merge of the cutover diff
+  - `PR-0114` is locally implemented and verified; next natural step is commit/review/merge and then move to `PR-0115`
+  - only stay inside `PR-0114` for follow-up polish if review or manual QA finds a regression in the new planner panes/panels
 - Competitive-games lane remains separate and should not be conflated with Klassrumskartan planning.

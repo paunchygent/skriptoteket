@@ -16,6 +16,11 @@ type PlannerStateMock = {
   template: RoomTemplate | null;
   draft: Pick<PlanDraft, "id" | "draft_kind" | "revision">;
   students: Roster["students"];
+  ungroupedStudents: Roster["students"];
+  unseatedStudents: Roster["students"];
+  groups: Array<{ id: string; name: string; sort_order: number; name_is_custom: boolean }>;
+  studentsByGroupId: Record<string, Roster["students"]>;
+  groupAssignments: Array<{ student_id: string; group_id: string }>;
   seats: RoomTemplate["seats"];
   seatAssignments: Array<{ student_id: string; seat_id: string }>;
   saveStatus: string;
@@ -24,6 +29,16 @@ type PlannerStateMock = {
   canUndo: boolean;
   canRedo: boolean;
   reloadActiveWorkspace: ReturnType<typeof vi.fn>;
+  undoGroupingDraft: ReturnType<typeof vi.fn>;
+  redoGroupingDraft: ReturnType<typeof vi.fn>;
+  randomizeGroups: ReturnType<typeof vi.fn>;
+  clearGroupingAssignments: ReturnType<typeof vi.fn>;
+  addGroup: ReturnType<typeof vi.fn>;
+  assignStudentToGroup: ReturnType<typeof vi.fn>;
+  removeStudentFromGroup: ReturnType<typeof vi.fn>;
+  renameGroup: ReturnType<typeof vi.fn>;
+  moveGroup: ReturnType<typeof vi.fn>;
+  removeGroup: ReturnType<typeof vi.fn>;
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
   randomizeSeating: ReturnType<typeof vi.fn>;
@@ -39,6 +54,17 @@ const stateMocks = vi.hoisted(() => ({
       { id: "student-1", display_name: "Ada Lovelace" },
       { id: "student-2", display_name: "Alan Turing" },
     ],
+    ungroupedStudents: [
+      { id: "student-1", display_name: "Ada Lovelace" },
+      { id: "student-2", display_name: "Alan Turing" },
+    ],
+    unseatedStudents: [
+      { id: "student-1", display_name: "Ada Lovelace" },
+      { id: "student-2", display_name: "Alan Turing" },
+    ],
+    groups: [{ id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false }],
+    studentsByGroupId: { "group-a": [] },
+    groupAssignments: [],
     seats: [
       { id: "seat-1", x: 0, y: 0, zone: null },
       { id: "seat-2", x: 120, y: 0, zone: null },
@@ -50,6 +76,16 @@ const stateMocks = vi.hoisted(() => ({
     canUndo: false,
     canRedo: false,
     reloadActiveWorkspace: vi.fn(),
+    undoGroupingDraft: vi.fn(),
+    redoGroupingDraft: vi.fn(),
+    randomizeGroups: vi.fn(),
+    clearGroupingAssignments: vi.fn(),
+    addGroup: vi.fn(),
+    assignStudentToGroup: vi.fn(),
+    removeStudentFromGroup: vi.fn(),
+    renameGroup: vi.fn(),
+    moveGroup: vi.fn(),
+    removeGroup: vi.fn(),
     undoSeatingDraft: vi.fn(),
     redoSeatingDraft: vi.fn(),
     randomizeSeating: vi.fn(),
@@ -118,6 +154,16 @@ function buildWorkspaceSummary(): ClassWorkspaceSummary {
 describe("PlannerWorkspaceShell", () => {
   beforeEach(() => {
     stateMocks.plannerState.reloadActiveWorkspace.mockReset();
+    stateMocks.plannerState.undoGroupingDraft.mockReset();
+    stateMocks.plannerState.redoGroupingDraft.mockReset();
+    stateMocks.plannerState.randomizeGroups.mockReset();
+    stateMocks.plannerState.clearGroupingAssignments.mockReset();
+    stateMocks.plannerState.addGroup.mockReset();
+    stateMocks.plannerState.assignStudentToGroup.mockReset();
+    stateMocks.plannerState.removeStudentFromGroup.mockReset();
+    stateMocks.plannerState.renameGroup.mockReset();
+    stateMocks.plannerState.moveGroup.mockReset();
+    stateMocks.plannerState.removeGroup.mockReset();
     stateMocks.plannerState.undoSeatingDraft.mockReset();
     stateMocks.plannerState.redoSeatingDraft.mockReset();
     stateMocks.plannerState.randomizeSeating.mockReset();
@@ -132,6 +178,11 @@ describe("PlannerWorkspaceShell", () => {
       { id: "student-1", display_name: "Ada Lovelace" },
       { id: "student-2", display_name: "Alan Turing" },
     ];
+    stateMocks.plannerState.ungroupedStudents = [...stateMocks.plannerState.students];
+    stateMocks.plannerState.unseatedStudents = [...stateMocks.plannerState.students];
+    stateMocks.plannerState.groups = [{ id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false }];
+    stateMocks.plannerState.studentsByGroupId = { "group-a": [] };
+    stateMocks.plannerState.groupAssignments = [];
     stateMocks.plannerState.seats = [
       { id: "seat-1", x: 0, y: 0, zone: null },
       { id: "seat-2", x: 120, y: 0, zone: null },
@@ -154,7 +205,7 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: { template: "<div>Slumpa Nytt grupputkast</div>" },
+          GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div />" },
           PlannerMetadataDrawer: { props: ["open"], template: "<div>{{ open ? 'open' : 'closed' }}</div>" },
         },
@@ -177,12 +228,8 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: {
-            template: "<button type='button' data-test='group-student' @click=\"$emit('student-selected', 'student-1')\">Grupp</button>",
-          },
-          RoomCanvas: {
-            template: "<button type='button' data-test='seat-student' @click=\"$emit('student-selected', 'student-1')\">Sittplats</button>",
-          },
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
             template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
@@ -196,7 +243,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.text()).toContain("Sittplatser");
     expect(wrapper.text()).toContain("Utan klassrum");
 
-    await wrapper.get("[data-test='group-student']").trigger("click");
+    await wrapper.get("[data-test='grouping-student-pool'] button").trigger("click");
     expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
@@ -209,20 +256,7 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: {
-            props: ["availableTemplates", "selectedTemplateId"],
-            template: `
-              <div data-test="group-board">
-                <label>
-                  Klassrum (valfritt)
-                  <select :value="selectedTemplateId" data-test="grouping-template-select" @change="$emit('change-grouping-template', $event.target.value)">
-                    <option value="">Arbeta utan klassrum</option>
-                    <option value="template-2">Sal 202 · 0 platser</option>
-                  </select>
-                </label>
-              </div>
-            `,
-          },
+          GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
@@ -255,9 +289,7 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: {
-            template: "<button type='button' data-test='new-grouping-draft' @click=\"$emit('new-grouping-draft')\">Nytt grupputkast</button>",
-          },
+          GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
@@ -437,9 +469,7 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: {
-            template: "<button type='button' data-test='grouping-history' @click=\"$emit('open-history')\">Historik</button>",
-          },
+          GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
@@ -449,6 +479,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="grouping-history"]').trigger("click");
 
     expect(wrapper.text()).toContain("Aktuellt grupputkast");
@@ -463,9 +494,7 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: {
-            template: "<button type='button' data-test='grouping-history' @click=\"$emit('open-history')\">Historik</button>",
-          },
+          GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
@@ -475,6 +504,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="grouping-history"]').trigger("click");
 
     const openButton = wrapper.findAll("button").find((button) => button.text().includes("Revision 2"));
@@ -484,6 +514,7 @@ describe("PlannerWorkspaceShell", () => {
     await openButton.trigger("click");
     expect(wrapper.emitted("open-grouping-history-draft")).toEqual([["grouping-history-1"]]);
 
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="grouping-history"]').trigger("click");
 
     const deleteButton = wrapper.find('[aria-label="Ta bort historiskt utkast"]');
@@ -506,9 +537,7 @@ describe("PlannerWorkspaceShell", () => {
       },
       global: {
         stubs: {
-          GroupBoard: {
-            template: "<button type='button' data-test='edit-grouping-roster' @click=\"$emit('edit-roster')\">Redigera klass</button>",
-          },
+          GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
           PlannerMetadataDrawer: {
             props: ["open"],
@@ -518,6 +547,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
+    await wrapper.get('[data-test="grouping-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="edit-grouping-roster"]').trigger("click");
 
     expect(wrapper.emitted("edit-roster")).toEqual([[]]);
