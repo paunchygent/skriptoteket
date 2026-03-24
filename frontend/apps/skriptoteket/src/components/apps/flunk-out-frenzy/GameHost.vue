@@ -76,6 +76,10 @@ const statusLabel = computed(() => {
 });
 
 function updateLoadState(nextState: GameRuntimeLoadState): void {
+  if (runtimeLoadState.value === nextState) {
+    return;
+  }
+
   runtimeLoadState.value = nextState;
   emit("loadStateChange", nextState);
 }

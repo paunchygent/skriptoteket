@@ -193,7 +193,7 @@ describe("GameHost", () => {
 
     expect(host.attributes("data-runtime-load-state")).toBe("idle");
     expect(wrapper.emitted("loadStateChange")).toBeUndefined();
-    expect(host.attributes("data-ball-present")).toBe("false");
+    expect(host.attributes("data-ball-present")).toBeUndefined();
 
     await api.startGame();
     await waitForRuntime(wrapper);

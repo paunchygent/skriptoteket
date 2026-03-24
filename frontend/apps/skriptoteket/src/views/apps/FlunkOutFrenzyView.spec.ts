@@ -258,11 +258,13 @@ describe("FlunkOutFrenzyView", () => {
     });
     await flushBootstrap();
 
+    const startButton = findButton(wrapper, "Start");
+    await startButton.trigger("click");
+
     await vi.waitFor(() => {
       expect(wrapper.get("[data-test='runtime-route-error']").text()).toContain("Pixi failed to initialize.");
     });
 
-    const startButton = findButton(wrapper, "Start");
     expect(startButton.attributes("disabled")).toBeDefined();
   });
 
