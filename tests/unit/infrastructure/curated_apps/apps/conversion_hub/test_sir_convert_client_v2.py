@@ -5,8 +5,6 @@ These tests validate request shaping + error mapping for the Conversion Hub inte
 
 from __future__ import annotations
 
-import io
-
 import httpx
 import pytest
 
@@ -15,6 +13,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_cl
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
 )
+from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertSubmitRequestV2
 
 
 @pytest.mark.unit
@@ -54,13 +53,17 @@ async def test_submit_job_sends_api_key_and_idempotency_key_and_job_spec_payload
             client=client,
         )
         submitted = await svc.submit_job(
-            filename="input.html",
-            content_type="text/html",
-            file_handle=io.BytesIO(b"<html></html>"),
-            job_spec={"api_version": "v2", "source": {"kind": "upload"}, "conversion": {}},
-            idempotency_key="idem-1",
-            wait_seconds=0,
-            correlation_id="corr-1",
+            request=SirConvertSubmitRequestV2(
+                filename="input.html",
+                content_type="text/html",
+                file_bytes=b"<html></html>",
+                job_spec={"api_version": "v2", "source": {"kind": "upload"}, "conversion": {}},
+                idempotency_key="idem-1",
+                wait_seconds=0,
+                correlation_id="corr-1",
+                resources_filename="resources.zip",
+                resources_bytes=b"PK",
+            )
         )
 
     assert captured_url is not None
@@ -75,6 +78,7 @@ async def test_submit_job_sends_api_key_and_idempotency_key_and_job_spec_payload
 
     assert captured_body is not None
     assert "job_spec" in captured_body
+    assert "resources.zip" in captured_body
     # Best-effort: the body should contain our JSON spec string.
     assert '"api_version":"v2"' in captured_body
 
@@ -100,16 +104,53 @@ async def test_submit_job_maps_upstream_error_to_domain_error_with_details() -> 
         )
         with pytest.raises(DomainError) as excinfo:
             await svc.submit_job(
-                filename="input.html",
-                content_type="text/html",
-                file_handle=io.BytesIO(b"<html></html>"),
-                job_spec={"api_version": "v2", "source": {"kind": "upload"}, "conversion": {}},
-                idempotency_key="idem-1",
-                wait_seconds=0,
-                correlation_id=None,
+                request=SirConvertSubmitRequestV2(
+                    filename="input.html",
+                    content_type="text/html",
+                    file_bytes=b"<html></html>",
+                    job_spec={"api_version": "v2", "source": {"kind": "upload"}, "conversion": {}},
+                    idempotency_key="idem-1",
+                    wait_seconds=0,
+                    correlation_id=None,
+                )
             )
 
     assert excinfo.value.code == ErrorCode.SERVICE_UNAVAILABLE
     assert excinfo.value.details.get("upstream_status_code") == 503
     assert excinfo.value.details.get("upstream_code") == "service_unavailable"
     assert excinfo.value.details.get("upstream_retryable") is True
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_webhook_subscription_returns_subscription_id_and_secret() -> None:
+    async def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            201,
+            json={
+                "subscription": {
+                    "subscription_id": "whsub-1",
+                    "callback_url": "https://consumer.example/hooks/scal",
+                },
+                "secret": {"value": "whsec-1"},
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        svc = SirConvertALotClientV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="test-key",
+                timeout_seconds=10.0,
+            ),
+            client=client,
+        )
+        subscription = await svc.create_webhook_subscription(
+            callback_url="https://consumer.example/hooks/scal",
+            event_types=["job.succeeded"],
+            correlation_id="corr-1",
+        )
+
+    assert subscription.subscription_id == "whsub-1"
+    assert subscription.secret == "whsec-1"

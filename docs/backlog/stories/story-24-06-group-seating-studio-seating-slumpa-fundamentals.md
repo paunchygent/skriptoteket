@@ -2,10 +2,10 @@
 type: story
 id: ST-24-06
 title: "Klassrumskartan — Seating `Slumpa` fundamentals"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 epic: "EPIC-24"
 dependencies:
   - "ST-24-04"
@@ -72,3 +72,11 @@ Focus:
 - extend the planner store with seating-randomization mutations using the existing grouping pattern
 - keep the behavior draft-local so autosave and seating undo/redo work without a parallel model
 - add focused frontend/backend tests and a dedicated browser proof extension
+
+## Implementation Summary (as of 2026-03-24)
+
+- `PR-0109` shipped seating-local `Slumpa` inside `Sittplatser`.
+- The reshuffle stays fully random and runs through the existing seating draft autosave and
+  undo/redo path rather than creating a separate persistence model.
+- The local browser proof and focused frontend verification already recorded in handoff cover the
+  user-visible behavior for this story.

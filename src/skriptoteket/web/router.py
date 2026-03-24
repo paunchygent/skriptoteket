@@ -17,6 +17,7 @@ from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import catalog as api_v1_catalog
 from skriptoteket.web.api.v1 import editor as api_v1_editor
 from skriptoteket.web.api.v1 import favorites as api_v1_favorites
+from skriptoteket.web.api.v1 import internal_sir_convert_callbacks as api_v1_internal_sir_convert
 from skriptoteket.web.api.v1 import me as api_v1_me
 from skriptoteket.web.api.v1 import my_runs as api_v1_my_runs
 from skriptoteket.web.api.v1 import my_tools as api_v1_my_tools
@@ -42,6 +43,7 @@ router.include_router(api_v1_apps_classroom_planner_seating.router)
 router.include_router(api_v1_apps_flunk_out_frenzy.router)
 router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
+router.include_router(api_v1_internal_sir_convert.router)
 router.include_router(api_v1_profile.router)
 router.include_router(api_v1_suggestions.router)
 router.include_router(api_v1_tools.router)

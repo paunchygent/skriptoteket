@@ -42,8 +42,8 @@ const {
   parsedFixtures,
   ghostPlacement,
   ghostRenderableFixture,
+  builderScale,
   builderScaledSurfaceStyle,
-  builderSurfaceTransformStyle,
   builderScalePercent,
   isValid,
   updateHoverState,
@@ -173,8 +173,8 @@ async function removeTemplate(): Promise<void> {
                 :fixtures="parsedFixtures"
                 :ghost-placement="ghostPlacement"
                 :ghost-renderable-fixture="ghostRenderableFixture"
+                :builder-scale="builderScale"
                 :builder-scaled-surface-style="builderScaledSurfaceStyle"
-                :builder-surface-transform-style="builderSurfaceTransformStyle"
                 :builder-scale-percent="builderScalePercent"
                 @zoom-out="zoomOut"
                 @zoom-in="zoomIn"

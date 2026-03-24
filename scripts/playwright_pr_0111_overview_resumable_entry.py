@@ -17,13 +17,13 @@ from typing import Any
 
 from playwright.sync_api import expect, sync_playwright
 
-from scripts._playwright_config import get_config
-from scripts.playwright_classroom_planner_smoke import (
-    _create_roster,
-    _create_template,
-    _focus_workspace_mode,
-    _login_to_app,
+from scripts._playwright_classroom_planner import (
+    create_roster,
+    create_template,
+    focus_workspace_mode,
+    login_to_app,
 )
+from scripts._playwright_config import get_config
 from scripts.playwright_ui_smoke import _launch_chromium
 
 ARTIFACTS_DIR = Path(".artifacts/pr-0111-live-check")
@@ -83,21 +83,21 @@ def _select_workspace_template(page: Any, *, template_name: str) -> None:
 def _return_to_overview(page: Any) -> None:
     """Return from one live planner workspace to the overview/main page."""
 
-    _focus_workspace_mode(page, label="Översikt")
+    focus_workspace_mode(page, label="Översikt")
     expect(page.locator('[data-test="overview-roster-select"]')).to_be_visible()
 
 
 def _open_grouping_draft(page: Any) -> None:
     """Open grouping once so the active grouping draft exists in the summary."""
 
-    _focus_workspace_mode(page, label="Grupper")
+    focus_workspace_mode(page, label="Grupper")
     expect(page.locator('[data-test="grouping-template-select"]')).to_be_visible()
 
 
 def _open_seating_draft(page: Any, *, template_name: str) -> None:
     """Open seating once so the active seating draft exists in the summary."""
 
-    _focus_workspace_mode(page, label="Sittplatser")
+    focus_workspace_mode(page, label="Sittplatser")
     seating_workspace = page.locator('[data-test="seating-workspace"]')
     if seating_workspace.count() > 0 and seating_workspace.first.is_visible():
         expect(seating_workspace).to_be_visible()
@@ -202,12 +202,12 @@ def main() -> None:
         context = browser.new_context(viewport={"width": 1600, "height": 1200})
         page = context.new_page()
 
-        _login_to_app(page, base_url=config.base_url, email=config.email, password=config.password)
+        login_to_app(page, base_url=config.base_url, email=config.email, password=config.password)
         _open_app_from_catalog(page)
         _verify_overview_first_entry(page)
 
-        _create_roster(page, roster_name=roster_name)
-        _create_template(page, template_name=template_name)
+        create_roster(page, roster_name=roster_name)
+        create_template(page, template_name=template_name)
         _select_workspace_template(page, template_name=template_name)
 
         _open_grouping_draft(page)

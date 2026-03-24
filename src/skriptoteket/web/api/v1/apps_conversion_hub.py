@@ -28,7 +28,10 @@ from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertALotClientV2Protocol
+from skriptoteket.protocols.sir_convert_a_lot_v2 import (
+    SirConvertALotClientV2Protocol,
+    SirConvertSubmitRequestV2,
+)
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.request_metadata import get_correlation_id
@@ -195,13 +198,15 @@ async def submit_jobs(
         content_type = upload.content_type or "application/octet-stream"
         v2_spec = _build_v2_job_spec(spec=spec, filename=upload.filename)
         submitted = await client.submit_job(
-            filename=upload.filename,
-            content_type=content_type,
-            file_handle=upload.file,
-            job_spec=v2_spec,
-            idempotency_key=str(uuid4()),
-            wait_seconds=wait_seconds,
-            correlation_id=correlation_id,
+            request=SirConvertSubmitRequestV2(
+                filename=upload.filename,
+                content_type=content_type,
+                file_bytes=await upload.read(),
+                job_spec=v2_spec,
+                idempotency_key=str(uuid4()),
+                wait_seconds=wait_seconds,
+                correlation_id=correlation_id,
+            )
         )
         jobs.append(
             ConversionHubSubmittedJob(

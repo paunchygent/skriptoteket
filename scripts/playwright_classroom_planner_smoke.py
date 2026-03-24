@@ -199,8 +199,7 @@ def _switch_seating_workspace_template(page: Any, *, template_name: str) -> None
 def _open_student_metadata(page: Any) -> None:
     """Open one student's seating drawer to prove the planner is interactive."""
 
-    page.get_by_role("button", name=re.compile(r"Sittplatser", re.IGNORECASE)).click()
-    page.get_by_role("button", name=re.compile(r"Ada Lovelace", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Ada Lovelace", re.IGNORECASE)).first.click()
     expect(page.get_by_text("Elevanteckningar", exact=True)).to_be_visible()
     expect(
         page.get_by_role("heading", name=re.compile(r"Ada Lovelace", re.IGNORECASE))
@@ -210,7 +209,10 @@ def _open_student_metadata(page: Any) -> None:
 def _close_student_metadata(page: Any) -> None:
     """Close the student-notes drawer before background navigation checks."""
 
-    page.get_by_role("button", name="×").click()
+    metadata_drawer = page.locator("aside").filter(
+        has=page.get_by_text("Elevanteckningar", exact=True)
+    )
+    metadata_drawer.get_by_role("button", name="×").click()
     expect(page.get_by_text("Elevanteckningar", exact=True)).not_to_be_visible()
 
 
@@ -243,6 +245,60 @@ def _verify_seating_toolbar(page: Any) -> None:
     expect(edit_classroom_button).to_be_visible()
     expect(edit_classroom_button).to_have_text(re.compile(r"Redigera klassrum", re.IGNORECASE))
     seating_actions_menu.click()
+
+
+def _verify_seating_zoom_and_assignment(page: Any) -> None:
+    """Verify seating zoom parity and one real seat assignment while zoomed."""
+
+    seating_viewport = page.locator('[data-test="room-canvas-viewport"]')
+    seating_zoom_percent = page.locator('[data-test="seating-zoom-percent"]')
+    expect(seating_viewport).to_be_visible()
+    expect(seating_zoom_percent).to_be_visible()
+
+    initial_zoom = seating_zoom_percent.inner_text()
+    seating_scroll_fits = seating_viewport.evaluate(
+        """element => ({
+            widthFits: element.scrollWidth <= element.clientWidth + 2,
+            heightFits: element.scrollHeight <= element.clientHeight + 2,
+        })"""
+    )
+    assert seating_scroll_fits["widthFits"] and seating_scroll_fits["heightFits"]
+
+    page.locator('[data-test="seating-zoom-in"]').click()
+    expect(seating_zoom_percent).not_to_have_text(initial_zoom)
+    zoomed_in = seating_zoom_percent.inner_text()
+    expect(seating_viewport).to_have_js_property("scrollLeft", 0)
+    viewport_box = seating_viewport.bounding_box()
+    seat_box = page.locator('[data-test="room-seat-token"]').first.bounding_box()
+    assert viewport_box is not None
+    assert seat_box is not None
+    assert seat_box["x"] >= viewport_box["x"] - 1
+
+    seat_drop_target = (
+        page.locator('[data-test="room-seat-token"]')
+        .filter(has_text=re.compile(r"seat-1", re.IGNORECASE))
+        .locator("xpath=ancestor::div[contains(@class, 'absolute')][1]")
+    )
+    data_transfer = page.evaluate_handle("new DataTransfer()")
+    page.get_by_role("button", name=re.compile(r"Ada Lovelace", re.IGNORECASE)).dispatch_event(
+        "dragstart",
+        {"dataTransfer": data_transfer},
+    )
+    seat_drop_target.dispatch_event("dragover", {"dataTransfer": data_transfer})
+    seat_drop_target.dispatch_event("drop", {"dataTransfer": data_transfer})
+    expect(page.locator('[data-test="room-seat-token"]').first).to_contain_text(
+        re.compile(r"Ada Lovelace", re.IGNORECASE)
+    )
+
+    page.locator('[data-test="seating-zoom-out"]').click()
+    expect(seating_zoom_percent).not_to_have_text(zoomed_in)
+    page.locator('[data-test="seating-zoom-fit"]').click()
+    expect(seating_zoom_percent).to_have_text(initial_zoom)
+
+    page.locator('[data-test="room-seat-token"]').first.click()
+    expect(
+        page.get_by_role("heading", name=re.compile(r"Ada Lovelace", re.IGNORECASE))
+    ).to_be_visible()
 
 
 def _open_seating_history(page: Any) -> None:
@@ -365,6 +421,7 @@ def main() -> None:
         _open_seating_workspace(page, template_name=first_template_name)
         _switch_seating_workspace_template(page, template_name=second_template_name)
         _verify_seating_toolbar(page)
+        _verify_seating_zoom_and_assignment(page)
         _verify_seating_history_starts_empty(page)
         _start_second_seating_draft(page)
         _reopen_historic_seating_draft(page)

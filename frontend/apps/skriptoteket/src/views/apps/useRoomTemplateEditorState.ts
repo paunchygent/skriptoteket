@@ -32,13 +32,6 @@ import {
   getRoomSurfaceStyle,
 } from "./roomFixturePresentation";
 import {
-  ROOM_VIEWPORT_SCALE_STEP,
-  clampRoomViewportScale,
-  computeRoomViewportFitScale,
-  getScaledRoomSurfaceStyle,
-  type RoomViewportSize,
-} from "./roomBuilderViewport";
-import {
   type BuilderTool,
   type FixturePlacement,
   type HoveredCell,
@@ -52,6 +45,7 @@ import {
   seatKey,
   templateFitsGrid,
 } from "./roomTemplateEditorDomain";
+import { useRoomViewportZoom } from "./useRoomViewportZoom";
 
 export type RoomTemplateGhostPlacement = {
   row: number;
@@ -73,8 +67,6 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
   const hoveredCell = ref<HoveredCell | null>(null);
   const pointerAnchor = ref<PointerAnchor | null>(null);
   const error = ref<string | null>(null);
-  const builderViewportSize = ref<RoomViewportSize>({ width: 0, height: 0 });
-  const manualZoomScale = ref<number | null>(null);
 
   const roomGrid = computed<RoomGridDimensions>(() => normalizeRoomGrid({
     cols: gridCols.value,
@@ -83,21 +75,15 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
   const roomSurfaceStyle = computed(() => getRoomSurfaceStyle(roomGrid.value));
   const roomFloorLayerStyle = computed(() => getRoomFloorLayerStyle(roomGrid.value));
   const roomSurfaceMetrics = computed(() => getRoomSurfaceMetrics(roomGrid.value));
-  const builderFitScale = computed(() => {
-    return computeRoomViewportFitScale(builderViewportSize.value, roomSurfaceMetrics.value);
-  });
-  const builderScale = computed(() => manualZoomScale.value ?? builderFitScale.value);
-  const builderScaledSurfaceStyle = computed(() => {
-    return getScaledRoomSurfaceStyle(roomSurfaceMetrics.value, builderScale.value);
-  });
-  const builderSurfaceTransformStyle = computed(() => {
-    return {
-      ...roomSurfaceStyle.value,
-      transform: `scale(${builderScale.value})`,
-      transformOrigin: "top left",
-    };
-  });
-  const builderScalePercent = computed(() => Math.round(builderScale.value * 100));
+  const {
+    scale: builderScale,
+    scaledSurfaceStyle: builderScaledSurfaceStyle,
+    scalePercent: builderScalePercent,
+    setViewportSize: setBuilderViewportSize,
+    zoomOut,
+    zoomIn,
+    resetZoom: resetBuilderZoom,
+  } = useRoomViewportZoom(roomSurfaceMetrics, { resetSource: template });
 
   const canShrinkCols = computed(() => {
     return gridCols.value > MIN_ROOM_GRID_COLS && templateFitsGrid(
@@ -274,24 +260,6 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     gridRows.value = Math.max(MIN_ROOM_GRID_ROWS, gridRows.value + delta);
   }
 
-  function setBuilderViewportSize(nextSize: RoomViewportSize): void {
-    builderViewportSize.value = nextSize;
-  }
-
-  function zoomOut(): void {
-    const currentScale = manualZoomScale.value ?? builderFitScale.value;
-    manualZoomScale.value = clampRoomViewportScale(currentScale - ROOM_VIEWPORT_SCALE_STEP);
-  }
-
-  function zoomIn(): void {
-    const currentScale = manualZoomScale.value ?? builderFitScale.value;
-    manualZoomScale.value = clampRoomViewportScale(currentScale + ROOM_VIEWPORT_SCALE_STEP);
-  }
-
-  function resetBuilderZoom(): void {
-    manualZoomScale.value = null;
-  }
-
   function clearRoomContents(): void {
     seatCells.value = [];
     fixtures.value = [];
@@ -310,7 +278,6 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
       seatCells.value = hydratedState.seatCells;
       fixtures.value = hydratedState.fixtures;
       selectedTool.value = "seat";
-      manualZoomScale.value = null;
       clearHoverState();
       error.value = null;
     },
@@ -392,8 +359,8 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     roomSurfaceStyle,
     roomFloorLayerStyle,
     roomSurfaceMetrics,
+    builderScale,
     builderScaledSurfaceStyle,
-    builderSurfaceTransformStyle,
     builderScalePercent,
     canShrinkCols,
     canShrinkRows,

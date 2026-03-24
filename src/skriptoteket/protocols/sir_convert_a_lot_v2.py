@@ -11,7 +11,7 @@ Relationships:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import IO, Literal, Protocol
+from typing import Literal, Protocol
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,17 +39,33 @@ class SirConvertArtifactOutcomeV2:
     artifact: SirConvertArtifactV2
 
 
+@dataclass(frozen=True, slots=True)
+class SirConvertSubmitRequestV2:
+    filename: str
+    content_type: str
+    file_bytes: bytes
+    job_spec: dict[str, object]
+    idempotency_key: str
+    wait_seconds: int
+    correlation_id: str | None
+    resources_filename: str | None = None
+    resources_bytes: bytes | None = None
+    reference_docx_filename: str | None = None
+    reference_docx_bytes: bytes | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class SirConvertWebhookSubscriptionV2:
+    subscription_id: str
+    callback_url: str
+    secret: str
+
+
 class SirConvertALotClientV2Protocol(Protocol):
     async def submit_job(
         self,
         *,
-        filename: str,
-        content_type: str,
-        file_handle: IO[bytes],
-        job_spec: dict[str, object],
-        idempotency_key: str,
-        wait_seconds: int,
-        correlation_id: str | None,
+        request: SirConvertSubmitRequestV2,
     ) -> SirConvertSubmittedJobV2: ...
 
     async def get_job(self, job_id: str, *, correlation_id: str | None) -> SirConvertJobV2: ...
@@ -57,3 +73,18 @@ class SirConvertALotClientV2Protocol(Protocol):
     async def download_artifact(
         self, job_id: str, *, correlation_id: str | None
     ) -> SirConvertArtifactOutcomeV2: ...
+
+    async def create_webhook_subscription(
+        self,
+        *,
+        callback_url: str,
+        event_types: list[str],
+        correlation_id: str | None,
+    ) -> SirConvertWebhookSubscriptionV2: ...
+
+    async def delete_webhook_subscription(
+        self,
+        subscription_id: str,
+        *,
+        correlation_id: str | None,
+    ) -> None: ...

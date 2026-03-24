@@ -13,25 +13,31 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
     ActivateSeatingHistoryDraftHandler,
+    CompleteSeatingExportJobFromWebhookHandler,
     CreateGroupingDraftHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     CreateSeatingDraftHandler,
+    CreateSeatingExportJobHandler,
     DeleteHistoricGroupingDraftHandler,
     DeleteHistoricSeatingDraftHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
+    DownloadSeatingExportJobHandler,
     GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
     GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
+    GetSeatingExportJobHandler,
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    SeatingExportJobFinalizer,
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
@@ -71,6 +77,9 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_risk_
     ReagentPrepChefSaveRiskPdfHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
+    BrutalistPosterRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
@@ -98,10 +107,17 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
     PostgreSQLRoomTemplateRepository,
     PostgreSQLRosterRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs import (
+    PostgreSQLSeatingExportJobRepository,
+)
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
+)
+from skriptoteket.protocols.classroom_planner_exports import (
+    SeatingExportJobRepositoryProtocol,
+    SeatingPosterRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -554,6 +570,112 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def prepare_seating_export_handler(
+        self,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+    ) -> PrepareSeatingExportHandler:
+        return PrepareSeatingExportHandler(
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def seating_export_job_handler(
+        self,
+        prepare: PrepareSeatingExportHandler,
+        jobs: SeatingExportJobRepositoryProtocol,
+        renderer: SeatingPosterRendererProtocol,
+        client: SirConvertALotClientV2Protocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> CreateSeatingExportJobHandler:
+        return CreateSeatingExportJobHandler(
+            prepare=prepare,
+            jobs=jobs,
+            renderer=renderer,
+            client=client,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def seating_export_job_finalizer(
+        self,
+        jobs: SeatingExportJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> SeatingExportJobFinalizer:
+        return SeatingExportJobFinalizer(
+            jobs=jobs,
+            client=client,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_seating_export_job_handler(
+        self,
+        jobs: SeatingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        finalizer: SeatingExportJobFinalizer,
+        uow: UnitOfWorkProtocol,
+    ) -> GetSeatingExportJobHandler:
+        return GetSeatingExportJobHandler(
+            jobs=jobs,
+            vault_files=vault_files,
+            client=client,
+            finalizer=finalizer,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def complete_seating_export_job_from_webhook_handler(
+        self,
+        jobs: SeatingExportJobRepositoryProtocol,
+        finalizer: SeatingExportJobFinalizer,
+        uow: UnitOfWorkProtocol,
+    ) -> CompleteSeatingExportJobFromWebhookHandler:
+        return CompleteSeatingExportJobFromWebhookHandler(
+            jobs=jobs,
+            finalizer=finalizer,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def download_seating_export_job_handler(
+        self,
+        jobs: SeatingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> DownloadSeatingExportJobHandler:
+        return DownloadSeatingExportJobHandler(
+            jobs=jobs,
+            vault_files=vault_files,
+            vault_storage=vault_storage,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def activate_seating_history_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -638,3 +760,13 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def room_template_repository(self, session: AsyncSession) -> RoomTemplateRepositoryProtocol:
         return PostgreSQLRoomTemplateRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def seating_export_job_repository(
+        self, session: AsyncSession
+    ) -> SeatingExportJobRepositoryProtocol:
+        return PostgreSQLSeatingExportJobRepository(session=session)
+
+    @provide(scope=Scope.APP)
+    def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
+        return BrutalistPosterRenderer()

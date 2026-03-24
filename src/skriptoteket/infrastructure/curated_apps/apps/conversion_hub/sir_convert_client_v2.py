@@ -12,9 +12,9 @@ Relationships:
 
 from __future__ import annotations
 
+import io
 import json
 from dataclasses import dataclass
-from typing import IO
 
 import httpx
 
@@ -23,7 +23,9 @@ from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
     SirConvertArtifactV2,
     SirConvertJobV2,
+    SirConvertSubmitRequestV2,
     SirConvertSubmittedJobV2,
+    SirConvertWebhookSubscriptionV2,
 )
 
 
@@ -119,25 +121,38 @@ class SirConvertALotClientV2:
             headers["X-Correlation-ID"] = correlation_id
         return headers
 
-    async def submit_job(
-        self,
-        *,
-        filename: str,
-        content_type: str,
-        file_handle: IO[bytes],
-        job_spec: dict[str, object],
-        idempotency_key: str,
-        wait_seconds: int,
-        correlation_id: str | None,
-    ) -> SirConvertSubmittedJobV2:
+    async def submit_job(self, *, request: SirConvertSubmitRequestV2) -> SirConvertSubmittedJobV2:
+        files: dict[str, tuple[str, io.BytesIO, str]] = {
+            "file": (
+                request.filename,
+                io.BytesIO(request.file_bytes),
+                request.content_type,
+            )
+        }
+        if request.resources_filename is not None and request.resources_bytes is not None:
+            files["resources"] = (
+                request.resources_filename,
+                io.BytesIO(request.resources_bytes),
+                "application/zip",
+            )
+        if request.reference_docx_filename is not None and request.reference_docx_bytes is not None:
+            files["reference_docx"] = (
+                request.reference_docx_filename,
+                io.BytesIO(request.reference_docx_bytes),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
         response = await self._client.post(
             "/v2/convert/jobs",
-            params={"wait_seconds": wait_seconds},
-            headers=self._headers(idempotency_key=idempotency_key, correlation_id=correlation_id),
+            params={"wait_seconds": request.wait_seconds},
+            headers=self._headers(
+                idempotency_key=request.idempotency_key,
+                correlation_id=request.correlation_id,
+            ),
             data={
-                "job_spec": json.dumps(job_spec, separators=(",", ":"), sort_keys=True),
+                "job_spec": json.dumps(request.job_spec, separators=(",", ":"), sort_keys=True),
             },
-            files={"file": (filename, file_handle, content_type)},
+            files=files,
         )
 
         if response.status_code not in {200, 202}:
@@ -198,3 +213,80 @@ class SirConvertALotClientV2:
                 content=response.content,
             ),
         )
+
+    async def create_webhook_subscription(
+        self,
+        *,
+        callback_url: str,
+        event_types: list[str],
+        correlation_id: str | None,
+    ) -> SirConvertWebhookSubscriptionV2:
+        response = await self._client.post(
+            "/v2/push/webhooks/subscriptions",
+            headers=self._headers(correlation_id=correlation_id),
+            json={
+                "callback_url": callback_url,
+                "event_types": event_types,
+                "enabled": True,
+            },
+        )
+        if response.status_code != 201:
+            raise _extract_service_error(
+                response,
+                message_fallback="Failed to create Sir Convert webhook subscription.",
+            )
+
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Sir Convert-a-Lot v2 returned an invalid webhook payload.",
+                details={},
+            )
+        subscription = payload.get("subscription")
+        secret = payload.get("secret")
+        if not isinstance(subscription, dict) or not isinstance(secret, dict):
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Sir Convert-a-Lot v2 webhook response is missing subscription details.",
+                details={},
+            )
+
+        subscription_id = subscription.get("subscription_id")
+        response_callback_url = subscription.get("callback_url")
+        secret_value = secret.get("value")
+        if (
+            not isinstance(subscription_id, str)
+            or subscription_id == ""
+            or not isinstance(response_callback_url, str)
+            or response_callback_url == ""
+            or not isinstance(secret_value, str)
+            or secret_value == ""
+        ):
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Sir Convert-a-Lot v2 webhook response is incomplete.",
+                details={},
+            )
+
+        return SirConvertWebhookSubscriptionV2(
+            subscription_id=subscription_id,
+            callback_url=response_callback_url,
+            secret=secret_value,
+        )
+
+    async def delete_webhook_subscription(
+        self,
+        subscription_id: str,
+        *,
+        correlation_id: str | None,
+    ) -> None:
+        response = await self._client.delete(
+            f"/v2/push/webhooks/subscriptions/{subscription_id}",
+            headers=self._headers(correlation_id=correlation_id),
+        )
+        if response.status_code != 204:
+            raise _extract_service_error(
+                response,
+                message_fallback="Failed to delete Sir Convert webhook subscription.",
+            )

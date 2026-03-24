@@ -11,6 +11,9 @@ import { computed, nextTick, ref, watch } from "vue";
 
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
 import type { RoomTemplate } from "../classroomPlannerTypes";
+import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
+import { normalizeRoomGrid } from "../roomFixtureLayout";
+import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
@@ -48,6 +51,19 @@ const showSeatingTemplateRequiredHint = ref(false);
 const isResetSeatingDialogOpen = ref(false);
 
 const isSeatWorkspaceWithoutTemplate = computed(() => plannerState.template === null);
+const seatingRoomGrid = computed(() => normalizeRoomGrid(plannerState.template));
+const seatingRoomSurfaceMetrics = computed(() => getRoomSurfaceMetrics(seatingRoomGrid.value));
+const {
+  scale: seatingCanvasScale,
+  scaledSurfaceStyle: seatingCanvasScaledSurfaceStyle,
+  scalePercent: seatingCanvasScalePercent,
+  setViewportSize: setSeatingCanvasViewportSize,
+  zoomOut: zoomOutSeatingCanvas,
+  zoomIn: zoomInSeatingCanvas,
+  resetZoom: resetSeatingCanvasZoom,
+} = useRoomViewportZoom(seatingRoomSurfaceMetrics, {
+  resetSource: computed(() => props.selectedTemplateId ?? plannerState.template?.id ?? null),
+});
 const canEditCurrentTemplate = computed(() => plannerState.template !== null);
 const canRandomizeSeating = computed(() => {
   return (
@@ -299,8 +315,15 @@ watch(
       <RoomCanvas
         v-if="!isSeatWorkspaceWithoutTemplate"
         data-test="seating-workspace"
+        :scale-percent="seatingCanvasScalePercent"
+        :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
         :selected-student-id="selectedStudentId"
+        :surface-scale="seatingCanvasScale"
         @student-selected="emit('student-selected', $event)"
+        @viewport-size="setSeatingCanvasViewportSize"
+        @zoom-fit="resetSeatingCanvasZoom"
+        @zoom-in="zoomInSeatingCanvas"
+        @zoom-out="zoomOutSeatingCanvas"
       />
       <div
         v-else

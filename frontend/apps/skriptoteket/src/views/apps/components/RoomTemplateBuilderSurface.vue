@@ -8,7 +8,7 @@
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
-import { getWallFixtureFrameStyle } from "../roomFixturePresentation";
+import { getRoomSurfaceStyle, getWallFixtureFrameStyle } from "../roomFixturePresentation";
 import { getSeatGhostFrameStyle } from "../roomSeatPresentation";
 import {
   ROOM_GRID_UNIT,
@@ -27,8 +27,8 @@ const props = defineProps<{
   fixtures: RoomFixture[];
   ghostPlacement: RoomTemplateGhostPlacement | null;
   ghostRenderableFixture: RoomFixture | null;
+  builderScale: number;
   builderScaledSurfaceStyle: Record<string, string>;
-  builderSurfaceTransformStyle: Record<string, string>;
   builderScalePercent: number;
 }>();
 
@@ -44,6 +44,7 @@ const emit = defineEmits<{
 }>();
 
 const builderViewport = ref<HTMLElement | null>(null);
+const viewportWidth = ref(0);
 
 function ghostPlacementClass(canPlace: boolean, type: RoomTemplateGhostPlacement["type"]): string {
   if (!canPlace) {
@@ -66,6 +67,7 @@ function syncBuilderViewportSize(): void {
     width: element.clientWidth,
     height: element.clientHeight,
   });
+  viewportWidth.value = element.clientWidth;
 }
 
 let builderViewportObserver: ResizeObserver | null = null;
@@ -104,6 +106,18 @@ const showWallGhost = computed(() => {
     && props.ghostRenderableFixture
     && isWallFixtureType(props.ghostPlacement.type)
   );
+});
+
+const builderSurfaceTransformStyle = computed(() => {
+  return {
+    ...getRoomSurfaceStyle(props.roomGrid),
+    transform: `scale(${props.builderScale})`,
+    transformOrigin: "top left",
+  };
+});
+const shouldCenterSurface = computed(() => {
+  const scaledWidth = Number.parseFloat(props.builderScaledSurfaceStyle.width ?? "0");
+  return viewportWidth.value <= 0 || scaledWidth <= viewportWidth.value;
 });
 </script>
 
@@ -157,7 +171,12 @@ const showWallGhost = computed(() => {
       data-test="room-builder-viewport"
       class="min-h-[560px] flex-1 overflow-auto border border-navy/20 bg-white/70 p-3 lg:min-h-[640px]"
     >
-      <div class="flex min-h-full min-w-full items-start justify-center">
+      <div
+        data-test="room-builder-scroll-frame"
+        :data-overflow-anchor="shouldCenterSurface ? 'center' : 'start'"
+        class="flex min-h-full min-w-full items-start"
+        :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
+      >
         <div
           class="relative shrink-0"
           :style="builderScaledSurfaceStyle"

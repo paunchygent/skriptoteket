@@ -2,7 +2,7 @@
 type: epic
 id: EPIC-24
 title: "Curated app: Klassrumskartan (Fundamentals Recovery)"
-status: active
+status: done
 owners: "agents"
 created: 2026-03-20
 updated: 2026-03-24
@@ -64,7 +64,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-04: Seating fundamentals, room-builder ergonomics, and draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 - [x] [ST-24-06: Seating `Slumpa` fundamentals](../stories/story-24-06-group-seating-studio-seating-slumpa-fundamentals.md)
 - [x] [ST-24-07: Overview-first workspace management](../stories/story-24-07-group-seating-studio-overview-first-workspace-management.md)
-- [ ] [ST-24-08: Landing-page cutover and exit-to-origin flow](../stories/story-24-08-group-seating-studio-landing-cutover-and-exit-to-origin.md)
+- [x] [ST-24-08: Landing-page cutover and exit-to-origin flow](../stories/story-24-08-group-seating-studio-landing-cutover-and-exit-to-origin.md)
 
 ## Implementation Summary (as of 2026-03-24)
 
@@ -116,6 +116,9 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - `PR-0106` shipped seating-specific `Ångra` / `Gör om`, bounded in-draft history, shared
     backend undo/redo routes with neutral draft-history contracts, and a targeted browser proof
     that continuity stays draft-level while classroom switching stays outside seating undo/redo
+  - `PR-0117` finished seating viewport parity by sharing the builder zoom model with the live
+    `Sittplatser` canvas, keeping zoom session-local, and proving seat assignment still works on
+    the scaled surface
 - `ST-24-06` is now shipped locally via `PR-0109`:
   - seating has task-local `Slumpa` inside `Sittplatser`
   - reshuffles stay inside the existing autosave and undo/redo draft mechanics
@@ -129,11 +132,11 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
     components plus local shared UI primitives
   - `PR-0115` extracted route-shell orchestration and overview/catalog state out of the root view
   - `PR-0116` modularized the room-template editor and introduced shared room-scene rendering
-- EPIC-24 remains open because the final user-visible closure slice is still `ST-24-08`:
-  - remove the superseded landing page in one cutover
-  - route `Avsluta` back to dashboard or catalog based on trusted entry origin
-  - fall back to catalog on refresh, deep link, or missing origin state
-- The remaining planned closure slices are now:
-  - `ST-24-08`: complete the big-bang landing-page cutover, remove the superseded landing-only
-    surface immediately after the replacement works, and make `Avsluta` leave the app back to the
-    teacher's entry origin
+- `ST-24-08` is now shipped:
+  - the superseded landing/home surface is removed
+  - Klassrumskartan boots directly into the overview-first workspace
+  - `Avsluta` restores dashboard or catalog entry origin and falls back to catalog for
+    refresh/deep-link entry
+- `EPIC-24` is now complete:
+  - the fundamentals-first teacher workflow is shipped end to end
+  - future work should continue in later epics/stories rather than keeping this recovery epic open

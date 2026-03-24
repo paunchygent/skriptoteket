@@ -1,8 +1,25 @@
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RoomFixture } from "../classroomPlannerTypes";
 import RoomCanvas from "./RoomCanvas.vue";
+
+class ResizeObserverMock {
+  observe(): void {}
+  disconnect(): void {}
+}
+
+function setViewportSize(width: number, height: number): void {
+  Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+    configurable: true,
+    get: () => width,
+  });
+  Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+    configurable: true,
+    get: () => height,
+  });
+}
 
 const stateMocks = vi.hoisted(() => ({
   plannerState: {
@@ -29,6 +46,8 @@ vi.mock("../useClassroomState", () => ({
 
 describe("RoomCanvas", () => {
   beforeEach(() => {
+    vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+    setViewportSize(1200, 800);
     stateMocks.plannerState.assignStudentToSeat.mockReset();
     stateMocks.plannerState.clearSeatAssignment.mockReset();
     stateMocks.plannerState.swapSeatAssignments.mockReset();
@@ -36,7 +55,13 @@ describe("RoomCanvas", () => {
   });
 
   it("keeps the seating surface free from grouping labels", () => {
-    const wrapper = mount(RoomCanvas);
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        surfaceScale: 1,
+      },
+    });
 
     expect(wrapper.text()).toContain("Sittschema");
     expect(wrapper.text()).not.toContain("Grupp A");
@@ -73,7 +98,13 @@ describe("RoomCanvas", () => {
       },
     ];
 
-    const wrapper = mount(RoomCanvas);
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        surfaceScale: 1,
+      },
+    });
 
     expect(wrapper.text()).toContain("Kateder");
     expect(wrapper.text()).toContain("Whiteboard");
@@ -81,8 +112,51 @@ describe("RoomCanvas", () => {
   });
 
   it("renders seats as circular tokens in the live seating canvas", () => {
-    const wrapper = mount(RoomCanvas);
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        surfaceScale: 1,
+      },
+    });
 
     expect(wrapper.html()).toContain("rounded-full");
+  });
+
+  it("renders seating zoom controls and forwards the viewport actions", async () => {
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 80,
+        scaledSurfaceStyle: { width: "1120px", height: "768px" },
+        surfaceScale: 0.8,
+      },
+    });
+
+    expect(wrapper.get('[data-test="seating-zoom-percent"]').text()).toContain("80%");
+
+    await wrapper.get('[data-test="seating-zoom-out"]').trigger("click");
+    await wrapper.get('[data-test="seating-zoom-in"]').trigger("click");
+    await wrapper.get('[data-test="seating-zoom-fit"]').trigger("click");
+
+    expect(wrapper.emitted("zoom-out")).toHaveLength(1);
+    expect(wrapper.emitted("zoom-in")).toHaveLength(1);
+    expect(wrapper.emitted("zoom-fit")).toHaveLength(1);
+    expect(wrapper.emitted("viewport-size")).toBeTruthy();
+  });
+
+  it("anchors the zoomed seating surface to the left edge when it overflows horizontally", async () => {
+    setViewportSize(800, 600);
+
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 80,
+        scaledSurfaceStyle: { width: "1120px", height: "768px" },
+        surfaceScale: 0.8,
+      },
+    });
+
+    await nextTick();
+
+    expect(wrapper.get('[data-test="room-canvas-scroll-frame"]').attributes("data-overflow-anchor")).toBe("start");
   });
 });

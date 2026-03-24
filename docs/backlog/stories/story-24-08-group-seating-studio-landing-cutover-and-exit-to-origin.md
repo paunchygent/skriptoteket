@@ -2,7 +2,7 @@
 type: story
 id: ST-24-08
 title: "Klassrumskartan — Landing-page cutover and exit-to-origin flow"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
 updated: 2026-03-24

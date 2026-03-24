@@ -13,6 +13,9 @@ from skriptoteket.infrastructure.db.models.classroom_planner_room_template impor
 from skriptoteket.infrastructure.db.models.classroom_planner_roster import (
     RosterModel,
 )
+from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_job import (
+    SeatingExportJobModel,
+)
 from skriptoteket.infrastructure.db.models.user_favorite import (
     UserFavoriteAppModel,
     UserFavoriteToolModel,
@@ -25,6 +28,7 @@ __all__ = [
     "RoomTemplateModel",
     "RosterModel",
     "SeatAssignmentModel",
+    "SeatingExportJobModel",
     "StudentPlanningMetaModel",
     "UserFavoriteAppModel",
     "UserFavoriteToolModel",

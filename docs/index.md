@@ -41,6 +41,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0115-klassrumskartan-route-shell-orchestration-and-catalog-home-state-extraction.md`
 - Room-editor refactor follow-up:
   `docs/backlog/prs/pr-0116-klassrumskartan-room-template-editor-modularization-and-shared-room-scene.md`
+- Seating workspace zoom parity follow-up:
+  `docs/backlog/prs/pr-0117-klassrumskartan-seating-workspace-viewport-zoom-parity.md`
+- Proposed Klassrumskartan export/import epic:
+  `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
+- Proposed Klassrumskartan export/import review:
+  `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -181,6 +187,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-23-group-seating-studio.md`
 - `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
 - `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
+- `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 
 ### Backlog Stories
 
@@ -203,6 +210,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`
 - `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
 - `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md`
+- `docs/backlog/stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md`
+- `docs/backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md`
+- `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`
+- `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md`
+- `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md`
 
 ### Backlog Reviews
 
@@ -228,6 +240,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-23-group-seating-studio.md`
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
 - `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
+- `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 
 ### Backlog Sprints
 
@@ -260,6 +273,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0114-klassrumskartan-planner-shell-decomposition-and-shared-ui-primitives.md`
 - `docs/backlog/prs/pr-0115-klassrumskartan-route-shell-orchestration-and-catalog-home-state-extraction.md`
 - `docs/backlog/prs/pr-0116-klassrumskartan-room-template-editor-modularization-and-shared-room-scene.md`
+- `docs/backlog/prs/pr-0117-klassrumskartan-seating-workspace-viewport-zoom-parity.md`
+- `docs/backlog/prs/pr-0118-klassrumskartan-seating-export-contract-and-standalone-poster-scene-model.md`
+- `docs/backlog/prs/pr-0119-klassrumskartan-seating-pdf-poster-renderer-and-artifact-delivery.md`
+- `docs/backlog/prs/pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`
