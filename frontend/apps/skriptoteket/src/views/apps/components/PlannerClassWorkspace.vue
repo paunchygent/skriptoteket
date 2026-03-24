@@ -2,11 +2,10 @@
 /**
  * Class-first planner workspace.
  *
- * This component keeps the class workspace neutral on entry and relies on the
- * segmented toggle as the only way to enter groups or seating. The overview
- * therefore becomes a compact command surface for class and classroom
- * management instead of duplicating draft-history controls that belong to the
- * active planner workspace.
+ * This component is now the only home surface for Klassrumskartan. It keeps
+ * overview as the default entry state, folds the no-class empty state into the
+ * same surface, and relies on the segmented toggle as the only way to enter
+ * groups or seating.
  */
 
 import { computed, ref } from "vue";
@@ -27,7 +26,7 @@ const OVERVIEW_HEADER_HEIGHT_CLASS = "h-[6rem]";
 const OVERVIEW_SELECTOR_HEIGHT_CLASS = "h-[4rem]";
 
 const props = defineProps<{
-  workspaceSummary: ClassWorkspaceSummary;
+  workspaceSummary: ClassWorkspaceSummary | null;
   availableRosters: Roster[];
   availableTemplates: RoomTemplate[];
   selectedRosterId: string | null;
@@ -38,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "back-to-landing"): void;
+  (e: "exit-app"): void;
   (e: "create-roster"): void;
   (e: "edit-roster"): void;
   (e: "delete-current-roster"): void;
@@ -54,6 +53,7 @@ const emit = defineEmits<{
 }>();
 
 const workspaceMode = ref<"overview" | "grouping" | "seating">("overview");
+const activeRosterSummary = computed(() => props.workspaceSummary?.roster ?? null);
 const selectedRoster = computed(() => {
   return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;
 });
@@ -86,6 +86,9 @@ const selectedRosterPreviewNames = computed(() => {
   return [...sortedNames.slice(0, CLASS_PREVIEW_NAME_LIMIT), "..."];
 });
 const classPanelDescription = computed(() => {
+  if (!selectedRoster.value) {
+    return "Skapa eller välj en klasslista här innan du går vidare till grupper eller sittplatser.";
+  }
   return "Förhandsgranska och hantera klasslistan här innan du går vidare till grupper eller sittplatser.";
 });
 const classroomPanelDescription = computed(() => {
@@ -99,6 +102,18 @@ const workspaceContextLabel = computed(() => {
     return "Inget klassrum valt";
   }
   return `Klassrum: ${selectedTemplate.value.name}`;
+});
+const workspaceHomeTitle = computed(() => {
+  return selectedRoster.value?.name ?? activeRosterSummary.value?.name ?? "Klassarbetsyta";
+});
+const selectedRosterCountLabel = computed(() => {
+  if (activeRosterSummary.value) {
+    return `${activeRosterSummary.value.student_count} elever`;
+  }
+  if (selectedRoster.value) {
+    return `${selectedRoster.value.students.length} elever`;
+  }
+  return "Välj en klasslista";
 });
 const hasVisibleResumableDrafts = computed(() => {
   return props.visibleGroupingDraft !== null || props.visibleSeatingDraft !== null;
@@ -183,13 +198,13 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
 <template>
   <section class="space-y-4">
     <PlannerTopPanel
-      :title="workspaceSummary.roster.name"
+      :title="workspaceHomeTitle"
       :context-label="workspaceContextLabel"
       :mode-value="workspaceMode"
       status-label="Översikt"
       status-tone="neutral"
       @update:mode-value="selectWorkspaceMode"
-      @exit="emit('back-to-landing')"
+      @exit="emit('exit-app')"
     />
 
     <section
@@ -315,10 +330,10 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
           </p>
           <div class="flex flex-wrap items-baseline gap-2">
             <p class="text-xl font-semibold text-navy">
-              {{ workspaceSummary.roster.name }}
+              {{ selectedRoster?.name ?? activeRosterSummary?.name ?? "Ingen klass vald" }}
             </p>
             <span class="text-[0.8rem] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
-              {{ workspaceSummary.roster.student_count }} elever
+              {{ selectedRosterCountLabel }}
             </span>
           </div>
           <p class="text-sm text-navy/70">
@@ -331,10 +346,16 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
           <select
             class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
             :disabled="isLoadingWorkspace"
-            :value="selectedRosterId ?? workspaceSummary.roster.id"
+            :value="selectedRosterId ?? ''"
             data-test="overview-roster-select"
             @change="selectRoster"
           >
+            <option
+              v-if="!selectedRosterId"
+              value=""
+            >
+              Välj klasslista
+            </option>
             <option
               v-for="roster in availableRosters"
               :key="roster.id"
@@ -380,6 +401,7 @@ function buildFixturePreviewStyle(template: RoomTemplate, fixtureId: string): Re
           <button
             type="button"
             class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
+            :disabled="!selectedRoster"
             @click="emit('edit-roster')"
           >
             Redigera klass

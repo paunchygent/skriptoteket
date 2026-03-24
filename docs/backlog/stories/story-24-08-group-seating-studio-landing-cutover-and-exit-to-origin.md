@@ -2,10 +2,10 @@
 type: story
 id: ST-24-08
 title: "Klassrumskartan — Landing-page cutover and exit-to-origin flow"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 epic: "EPIC-24"
 dependencies:
   - "ST-24-07"
@@ -63,3 +63,18 @@ direction is meant to unlock.
   - refresh/deep-link/missing-origin fallback to catalog
 - The post-cutover UI should not keep dead landing-page aliases, duplicate route state, or hidden
   fallback shells.
+
+## Implementation Summary (as of 2026-03-24)
+
+- The focused Option A cutover pass is now implemented locally:
+  - the superseded landing/home surface has been removed
+  - `ClassroomPlannerView.vue` now boots directly into the overview-first workspace
+  - `PlannerSelectionGate.vue` and its spec are deleted
+- Entry origin is now carried through router history state so `Avsluta` can restore:
+  - dashboard entry back to `/`
+  - catalog entry back to `/browse`
+  - deep-link or missing-origin fallback back to `/browse`
+- Reloads are intentionally treated as untrusted so a refreshed planner session falls back to the
+  catalog rather than restoring a stale exit target.
+- The refreshed browser proof `scripts/playwright_pr_0111_overview_resumable_entry.py` now covers
+  the overview-first entry flow plus dashboard/catalog/fallback exit behavior on the local SPA.

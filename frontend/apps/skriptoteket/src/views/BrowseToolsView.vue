@@ -1,9 +1,21 @@
 <script setup lang="ts">
+/**
+ * Category tool list view.
+ *
+ * This view renders published tools and curated apps within one catalog slice.
+ * Klassrumskartan links now carry a small router-state origin marker so the
+ * app can leave back to the catalog after the landing-page cutover.
+ */
+
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
+import {
+  buildClassroomPlannerEntryTarget,
+  CLASSROOM_PLANNER_APP_ID,
+} from "./apps/classroomPlannerNavigation";
 
 type ListToolsResponse = components["schemas"]["ListToolsResponse"];
 type ProfessionItem = components["schemas"]["ProfessionItem"];
@@ -28,6 +40,15 @@ const professionSlug = computed(() => {
 const categorySlug = computed(() => {
   const param = route.params.category;
   return typeof param === "string" ? param : "";
+});
+const curatedAppTarget = computed(() => {
+  return (appId: string) => {
+    if (appId === CLASSROOM_PLANNER_APP_ID) {
+      return buildClassroomPlannerEntryTarget("catalog");
+    }
+
+    return { name: "app-detail", params: { appId } };
+  };
 });
 
 async function fetchTools(): Promise<void> {
@@ -170,7 +191,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
             class="border-b border-navy/20 last:border-b-0"
           >
             <RouterLink
-              :to="{ name: 'app-detail', params: { appId: app.app_id } }"
+              :to="curatedAppTarget(app.app_id)"
               class="group flex items-start justify-between gap-4 p-4 no-underline text-inherit hover:bg-canvas transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
             >
               <div class="flex flex-col gap-1 min-w-0">

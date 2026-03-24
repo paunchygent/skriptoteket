@@ -427,7 +427,7 @@ describe("PlannerWorkspaceShell", () => {
     }
 
     await exitButton.trigger("click");
-    expect(wrapper.emitted("exit-to-landing")).toHaveLength(1);
+    expect(wrapper.emitted("exit-app")).toHaveLength(1);
   });
 
   it("opens grouping history from the grouping toolbar instead of overview", async () => {

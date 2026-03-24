@@ -2,8 +2,8 @@
  * Root planner view tests.
  *
  * These tests verify the top-level Klassrumskartan screen orchestration, with
- * focus on the landing-screen resume CTA and the transition into the new
- * class-workspace state.
+ * focus on the overview-first home surface, live planner transitions, and the
+ * cutover exit-to-origin behavior.
  */
 
 import { mount } from "@vue/test-utils";
@@ -59,20 +59,34 @@ const stateMocks = vi.hoisted(() => ({
     getResumableDraft: vi.fn(),
   }))(),
 }));
+const routerMocks = vi.hoisted(() => ({
+  router: {
+    replace: vi.fn(),
+  },
+}));
 
 vi.mock("../../api/client", () => ({
   apiDelete: clientMocks.apiDelete,
   apiGet: clientMocks.apiGet,
 }));
 
+vi.mock("vue-router", async () => {
+  const actual = await vi.importActual<typeof import("vue-router")>("vue-router");
+  return {
+    ...actual,
+    useRouter: () => routerMocks.router,
+  };
+});
+
 vi.mock("./useClassroomState", () => ({
   useClassroomState: () => stateMocks.plannerState,
 }));
 
 async function flushPromises(): Promise<void> {
-  await Promise.resolve();
-  await Promise.resolve();
-  await nextTick();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await Promise.resolve();
+    await nextTick();
+  }
 }
 
 function createDeferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
@@ -85,8 +99,10 @@ function createDeferred<T>(): { promise: Promise<T>; resolve: (value: T) => void
 
 describe("ClassroomPlannerView", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     clientMocks.apiDelete.mockReset();
     clientMocks.apiGet.mockReset();
+    routerMocks.router.replace.mockReset();
     stateMocks.plannerState.abandonDraft.mockReset();
     stateMocks.plannerState.activateGroupingHistoryDraft.mockReset();
     stateMocks.plannerState.activateSeatingHistoryDraft.mockReset();
@@ -104,12 +120,36 @@ describe("ClassroomPlannerView", () => {
     stateMocks.plannerState.roster = null;
     stateMocks.plannerState.template = null;
     stateMocks.plannerState.draft = null;
+    stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
+    vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([]);
+    window.history.replaceState(null, "");
   });
 
-  it("shows resume CTA on the landing page instead of auto-opening the planner", async () => {
+  it("opens straight into the overview-first workspace using the resumable draft roster", async () => {
+    const workspaceSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: {
+        id: "draft-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "active",
+        revision: 3,
+        last_opened_at: "2026-03-21T10:00:00Z",
+        updated_at: "2026-03-21T10:00:00Z",
+      },
+      grouping_history: [],
+      seating_history: [],
+    };
     clientMocks.apiGet
       .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [] }])
       .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
     stateMocks.plannerState.getResumableDraft.mockResolvedValue({
       draft: {
         id: "draft-1",
@@ -137,14 +177,14 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Fortsätt senaste utkastet");
-    expect(wrapper.text()).not.toContain("Aktiv planering");
+    expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenCalledWith("roster-1");
+    expect(wrapper.text()).not.toContain("Laddar planeringsmiljön");
     expect(stateMocks.plannerState.resolveDraft).not.toHaveBeenCalled();
 
     wrapper.unmount();
   });
 
-  it("opens the class workspace after class selection instead of launching the planner directly", async () => {
+  it("opens the overview-first workspace immediately instead of waiting for a landing selection", async () => {
     const workspaceSummary: ClassWorkspaceSummary = {
       roster: { id: "roster-1", name: "SA24D", student_count: 1 },
       task_entry_options: [
@@ -175,10 +215,6 @@ describe("ClassroomPlannerView", () => {
         },
       },
     });
-    await flushPromises();
-    await flushPromises();
-
-    await wrapper.get('[role="button"]').trigger("click");
     await flushPromises();
     await flushPromises();
 
@@ -237,9 +273,6 @@ describe("ClassroomPlannerView", () => {
       },
     });
     await flushPromises();
-    await flushPromises();
-
-    await wrapper.get('[role="button"]').trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='open-grouping']").trigger("click");
     await flushPromises();
@@ -328,8 +361,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-grouping']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='open-grouping-history']").trigger("click");
@@ -410,8 +441,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-grouping']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='delete-grouping-history']").trigger("click");
@@ -487,8 +516,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='new-seating-draft']").trigger("click");
@@ -568,8 +595,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='delete-seating-history']").trigger("click");
@@ -650,8 +675,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
 
@@ -708,8 +731,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='edit-roster']").trigger("click");
     await flushPromises();
 
@@ -768,8 +789,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
 
@@ -833,8 +852,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get('[data-test="open-grouping"]').trigger("click");
     await flushPromises();
     await wrapper.get('[data-test="edit-grouping-roster"]').trigger("click");
@@ -889,7 +906,7 @@ describe("ClassroomPlannerView", () => {
         last_opened_at: "2026-03-21T10:00:00Z",
       };
     });
-    stateMocks.plannerState.flushPendingSave.mockResolvedValue(undefined);
+    stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
     stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
 
     const wrapper = mount(ClassroomPlannerView, {
@@ -898,7 +915,8 @@ describe("ClassroomPlannerView", () => {
           CreateRosterModal: true,
           CreateRoomTemplateModal: true,
           PlannerClassWorkspace: {
-            template: "<div>PlannerClassWorkspaceStub</div>",
+            template:
+              "<div><div>PlannerClassWorkspaceStub</div><button type='button' data-test='open-seating' @click=\"$emit('open-seating', { templateId: 'template-1' })\">Öppna sittplatser</button></div>",
           },
           PlannerWorkspaceShell: {
             template:
@@ -910,12 +928,7 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    const continueButton = wrapper.findAll("button").find((button) => button.text() === "Fortsätt");
-    expect(continueButton).toBeDefined();
-    if (!continueButton) {
-      throw new Error("Expected the landing view to render a Fortsätt button.");
-    }
-    await continueButton.trigger("click");
+    await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='return-to-workspace']").trigger("click");
     await flushPromises();
@@ -982,8 +995,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-grouping']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='change-grouping-template']").trigger("click");
@@ -1075,8 +1086,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
     await wrapper.get("[data-test='open-grouping']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='new-grouping-draft']").trigger("click");
@@ -1090,37 +1099,23 @@ describe("ClassroomPlannerView", () => {
     wrapper.unmount();
   });
 
-  it("exits the planner to the landing page without discarding the active draft", async () => {
+  it("exits the planner to the stored dashboard origin without discarding the active draft", async () => {
+    window.history.replaceState({ classroomPlannerEntryOrigin: "dashboard" }, "");
     clientMocks.apiGet
       .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
       .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
-    stateMocks.plannerState.getResumableDraft
-      .mockResolvedValueOnce({
-        draft: {
-          id: "draft-1",
-          roster_id: "roster-1",
-          draft_kind: "seating",
-          template_id: "template-1",
-          status: "active",
-          revision: 3,
-          last_opened_at: "2026-03-21T10:00:00Z",
-        },
-        roster_name: "SA24D",
-        template_name: "Sal 101",
-      })
-      .mockResolvedValueOnce({
-        draft: {
-          id: "draft-1",
-          roster_id: "roster-1",
-          draft_kind: "seating",
-          template_id: "template-1",
-          status: "active",
-          revision: 3,
-          last_opened_at: "2026-03-21T10:00:00Z",
-        },
-        roster_name: "SA24D",
-        template_name: "Sal 101",
-      });
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue({
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    });
     stateMocks.plannerState.resolveDraft.mockImplementation(async () => {
       stateMocks.plannerState.roster = { id: "roster-1", name: "SA24D", students: [] };
       stateMocks.plannerState.template = { id: "template-1", name: "Sal 101", seats: [], fixtures: [] };
@@ -1134,17 +1129,20 @@ describe("ClassroomPlannerView", () => {
         last_opened_at: "2026-03-21T10:00:00Z",
       };
     });
-    stateMocks.plannerState.flushPendingSave.mockResolvedValue(undefined);
+    stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
 
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
           CreateRosterModal: true,
           CreateRoomTemplateModal: true,
-          PlannerClassWorkspace: true,
+          PlannerClassWorkspace: {
+            template:
+              "<button type='button' data-test='open-seating' @click=\"$emit('open-seating', { templateId: 'template-1' })\">Öppna sittplatser</button>",
+          },
           PlannerWorkspaceShell: {
             template:
-              "<button type='button' data-test='exit-to-landing' @click=\"$emit('exit-to-landing')\">Avsluta</button>",
+              "<button type='button' data-test='exit-app' @click=\"$emit('exit-app')\">Avsluta</button>",
           },
         },
       },
@@ -1152,31 +1150,40 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    const continueButton = wrapper.findAll("button").find((button) => button.text() === "Fortsätt");
-    expect(continueButton).toBeDefined();
-    if (!continueButton) {
-      throw new Error("Expected the landing view to render a Fortsätt button.");
-    }
-    await continueButton.trigger("click");
+    await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
-    await wrapper.get("[data-test='exit-to-landing']").trigger("click");
+    await wrapper.get("[data-test='exit-app']").trigger("click");
     await flushPromises();
 
     expect(stateMocks.plannerState.flushPendingSave).toHaveBeenCalled();
     expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
     expect(stateMocks.plannerState.clearWorkspace).toHaveBeenCalled();
-    expect(wrapper.text()).toContain("Fortsätt senaste utkastet");
-    expect(wrapper.text()).toContain("Stäng");
+    expect(routerMocks.router.replace).toHaveBeenCalledWith({ name: "home" });
 
     wrapper.unmount();
   });
 
-  it("dismisses the landing resumable CTA without abandoning the active draft", async () => {
+  it("prompts before leaving when pending autosave does not finish promptly", async () => {
+    window.history.replaceState({ classroomPlannerEntryOrigin: "dashboard" }, "");
     clientMocks.apiGet
       .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
       .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
-    stateMocks.plannerState.getResumableDraft.mockResolvedValue({
-      draft: {
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue({
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    });
+    stateMocks.plannerState.resolveDraft.mockImplementation(async () => {
+      stateMocks.plannerState.roster = { id: "roster-1", name: "SA24D", students: [] };
+      stateMocks.plannerState.template = { id: "template-1", name: "Sal 101", seats: [], fixtures: [] };
+      stateMocks.plannerState.draft = {
         id: "draft-1",
         roster_id: "roster-1",
         draft_kind: "seating",
@@ -1184,36 +1191,52 @@ describe("ClassroomPlannerView", () => {
         status: "active",
         revision: 3,
         last_opened_at: "2026-03-21T10:00:00Z",
-      },
-      roster_name: "SA24D",
-      template_name: "Sal 101",
+      };
     });
+    const flushPendingSaveDeferred = createDeferred<boolean>();
+    stateMocks.plannerState.flushPendingSave.mockReturnValue(flushPendingSaveDeferred.promise);
+    vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([]);
+    vi.useFakeTimers();
 
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
           CreateRosterModal: true,
           CreateRoomTemplateModal: true,
-          PlannerClassWorkspace: true,
-          PlannerWorkspaceShell: true,
+          PlannerClassWorkspace: {
+            template:
+              "<button type='button' data-test='open-seating' @click=\"$emit('open-seating', { templateId: 'template-1' })\">Öppna sittplatser</button>",
+          },
+          PlannerWorkspaceShell: {
+            template:
+              "<button type='button' data-test='exit-app' @click=\"$emit('exit-app')\">Avsluta</button>",
+          },
         },
       },
     });
     await flushPromises();
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Fortsätt senaste utkastet");
-    await wrapper.get('button[aria-label="Stäng senaste utkastet"]').trigger("click");
+    await wrapper.get("[data-test='open-seating']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='exit-app']").trigger("click");
+    await vi.advanceTimersByTimeAsync(1600);
     await flushPromises();
 
-    expect(wrapper.text()).not.toContain("SA24D · Sal 101");
-    expect(wrapper.find('button[aria-label="Stäng senaste utkastet"]').exists()).toBe(false);
-    expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Lämna Klassrumskartan?");
+    expect(routerMocks.router.replace).not.toHaveBeenCalled();
+
+    await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
+    await flushPromises();
+
+    expect(stateMocks.plannerState.cancelPendingSave).toHaveBeenCalled();
+    expect(routerMocks.router.replace).toHaveBeenCalledWith({ name: "home" });
+    vi.useRealTimers();
 
     wrapper.unmount();
   });
 
-  it("passes overview resumable draft cards to the class workspace and dismisses them without touching landing state", async () => {
+  it("passes overview resumable draft cards to the class workspace and dismisses them locally", async () => {
     const workspaceSummary: ClassWorkspaceSummary = {
       roster: { id: "roster-1", name: "SA24D", student_count: 1 },
       task_entry_options: [
@@ -1273,10 +1296,6 @@ describe("ClassroomPlannerView", () => {
         },
       },
     });
-    await flushPromises();
-    await flushPromises();
-
-    await wrapper.get('[role="button"]').trigger("click");
     await flushPromises();
     await flushPromises();
 
@@ -1354,10 +1373,6 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
     await flushPromises();
 
-    await wrapper.get('[role="button"]').trigger("click");
-    await flushPromises();
-    await flushPromises();
-
     await wrapper.get("[data-test='select-template']").trigger("click");
     await wrapper.get("[data-test='edit-resume-template']").trigger("click");
     await flushPromises();
@@ -1407,10 +1422,6 @@ describe("ClassroomPlannerView", () => {
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
-          PlannerSelectionGate: {
-            template:
-              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
-          },
           PlannerClassWorkspace: {
             props: ["workspaceSummary"],
             template:
@@ -1423,8 +1434,6 @@ describe("ClassroomPlannerView", () => {
       },
     });
     await flushPromises();
-    await flushPromises();
-    await wrapper.get("[data-test='select-roster']").trigger("click");
     await flushPromises();
 
     expect(wrapper.get("[data-test='workspace-name']").text()).toBe("SA24D");
@@ -1460,10 +1469,6 @@ describe("ClassroomPlannerView", () => {
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
-          PlannerSelectionGate: {
-            template:
-              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
-          },
           PlannerClassWorkspace: {
             template:
               "<div><button type='button' data-test='select-template' @click=\"$emit('select-template', 'template-1')\">Välj klassrum</button><button type='button' data-test='edit-current-template' @click=\"$emit('edit-current-template')\">Redigera klassrum</button></div>",
@@ -1478,8 +1483,6 @@ describe("ClassroomPlannerView", () => {
       },
     });
     await flushPromises();
-    await flushPromises();
-    await wrapper.get("[data-test='select-roster']").trigger("click");
     await flushPromises();
 
     await wrapper.get("[data-test='select-template']").trigger("click");
@@ -1522,10 +1525,6 @@ describe("ClassroomPlannerView", () => {
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
-          PlannerSelectionGate: {
-            template:
-              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
-          },
           PlannerClassWorkspace: {
             template:
               "<div><button type='button' data-test='delete-current-template' @click=\"$emit('delete-current-template')\">Ta bort klassrum</button></div>",
@@ -1539,8 +1538,6 @@ describe("ClassroomPlannerView", () => {
       },
     });
     await flushPromises();
-    await flushPromises();
-    await wrapper.get("[data-test='select-roster']").trigger("click");
     await flushPromises();
 
     await wrapper.get("[data-test='delete-current-template']").trigger("click");
@@ -1582,10 +1579,6 @@ describe("ClassroomPlannerView", () => {
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
-          PlannerSelectionGate: {
-            template:
-              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
-          },
           PlannerClassWorkspace: {
             template:
               "<div><button type='button' data-test='delete-current-roster' @click=\"$emit('delete-current-roster')\">Ta bort klasslista</button></div>",
@@ -1599,8 +1592,6 @@ describe("ClassroomPlannerView", () => {
       },
     });
     await flushPromises();
-    await flushPromises();
-    await wrapper.get("[data-test='select-roster']").trigger("click");
     await flushPromises();
 
     await wrapper.get("[data-test='delete-current-roster']").trigger("click");
@@ -1650,10 +1641,6 @@ describe("ClassroomPlannerView", () => {
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
-          PlannerSelectionGate: {
-            template:
-              "<button type='button' data-test='select-roster' @click=\"$emit('select-roster', 'roster-1')\">Öppna klass</button>",
-          },
           PlannerClassWorkspace: {
             props: ["workspaceSummary"],
             template:
@@ -1669,8 +1656,6 @@ describe("ClassroomPlannerView", () => {
       },
     });
     await flushPromises();
-    await flushPromises();
-    await wrapper.get("[data-test='select-roster']").trigger("click");
     await flushPromises();
 
     expect(wrapper.get("[data-test='workspace-name']").text()).toBe("SA24D");

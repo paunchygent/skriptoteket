@@ -5,7 +5,7 @@ title: "Curated app: Klassrumskartan (Fundamentals Recovery)"
 status: active
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-23
+updated: 2026-03-24
 outcome: "Teachers work from a class-first workspace with a compact overview-first dashboard, enter separate grouping or seating drafts as needed, use classrooms as secondary context, rely on autosave plus bounded undo/redo draft history, and get task-local `Slumpa` without being forced through undeclared advanced planning controls."
 dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 ---
@@ -62,11 +62,11 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-02: Class-first workspace and draft entry](../stories/story-24-02-group-seating-studio-class-first-workspace.md)
 - [x] [ST-24-03: Grouping fundamentals + draft history](../stories/story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
 - [x] [ST-24-04: Seating fundamentals, room-builder ergonomics, and draft history](../stories/story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
-- [ ] [ST-24-06: Seating `Slumpa` fundamentals](../stories/story-24-06-group-seating-studio-seating-slumpa-fundamentals.md)
-- [ ] [ST-24-07: Overview-first workspace management](../stories/story-24-07-group-seating-studio-overview-first-workspace-management.md)
+- [x] [ST-24-06: Seating `Slumpa` fundamentals](../stories/story-24-06-group-seating-studio-seating-slumpa-fundamentals.md)
+- [x] [ST-24-07: Overview-first workspace management](../stories/story-24-07-group-seating-studio-overview-first-workspace-management.md)
 - [ ] [ST-24-08: Landing-page cutover and exit-to-origin flow](../stories/story-24-08-group-seating-studio-landing-cutover-and-exit-to-origin.md)
 
-## Implementation Summary (as of 2026-03-23)
+## Implementation Summary (as of 2026-03-24)
 
 - EPIC-24 has been re-scoped away from the earlier “show everything” Slice 2 surface.
 - The governing product direction is now fundamentals first:
@@ -116,16 +116,19 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - `PR-0106` shipped seating-specific `Ångra` / `Gör om`, bounded in-draft history, shared
     backend undo/redo routes with neutral draft-history contracts, and a targeted browser proof
     that continuity stays draft-level while classroom switching stays outside seating undo/redo
-- EPIC-24 remains open after `ST-24-04` because two user-visible fundamentals are still part of
-  the intended outcome:
-  - seating still lacks task-local `Slumpa`
-  - the compact overview-first dashboard has not yet absorbed class/classroom management strongly
-    enough to support the final landing-page cutover
+- `ST-24-06` is now shipped locally via `PR-0109`:
+  - seating has task-local `Slumpa` inside `Sittplatser`
+  - reshuffles stay inside the existing autosave and undo/redo draft mechanics
+- `ST-24-07` is now effectively done:
+  - `PR-0110` shipped compact overview class/classroom management
+  - `PR-0111` shipped overview-owned resumable continuation and is now merged to `main`
+  - `PR-0112` shipped the simplified overview/planner chrome that keeps the segmented toggle as the
+    only mode switch
+- EPIC-24 remains open because the final user-visible closure slice is still `ST-24-08`:
+  - remove the superseded landing page in one cutover
+  - route `Avsluta` back to dashboard or catalog based on trusted entry origin
+  - fall back to catalog on refresh, deep link, or missing origin state
 - The remaining planned closure slices are now:
-  - `ST-24-06`: add seating `Slumpa` as a full-draft reshuffle inside `Sittplatser`, with
-    autosave and undo/redo integration but no smart-placement settings
-  - `ST-24-07`: make `Översikt` the compact desktop-first dashboard for class management,
-    classroom management, and the improved resumable/home surface that can replace landing
-  - `ST-24-08`: perform the tandem big-bang landing-page cutover, remove the superseded
-    landing-only surface immediately after the replacement works, and make `Avsluta` leave the app
-    back to the teacher's entry origin
+  - `ST-24-08`: complete the big-bang landing-page cutover, remove the superseded landing-only
+    surface immediately after the replacement works, and make `Avsluta` leave the app back to the
+    teacher's entry origin

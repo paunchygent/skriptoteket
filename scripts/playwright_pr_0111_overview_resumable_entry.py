@@ -1,12 +1,11 @@
-"""Dedicated live browser proof for PR-0111 overview resumable entry polish.
+"""Dedicated live browser proof for the overview-first Klassrumskartan cutover.
 
 This script reuses the established classroom-planner Playwright helpers to log
-in through the protected curated-app route, create one real class list and
-classroom, seed active grouping and seating drafts through the live UI, and
-then verify the compact overview-owned continuation surface. The proof focuses
-on the accepted PR-0111 behavior: separate grouping/seating continue cards,
-compact settings affordances, dismiss `×`, and direct entry into the correct
-workspace without relying on the old landing CTA.
+in, create one real class list and classroom, seed active grouping and seating
+drafts through the live UI, and then verify the cutover behavior end to end:
+direct entry into the overview-first home surface, separate grouping/seating
+continue cards, compact settings affordances, and `Avsluta` returning to the
+teacher's true entry origin with a catalog fallback for deep links.
 """
 
 from __future__ import annotations
@@ -24,7 +23,6 @@ from scripts.playwright_classroom_planner_smoke import (
     _create_template,
     _focus_workspace_mode,
     _login_to_app,
-    _open_class_workspace,
 )
 from scripts.playwright_ui_smoke import _launch_chromium
 
@@ -32,12 +30,36 @@ ARTIFACTS_DIR = Path(".artifacts/pr-0111-live-check")
 APP_PATH = "/apps/classroom.group-seating-studio"
 
 
-def _dismiss_landing_resumable_cta(page: Any) -> None:
-    """Close the legacy landing CTA if it is present before class selection."""
+def _open_app_from_catalog(page: Any) -> None:
+    """Launch Klassrumskartan from the catalog so exit restores `/browse`."""
 
-    dismiss_button = page.get_by_role("button", name=re.compile(r"Stäng senaste utkastet"))
-    if dismiss_button.count() > 0 and dismiss_button.first.is_visible():
-        dismiss_button.first.click()
+    page.goto(f"{get_config().base_url}/browse", wait_until="networkidle")
+    page.get_by_role("searchbox", name=re.compile(r"Sök", re.IGNORECASE)).fill("Klassrumskartan")
+    app_card = page.get_by_role("link", name=re.compile(r"Öppna Klassrumskartan", re.IGNORECASE))
+    expect(app_card).to_be_visible()
+    app_card.click()
+
+
+def _open_app_from_dashboard(page: Any) -> None:
+    """Launch Klassrumskartan from the dashboard recent-items surface."""
+
+    page.goto(f"{get_config().base_url}/", wait_until="networkidle")
+    app_card = page.get_by_role("link", name=re.compile(r"Öppna Klassrumskartan", re.IGNORECASE))
+    expect(app_card).to_be_visible(timeout=15000)
+    app_card.click()
+
+
+def _verify_overview_first_entry(page: Any) -> None:
+    """Assert the app boots straight into the overview home surface."""
+
+    expect(page.get_by_role("heading", name="Klassrumskartan", exact=True)).to_be_visible()
+    expect(page.locator('[data-test="overview-roster-select"]')).to_be_visible()
+    expect(
+        page.get_by_text(
+            "Välj en klass för att arbeta vidare med grupper eller sittplatser.",
+            exact=True,
+        )
+    ).to_have_count(0)
 
 
 def _select_workspace_template(page: Any, *, template_name: str) -> None:
@@ -158,8 +180,15 @@ def _verify_dismiss_actions(page: Any) -> None:
     expect(page.locator('[data-test="overview-resumable-surface"]')).to_have_count(0)
 
 
+def _exit_app_and_expect_path(page: Any, *, expected_path: str) -> None:
+    """Leave the planner and assert the SPA returns to the expected route."""
+
+    page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE)).click()
+    expect(page).to_have_url(re.compile(re.escape(expected_path) + r"$"))
+
+
 def main() -> None:
-    """Run the focused PR-0111 proof against the canonical local SPA."""
+    """Run the overview-first cutover proof against the canonical local SPA."""
 
     config = get_config()
     timestamp = int(time.time())
@@ -174,10 +203,11 @@ def main() -> None:
         page = context.new_page()
 
         _login_to_app(page, base_url=config.base_url, email=config.email, password=config.password)
-        _dismiss_landing_resumable_cta(page)
+        _open_app_from_catalog(page)
+        _verify_overview_first_entry(page)
+
         _create_roster(page, roster_name=roster_name)
         _create_template(page, template_name=template_name)
-        _open_class_workspace(page, roster_name=roster_name)
         _select_workspace_template(page, template_name=template_name)
 
         _open_grouping_draft(page)
@@ -188,6 +218,18 @@ def main() -> None:
         _verify_resume_cards(page, template_name=template_name)
         _verify_settings_affordances(page)
         _verify_continue_actions(page)
+        _exit_app_and_expect_path(page, expected_path="/browse")
+
+        _open_app_from_dashboard(page)
+        _verify_overview_first_entry(page)
+        _exit_app_and_expect_path(page, expected_path="/")
+
+        page.goto(f"{config.base_url}{APP_PATH}", wait_until="networkidle")
+        _verify_overview_first_entry(page)
+        _exit_app_and_expect_path(page, expected_path="/browse")
+
+        _open_app_from_catalog(page)
+        _verify_overview_first_entry(page)
         _verify_dismiss_actions(page)
 
         page.screenshot(path=str(screenshot_path), full_page=True)

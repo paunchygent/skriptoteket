@@ -53,7 +53,7 @@ const emit = defineEmits<{
   (e: "delete-seating-history-draft", draftId: string): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
-  (e: "exit-to-landing"): void;
+  (e: "exit-app"): void;
 }>();
 
 const plannerState = useClassroomState();
@@ -382,7 +382,7 @@ watch(
       :status-message="hasSaveMessage ? plannerState.saveMessage : null"
       :status-tone="saveStatusTone"
       @update:mode-value="selectWorkspaceMode"
-      @exit="emit('exit-to-landing')"
+      @exit="emit('exit-app')"
     />
 
     <GroupBoard

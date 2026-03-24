@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockUseAuthStore = vi.fn();
 const mockUseLoginModal = vi.fn();
-let registeredGuard: ((to: unknown) => Promise<unknown> | unknown) | null = null;
+let registeredGuard: ((to: unknown, from: unknown) => Promise<unknown> | unknown) | null = null;
 
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("vue-router")>();
@@ -12,7 +12,7 @@ vi.mock("vue-router", async (importOriginal) => {
       const router = actual.createRouter(options);
       const originalBeforeEach = router.beforeEach.bind(router);
       router.beforeEach = (guard) => {
-        registeredGuard = guard as (to: unknown) => Promise<unknown> | unknown;
+        registeredGuard = guard as (to: unknown, from: unknown) => Promise<unknown> | unknown;
         return originalBeforeEach(guard);
       };
       return router;
@@ -66,6 +66,8 @@ describe("router guards", () => {
       fullPath: "/browse",
       meta: { requiresAuth: true },
       query: {},
+    }, {
+      name: "home",
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
@@ -89,6 +91,8 @@ describe("router guards", () => {
       fullPath: "/login?next=/profile",
       meta: {},
       query: { next: "/profile" },
+    }, {
+      name: undefined,
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
@@ -112,6 +116,8 @@ describe("router guards", () => {
       fullPath: "/admin/tools",
       meta: { minRole: "admin" },
       query: {},
+    }, {
+      name: "home",
     });
 
     expect(auth.bootstrap).toHaveBeenCalled();
@@ -120,5 +126,35 @@ describe("router guards", () => {
       name: "forbidden",
       query: { required: "admin", from: "/admin/tools" },
     });
+  });
+
+  it("preserves Klassrumskartan dashboard origin through the login modal redirect", async () => {
+    const auth = createAuth();
+    const loginModal = createLoginModal();
+    mockUseAuthStore.mockReturnValue(auth);
+    mockUseLoginModal.mockReturnValue(loginModal);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: "app-detail",
+      path: "/apps/classroom.group-seating-studio",
+      fullPath: "/apps/classroom.group-seating-studio",
+      params: { appId: "classroom.group-seating-studio" },
+      meta: { requiresAuth: true },
+      query: {},
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(loginModal.open).toHaveBeenCalledWith({
+      name: "app-detail",
+      params: { appId: "classroom.group-seating-studio" },
+      state: {
+        classroomPlannerEntryOrigin: "dashboard",
+      },
+    });
+    expect(result).toBe(false);
   });
 });

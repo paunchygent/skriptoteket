@@ -2,7 +2,7 @@
 type: pr
 id: PR-0111
 title: "Klassrumskartan: overview resumable CTA and workspace-entry polish"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
 updated: 2026-03-24
@@ -71,3 +71,17 @@ once it works, so the old landing surface can start being deleted rather than pr
 
 - Revert the improved resumable overview/home surface while keeping the compact overview management
   work from `PR-0110`.
+
+## Implementation summary
+
+- Merged to `main` on 2026-03-24 as the resumable overview/home replacement slice for
+  `ST-24-07`.
+- `PlannerClassWorkspace.vue` now owns compact grouping and seating continuation cards with
+  explicit continue, settings, and dismiss affordances.
+- `ClassroomPlannerView.vue` now keeps resumable-card dismiss state local to overview rather than
+  sharing CTA state with the superseded landing page.
+- `PlannerTopPanel.vue` keeps the overview-first shell's `Avsluta` action compact so the follow-up
+  `ST-24-08` cutover can remove the old landing surface instead of preserving it.
+- `scripts/playwright_pr_0111_overview_resumable_entry.py` remains the focused live proof for the
+  overview-owned continuation flow and was refreshed again during `ST-24-08` to verify the final
+  cutover behavior on the local SPA.

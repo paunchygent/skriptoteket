@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * Root SPA shell.
+ *
+ * This component hosts the global layouts, login modal, and auth-reactive
+ * redirects so protected curated-app routes keep their entry contracts intact.
+ */
+
 import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -10,6 +17,11 @@ import { useLoginModal } from "./composables/useLoginModal";
 import { usePageTransition } from "./composables/usePageTransition";
 import { useAuthStore } from "./stores/auth";
 import { useHelp } from "./components/help/useHelp";
+import {
+  buildClassroomPlannerEntryTarget,
+  CLASSROOM_PLANNER_APP_ID,
+  readClassroomPlannerEntryOriginFromHistoryState,
+} from "./views/apps/classroomPlannerNavigation";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -57,6 +69,16 @@ const isProtectedRoute = computed(() => {
   });
 });
 
+function buildProtectedRouteLoginRedirect() {
+  if (route.name === "app-detail" && route.params.appId === CLASSROOM_PLANNER_APP_ID) {
+    return buildClassroomPlannerEntryTarget(
+      readClassroomPlannerEntryOriginFromHistoryState(window.history.state),
+    );
+  }
+
+  return route.fullPath;
+}
+
 function closeLoginModal(): void {
   loginModal.close();
 }
@@ -95,7 +117,7 @@ watch(
       return;
     }
 
-    loginModal.open(route.fullPath);
+    loginModal.open(buildProtectedRouteLoginRedirect());
   },
 );
 

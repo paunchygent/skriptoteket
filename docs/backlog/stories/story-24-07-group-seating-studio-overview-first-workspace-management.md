@@ -2,10 +2,10 @@
 type: story
 id: ST-24-07
 title: "Klassrumskartan — Overview-first workspace management"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 epic: "EPIC-24"
 dependencies:
   - "ST-24-02"
@@ -103,3 +103,14 @@ Focus:
 - simplify overview and planner chrome after the capability expansion lands
 - remove duplicated guidance and unnecessary panel separations that do not add local meaning
 - make workspace-mode transitions feel seamless rather than snapping through avoidable intermediate states
+
+## Implementation Summary (as of 2026-03-24)
+
+- `PR-0110`, `PR-0111`, and `PR-0112` together shipped the intended overview-first workspace:
+  - compact class and classroom management in `Översikt`
+  - resumable grouping and seating continuation on the main page
+  - simplified planner chrome with the segmented toggle as the only in-app mode switch
+- The story's “replacement surface first” goal is now met:
+  - the overview/main page can stand in for the superseded landing surface
+  - `PR-0111` is merged to `main`
+  - the remaining cutover work belongs to `ST-24-08`

@@ -2,44 +2,49 @@
 /**
  * Klassrumskartan planner root view.
  *
- * This view loads the planner catalog, keeps the top-level resumable CTA on
- * the landing screen, and switches between the class-first landing state, the
- * class workspace, and the live planner shell.
+ * This view owns the landing-page cutover. It boots straight into the
+ * overview-first workspace, keeps the planner shell separate from the home
+ * surface, and routes `Avsluta` back to the teacher's trusted entry origin.
  */
 
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import { apiDelete, apiGet, isApiError } from "../../api/client";
 import CreateRosterModal from "./components/CreateRosterModal.vue";
 import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
 import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
 import CreateRoomTemplateModal from "./components/CreateRoomTemplateModal.vue";
-import PlannerSelectionGate from "./components/PlannerSelectionGate.vue";
 import PlannerWorkspaceShell from "./components/PlannerWorkspaceShell.vue";
 import {
   type ClassWorkspaceSummary,
-  type ResumablePlanDraft,
   type RoomTemplate,
   type Roster,
 } from "./classroomPlannerTypes";
+import {
+  type ClassroomPlannerEntryOrigin,
+  isReloadNavigation,
+  readClassroomPlannerEntryOriginFromHistoryState,
+  resolveClassroomPlannerExitTarget,
+} from "./classroomPlannerNavigation";
 import { useClassroomState } from "./useClassroomState";
 
-type PlannerScreen = "landing" | "class-workspace" | "planner";
+type PlannerScreen = "class-workspace" | "planner";
+
+const EXIT_AUTOSAVE_TIMEOUT_MS = 1500;
 
 const plannerState = useClassroomState();
+const router = useRouter();
 
 const availableRosters = ref<Roster[]>([]);
 const availableTemplates = ref<RoomTemplate[]>([]);
 const selectedRosterId = ref<string | null>(null);
-const currentScreen = ref<PlannerScreen>("landing");
+const currentScreen = ref<PlannerScreen>("class-workspace");
 const plannerInitialView = ref<"groups" | "seats">("groups");
 const isBootstrapping = ref(true);
-const isLoadingCatalog = ref(false);
 const isLoadingClassWorkspace = ref(false);
 const bootstrapError = ref<string | null>(null);
 const plannerActionError = ref<string | null>(null);
-const resumableDraft = ref<ResumablePlanDraft | null>(null);
-const dismissedResumableDraftId = ref<string | null>(null);
 const dismissedOverviewGroupingDraftId = ref<string | null>(null);
 const dismissedOverviewSeatingDraftId = ref<string | null>(null);
 const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>(null);
@@ -54,16 +59,9 @@ const isDeletingOverviewRoster = ref(false);
 const isDeletingOverviewTemplate = ref(false);
 const isSeatingLifecycleBusy = ref(false);
 const busySeatingHistoryDraftId = ref<string | null>(null);
-
-const visibleResumableDraft = computed(() => {
-  if (!resumableDraft.value) {
-    return null;
-  }
-  if (dismissedResumableDraftId.value === resumableDraft.value.draft.id) {
-    return null;
-  }
-  return resumableDraft.value;
-});
+const entryOrigin = ref<ClassroomPlannerEntryOrigin | null>(null);
+const isExitConfirmationOpen = ref(false);
+const isExitingWithoutSave = ref(false);
 const visibleOverviewGroupingDraft = computed(() => {
   const draft = classWorkspaceSummary.value?.active_grouping_draft ?? null;
   if (!draft || dismissedOverviewGroupingDraftId.value === draft.id) {
@@ -78,24 +76,6 @@ const visibleOverviewSeatingDraft = computed(() => {
   }
   return draft;
 });
-
-function setResumableDraft(draft: ResumablePlanDraft | null): void {
-  resumableDraft.value = draft;
-  if (!draft) {
-    dismissedResumableDraftId.value = null;
-    return;
-  }
-  if (dismissedResumableDraftId.value !== draft.draft.id) {
-    dismissedResumableDraftId.value = null;
-  }
-}
-
-function dismissResumableDraft(): void {
-  if (!resumableDraft.value) {
-    return;
-  }
-  dismissedResumableDraftId.value = resumableDraft.value.draft.id;
-}
 
 function dismissOverviewGroupingDraft(): void {
   const draftId = classWorkspaceSummary.value?.active_grouping_draft?.id ?? null;
@@ -114,21 +94,12 @@ function dismissOverviewSeatingDraft(): void {
 }
 
 async function fetchCatalog(): Promise<void> {
-  isLoadingCatalog.value = true;
-  try {
-    const [rosters, templates] = await Promise.all([
-      apiGet<Roster[]>("/api/v1/apps/classroom.group-seating-studio/rosters"),
-      apiGet<RoomTemplate[]>("/api/v1/apps/classroom.group-seating-studio/templates"),
-    ]);
-    availableRosters.value = rosters;
-    availableTemplates.value = templates;
-  } finally {
-    isLoadingCatalog.value = false;
-  }
-}
-
-function syncSelectionFromWorkspace(): void {
-  selectedRosterId.value = plannerState.roster?.id ?? null;
+  const [rosters, templates] = await Promise.all([
+    apiGet<Roster[]>("/api/v1/apps/classroom.group-seating-studio/rosters"),
+    apiGet<RoomTemplate[]>("/api/v1/apps/classroom.group-seating-studio/templates"),
+  ]);
+  availableRosters.value = rosters;
+  availableTemplates.value = templates;
 }
 
 function normalizeUiError(error: unknown, fallbackMessage: string): string {
@@ -143,6 +114,37 @@ function normalizeUiError(error: unknown, fallbackMessage: string): string {
 
 async function loadClassWorkspaceSummary(rosterId: string): Promise<void> {
   classWorkspaceSummary.value = await plannerState.getClassWorkspaceSummary(rosterId);
+}
+
+function clearOverviewWorkspaceState(): void {
+  selectedRosterId.value = null;
+  classWorkspaceSummary.value = null;
+  selectedWorkspaceTemplateId.value = null;
+  dismissedOverviewGroupingDraftId.value = null;
+  dismissedOverviewSeatingDraftId.value = null;
+}
+
+function resolveHomeRosterId(preferredRosterId: string | null): string | null {
+  if (preferredRosterId && availableRosters.value.some((roster) => roster.id === preferredRosterId)) {
+    return preferredRosterId;
+  }
+
+  if (selectedRosterId.value && availableRosters.value.some((roster) => roster.id === selectedRosterId.value)) {
+    return selectedRosterId.value;
+  }
+
+  return availableRosters.value[0]?.id ?? null;
+}
+
+async function openInitialHomeWorkspace(preferredRosterId: string | null): Promise<void> {
+  const nextRosterId = resolveHomeRosterId(preferredRosterId);
+  if (!nextRosterId) {
+    clearOverviewWorkspaceState();
+    currentScreen.value = "class-workspace";
+    return;
+  }
+
+  await openClassWorkspace(nextRosterId);
 }
 
 function syncWorkspaceTemplateSelection(options?: { preserveCurrent?: boolean }): void {
@@ -193,48 +195,14 @@ async function openClassWorkspace(rosterId: string): Promise<void> {
   }
 }
 
-function returnToLanding(): void {
-  currentScreen.value = "landing";
-  selectedRosterId.value = null;
-  classWorkspaceSummary.value = null;
-  selectedWorkspaceTemplateId.value = null;
-  dismissedOverviewGroupingDraftId.value = null;
-  dismissedOverviewSeatingDraftId.value = null;
-}
-
-async function resumeDraft(): Promise<void> {
-  if (!resumableDraft.value) {
-    return;
-  }
-  plannerActionError.value = null;
-  try {
-    await plannerState.resolveDraft(
-      resumableDraft.value.draft.roster_id,
-      resumableDraft.value.draft.template_id ?? null,
-      resumableDraft.value.draft.draft_kind,
-    );
-    syncSelectionFromWorkspace();
-    plannerInitialView.value =
-      resumableDraft.value.draft.draft_kind === "seating" ? "seats" : "groups";
-    currentScreen.value = "planner";
-  } catch (error: unknown) {
-    plannerState.clearWorkspace();
-    plannerActionError.value = normalizeUiError(
-      error,
-      "Kunde inte fortsätta utkastet just nu.",
-    );
-    console.error("Failed to resume classroom planner draft", error);
-  }
-}
-
 onMounted(async () => {
   try {
-    await Promise.all([
+    entryOrigin.value = readCurrentEntryOrigin();
+    const [, resumableDraft] = await Promise.all([
       fetchCatalog(),
-      plannerState.getResumableDraft().then((draft) => {
-        setResumableDraft(draft);
-      }),
+      plannerState.getResumableDraft(),
     ]);
+    await openInitialHomeWorkspace(resumableDraft?.draft.roster_id ?? null);
   } catch (error: unknown) {
     bootstrapError.value = error instanceof Error ? error.message : "Kunde inte ladda Klassrumskartan.";
   } finally {
@@ -255,7 +223,6 @@ async function openGroupingWorkspace(payload: { templateId: string | null }): Pr
     } else {
       await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "grouping");
     }
-    setResumableDraft(await plannerState.getResumableDraft());
     await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
@@ -280,7 +247,6 @@ async function openSeatingWorkspace(payload: { templateId: string | null }): Pro
     } else {
       await plannerState.resolveDraft(selectedRosterId.value, payload.templateId, "seating");
     }
-    setResumableDraft(await plannerState.getResumableDraft());
     await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
@@ -295,7 +261,7 @@ async function openSeatingWorkspace(payload: { templateId: string | null }): Pro
 async function returnToClassWorkspace(): Promise<void> {
   const rosterId = plannerState.roster?.id ?? selectedRosterId.value;
   if (!rosterId) {
-    returnToLanding();
+    await openInitialHomeWorkspace(null);
     return;
   }
 
@@ -311,7 +277,6 @@ async function returnToClassWorkspace(): Promise<void> {
     }
     plannerState.clearWorkspace();
     await loadClassWorkspaceSummary(rosterId);
-    setResumableDraft(await plannerState.getResumableDraft());
     selectedRosterId.value = rosterId;
     syncWorkspaceTemplateSelection();
     currentScreen.value = "class-workspace";
@@ -323,32 +288,85 @@ async function returnToClassWorkspace(): Promise<void> {
   }
 }
 
-async function exitPlannerToLanding(): Promise<void> {
+function readCurrentEntryOrigin(): ClassroomPlannerEntryOrigin | null {
+  const navigationEntries = window.performance.getEntriesByType("navigation").filter(
+    (entry): entry is PerformanceNavigationTiming => typeof (entry as { type?: unknown }).type === "string",
+  );
+  if (isReloadNavigation(navigationEntries)) {
+    return null;
+  }
+
+  return readClassroomPlannerEntryOriginFromHistoryState(window.history.state);
+}
+
+async function finishExitToEntryOrigin(): Promise<void> {
+  plannerState.clearWorkspace();
+  clearOverviewWorkspaceState();
+  currentScreen.value = "class-workspace";
+  await router.replace(resolveClassroomPlannerExitTarget(entryOrigin.value));
+}
+
+async function flushPendingSaveForExit(): Promise<"saved" | "blocked" | "timed-out"> {
+  if (!plannerState.draft) {
+    return "saved";
+  }
+
+  const result = await Promise.race<"saved" | "blocked" | "timed-out">([
+    plannerState.flushPendingSave().then((flushSucceeded) => (flushSucceeded ? "saved" : "blocked")),
+    new Promise<"timed-out">((resolve) => {
+      window.setTimeout(() => resolve("timed-out"), EXIT_AUTOSAVE_TIMEOUT_MS);
+    }),
+  ]);
+
+  return result;
+}
+
+function closeExitConfirmation(): void {
+  if (isExitingWithoutSave.value) {
+    return;
+  }
+  isExitConfirmationOpen.value = false;
+}
+
+async function confirmExitWithoutWaiting(): Promise<void> {
+  isExitingWithoutSave.value = true;
   plannerActionError.value = null;
   try {
-    if (plannerState.draft) {
-      await plannerState.flushPendingSave();
-      if (plannerState.saveStatus === "conflict" || plannerState.saveStatus === "error") {
-        plannerActionError.value =
-          plannerState.saveStatus === "conflict"
-            ? "Lös sparkonflikten innan du avslutar klassarbetsytan."
-            : plannerState.saveMessage ?? "Kunde inte avsluta klassarbetsytan just nu.";
-        return;
-      }
-    }
-
-    plannerState.clearWorkspace();
-    setResumableDraft(await plannerState.getResumableDraft());
-    selectedRosterId.value = null;
-    classWorkspaceSummary.value = null;
-    selectedWorkspaceTemplateId.value = null;
-    dismissedOverviewGroupingDraftId.value = null;
-    dismissedOverviewSeatingDraftId.value = null;
-    currentScreen.value = "landing";
+    plannerState.cancelPendingSave();
+    await finishExitToEntryOrigin();
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
-      "Kunde inte avsluta klassarbetsytan just nu.",
+      "Kunde inte lämna Klassrumskartan just nu.",
+    );
+  } finally {
+    isExitingWithoutSave.value = false;
+    isExitConfirmationOpen.value = false;
+  }
+}
+
+async function exitPlannerApp(): Promise<void> {
+  plannerActionError.value = null;
+  try {
+    const exitSaveResult = await flushPendingSaveForExit();
+    if (exitSaveResult === "blocked") {
+      plannerActionError.value =
+        plannerState.saveStatus === "conflict"
+          ? "Lös sparkonflikten innan du avslutar Klassrumskartan."
+          : plannerState.saveMessage ?? "Kunde inte avsluta Klassrumskartan just nu.";
+      return;
+    }
+
+    if (exitSaveResult === "timed-out") {
+      isExitConfirmationOpen.value = true;
+      return;
+    }
+
+    await finishExitToEntryOrigin();
+  } catch (error: unknown) {
+    plannerActionError.value = normalizeUiError(
+      error,
+      "Kunde inte lämna Klassrumskartan just nu.",
     );
   }
 }
@@ -370,7 +388,6 @@ async function changeSeatingTemplate(payload: { templateId: string | null }): Pr
       return;
     }
     await plannerState.resolveDraft(rosterId, payload.templateId, "seating");
-    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -398,7 +415,6 @@ async function changeGroupingTemplate(payload: { templateId: string | null }): P
       return;
     }
     await plannerState.resolveDraft(rosterId, payload.templateId, "grouping");
-    setResumableDraft(await plannerState.getResumableDraft());
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
   } catch (error: unknown) {
@@ -426,7 +442,6 @@ async function startNewGroupingDraft(payload: { templateId: string | null }): Pr
       return;
     }
     await plannerState.startNewGroupingDraft(rosterId, payload.templateId);
-    setResumableDraft(await plannerState.getResumableDraft());
     await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
@@ -456,7 +471,6 @@ async function startNewSeatingDraft(payload: { templateId: string }): Promise<vo
       return;
     }
     await plannerState.startNewSeatingDraft(rosterId, payload.templateId);
-    setResumableDraft(await plannerState.getResumableDraft());
     await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
@@ -474,7 +488,6 @@ async function openGroupingHistoryDraft(draftId: string): Promise<void> {
   plannerActionError.value = null;
   try {
     await plannerState.activateGroupingHistoryDraft(draftId);
-    setResumableDraft(await plannerState.getResumableDraft());
     await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "groups";
     currentScreen.value = "planner";
@@ -495,7 +508,6 @@ async function openSeatingHistoryDraft(draftId: string): Promise<void> {
   busySeatingHistoryDraftId.value = draftId;
   try {
     await plannerState.activateSeatingHistoryDraft(draftId);
-    setResumableDraft(await plannerState.getResumableDraft());
     await refreshClassWorkspaceSummaryForSelectedRoster();
     plannerInitialView.value = "seats";
     currentScreen.value = "planner";
@@ -520,7 +532,6 @@ async function deleteGroupingHistoryDraft(draftId: string): Promise<void> {
   try {
     await plannerState.deleteGroupingHistoryDraft(draftId);
     await loadClassWorkspaceSummary(rosterId);
-    setResumableDraft(await plannerState.getResumableDraft());
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
@@ -541,7 +552,6 @@ async function deleteSeatingHistoryDraft(draftId: string): Promise<void> {
   try {
     await plannerState.deleteSeatingHistoryDraft(draftId);
     await loadClassWorkspaceSummary(rosterId);
-    setResumableDraft(await plannerState.getResumableDraft());
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
       error,
@@ -608,7 +618,7 @@ async function upsertRoster(roster: Roster): Promise<void> {
 function deleteRoster(rosterId: string): void {
   availableRosters.value = availableRosters.value.filter((roster) => roster.id !== rosterId);
   if (selectedRosterId.value === rosterId) {
-    returnToLanding();
+    void openInitialHomeWorkspace(null);
   }
   isRosterModalOpen.value = false;
   activeRosterModal.value = null;
@@ -779,7 +789,7 @@ async function confirmOverviewRosterDelete(): Promise<void> {
           Klassrumskartan
         </h1>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Välj en klass för att arbeta vidare med grupper eller sittplatser.
+          Arbeta vidare från översikten och öppna grupper eller sittplatser när du behöver dem.
         </p>
       </div>
     </header>
@@ -809,25 +819,9 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       </div>
     </div>
 
-    <PlannerSelectionGate
-      v-if="!isBootstrapping && !bootstrapError && currentScreen === 'landing'"
-      :available-rosters="availableRosters"
-      :available-templates="availableTemplates"
-      :selected-roster-id="selectedRosterId"
-      :resumable-draft="visibleResumableDraft"
-      :is-loading-catalog="isLoadingCatalog"
-      @select-roster="void openClassWorkspace($event)"
-      @create-roster="openRosterCreate"
-      @edit-roster="openRosterEdit"
-      @create-template="openTemplateCreate"
-      @edit-template="openTemplateEdit"
-      @resume-draft="resumeDraft"
-      @dismiss-resumable-draft="dismissResumableDraft"
-    />
-
     <PlannerClassWorkspace
-      v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace' && classWorkspaceSummary"
-      :key="classWorkspaceSummary.roster.id"
+      v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace'"
+      :key="classWorkspaceSummary?.roster.id ?? 'empty-overview'"
       :workspace-summary="classWorkspaceSummary"
       :available-rosters="availableRosters"
       :available-templates="availableTemplates"
@@ -836,7 +830,7 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       :is-loading-workspace="isLoadingClassWorkspace"
       :visible-grouping-draft="visibleOverviewGroupingDraft"
       :visible-seating-draft="visibleOverviewSeatingDraft"
-      @back-to-landing="returnToLanding"
+      @exit-app="void exitPlannerApp()"
       @create-roster="openRosterCreate"
       @edit-roster="openSelectedRosterEdit"
       @delete-current-roster="openSelectedRosterDelete"
@@ -869,7 +863,7 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       @delete-seating-history-draft="void deleteSeatingHistoryDraft($event)"
       @edit-current-template="openTemplateEdit"
       @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
-      @exit-to-landing="void exitPlannerToLanding()"
+      @exit-app="void exitPlannerApp()"
     />
 
     <CreateRosterModal
@@ -908,6 +902,17 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       :is-submitting="isDeletingOverviewTemplate"
       @cancel="closeOverviewTemplateDelete"
       @confirm="void confirmOverviewTemplateDelete()"
+    />
+
+    <PlannerConfirmationDialog
+      v-if="isExitConfirmationOpen"
+      eyebrow="Avsluta"
+      title="Lämna Klassrumskartan?"
+      message="Den senaste autosparningen blev inte klar i tid. Om du lämnar nu kan de senaste ändringarna gå förlorade."
+      confirm-label="Avsluta ändå"
+      :is-submitting="isExitingWithoutSave"
+      @cancel="closeExitConfirmation"
+      @confirm="void confirmExitWithoutWaiting()"
     />
   </div>
 </template>

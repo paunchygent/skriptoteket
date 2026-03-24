@@ -1,7 +1,20 @@
+/**
+ * SPA router setup and auth guards.
+ *
+ * This module centralizes route protection and keeps login redirects intact for
+ * Klassrumskartan so auth handoffs do not drop planner entry-origin state.
+ */
+
+import type { RouteLocationNormalizedLoaded, RouteLocationRaw } from "vue-router";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { useLoginModal } from "../composables/useLoginModal";
 import { useAuthStore } from "../stores/auth";
+import {
+  buildClassroomPlannerEntryTarget,
+  CLASSROOM_PLANNER_APP_ID,
+  resolveClassroomPlannerEntryOriginFromRouteName,
+} from "../views/apps/classroomPlannerNavigation";
 import { routes } from "./routes";
 
 export const router = createRouter({
@@ -29,7 +42,27 @@ function getNextParam(value: unknown): string | null {
   return value;
 }
 
-router.beforeEach(async (to) => {
+function isClassroomPlannerAppRoute(route: {
+  name?: RouteLocationNormalizedLoaded["name"];
+  params?: RouteLocationNormalizedLoaded["params"];
+}): boolean {
+  return route.name === "app-detail" && route.params?.appId === CLASSROOM_PLANNER_APP_ID;
+}
+
+function buildProtectedRouteLoginRedirect(
+  to: Pick<RouteLocationNormalizedLoaded, "fullPath" | "name" | "params">,
+  from: Pick<RouteLocationNormalizedLoaded, "name">,
+): RouteLocationRaw {
+  if (isClassroomPlannerAppRoute(to)) {
+    return buildClassroomPlannerEntryTarget(
+      resolveClassroomPlannerEntryOriginFromRouteName(from.name),
+    );
+  }
+
+  return to.fullPath;
+}
+
+router.beforeEach(async (to, from) => {
   const auth = useAuthStore();
 
   const requiresAuth = Boolean(to.meta.requiresAuth);
@@ -55,7 +88,7 @@ router.beforeEach(async (to) => {
 
   if ((requiresAuth || minRole) && !auth.isAuthenticated) {
     const loginModal = useLoginModal();
-    loginModal.open(to.fullPath);
+    loginModal.open(buildProtectedRouteLoginRedirect(to, from));
     return false;
   }
 

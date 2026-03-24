@@ -1,9 +1,23 @@
 <script setup lang="ts">
+/**
+ * Catalog item card.
+ *
+ * This component renders both tools and curated apps inside dashboard and
+ * catalog lists. For Klassrumskartan, it now attaches a minimal entry-origin
+ * state when the teacher launches the app so `Avsluta` can return to the
+ * correct surface after the landing cutover.
+ */
+
 import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import type { CatalogItem } from "../../types/catalog";
 import { IconBookmark } from "../icons";
+import {
+  buildClassroomPlannerEntryTarget,
+  CLASSROOM_PLANNER_APP_ID,
+  resolveClassroomPlannerEntryOriginFromRouteName,
+} from "../../views/apps/classroomPlannerNavigation";
 
 type Variant = "default" | "compact" | "list";
 
@@ -24,9 +38,15 @@ const isList = computed(() => props.variant === "list");
 const actionLabel = computed(() => (isCuratedApp.value ? "Öppna" : "Välj"));
 const isInteractive = computed(() => isCompact.value || isList.value);
 const router = useRouter();
+const route = useRoute();
 
 const actionTarget = computed(() => {
   if (props.item.kind === "curated_app") {
+    if (props.item.app_id === CLASSROOM_PLANNER_APP_ID) {
+      return buildClassroomPlannerEntryTarget(
+        resolveClassroomPlannerEntryOriginFromRouteName(route.name),
+      );
+    }
     return { name: "app-detail", params: { appId: props.item.app_id } };
   }
   return { name: "tool-run", params: { slug: props.item.slug } };
