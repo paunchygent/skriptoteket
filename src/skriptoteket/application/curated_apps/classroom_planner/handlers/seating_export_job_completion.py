@@ -204,14 +204,11 @@ class CompleteSeatingExportJobFromWebhookHandler:
         headers: dict[str, str],
         raw_body: bytes,
         correlation_id: str | None,
-        callback_job_id_hint: UUID | None = None,
     ) -> None:
         payload = parse_webhook_payload(raw_body)
         async with self._uow:
             job = await self._jobs.get_by_upstream_job_id(upstream_job_id=payload["job_id"])
         if job is None:
-            return
-        if callback_job_id_hint is not None and job.id != callback_job_id_hint:
             return
         if job.webhook_secret is None:
             return

@@ -27,6 +27,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingPosterScene,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
@@ -295,6 +296,83 @@ async def test_create_seating_export_job_recreates_missing_shared_webhook_bindin
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_create_seating_export_job_fails_closed_when_canonical_binding_secret_is_missing():
+    actor = make_user()
+    now = datetime(2026, 3, 24, tzinfo=timezone.utc)
+    prepare = AsyncMock(spec=PrepareSeatingExportHandler)
+    prepare.handle.return_value = _prepared_contract()
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    bindings = AsyncMock(spec=SeatingExportWebhookBindingRepositoryProtocol)
+    renderer = AsyncMock(spec=SeatingPosterRendererProtocol)
+    renderer.render.return_value = RenderedSeatingPosterBundle(
+        html_filename="index.html",
+        html_content="<html><body>Poster</body></html>",
+        css_filename="poster.css",
+        css_content="body{color:black;}",
+        output_filename="klass-7a-a3.pdf",
+    )
+    client = AsyncMock(spec=SirConvertALotClientV2Protocol)
+    client.list_webhook_subscriptions.return_value = [
+        SirConvertWebhookSubscriptionSummaryV2(
+            subscription_id="whsub-shared",
+            callback_url="http://127.0.0.1:8000/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs",
+        )
+    ]
+    created_job = _job(owner_user_id=actor.id, status=SeatingExportJobStatus.SUBMITTED).model_copy(
+        update={
+            "id": uuid4(),
+            "upstream_job_id": None,
+            "webhook_subscription_id": None,
+            "webhook_secret": None,
+        }
+    )
+    failed_job = created_job.model_copy(
+        update={
+            "status": SeatingExportJobStatus.FAILED,
+            "error_message": "Kunde inte starta PDF-exporten just nu. Försök igen.",
+        }
+    )
+    jobs.create.return_value = created_job
+    jobs.update.return_value = failed_job
+    bindings.get_shared_for_update.return_value = _DummyBinding(
+        subscription_id="whsub-shared",
+        callback_url="http://127.0.0.1:8000/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs",
+        secret=None,
+    )
+
+    handler = CreateSeatingExportJobHandler(
+        prepare=prepare,
+        jobs=jobs,
+        webhook_bindings=bindings,
+        renderer=renderer,
+        client=client,
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+        id_generator=_FixedIdGenerator([created_job.id]),
+        settings=Settings(SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL="http://127.0.0.1:8000"),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            actor=actor,
+            draft_id=created_job.draft_id,
+            export_kind=SeatingExportKind.PDF,
+            layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
+            paper_size=SeatingExportPaperSize.A3_LANDSCAPE,
+            correlation_id="corr-1",
+        )
+
+    assert exc_info.value.code == ErrorCode.SERVICE_UNAVAILABLE
+    client.create_webhook_subscription.assert_not_called()
+    client.submit_job.assert_not_called()
+    bindings.update_shared.assert_not_called()
+    failed_update = jobs.update.await_args.kwargs["job"]
+    assert failed_update.status is SeatingExportJobStatus.FAILED
+    assert failed_update.error_message == "Kunde inte starta PDF-exporten just nu. Försök igen."
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_create_seating_export_job_recreates_shared_binding_when_callback_url_is_stale():
     actor = make_user()
     now = datetime(2026, 3, 24, tzinfo=timezone.utc)
@@ -415,43 +493,6 @@ async def test_webhook_completion_dispatches_by_upstream_job_id():
 
     jobs.get_by_upstream_job_id.assert_awaited_once_with(upstream_job_id="upstream-1")
     finalizer.complete_success.assert_awaited_once_with(job=job, correlation_id="corr-1")
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_webhook_completion_ignores_cutover_path_when_job_id_hint_does_not_match():
-    actor = make_user()
-    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
-    finalizer = AsyncMock()
-    job = _job(owner_user_id=actor.id, status=SeatingExportJobStatus.PROCESSING)
-    jobs.get_by_upstream_job_id.return_value = job
-
-    timestamp = "1710000000"
-    raw_body = b'{"job_id":"upstream-1","event_type":"job.succeeded"}'
-    assert job.webhook_secret is not None
-    signature = hmac.new(
-        job.webhook_secret.encode("utf-8"),
-        f"{timestamp}.".encode("utf-8") + raw_body,
-        hashlib.sha256,
-    ).hexdigest()
-
-    handler = CompleteSeatingExportJobFromWebhookHandler(
-        jobs=jobs,
-        finalizer=finalizer,
-        uow=_DummyUow(),
-    )
-
-    await handler.handle(
-        headers={
-            "x-scal-webhook-timestamp": timestamp,
-            "x-scal-webhook-signature": f"v1={signature}",
-        },
-        raw_body=raw_body,
-        correlation_id="corr-1",
-        callback_job_id_hint=uuid4(),
-    )
-
-    finalizer.complete_success.assert_not_called()
 
 
 @pytest.mark.unit

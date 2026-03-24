@@ -44,7 +44,13 @@ const labelClass = computed(() => {
 });
 
 const labelStyle = computed<CSSProperties>(() => {
-  const verticalLabel = props.fixture.labelOrientation === "vertical";
+  const verticalLabel = (
+    props.fixture.labelOrientation === "vertical"
+    || (
+      props.fixture.labelOrientation === undefined
+      && (wallSide.value === "left" || wallSide.value === "right")
+    )
+  );
   switch (wallSide.value) {
     case "top":
       return { left: "50%", top: "-20px", transform: "translateX(-50%)" };

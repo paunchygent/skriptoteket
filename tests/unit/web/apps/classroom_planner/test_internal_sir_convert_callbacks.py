@@ -1,9 +1,8 @@
 """Unit coverage for internal Sir Convert callback routes.
 
 Purpose:
-    Verify that both the canonical shared callback route and the temporary
-    cutover path delegate into the same seating export webhook handler without
-    duplicating callback logic.
+    Verify that the canonical shared callback route delegates into the seating
+    export webhook handler without carrying any legacy route plumbing.
 
 Relationships:
     - Covers `web.api.v1.internal_sir_convert_callbacks`.
@@ -48,20 +47,4 @@ async def test_shared_callback_route_delegates_without_job_hint() -> None:
     )
 
     assert response == {"status": "ok"}
-    assert handler.handle.await_args.kwargs["callback_job_id_hint"] is None
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_cutover_callback_route_passes_job_id_hint() -> None:
-    handler = AsyncMock(spec=CompleteSeatingExportJobFromWebhookHandler)
-    job_id_hint = uuid4()
-
-    response = await _unwrap_dishka(api.receive_seating_export_job_cutover_callback)(
-        job_id=job_id_hint,
-        request=_request(),
-        handler=handler,
-    )
-
-    assert response == {"status": "ok"}
-    assert handler.handle.await_args.kwargs["callback_job_id_hint"] == job_id_hint
+    assert set(handler.handle.await_args.kwargs) == {"headers", "raw_body", "correlation_id"}

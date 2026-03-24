@@ -180,11 +180,18 @@ export function getCanonicalFixtureLabel(type: RoomFixtureType): string | null {
   return CANONICAL_FIXTURE_LABELS[type];
 }
 
+export function normalizeRoomFixtureAnnotations(
+  fixtures: readonly RoomFixture[],
+  grid: RoomGridDimensions,
+): PresentedRoomFixture[] {
+  return fixtures.map((fixture) => normalizePresentedFixture(fixture, grid));
+}
+
 export function normalizePresentedFixtures(
   fixtures: readonly RoomFixture[],
   grid: RoomGridDimensions,
 ): PresentedRoomFixture[] {
-  const normalized = fixtures.map((fixture) => normalizePresentedFixture(fixture, grid));
+  const normalized = normalizeRoomFixtureAnnotations(fixtures, grid);
   const benches = mergePresentedFixtures(
     normalized.filter((fixture) => fixture.type === "bench"),
     canMergeBenches,

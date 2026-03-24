@@ -30,7 +30,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.webhook_con
     build_seating_export_callback_url,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
@@ -42,6 +42,7 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertALotClientV2Protocol,
     SirConvertSubmitRequestV2,
+    SirConvertWebhookSubscriptionSummaryV2,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
@@ -198,16 +199,40 @@ class CreateSeatingExportJobHandler:
         )
         async with self._uow:
             shared_binding = await self._webhook_bindings.get_shared_for_update()
-            if await self._can_reuse_shared_binding(
+            subscriptions = await self._client.list_webhook_subscriptions(
+                correlation_id=correlation_id
+            )
+            canonical_subscriptions = self._canonical_subscriptions(
+                subscriptions=subscriptions,
+                expected_callback_url=expected_callback_url,
+            )
+            if self._can_reuse_shared_binding(
                 subscription_id=shared_binding.subscription_id,
                 callback_url=shared_binding.callback_url,
                 secret=shared_binding.secret,
                 expected_callback_url=expected_callback_url,
-                correlation_id=correlation_id,
+                canonical_subscriptions=canonical_subscriptions,
             ):
                 bound_subscription_id = shared_binding.subscription_id
                 bound_secret = shared_binding.secret
             else:
+                if len(canonical_subscriptions) > 0:
+                    raise DomainError(
+                        code=ErrorCode.SERVICE_UNAVAILABLE,
+                        message=(
+                            "Shared seating-export webhook binding is invalid while a "
+                            "canonical Sir Convert callback already exists. Run "
+                            "`reconcile-seating-export-webhooks` before starting a new "
+                            "seating export."
+                        ),
+                        details={
+                            "expected_callback_url": expected_callback_url,
+                            "canonical_subscription_ids": [
+                                subscription.subscription_id
+                                for subscription in canonical_subscriptions
+                            ],
+                        },
+                    )
                 subscription = await self._client.create_webhook_subscription(
                     callback_url=expected_callback_url,
                     event_types=list(SEATING_EXPORT_WEBHOOK_EVENT_TYPES),
@@ -233,14 +258,14 @@ class CreateSeatingExportJobHandler:
                 )
             )
 
-    async def _can_reuse_shared_binding(
+    def _can_reuse_shared_binding(
         self,
         *,
         subscription_id: str | None,
         callback_url: str | None,
         secret: str | None,
         expected_callback_url: str,
-        correlation_id: str | None,
+        canonical_subscriptions: tuple[SirConvertWebhookSubscriptionSummaryV2, ...],
     ) -> bool:
         if (
             subscription_id is None
@@ -249,10 +274,18 @@ class CreateSeatingExportJobHandler:
             or callback_url != expected_callback_url
         ):
             return False
-        subscriptions = await self._client.list_webhook_subscriptions(correlation_id=correlation_id)
-        return any(
-            item.subscription_id == subscription_id and item.callback_url == expected_callback_url
-            for item in subscriptions
+        return any(item.subscription_id == subscription_id for item in canonical_subscriptions)
+
+    def _canonical_subscriptions(
+        self,
+        *,
+        subscriptions: list[SirConvertWebhookSubscriptionSummaryV2],
+        expected_callback_url: str,
+    ) -> tuple[SirConvertWebhookSubscriptionSummaryV2, ...]:
+        return tuple(
+            subscription
+            for subscription in subscriptions
+            if subscription.callback_url == expected_callback_url
         )
 
     async def _mark_job_failed(self, *, job: SeatingExportJob, error_message: str) -> None:

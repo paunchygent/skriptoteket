@@ -16,6 +16,7 @@ import {
   normalizeFixturePlacement,
   normalizeRoomGrid,
   rectanglesOverlap,
+  resolveWallSideFromFixture,
   type RoomGridDimensions,
   type WallSide,
 } from "./roomFixtureLayout";
@@ -91,7 +92,11 @@ export function fixtureFits(
 
   for (let currentRow = placement.row; currentRow < placement.row + placement.height; currentRow += 1) {
     for (let currentCol = placement.col; currentCol < placement.col + placement.width; currentCol += 1) {
-      if (isSeatAt(seatCells, currentRow, currentCol) || findFloorFixtureAt(fixtures, currentRow, currentCol)) {
+      if (
+        isSeatAt(seatCells, currentRow, currentCol)
+        || findFloorFixtureAt(fixtures, currentRow, currentCol)
+        || findWallFixtureAt(fixtures, currentRow, currentCol)
+      ) {
         return false;
       }
     }
@@ -100,22 +105,77 @@ export function fixtureFits(
   return true;
 }
 
-export function templateFitsGrid(
+export function reanchorFixtureToGrid(
+  fixture: FixturePlacement,
+  currentGrid: RoomGridDimensions,
+  nextGrid: RoomGridDimensions,
+): FixturePlacement {
+  if (!isWallFixtureType(fixture.type)) {
+    return fixture;
+  }
+
+  const wallSide = resolveWallSideFromFixture(
+    {
+      id: fixture.id,
+      type: fixture.type,
+      x: fixture.col * ROOM_GRID_UNIT,
+      y: fixture.row * ROOM_GRID_UNIT,
+      width: fixture.width * ROOM_GRID_UNIT,
+      height: fixture.height * ROOM_GRID_UNIT,
+      label: fixture.label,
+    },
+    currentGrid,
+  );
+  if (!wallSide) {
+    return fixture;
+  }
+
+  const maxCol = nextGrid.cols - fixture.width;
+  const maxRow = nextGrid.rows - fixture.height;
+  if (maxCol < 0 || maxRow < 0) {
+    return fixture;
+  }
+
+  if (wallSide === "top" || wallSide === "bottom") {
+    return {
+      ...fixture,
+      row: wallSide === "top" ? 0 : nextGrid.rows - fixture.height,
+      col: Math.min(Math.max(fixture.col, 0), maxCol),
+    };
+  }
+
+  return {
+    ...fixture,
+    row: Math.min(Math.max(fixture.row, 0), maxRow),
+    col: wallSide === "left" ? 0 : nextGrid.cols - fixture.width,
+  };
+}
+
+export function reanchorFixturesToGrid(
+  fixtures: readonly FixturePlacement[],
+  currentGrid: RoomGridDimensions,
+  nextGrid: RoomGridDimensions,
+): FixturePlacement[] {
+  return fixtures.map((fixture) => reanchorFixtureToGrid(fixture, currentGrid, nextGrid));
+}
+
+export function templateFitsGridAfterResize(
   seatCells: readonly string[],
   fixtures: readonly FixturePlacement[],
-  cols: number,
-  rows: number,
+  currentGrid: RoomGridDimensions,
+  nextGrid: RoomGridDimensions,
 ): boolean {
   const allSeatsFit = seatCells.every((value) => {
     const [row, col] = value.split(":").map(Number);
-    return row < rows && col < cols;
+    return row < nextGrid.rows && col < nextGrid.cols;
   });
   if (!allSeatsFit) {
     return false;
   }
 
-  return fixtures.every((fixture) => {
-    return fixture.row + fixture.height <= rows && fixture.col + fixture.width <= cols;
+  const reanchoredFixtures = reanchorFixturesToGrid(fixtures, currentGrid, nextGrid);
+  return reanchoredFixtures.every((fixture) => {
+    return fixture.row + fixture.height <= nextGrid.rows && fixture.col + fixture.width <= nextGrid.cols;
   });
 }
 

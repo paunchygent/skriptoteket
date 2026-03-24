@@ -84,4 +84,44 @@ describe("useRoomTemplateEditorState", () => {
     expect(editor.builderScalePercent.value).toBeGreaterThan(0);
     expect(editor.isValid.value).toBe(true);
   });
+
+  it("keeps true wall fixtures attached when the room grows", () => {
+    const template = ref({
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [{ id: "window-1", type: "window" as const, x: 1248, y: 192, width: 96, height: 192, label: null }],
+    });
+
+    const editor = useRoomTemplateEditorState(template);
+    editor.resizeRoom("cols", 1);
+    editor.resizeRoom("rows", 1);
+
+    expect(editor.roomGrid.value).toEqual({ cols: 15, rows: 10 });
+    expect(editor.parsedFixtures.value[0]).toMatchObject({
+      x: 1344,
+      y: 192,
+      width: 96,
+      height: 192,
+    });
+  });
+
+  it("blocks seat placement on a reserved wall-fixture boundary cell", () => {
+    const template = ref({
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [{ id: "door-1", type: "door" as const, x: 0, y: 0, width: 96, height: 96, label: null }],
+    });
+
+    const editor = useRoomTemplateEditorState(template);
+    editor.toggleGridCell(0, 0, createMouseEvent());
+
+    expect(editor.parsedSeats.value).toEqual([]);
+    expect(editor.error.value).toContain("väggobjektet");
+  });
 });

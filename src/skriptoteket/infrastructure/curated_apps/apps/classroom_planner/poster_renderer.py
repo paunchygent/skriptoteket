@@ -12,8 +12,10 @@ Relationships:
 
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 from html import escape
+from pathlib import Path
 
 from skriptoteket.application.curated_apps.classroom_planner.exports.jobs import (
     SeatingExportPaperSize,
@@ -30,9 +32,25 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.rendering i
 )
 from skriptoteket.protocols.classroom_planner_exports import SeatingPosterRendererProtocol
 
+SEATING_POSTER_LOGO_SVG_PATH = (
+    Path(__file__).resolve().parents[6] / "frontend/apps/skriptoteket/public/logo-horizontal.svg"
+)
+
+
+def _svg_data_uri(*, svg_bytes: bytes) -> str:
+    encoded = base64.b64encode(svg_bytes).decode("ascii")
+    return f"data:image/svg+xml;base64,{encoded}"
+
 
 class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
     """Render a seating poster as export-owned HTML plus a dedicated CSS file."""
+
+    def __init__(self) -> None:
+        self._logo_data_uri: str | None = None
+        try:
+            self._logo_data_uri = _svg_data_uri(svg_bytes=SEATING_POSTER_LOGO_SVG_PATH.read_bytes())
+        except FileNotFoundError:
+            self._logo_data_uri = None
 
     def render(self, *, request: SeatingPosterRenderRequest) -> RenderedSeatingPosterBundle:
         title = f"{request.roster_name} - {request.template_name}"
@@ -43,7 +61,9 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
             paper_size=request.paper_size,
             grid_cols=grid_cols,
             grid_rows=grid_rows,
+            fixtures=request.scene.fixtures,
         )
+        header_branding = self._render_header_branding()
         html = f"""<!doctype html>
 <html lang="sv">
   <head>
@@ -65,7 +85,8 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
         --poster-gap-mm:{layout.header_gap_mm};
         --scene-width-mm:{layout.scene_width_mm};
         --scene-height-mm:{layout.scene_height_mm};
-        --wall-band-track:{layout.wall_band_ratio}fr;
+        --side-wall-band-mm:{layout.side_wall_band_mm};
+        --top-bottom-wall-band-mm:{layout.top_bottom_wall_band_mm};
         --scene-gap-mm:{layout.scene_gap_mm};
         --scene-border-mm:{layout.scene_border_mm};
         --floor-border-mm:{layout.floor_border_mm};
@@ -74,9 +95,12 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
       "
     >
       <header class="poster__header">
-        <p class="poster__eyebrow">Klassrumskartan</p>
-        <h1>{escape(request.roster_name)}</h1>
-        <p class="poster__meta">{escape(request.template_name)}</p>
+        <div class="poster__header-copy">
+          <p class="poster__eyebrow">Klassrumskartan</p>
+          <h1>{escape(request.roster_name)}</h1>
+          <p class="poster__meta">{escape(request.template_name)}</p>
+        </div>
+        {header_branding}
       </header>
       <section
         class="poster__scene"
@@ -97,6 +121,16 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
             css_filename="poster.css",
             css_content=_build_css(request.paper_size, layout=layout),
             output_filename=f"{_slugify(request.roster_name)}-{request.paper_size.value}.pdf",
+        )
+
+    def _render_header_branding(self) -> str:
+        if self._logo_data_uri is None:
+            return ""
+
+        return (
+            '<div class="poster__header-brand" aria-hidden="true">'
+            f'<img alt="Skriptoteket" src="{escape(self._logo_data_uri, quote=True)}"/>'
+            "</div>"
         )
 
     def _render_seats(self, seats: list[PosterSceneSeat]) -> str:
@@ -232,7 +266,8 @@ class _PosterPageLayout:
     header_gap_mm: float
     scene_width_mm: float
     scene_height_mm: float
-    wall_band_ratio: float
+    side_wall_band_mm: float
+    top_bottom_wall_band_mm: float
     scene_gap_mm: float
     scene_border_mm: float
     floor_border_mm: float
@@ -245,6 +280,7 @@ def _build_poster_page_layout(
     paper_size: SeatingExportPaperSize,
     grid_cols: int,
     grid_rows: int,
+    fixtures: list[PosterSceneFixture],
 ) -> _PosterPageLayout:
     """Fit the classroom scene into one landscape page with tighter chrome."""
 
@@ -265,22 +301,26 @@ def _build_poster_page_layout(
     content_height_mm = page_height_mm - (page_margin_mm * 2)
     max_scene_width_mm = content_width_mm
     max_scene_height_mm = content_height_mm - header_height_mm - header_gap_mm
-    wall_band_ratio = 0.32
-    scene_units_width = grid_cols + (wall_band_ratio * 2)
-    scene_units_height = grid_rows + (wall_band_ratio * 2)
-
-    width_limited_height = max_scene_width_mm * (scene_units_height / scene_units_width)
-    if width_limited_height <= max_scene_height_mm:
-        scene_width_mm = max_scene_width_mm
-        scene_height_mm = width_limited_height
-    else:
-        scene_height_mm = max_scene_height_mm
-        scene_width_mm = max_scene_height_mm * (scene_units_width / scene_units_height)
+    has_vertical_wall_labels = any(
+        fixture.label is not None
+        and fixture.label_orientation is PosterSceneLabelOrientation.VERTICAL
+        for fixture in fixtures
+    )
+    has_horizontal_wall_labels = any(
+        fixture.label is not None
+        and fixture.label_orientation is PosterSceneLabelOrientation.HORIZONTAL
+        and fixture.placement is PosterSceneFixturePlacement.WALL
+        for fixture in fixtures
+    )
+    side_wall_band_mm = 12.0 if has_vertical_wall_labels else 6.0
+    top_bottom_wall_band_mm = 6.5 if has_horizontal_wall_labels else 5.0
 
     cell_mm = min(
-        scene_width_mm / scene_units_width,
-        scene_height_mm / scene_units_height,
+        (max_scene_width_mm - (side_wall_band_mm * 2)) / grid_cols,
+        (max_scene_height_mm - (top_bottom_wall_band_mm * 2)) / grid_rows,
     )
+    scene_width_mm = (grid_cols * cell_mm) + (side_wall_band_mm * 2)
+    scene_height_mm = (grid_rows * cell_mm) + (top_bottom_wall_band_mm * 2)
     seat_font_pt = min(18.0, max(8.5, cell_mm * 0.8))
     fixture_font_pt = min(10.5, max(6.2, cell_mm * 0.45))
 
@@ -294,7 +334,8 @@ def _build_poster_page_layout(
         header_gap_mm=_round_layout_value(header_gap_mm),
         scene_width_mm=_round_layout_value(scene_width_mm),
         scene_height_mm=_round_layout_value(scene_height_mm),
-        wall_band_ratio=wall_band_ratio,
+        side_wall_band_mm=_round_layout_value(side_wall_band_mm),
+        top_bottom_wall_band_mm=_round_layout_value(top_bottom_wall_band_mm),
         scene_gap_mm=0.8,
         scene_border_mm=1.2,
         floor_border_mm=1.0,
@@ -357,9 +398,15 @@ body {{
 }}
 .poster__header {{
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.2mm 6mm;
+  align-items: start;
+  overflow: hidden;
+}}
+.poster__header-copy {{
+  display: grid;
   gap: 1.2mm;
   align-content: start;
-  overflow: hidden;
 }}
 .poster__eyebrow {{
   margin: 0;
@@ -381,6 +428,17 @@ body {{
 .poster__meta {{
   font-size: 10pt;
 }}
+.poster__header-brand {{
+  justify-self: end;
+  align-self: start;
+  opacity: 0.08;
+}}
+.poster__header-brand img {{
+  display: block;
+  width: 40mm;
+  max-width: 40mm;
+  height: auto;
+}}
 .poster__scene {{
   display: grid;
   width: calc(var(--scene-width-mm) * 1mm);
@@ -388,13 +446,13 @@ body {{
   justify-self: center;
   align-self: center;
   grid-template-columns:
-    var(--wall-band-track)
+    calc(var(--side-wall-band-mm) * 1mm)
     repeat(var(--grid-cols), 1fr)
-    var(--wall-band-track);
+    calc(var(--side-wall-band-mm) * 1mm);
   grid-template-rows:
-    var(--wall-band-track)
+    calc(var(--top-bottom-wall-band-mm) * 1mm)
     repeat(var(--grid-rows), 1fr)
-    var(--wall-band-track);
+    calc(var(--top-bottom-wall-band-mm) * 1mm);
   gap: calc(var(--scene-gap-mm) * 1mm);
   border: calc(var(--scene-border-mm) * 1mm) solid var(--ink);
   background: #ffffff;
@@ -468,7 +526,9 @@ body {{
 }}
 .poster-fixture--wall-left,
 .poster-fixture--wall-right {{
-  margin-inline: 0.5mm;
+  margin-inline: 0.3mm;
+  padding: 0.3mm;
+  overflow: visible;
 }}
 .poster-fixture--whiteboard.poster-fixture--wall-top,
 .poster-fixture--whiteboard.poster-fixture--wall-bottom {{
@@ -487,6 +547,7 @@ body {{
 .poster-fixture--label-vertical {{
   position: relative;
   padding: 0;
+  overflow: visible;
 }}
 .poster-fixture--label-vertical .poster-fixture__label {{
   position: absolute;

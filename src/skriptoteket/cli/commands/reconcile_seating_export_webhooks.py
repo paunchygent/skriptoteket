@@ -7,7 +7,8 @@ Purpose:
 
 Relationships:
     - Uses the application-layer reconciliation handler to inventory, delete,
-      and recreate Sir Convert webhook subscriptions when needed.
+      and recreate invalid Sir Convert webhook subscriptions until exactly one
+      canonical shared callback remains.
     - Consumed by `scripts/hemma_deploy_and_verify_seating_export.sh`.
 """
 
@@ -43,7 +44,7 @@ def reconcile_seating_export_webhooks(
         help="Optional correlation id for upstream and local reconciliation calls.",
     ),
 ) -> None:
-    """Repair or verify the shared seating-export webhook binding."""
+    """Repair or verify canonical-only seating-export webhook state."""
 
     asyncio.run(_reconcile_seating_export_webhooks_async(correlation_id=correlation_id))
 

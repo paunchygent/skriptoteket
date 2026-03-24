@@ -49,6 +49,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0122-klassrumskartan-seating-export-production-wiring-and-hemma-deploy-orchestration.md`
 - Seating scene remediation follow-up:
   `docs/backlog/prs/pr-0123-klassrumskartan-seating-scene-remediation-wall-markers-localization-and-print-contrast.md`
+- Wall-fixture parity + poster header branding follow-up:
+  `docs/backlog/prs/pr-0126-klassrumskartan-wall-fixture-parity-resize-anchoring-and-poster-header-branding.md`
 - Proposed Klassrumskartan export/import epic:
   `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan export/import review:
@@ -288,6 +290,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0123-klassrumskartan-seating-scene-remediation-wall-markers-localization-and-print-contrast.md`
 - `docs/backlog/prs/pr-0124-klassrumskartan-seating-export-reload-recovery-and-draft-scoped-rehydration.md`
 - `docs/backlog/prs/pr-0125-klassrumskartan-legacy-seating-export-callback-cutover-and-decommission.md`
+- `docs/backlog/prs/pr-0126-klassrumskartan-wall-fixture-parity-resize-anchoring-and-poster-header-branding.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`

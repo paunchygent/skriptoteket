@@ -5,7 +5,9 @@ import {
   buildParsedSeats,
   fixtureFits,
   hydrateRoomTemplateEditor,
+  reanchorFixtureToGrid,
   seatKey,
+  templateFitsGridAfterResize,
 } from "./roomTemplateEditorDomain";
 
 describe("roomTemplateEditorDomain", () => {
@@ -18,6 +20,48 @@ describe("roomTemplateEditorDomain", () => {
         0,
         0,
         { cols: 14, rows: 9 },
+      ),
+    ).toBe(true);
+  });
+
+  it("reserves wall spans so floor fixtures cannot overlap the same boundary cells", () => {
+    expect(
+      fixtureFits(
+        [{ id: "door-1", type: "door", row: 0, col: 0, width: 1, height: 1, label: null }],
+        [],
+        "bench",
+        0,
+        0,
+        { cols: 14, rows: 9 },
+      ),
+    ).toBe(false);
+  });
+
+  it("reanchors right and bottom wall fixtures when the room is resized", () => {
+    expect(
+      reanchorFixtureToGrid(
+        { id: "window-1", type: "window", row: 2, col: 13, width: 1, height: 2, label: null },
+        { cols: 14, rows: 9 },
+        { cols: 16, rows: 11 },
+      ),
+    ).toMatchObject({ col: 15, row: 2 });
+
+    expect(
+      reanchorFixtureToGrid(
+        { id: "door-1", type: "door", row: 8, col: 4, width: 1, height: 1, label: null },
+        { cols: 14, rows: 9 },
+        { cols: 14, rows: 10 },
+      ),
+    ).toMatchObject({ col: 4, row: 9 });
+  });
+
+  it("allows shrink checks to keep right-wall fixtures attached after resize", () => {
+    expect(
+      templateFitsGridAfterResize(
+        [],
+        [{ id: "window-1", type: "window", row: 0, col: 13, width: 1, height: 2, label: null }],
+        { cols: 14, rows: 9 },
+        { cols: 13, rows: 9 },
       ),
     ).toBe(true);
   });

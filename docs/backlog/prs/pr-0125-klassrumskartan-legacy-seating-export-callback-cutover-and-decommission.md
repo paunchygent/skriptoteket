@@ -2,7 +2,7 @@
 type: pr
 id: PR-0125
 title: "Klassrumskartan: legacy seating export callback cutover and decommission"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
@@ -10,11 +10,11 @@ stories:
   - "ST-26-01"
 tags: ["backend", "ops", "klassrumskartan", "export", "webhooks", "sir-convert-a-lot", "remediation"]
 acceptance_criteria:
-  - "Given the shared callback route is canonical, when Skriptoteket deploys or verifies seating export readiness, then it explicitly detects and reconciles stale Sir Convert-a-Lot webhook subscription state instead of relying on the temporary per-job callback route indefinitely."
-  - "Given old per-job Sir Convert webhook subscriptions still exist, when operators run the cutover procedure, then legacy `/seating-export-jobs/{job_id}` subscriptions are inventoried, migrated or removed deliberately, and not left to age out implicitly."
-  - "Given the temporary cutover callback route remains during the migration window, when it is hit, then Skriptoteket records observable evidence so operators can prove when the route is no longer in use."
-  - "Given the migration window completes, when no legacy upstream subscriptions remain and no old-route traffic is observed for the agreed quiet period, then the compatibility callback route can be removed with a documented gate."
-  - "Given Sir Convert-a-Lot owns webhook subscriptions upstream, when this cutover is documented, then the operator path includes explicit Sir Convert-a-Lot coordination rather than treating the migration as Skriptoteket-only."
+  - "Given the shared callback route is canonical, when operators inventory the current Sir Convert-a-Lot webhook state, then they can classify every Skriptoteket-owned subscription as canonical shared, stale shared, or invalid legacy per-job state."
+  - "Given non-canonical Skriptoteket webhook subscriptions exist upstream, when operators execute the cutover, then those subscriptions are updated or deleted in the same coordinated change so exactly one canonical shared subscription remains."
+  - "Given the clean cutover is complete, when Skriptoteket is deployed, then the per-job `/seating-export-jobs/{job_id}` callback route and all runtime compatibility plumbing are removed rather than retained behind a migration window."
+  - "Given Sir Convert-a-Lot owns webhook subscriptions upstream, when the cutover procedure is documented, then it uses the supported Sir Convert webhook onboarding API surfaces explicitly instead of treating legacy subscription cleanup as passive aging or hidden state."
+  - "Given post-cutover verification runs, when operators execute the canonical smoke and re-inventory subscriptions, then they can prove only the canonical shared callback remains and callback-capable seating export still succeeds."
 ---
 
 ## Problem
@@ -32,24 +32,25 @@ events to the callback URL they were created with until they are updated,
 disabled, or deleted. That means old upstream subscriptions can continue to hit
 the legacy route even after Skriptoteket ships the shared callback path.
 
-Leaving the compatibility route in place forever is the wrong endpoint state:
+Leaving the compatibility route in place is the wrong endpoint state:
 
-- it hides whether the migration is actually complete
-- it leaves route cleanup dependent on guesswork
-- it keeps Skriptoteket carrying legacy callback semantics that are supposed to
-  be temporary
+- it keeps a runtime shim that should not exist after cutover
+- it allows stale upstream state to masquerade as supported behavior
+- it blocks a clean inventory -> update/delete -> remove sequence across repos
 
 ## Goal
 
-Define and implement one explicit cutover/decommission plan for the legacy
-per-job callback route, including upstream Sir Convert-a-Lot subscription
-inventory, reconciliation, observability, and a hard removal gate.
+Define and implement one explicit clean cutover/decommission plan for the
+legacy per-job callback route, including upstream Sir Convert-a-Lot
+subscription inventory, coordinated mutation of all call sites, and same-slice
+removal of the compatibility shim from Skriptoteket.
 
 ## Non-goals
 
 - Changing the public seating export API or teacher-facing export UX.
 - Replacing polling fallback.
-- Reworking the shared callback dispatcher introduced in `PR-0121`.
+- Reworking the shared callback dispatcher introduced in `PR-0121` beyond
+  removing the compatibility shim.
 - Building a general-purpose multi-consumer webhook migration framework beyond
   what seating export needs.
 
@@ -57,18 +58,64 @@ inventory, reconciliation, observability, and a hard removal gate.
 
 - The shared callback route is the only canonical target going forward:
   `/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs`
-- The legacy `{job_id}` callback route is temporary and must be removable.
+- The legacy `{job_id}` callback route is invalid end-state behavior and must
+  be removed in the same coordinated cutover once upstream subscriptions are
+  corrected.
 - "Upstream subscriptions" are Sir Convert-a-Lot-managed webhook subscription
   records, not Skriptoteket database rows. Cutover is incomplete until those
   upstream records are reconciled.
-- Migration must be explicit:
+- Cutover must be explicit:
   - inventory old subscriptions
-  - repair or replace canonical subscription state
+  - repair, patch, or replace canonical subscription state
   - delete obsolete legacy subscriptions
-  - prove the old route is quiet before removal
+  - remove the compatibility route immediately after upstream state is clean
 - Sir Convert-a-Lot must be part of the operator flow. Do not frame this as a
   passive waiting game where old subscriptions simply "age out" without an
   owner-controlled procedure.
+- No quiet-period or compatibility-window model should be introduced for this
+  slice. The cutover is inventory-first, then all-at-once update/delete, then
+  route removal.
+
+## Inventory Summary
+
+### Skriptoteket surfaces to update
+
+- Route definition:
+  - `src/skriptoteket/web/api/v1/internal_sir_convert_callbacks.py`
+- Canonical callback URL + legacy helpers:
+  - `src/skriptoteket/application/curated_apps/classroom_planner/exports/webhook_contract.py`
+- Canonical shared subscription attach/reuse:
+  - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py`
+- Reconciliation and invalid-upstream-state cleanup:
+  - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_webhook_reconciliation.py`
+- Legacy hint completion plumbing:
+  - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py`
+- Operator flow / docs:
+  - `scripts/hemma_deploy_and_verify_seating_export.sh`
+  - `docs/runbooks/runbook-home-server.md`
+- Tests:
+  - `tests/unit/web/apps/classroom_planner/test_internal_sir_convert_callbacks.py`
+  - `tests/unit/application/apps/classroom_planner/test_seating_export_webhook_dispatch.py`
+  - `tests/unit/application/apps/classroom_planner/test_seating_export_jobs.py`
+  - `tests/unit/application/apps/classroom_planner/test_seating_export_webhook_reconciliation.py`
+
+### Sir Convert-a-Lot surfaces to use
+
+- Supported generic webhook onboarding/mutation routes:
+  - `scripts/sir_convert_a_lot/interfaces/http_routes_webhooks_v2.py`
+- Runtime mutation semantics:
+  - `scripts/sir_convert_a_lot/infrastructure/runtime_webhook_service_v2.py`
+- Published operator/API contract:
+  - `docs/converters/multi_format_conversion_service_api_v2_async_push.md`
+- Contract tests proving `PATCH` and `DELETE` support:
+  - `tests/sir_convert_a_lot/test_api_contract_v2_webhook_onboarding.py`
+
+### Cross-repo inventory conclusion
+
+- No exact seating-export callback path references were found outside
+  Skriptoteket in the locally checked-out repos.
+- Sir Convert-a-Lot does not carry consumer-specific legacy support for this
+  callback path; the cutover uses its generic subscription APIs.
 
 ## Recommended operator model
 
@@ -77,9 +124,10 @@ inventory, reconciliation, observability, and a hard removal gate.
 - Verify the shared callback binding points to the canonical route.
 - Detect stale local binding state versus actual upstream Sir Convert
   subscription state.
-- Record observable evidence for hits on the legacy `{job_id}` callback route.
-- Refuse to treat export readiness as complete when only legacy callback wiring
-  exists.
+- Refuse to treat export readiness as complete when any non-canonical
+  subscription state remains.
+- Remove the runtime compatibility route and hint plumbing in the same slice
+  once upstream state is corrected.
 
 ### Sir Convert-a-Lot responsibilities
 
@@ -88,15 +136,17 @@ inventory, reconciliation, observability, and a hard removal gate.
   - identify Skriptoteket legacy per-job callback URLs
   - patch callback URLs where appropriate
   - delete obsolete legacy subscriptions once the shared route is confirmed
-- Confirm delivery backlog/DLQ is healthy before and after migration.
+- Confirm delivery backlog/DLQ is healthy before and after cutover.
 
-## Canonical migration phases
+## Canonical cutover phases
 
 ### Phase 1: Inventory
 
-- List current Sir Convert webhook subscriptions for the Skriptoteket consumer.
+- List current Sir Convert webhook subscriptions for the Skriptoteket consumer
+  and save the full response as cutover evidence.
 - Classify each subscription as:
   - canonical shared callback
+  - stale shared callback
   - legacy per-job callback
   - unrelated/non-Skriptoteket consumer
 
@@ -109,62 +159,78 @@ inventory, reconciliation, observability, and a hard removal gate.
   - the subscription is missing
   - the callback URL is stale
   - the subscription is disabled or otherwise invalid
+- Use Sir Convert's supported mutation surfaces explicitly:
+  - `PATCH /v2/push/webhooks/subscriptions/{subscription_id}` for in-place
+    callback URL updates when appropriate
+  - `DELETE` + `POST` when replacing duplicate or otherwise bad subscriptions is
+    cleaner than patching
 
-### Phase 3: Observe legacy traffic
-
-- Add explicit telemetry or structured logs for requests hitting the legacy
-  `{job_id}` route.
-- Record route usage during the migration window so operators know whether old
-  upstream subscriptions are still active.
-
-### Phase 4: Clean up legacy upstream subscriptions
+### Phase 3: Clean up legacy upstream subscriptions
 
 - Delete legacy per-job Skriptoteket subscriptions from Sir Convert once the
   canonical shared route is confirmed healthy.
-- Treat "wait and see" as a fallback only if deletion/update capability is
-  unavailable; it is not the preferred migration strategy.
+- Do not treat "wait and see" or quiet-period observation as part of the
+  intended model for this slice.
 
-### Phase 5: Remove the compatibility route
+### Phase 4: Remove the compatibility route
 
 Removal gate must require all of:
 
 - no legacy upstream Skriptoteket subscriptions remain
-- no legacy-route hits are observed during the agreed quiet window
 - export-capable callback smoke still passes on the canonical route
 
-Only after that gate should the `{job_id}` route be removed from
-`internal_sir_convert_callbacks.py`.
+Only after that gate should the `{job_id}` route, legacy helper plumbing, and
+legacy-hint completion behavior be removed from Skriptoteket.
 
 ## Recommended implementation plan
 
-- Add one dedicated Skriptoteket-side readiness/reconciliation step for export
-  webhook state.
-- Add structured logging and/or metrics for legacy callback-route hits.
-- Document the Sir Convert subscription inventory + cleanup commands/runbook
-  that operators should use during cutover.
+- Capture an explicit upstream inventory artifact before mutation.
+- Add or document the exact Sir Convert commands/API calls for:
+  - inventory
+  - patch-in-place when a single good shared subscription exists
+  - delete + recreate when duplicate or otherwise invalid subscriptions exist
+- Keep the existing Skriptoteket-side readiness/reconciliation step for export
+  webhook state, but reframe it as canonical-only enforcement.
 - Extend the canonical Hemma deploy/bring-up flow to include:
-  - shared binding verification
   - upstream subscription inventory
-  - stale-state repair or explicit failure
+  - shared binding verification
+  - non-canonical-state repair or explicit failure
   - post-repair callback-capable export smoke
-- Document the quiet-window removal gate and the exact evidence required before
-  deleting the old route.
+- Delete the runtime compatibility route and legacy hint plumbing in the same
+  change once upstream state is corrected.
+- Rewrite this PR slice doc and the operator docs to describe a single
+  coordinated cutover instead of a migration window.
 
 ## Test plan
 
 - Focused tests for local shared-binding reconciliation logic.
-- Focused tests proving legacy-route hits emit the expected structured evidence.
 - Operator verification on Hemma:
-  - list Sir Convert subscriptions
-  - verify canonical shared subscription exists
-  - verify legacy per-job subscriptions can be identified deterministically
+  - capture the Sir Convert subscription inventory before mutation
+  - verify canonical shared subscription exists after cutover
+  - verify legacy per-job subscriptions are gone after cutover
   - verify export smoke succeeds on the shared route
-- Pre-removal verification:
-  - prove no legacy subscriptions remain
-  - prove no legacy-route hits in the defined quiet window
+- Focused tests proving no legacy route or hint behavior remains in
+  Skriptoteket.
 
 ## Rollback plan
 
-- Keep the compatibility route in place and suspend decommission while retaining
-  the shared route as canonical if migration evidence is incomplete or Sir
-  Convert cleanup cannot be completed safely.
+- If upstream subscription mutation cannot be completed safely, stop before
+  removing the runtime compatibility route.
+- If the canonical smoke fails after mutation but before shim removal, restore
+  the upstream subscription state first; do not introduce a new long-lived
+  compatibility window as the rollback strategy.
+
+## Implementation Status (2026-03-24)
+
+- Skriptoteket now exposes only the canonical shared Sir Convert callback route
+  for Klassrumskartan seating exports.
+- The per-job `/seating-export-jobs/{job_id}` compatibility webhook route and
+  `callback_job_id_hint` runtime plumbing are removed.
+- Reconciliation now treats duplicate canonical, stale shared, and legacy
+  per-job subscriptions as invalid upstream state to delete while preserving a
+  valid canonical binding when possible.
+- The Hemma operator flow now captures pre/post subscription inventories plus
+  reconciliation/smoke JSON artifacts and fails closed if non-canonical seating
+  export subscriptions remain after reconciliation or after the callback smoke.
+- Focused unit coverage, static checks, docs validation, and a live backend
+  route proof were run locally for this slice.

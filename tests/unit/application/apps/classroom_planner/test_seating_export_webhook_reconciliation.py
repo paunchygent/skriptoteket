@@ -96,7 +96,11 @@ async def test_reconcile_keeps_valid_canonical_binding_and_deletes_legacy_subscr
 
     assert result.active_subscription_id == "whsub-canonical"
     assert result.created_subscription_id is None
+    assert result.listed_subscription_ids == ("whsub-canonical", "whsub-legacy")
+    assert result.deleted_subscription_ids == ("whsub-legacy",)
+    assert result.deleted_duplicate_canonical_subscription_ids == ()
     assert result.deleted_legacy_subscription_ids == ("whsub-legacy",)
+    assert result.deleted_stale_subscription_ids == ()
     client.delete_webhook_subscription.assert_awaited_once_with(
         "whsub-legacy",
         correlation_id="corr-1",
@@ -107,7 +111,7 @@ async def test_reconcile_keeps_valid_canonical_binding_and_deletes_legacy_subscr
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_reconcile_rebuilds_binding_when_local_secret_is_missing() -> None:
+async def test_reconcile_replaces_invalid_canonical_when_local_secret_missing() -> None:
     bindings = AsyncMock(spec=SeatingExportWebhookBindingRepositoryProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     expected_callback_url = (
@@ -136,16 +140,6 @@ async def test_reconcile_rebuilds_binding_when_local_secret_is_missing() -> None
         secret="whsec-new",
     )
 
-    async def _update_shared(*, binding):
-        assert client.delete_webhook_subscription.await_count == 0
-        return _DummyBinding(
-            subscription_id=binding.subscription_id,
-            callback_url=binding.callback_url,
-            secret=binding.secret,
-        )
-
-    bindings.update_shared.side_effect = _update_shared
-
     handler = seating_export_webhook_reconciliation_handler.ReconcileSeatingExportWebhooksHandler(
         webhook_bindings=bindings,
         client=client,
@@ -159,15 +153,22 @@ async def test_reconcile_rebuilds_binding_when_local_secret_is_missing() -> None
 
     assert result.active_subscription_id == "whsub-new"
     assert result.created_subscription_id == "whsub-new"
-    assert result.deleted_subscription_ids == ()
-    client.delete_webhook_subscription.assert_not_called()
+    assert result.listed_subscription_ids == ("whsub-old",)
+    assert result.deleted_subscription_ids == ("whsub-old",)
+    assert result.deleted_duplicate_canonical_subscription_ids == ("whsub-old",)
+    assert result.deleted_legacy_subscription_ids == ()
+    assert result.deleted_stale_subscription_ids == ()
+    client.delete_webhook_subscription.assert_awaited_once_with(
+        "whsub-old",
+        correlation_id="corr-1",
+    )
     client.create_webhook_subscription.assert_awaited_once()
     bindings.update_shared.assert_awaited_once()
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_reconcile_rebuilds_binding_when_stale_and_duplicate_shared_subscriptions_exist() -> (
+async def test_reconcile_keeps_binding_and_deletes_duplicate_stale_and_legacy_subscriptions() -> (
     None
 ):
     bindings = AsyncMock(spec=SeatingExportWebhookBindingRepositoryProtocol)
@@ -206,22 +207,6 @@ async def test_reconcile_rebuilds_binding_when_stale_and_duplicate_shared_subscr
             ),
         ),
     ]
-    client.create_webhook_subscription.return_value = SirConvertWebhookSubscriptionV2(
-        subscription_id="whsub-new",
-        callback_url=expected_callback_url,
-        secret="whsec-new",
-    )
-
-    async def _update_shared(*, binding):
-        assert client.delete_webhook_subscription.await_count == 0
-        return _DummyBinding(
-            subscription_id=binding.subscription_id,
-            callback_url=binding.callback_url,
-            secret=binding.secret,
-        )
-
-    bindings.update_shared.side_effect = _update_shared
-
     handler = seating_export_webhook_reconciliation_handler.ReconcileSeatingExportWebhooksHandler(
         webhook_bindings=bindings,
         client=client,
@@ -233,11 +218,25 @@ async def test_reconcile_rebuilds_binding_when_stale_and_duplicate_shared_subscr
 
     result = await handler.handle(correlation_id="corr-1")
 
-    assert result.active_subscription_id == "whsub-new"
-    assert result.deleted_subscription_ids == ("whsub-stale-shared", "whsub-legacy")
+    assert result.active_subscription_id == "whsub-keep"
+    assert result.created_subscription_id is None
+    assert result.listed_subscription_ids == (
+        "whsub-keep",
+        "whsub-duplicate",
+        "whsub-stale-shared",
+        "whsub-legacy",
+    )
+    assert result.deleted_subscription_ids == (
+        "whsub-duplicate",
+        "whsub-stale-shared",
+        "whsub-legacy",
+    )
+    assert result.deleted_duplicate_canonical_subscription_ids == ("whsub-duplicate",)
     assert result.deleted_legacy_subscription_ids == ("whsub-legacy",)
     assert result.deleted_stale_subscription_ids == ("whsub-stale-shared",)
-    assert client.delete_webhook_subscription.await_count == 2
+    client.create_webhook_subscription.assert_not_called()
+    bindings.update_shared.assert_not_called()
+    assert client.delete_webhook_subscription.await_count == 3
 
 
 @pytest.mark.unit
@@ -254,12 +253,7 @@ async def test_reconcile_create_failure_leaves_existing_subscriptions_intact() -
         callback_url=expected_callback_url,
         secret=None,
     )
-    client.list_webhook_subscriptions.return_value = [
-        SirConvertWebhookSubscriptionSummaryV2(
-            subscription_id="whsub-old",
-            callback_url=expected_callback_url,
-        )
-    ]
+    client.list_webhook_subscriptions.return_value = []
     client.create_webhook_subscription.side_effect = RuntimeError("boom")
 
     handler = seating_export_webhook_reconciliation_handler.ReconcileSeatingExportWebhooksHandler(

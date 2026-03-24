@@ -647,12 +647,14 @@ ssh hemma "cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 The script is intentionally fail-closed. It:
 
 - probes Sir Convert-a-Lot on the Hemma host lane (`http://127.0.0.1:28085`) with `/readyz`
-- performs the lightweight authenticated probe by listing webhook subscriptions
+- captures a pre-reconcile Sir Convert webhook inventory artifact under `.artifacts/pr-0125-seat-export-cutover-<timestamp>/`
 - recreates `sir_convert_a_lot_prod` through the supported Sir Convert Hemma surface if that preflight fails
 - builds/redeploys Skriptoteket with `compose.prod.yaml`
 - runs `pdm run db-upgrade` inside `skriptoteket-web`
 - verifies the required `SIR_CONVERT_A_LOT_V2_*` env vars are present inside `skriptoteket-web`
-- reconciles shared seating-export webhook state, including legacy per-job subscription deletion
+- reconciles shared seating-export webhook state until exactly one canonical shared callback remains
+- captures post-reconcile and post-smoke webhook inventories plus the reconciliation/smoke JSON output as operator evidence
+- hard-fails if any stale shared callback or legacy per-job callback remains after reconciliation or after the smoke run
 - runs the mandatory callback-capable seating-export smoke and fails if the export does not reach callback-driven
   terminal success with a Vault-backed download
 
@@ -676,10 +678,24 @@ If you need to run the production export verification steps manually after a dep
 
 ```bash
 ssh hemma "curl -fsS http://127.0.0.1:28085/readyz"
-ssh hemma "curl -fsS -H 'X-API-Key: <sir-convert-key>' http://127.0.0.1:28085/v2/push/webhooks/subscriptions >/dev/null"
-ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli reconcile-seating-export-webhooks"
-ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli smoke-seating-export-readiness --timeout-seconds 240"
+ssh hemma "curl -fsS -H 'X-API-Key: <sir-convert-key>' http://127.0.0.1:28085/v2/push/webhooks/subscriptions > /tmp/skriptoteket-seat-webhooks-before.json"
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli reconcile-seating-export-webhooks > /tmp/skriptoteket-seat-webhooks-reconcile.json"
+ssh hemma "curl -fsS -H 'X-API-Key: <sir-convert-key>' http://127.0.0.1:28085/v2/push/webhooks/subscriptions > /tmp/skriptoteket-seat-webhooks-after-reconcile.json"
+ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli smoke-seating-export-readiness --timeout-seconds 240 > /tmp/skriptoteket-seat-webhooks-smoke.json"
+ssh hemma "curl -fsS -H 'X-API-Key: <sir-convert-key>' http://127.0.0.1:28085/v2/push/webhooks/subscriptions > /tmp/skriptoteket-seat-webhooks-after-smoke.json"
 ```
+
+When reviewing those inventories, classify each Skriptoteket-owned callback as:
+
+- canonical shared callback:
+  `https://skriptoteket.hule.education/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs`
+- stale shared callback:
+  same shared path on a non-canonical base URL
+- legacy per-job callback:
+  the retired shared path plus `/{job_id}`
+
+The removal gate is strict: after reconciliation and again after the callback-capable smoke, there must be exactly one
+canonical shared callback and zero stale shared or legacy per-job callbacks left in the inventory.
 
 If migrations are needed:
 

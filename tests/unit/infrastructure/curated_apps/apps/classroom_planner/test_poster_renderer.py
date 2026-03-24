@@ -73,13 +73,18 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "Dörr" in bundle.html_content
     assert "poster__floor" in bundle.html_content
     assert "poster-fixture--label-vertical" in bundle.html_content
+    assert "poster__header-brand" in bundle.html_content
+    assert "data:image/svg+xml;base64" in bundle.html_content
     assert "@page" in bundle.css_content
     assert "A3 landscape" in bundle.css_content
     assert "margin: 0;" in bundle.css_content
     assert "rotate(-90deg)" in bundle.css_content
     assert "writing-mode: vertical-rl" not in bundle.css_content
+    assert "--side-wall-band-mm:12.0" in bundle.html_content
+    assert "--top-bottom-wall-band-mm:6.5" in bundle.html_content
     assert "--page-width-mm:420.0" in bundle.html_content
     assert "justify-content: center;" in bundle.css_content
+    assert "opacity: 0.08;" in bundle.css_content
 
 
 @pytest.mark.unit
@@ -128,4 +133,5 @@ def test_renderer_fits_large_classrooms_into_one_landscape_page_box():
     assert float(height_match.group(1)) <= 179.0
     assert "repeat(var(--grid-rows), 1fr)" in bundle.css_content
     assert "minmax(24mm, 1fr)" not in bundle.css_content
+    assert "--side-wall-band-mm:6.0" in bundle.html_content
     assert "--page-width-mm:297.0" in bundle.html_content

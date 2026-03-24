@@ -3,8 +3,8 @@
 Purpose:
     Provide one deterministic application-layer repair step for production
     seating-export readiness by classifying upstream Sir Convert webhook
-    subscriptions, deleting legacy/stale state, and ensuring one canonical
-    shared binding with a known secret remains in Skriptoteket.
+    subscriptions, deleting invalid callback state, and ensuring exactly one
+    canonical shared binding with a known secret remains in Skriptoteket.
 
 Relationships:
     - Uses `SeatingExportWebhookBindingRepositoryProtocol` for the local shared
@@ -18,11 +18,12 @@ Relationships:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from skriptoteket.application.curated_apps.classroom_planner.exports.webhook_contract import (
+    SEATING_EXPORT_SHARED_WEBHOOK_PATH,
     SEATING_EXPORT_WEBHOOK_EVENT_TYPES,
     build_seating_export_callback_url,
-    is_seating_export_legacy_callback_url,
     is_seating_export_shared_callback_url,
 )
 from skriptoteket.config import Settings
@@ -44,7 +45,9 @@ class SeatingExportWebhookReconciliationResult:
     expected_callback_url: str
     active_subscription_id: str
     created_subscription_id: str | None
+    listed_subscription_ids: tuple[str, ...]
     deleted_subscription_ids: tuple[str, ...]
+    deleted_duplicate_canonical_subscription_ids: tuple[str, ...]
     deleted_legacy_subscription_ids: tuple[str, ...]
     deleted_stale_subscription_ids: tuple[str, ...]
 
@@ -97,7 +100,10 @@ class ReconcileSeatingExportWebhooksHandler:
             legacy_subscriptions = tuple(
                 subscription
                 for subscription in subscriptions
-                if is_seating_export_legacy_callback_url(callback_url=subscription.callback_url)
+                if self._is_legacy_callback_url(callback_url=subscription.callback_url)
+            )
+            listed_subscription_ids = tuple(
+                subscription.subscription_id for subscription in subscriptions
             )
 
             if self._can_keep_existing_binding(
@@ -106,10 +112,18 @@ class ReconcileSeatingExportWebhooksHandler:
                 binding_secret=binding.secret,
                 expected_callback_url=expected_callback_url,
                 canonical_subscriptions=canonical_subscriptions,
-                stale_shared_subscriptions=stale_shared_subscriptions,
             ):
-                deleted_legacy_subscription_ids = await self._delete_subscriptions(
-                    subscriptions=legacy_subscriptions,
+                duplicate_canonical_subscriptions = tuple(
+                    subscription
+                    for subscription in canonical_subscriptions
+                    if subscription.subscription_id != binding.subscription_id
+                )
+                deleted_subscription_ids = await self._delete_subscriptions(
+                    subscriptions=self._dedupe_subscriptions(
+                        duplicate_canonical_subscriptions
+                        + stale_shared_subscriptions
+                        + legacy_subscriptions
+                    ),
                     correlation_id=correlation_id,
                 )
                 if binding.subscription_id is None:
@@ -124,9 +138,39 @@ class ReconcileSeatingExportWebhooksHandler:
                     expected_callback_url=expected_callback_url,
                     active_subscription_id=binding.subscription_id,
                     created_subscription_id=None,
-                    deleted_subscription_ids=deleted_legacy_subscription_ids,
-                    deleted_legacy_subscription_ids=deleted_legacy_subscription_ids,
-                    deleted_stale_subscription_ids=(),
+                    listed_subscription_ids=listed_subscription_ids,
+                    deleted_subscription_ids=deleted_subscription_ids,
+                    deleted_duplicate_canonical_subscription_ids=tuple(
+                        subscription.subscription_id
+                        for subscription in self._dedupe_subscriptions(
+                            duplicate_canonical_subscriptions
+                        )
+                    ),
+                    deleted_legacy_subscription_ids=tuple(
+                        subscription.subscription_id
+                        for subscription in self._dedupe_subscriptions(legacy_subscriptions)
+                    ),
+                    deleted_stale_subscription_ids=tuple(
+                        subscription.subscription_id
+                        for subscription in self._dedupe_subscriptions(stale_shared_subscriptions)
+                    ),
+                )
+
+            deleted_before_create: tuple[str, ...] = ()
+            replaced_canonical_subscriptions: tuple[
+                SirConvertWebhookSubscriptionSummaryV2, ...
+            ] = ()
+            if len(canonical_subscriptions) > 0:
+                replaced_canonical_subscriptions = self._dedupe_subscriptions(
+                    canonical_subscriptions
+                )
+                deleted_before_create = await self._delete_subscriptions(
+                    subscriptions=self._dedupe_subscriptions(
+                        replaced_canonical_subscriptions
+                        + stale_shared_subscriptions
+                        + legacy_subscriptions
+                    ),
+                    correlation_id=correlation_id,
                 )
 
             created_subscription = await self._client.create_webhook_subscription(
@@ -172,14 +216,20 @@ class ReconcileSeatingExportWebhooksHandler:
                     message="Failed to persist the seating-export shared webhook binding.",
                     details={"expected_callback_url": expected_callback_url},
                 )
-            deleted_subscription_ids = await self._delete_subscriptions(
-                subscriptions=self._dedupe_subscriptions(
-                    stale_shared_subscriptions + legacy_subscriptions
-                ),
-                correlation_id=correlation_id,
+            deleted_subscription_ids = deleted_before_create
+            if len(replaced_canonical_subscriptions) == 0:
+                deleted_subscription_ids = await self._delete_subscriptions(
+                    subscriptions=self._dedupe_subscriptions(
+                        stale_shared_subscriptions + legacy_subscriptions
+                    ),
+                    correlation_id=correlation_id,
+                )
+            duplicate_canonical_ids = tuple(
+                subscription.subscription_id for subscription in replaced_canonical_subscriptions
             )
             legacy_ids = tuple(
-                subscription.subscription_id for subscription in legacy_subscriptions
+                subscription.subscription_id
+                for subscription in self._dedupe_subscriptions(legacy_subscriptions)
             )
             stale_ids = tuple(
                 subscription.subscription_id
@@ -189,7 +239,9 @@ class ReconcileSeatingExportWebhooksHandler:
                 expected_callback_url=expected_callback_url,
                 active_subscription_id=updated_binding.subscription_id,
                 created_subscription_id=created_subscription.subscription_id,
+                listed_subscription_ids=listed_subscription_ids,
                 deleted_subscription_ids=deleted_subscription_ids,
+                deleted_duplicate_canonical_subscription_ids=duplicate_canonical_ids,
                 deleted_legacy_subscription_ids=legacy_ids,
                 deleted_stale_subscription_ids=stale_ids,
             )
@@ -202,17 +254,17 @@ class ReconcileSeatingExportWebhooksHandler:
         binding_secret: str | None,
         expected_callback_url: str,
         canonical_subscriptions: tuple[SirConvertWebhookSubscriptionSummaryV2, ...],
-        stale_shared_subscriptions: tuple[SirConvertWebhookSubscriptionSummaryV2, ...],
     ) -> bool:
         if (
             binding_subscription_id is None
             or binding_callback_url != expected_callback_url
             or binding_secret is None
-            or len(canonical_subscriptions) != 1
-            or stale_shared_subscriptions
         ):
             return False
-        return canonical_subscriptions[0].subscription_id == binding_subscription_id
+        return any(
+            subscription.subscription_id == binding_subscription_id
+            for subscription in canonical_subscriptions
+        )
 
     async def _delete_subscriptions(
         self,
@@ -241,3 +293,8 @@ class ReconcileSeatingExportWebhooksHandler:
             seen.add(subscription.subscription_id)
             deduped.append(subscription)
         return tuple(deduped)
+
+    def _is_legacy_callback_url(self, *, callback_url: str) -> bool:
+        """Return whether one callback URL targets the retired per-job route."""
+
+        return urlparse(callback_url).path.startswith(f"{SEATING_EXPORT_SHARED_WEBHOOK_PATH}/")

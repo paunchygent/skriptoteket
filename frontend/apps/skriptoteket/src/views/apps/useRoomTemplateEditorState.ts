@@ -42,8 +42,9 @@ import {
   fixtureFits,
   hydrateRoomTemplateEditor,
   isSeatAt,
+  reanchorFixturesToGrid,
   seatKey,
-  templateFitsGrid,
+  templateFitsGridAfterResize,
 } from "./roomTemplateEditorDomain";
 import { useRoomViewportZoom } from "./useRoomViewportZoom";
 
@@ -86,19 +87,25 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
   } = useRoomViewportZoom(roomSurfaceMetrics, { resetSource: template });
 
   const canShrinkCols = computed(() => {
-    return gridCols.value > MIN_ROOM_GRID_COLS && templateFitsGrid(
+    return gridCols.value > MIN_ROOM_GRID_COLS && templateFitsGridAfterResize(
       seatCells.value,
       fixtures.value,
-      gridCols.value - 1,
-      gridRows.value,
+      roomGrid.value,
+      {
+        cols: gridCols.value - 1,
+        rows: gridRows.value,
+      },
     );
   });
   const canShrinkRows = computed(() => {
-    return gridRows.value > MIN_ROOM_GRID_ROWS && templateFitsGrid(
+    return gridRows.value > MIN_ROOM_GRID_ROWS && templateFitsGridAfterResize(
       seatCells.value,
       fixtures.value,
-      gridCols.value,
-      gridRows.value - 1,
+      roomGrid.value,
+      {
+        cols: gridCols.value,
+        rows: gridRows.value - 1,
+      },
     );
   });
 
@@ -201,8 +208,8 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     }
 
     if (selectedTool.value === "seat") {
-      if (occupiedFloorFixture) {
-        error.value = "Ta bort möbeln eller objektet först om du vill lägga en plats där.";
+      if (occupiedFloorFixture || occupiedWallFixture) {
+        error.value = "Ta bort möbeln eller väggobjektet först om du vill lägga en plats där.";
         return;
       }
       const key = seatKey(row, col);
@@ -244,12 +251,18 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
 
   function resizeRoom(axis: "cols" | "rows", delta: 1 | -1): void {
     error.value = null;
+    const currentGrid = roomGrid.value;
     if (axis === "cols") {
       if (delta < 0 && !canShrinkCols.value) {
         error.value = "Ta bort eller flytta objekt längst ut till höger innan du gör klassrummet smalare.";
         return;
       }
-      gridCols.value = Math.max(MIN_ROOM_GRID_COLS, gridCols.value + delta);
+      const nextGrid = {
+        cols: Math.max(MIN_ROOM_GRID_COLS, gridCols.value + delta),
+        rows: gridRows.value,
+      };
+      fixtures.value = reanchorFixturesToGrid(fixtures.value, currentGrid, nextGrid);
+      gridCols.value = nextGrid.cols;
       return;
     }
 
@@ -257,7 +270,12 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
       error.value = "Ta bort eller flytta objekt längst ned innan du gör klassrummet lägre.";
       return;
     }
-    gridRows.value = Math.max(MIN_ROOM_GRID_ROWS, gridRows.value + delta);
+    const nextGrid = {
+      cols: gridCols.value,
+      rows: Math.max(MIN_ROOM_GRID_ROWS, gridRows.value + delta),
+    };
+    fixtures.value = reanchorFixturesToGrid(fixtures.value, currentGrid, nextGrid);
+    gridRows.value = nextGrid.rows;
   }
 
   function clearRoomContents(): void {
@@ -297,7 +315,8 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
         height: 1,
         wallSide: null,
         type: "seat",
-        canPlace: !findFloorFixtureAt(fixtures.value, hoveredCell.value.row, hoveredCell.value.col),
+        canPlace: !findFloorFixtureAt(fixtures.value, hoveredCell.value.row, hoveredCell.value.col)
+          && !findWallFixtureAt(fixtures.value, hoveredCell.value.row, hoveredCell.value.col),
       };
     }
 

@@ -15,6 +15,7 @@ import {
   getRoomFloorLayerStyle,
   getRoomSurfaceStyle,
   getWallFixtureFrameStyle,
+  normalizeRoomFixtureAnnotations,
   normalizePresentedFixtures,
   type PresentedRoomFixture,
 } from "../roomFixturePresentation";
@@ -43,7 +44,7 @@ const roomFloorLayerStyle = computed(() => getRoomFloorLayerStyle(props.grid));
 const renderedFixtures = computed<PresentedRoomFixture[]>(() => {
   return props.normalizePresentation
     ? normalizePresentedFixtures(props.fixtures, props.grid)
-    : [...props.fixtures] as PresentedRoomFixture[];
+    : normalizeRoomFixtureAnnotations(props.fixtures, props.grid);
 });
 const floorFixtures = computed(() => {
   return renderedFixtures.value.filter((fixture) => !isWallFixtureType(fixture.type));
