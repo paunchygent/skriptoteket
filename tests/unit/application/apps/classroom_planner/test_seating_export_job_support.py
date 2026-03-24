@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
-
 import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -22,11 +20,15 @@ def test_build_job_spec_uses_author_owned_page_css_mode_for_renderer_owned_page_
         css_filename="poster.css",
     )
 
-    assert spec["source"] == {
+    source = spec.get("source")
+    assert isinstance(source, dict)
+    assert source == {
         "kind": "upload",
         "filename": "poster.html",
         "format": "html",
     }
-    conversion = cast(dict[str, Any], spec["conversion"])
+
+    conversion = spec.get("conversion")
+    assert isinstance(conversion, dict)
     assert conversion["page_css_mode"] == "author_owned"
     assert "pdf_layout" not in conversion
