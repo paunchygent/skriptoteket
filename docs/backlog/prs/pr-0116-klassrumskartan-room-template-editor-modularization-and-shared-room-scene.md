@@ -2,7 +2,7 @@
 type: pr
 id: PR-0116
 title: "Klassrumskartan: room-template editor modularization and shared room scene rendering"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
@@ -40,6 +40,28 @@ work, where we want to reuse room-scene rendering rather than fork another rende
 Turn the room-template editor into a reusable, well-bounded frontend module with shared room-scene
 rendering primitives that can support later seating export/checkpoint work without duplicating the
 classroom scene model.
+
+## Implementation summary
+
+- `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue` is now a
+  231-line modal shell that owns only composition plus create/update/delete transport.
+- Editor state and placement rules now live in:
+  - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/roomTemplateEditorDomain.ts`
+- Builder/presentation UI is split into:
+  - `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateEditorSidebar.vue`
+  - `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateBuilderSurface.vue`
+  - `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplatePreviewScene.vue`
+- Shared room-scene rendering now flows through
+  `frontend/apps/skriptoteket/src/views/apps/components/RoomSceneSurface.vue`, which is reused by
+  both the interactive builder and the compact preview.
+- Focused frontend coverage now includes:
+  - `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.spec.ts`
+  - `frontend/apps/skriptoteket/src/views/apps/roomTemplateEditorDomain.spec.ts`
+- Live verification is captured in
+  `scripts/playwright_pr_0116_room_template_editor_check.py` with artifacts under
+  `.artifacts/pr-0116-room-template-check/`.
 
 ## Non-goals
 

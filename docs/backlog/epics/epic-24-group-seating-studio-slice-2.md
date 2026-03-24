@@ -124,6 +124,11 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - `PR-0111` shipped overview-owned resumable continuation and is now merged to `main`
   - `PR-0112` shipped the simplified overview/planner chrome that keeps the segmented toggle as the
     only mode switch
+- The planner maintainability follow-up refactor chain is also now shipped:
+  - `PR-0114` decomposed the planner shell and overview shell into focused workspace/overview
+    components plus local shared UI primitives
+  - `PR-0115` extracted route-shell orchestration and overview/catalog state out of the root view
+  - `PR-0116` modularized the room-template editor and introduced shared room-scene rendering
 - EPIC-24 remains open because the final user-visible closure slice is still `ST-24-08`:
   - remove the superseded landing page in one cutover
   - route `Avsluta` back to dashboard or catalog based on trusted entry origin

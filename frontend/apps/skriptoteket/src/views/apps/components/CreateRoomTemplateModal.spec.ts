@@ -231,6 +231,68 @@ describe("CreateRoomTemplateModal", () => {
     );
   });
 
+  it("updates an existing classroom through the edit save contract", async () => {
+    clientMocks.apiPut.mockResolvedValueOnce({
+      id: "template-1",
+      name: "Sal 101B",
+      grid_cols: 15,
+      grid_rows: 10,
+      seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
+      fixtures: [{ id: "bench-1", type: "bench", x: 96, y: 96, width: 96, height: 96, label: null }],
+    });
+
+    const wrapper = mount(CreateRoomTemplateModal, {
+      props: {
+        template: {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 14,
+          grid_rows: 9,
+          seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
+          fixtures: [{ id: "bench-1", type: "bench", x: 96, y: 96, width: 96, height: 96, label: null }],
+        },
+      },
+    });
+
+    await wrapper.get('input[type="text"]').setValue("Sal 101B");
+
+    const plusButtons = wrapper.findAll("button").filter((button) => button.text() === "+");
+    await plusButtons[0]?.trigger("click");
+    await plusButtons[1]?.trigger("click");
+    await wrapper.get("button.btn-primary").trigger("click");
+
+    expect(clientMocks.apiPut).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/templates/template-1",
+      expect.objectContaining({
+        name: "Sal 101B",
+        grid_cols: 15,
+        grid_rows: 10,
+        seats: [expect.objectContaining({ x: 0, y: 0 })],
+        fixtures: [
+          expect.objectContaining({
+            id: "bench-1",
+            type: "bench",
+            x: 96,
+            y: 96,
+            width: 96,
+            height: 96,
+            label: null,
+          }),
+        ],
+      }),
+    );
+    expect(wrapper.emitted("saved")).toEqual([
+      [
+        expect.objectContaining({
+          id: "template-1",
+          name: "Sal 101B",
+          grid_cols: 15,
+          grid_rows: 10,
+        }),
+      ],
+    ]);
+  });
+
   it("clears seats and fixtures without changing the current grid size", async () => {
     clientMocks.apiPost.mockResolvedValueOnce({
       id: "template-1",

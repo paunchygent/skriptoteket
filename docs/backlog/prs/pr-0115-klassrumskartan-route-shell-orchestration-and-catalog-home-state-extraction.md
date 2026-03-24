@@ -2,7 +2,7 @@
 type: pr
 id: PR-0115
 title: "Klassrumskartan: route-shell orchestration and catalog-home state extraction"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24

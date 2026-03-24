@@ -2,7 +2,7 @@
 type: pr
 id: PR-0114
 title: "Klassrumskartan: planner shell decomposition and shared workspace UI primitives"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
