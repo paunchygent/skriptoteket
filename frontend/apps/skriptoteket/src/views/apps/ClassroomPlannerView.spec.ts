@@ -1213,6 +1213,160 @@ describe("ClassroomPlannerView", () => {
     wrapper.unmount();
   });
 
+  it("passes overview resumable draft cards to the class workspace and dismisses them without touching landing state", async () => {
+    const workspaceSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: {
+        id: "draft-grouping-1",
+        draft_kind: "grouping",
+        template_id: null,
+        template_name: null,
+        status: "active",
+        revision: 2,
+        last_opened_at: "2026-03-23T08:00:00Z",
+        updated_at: "2026-03-23T08:10:00Z",
+      },
+      active_seating_draft: {
+        id: "draft-seating-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "active",
+        revision: 5,
+        last_opened_at: "2026-03-23T09:00:00Z",
+        updated_at: "2026-03-23T09:10:00Z",
+      },
+      grouping_history: [],
+      seating_history: [],
+    };
+
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: true,
+          PlannerWorkspaceShell: true,
+          PlannerClassWorkspace: {
+            props: [
+              "visibleGroupingDraft",
+              "visibleSeatingDraft",
+            ],
+            template: `
+              <div>
+                <span data-test="grouping-card-prop">{{ visibleGroupingDraft?.id ?? "none" }}</span>
+                <span data-test="seating-card-prop">{{ visibleSeatingDraft?.id ?? "none" }}</span>
+                <button type="button" data-test="dismiss-grouping-card" @click="$emit('dismiss-grouping-draft')">dismiss grouping</button>
+                <button type="button" data-test="dismiss-seating-card" @click="$emit('dismiss-seating-draft')">dismiss seating</button>
+              </div>
+            `,
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    await wrapper.get('[role="button"]').trigger("click");
+    await flushPromises();
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="grouping-card-prop"]').text()).toBe("draft-grouping-1");
+    expect(wrapper.get('[data-test="seating-card-prop"]').text()).toBe("draft-seating-1");
+
+    await wrapper.get('[data-test="dismiss-grouping-card"]').trigger("click");
+    await wrapper.get('[data-test="dismiss-seating-card"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="grouping-card-prop"]').text()).toBe("none");
+    expect(wrapper.get('[data-test="seating-card-prop"]').text()).toBe("none");
+    expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it("edits the seating draft template from overview resume actions even when another template is selected", async () => {
+    const workspaceSummary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: {
+        id: "draft-seating-1",
+        draft_kind: "seating",
+        template_id: "template-1",
+        template_name: "Sal 101",
+        status: "active",
+        revision: 3,
+        last_opened_at: "2026-03-23T09:00:00Z",
+        updated_at: "2026-03-23T09:10:00Z",
+      },
+      grouping_history: [],
+      seating_history: [],
+    };
+
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([
+        { id: "template-1", name: "Sal 101", seats: [], fixtures: [] },
+        { id: "template-2", name: "Sal 202", seats: [], fixtures: [] },
+      ]);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: true,
+          PlannerWorkspaceShell: true,
+          PlannerClassWorkspace: {
+            template: `
+              <div>
+                <button type="button" data-test="select-template" @click="$emit('select-template', 'template-2')">Välj annat klassrum</button>
+                <button
+                  type="button"
+                  data-test="edit-resume-template"
+                  @click="$emit('edit-current-template', { id: 'template-1', name: 'Sal 101', seats: [], fixtures: [] })"
+                >
+                  Redigera resumeklassrum
+                </button>
+              </div>
+            `,
+          },
+          CreateRoomTemplateModal: {
+            props: ["template"],
+            template: "<div data-test='template-modal'>{{ template?.name }}</div>",
+          },
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    await wrapper.get('[role="button"]').trigger("click");
+    await flushPromises();
+    await flushPromises();
+
+    await wrapper.get("[data-test='select-template']").trigger("click");
+    await wrapper.get("[data-test='edit-resume-template']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get("[data-test='template-modal']").text()).toContain("Sal 101");
+
+    wrapper.unmount();
+  });
+
   it("reopens the class workspace for another roster from the compact overview", async () => {
     const firstSummary: ClassWorkspaceSummary = {
       roster: { id: "roster-1", name: "SA24D", student_count: 1 },

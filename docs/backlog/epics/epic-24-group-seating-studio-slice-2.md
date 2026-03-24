@@ -38,8 +38,9 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - class selection and editing
   - classroom selection, preview, creation, editing, and delete
 - Keep the remaining cutover explicit:
-  - duplicate resumable CTA in landing and overview during transition
-  - then remove the separate landing page in one clean cutover after overview is fully capable
+  - move the minimum resumable/home logic onto the new main page
+  - improve it there rather than preserve the old landing CTA as a long-lived duplicate
+  - then remove the separate landing page in one clean tandem cutover as soon as the replacement works
 - Make `Avsluta` leave Klassrumskartan entirely after the cutover, returning the teacher to the page they entered from rather than just toggling back to overview.
 
 ## Out of scope
@@ -123,7 +124,8 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - The remaining planned closure slices are now:
   - `ST-24-06`: add seating `Slumpa` as a full-draft reshuffle inside `Sittplatser`, with
     autosave and undo/redo integration but no smart-placement settings
-  - `ST-24-07`: make `Översikt` the compact desktop-first dashboard for resumable continuation,
-    class management, and classroom management while keeping landing alive during transition
-  - `ST-24-08`: perform the big-bang landing-page cutover, remove the duplicate landing-only
-    surface, and make `Avsluta` leave the app back to the teacher's entry origin
+  - `ST-24-07`: make `Översikt` the compact desktop-first dashboard for class management,
+    classroom management, and the improved resumable/home surface that can replace landing
+  - `ST-24-08`: perform the tandem big-bang landing-page cutover, remove the superseded
+    landing-only surface immediately after the replacement works, and make `Avsluta` leave the app
+    back to the teacher's entry origin

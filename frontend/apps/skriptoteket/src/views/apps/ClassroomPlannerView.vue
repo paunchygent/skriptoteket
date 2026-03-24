@@ -40,6 +40,8 @@ const bootstrapError = ref<string | null>(null);
 const plannerActionError = ref<string | null>(null);
 const resumableDraft = ref<ResumablePlanDraft | null>(null);
 const dismissedResumableDraftId = ref<string | null>(null);
+const dismissedOverviewGroupingDraftId = ref<string | null>(null);
+const dismissedOverviewSeatingDraftId = ref<string | null>(null);
 const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>(null);
 const isRosterModalOpen = ref(false);
 const isTemplateModalOpen = ref(false);
@@ -62,6 +64,20 @@ const visibleResumableDraft = computed(() => {
   }
   return resumableDraft.value;
 });
+const visibleOverviewGroupingDraft = computed(() => {
+  const draft = classWorkspaceSummary.value?.active_grouping_draft ?? null;
+  if (!draft || dismissedOverviewGroupingDraftId.value === draft.id) {
+    return null;
+  }
+  return draft;
+});
+const visibleOverviewSeatingDraft = computed(() => {
+  const draft = classWorkspaceSummary.value?.active_seating_draft ?? null;
+  if (!draft || dismissedOverviewSeatingDraftId.value === draft.id) {
+    return null;
+  }
+  return draft;
+});
 
 function setResumableDraft(draft: ResumablePlanDraft | null): void {
   resumableDraft.value = draft;
@@ -79,6 +95,22 @@ function dismissResumableDraft(): void {
     return;
   }
   dismissedResumableDraftId.value = resumableDraft.value.draft.id;
+}
+
+function dismissOverviewGroupingDraft(): void {
+  const draftId = classWorkspaceSummary.value?.active_grouping_draft?.id ?? null;
+  if (!draftId) {
+    return;
+  }
+  dismissedOverviewGroupingDraftId.value = draftId;
+}
+
+function dismissOverviewSeatingDraft(): void {
+  const draftId = classWorkspaceSummary.value?.active_seating_draft?.id ?? null;
+  if (!draftId) {
+    return;
+  }
+  dismissedOverviewSeatingDraftId.value = draftId;
 }
 
 async function fetchCatalog(): Promise<void> {
@@ -142,6 +174,8 @@ async function refreshClassWorkspaceSummaryForSelectedRoster(): Promise<void> {
 async function openClassWorkspace(rosterId: string): Promise<void> {
   plannerActionError.value = null;
   selectedRosterId.value = rosterId;
+  dismissedOverviewGroupingDraftId.value = null;
+  dismissedOverviewSeatingDraftId.value = null;
   isLoadingClassWorkspace.value = true;
   try {
     await loadClassWorkspaceSummary(rosterId);
@@ -164,6 +198,8 @@ function returnToLanding(): void {
   selectedRosterId.value = null;
   classWorkspaceSummary.value = null;
   selectedWorkspaceTemplateId.value = null;
+  dismissedOverviewGroupingDraftId.value = null;
+  dismissedOverviewSeatingDraftId.value = null;
 }
 
 async function resumeDraft(): Promise<void> {
@@ -306,6 +342,8 @@ async function exitPlannerToLanding(): Promise<void> {
     selectedRosterId.value = null;
     classWorkspaceSummary.value = null;
     selectedWorkspaceTemplateId.value = null;
+    dismissedOverviewGroupingDraftId.value = null;
+    dismissedOverviewSeatingDraftId.value = null;
     currentScreen.value = "landing";
   } catch (error: unknown) {
     plannerActionError.value = normalizeUiError(
@@ -665,6 +703,14 @@ function openSelectedTemplateEdit(): void {
   openTemplateEdit(selectedTemplate);
 }
 
+function openOverviewTemplateEdit(template?: RoomTemplate): void {
+  if (template) {
+    openTemplateEdit(template);
+    return;
+  }
+  openSelectedTemplateEdit();
+}
+
 function openSelectedTemplateDelete(): void {
   const selectedTemplate = availableTemplates.value.find(
     (template) => template.id === selectedWorkspaceTemplateId.value,
@@ -788,6 +834,8 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       :selected-roster-id="selectedRosterId"
       :selected-template-id="selectedWorkspaceTemplateId"
       :is-loading-workspace="isLoadingClassWorkspace"
+      :visible-grouping-draft="visibleOverviewGroupingDraft"
+      :visible-seating-draft="visibleOverviewSeatingDraft"
       @back-to-landing="returnToLanding"
       @create-roster="openRosterCreate"
       @edit-roster="openSelectedRosterEdit"
@@ -795,10 +843,12 @@ async function confirmOverviewRosterDelete(): Promise<void> {
       @select-roster="selectWorkspaceRoster"
       @create-template="openTemplateCreate"
       @select-template="selectWorkspaceTemplate"
-      @edit-current-template="openSelectedTemplateEdit"
+      @edit-current-template="openOverviewTemplateEdit"
       @delete-current-template="openSelectedTemplateDelete"
       @open-grouping="void openGroupingWorkspace($event)"
       @open-seating="void openSeatingWorkspace($event)"
+      @dismiss-grouping-draft="dismissOverviewGroupingDraft"
+      @dismiss-seating-draft="dismissOverviewSeatingDraft"
     />
 
     <PlannerWorkspaceShell

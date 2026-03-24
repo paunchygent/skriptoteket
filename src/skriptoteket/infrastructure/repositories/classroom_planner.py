@@ -447,11 +447,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             and draft.draft_kind == PlanDraftKind.SEATING
             and model.template_id != draft.template_id
         )
-        if (
-            model is not None
-            and not model.history_stack
-            and not reset_history_for_seating_context
-        ):
+        if model is not None and not model.history_stack and not reset_history_for_seating_context:
             previous_workspace = self._to_workspace(model)
 
         if model is None:

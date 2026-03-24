@@ -122,7 +122,7 @@ async function waitForRuntime(wrapper: ReturnType<typeof mount>): Promise<void> 
 }
 
 describe("GameHost", () => {
-  it("renders the dedicated playfield host surface and mounts the runtime canvas", async () => {
+  it("renders the dedicated playfield host surface before the runtime is loaded", async () => {
     const runtime = new FakeRuntime();
     const runtimeFactory = vi.fn((_options) => Promise.resolve(runtime));
     const wrapper = mount(GameHost, {
@@ -132,11 +132,28 @@ describe("GameHost", () => {
       },
     });
 
+    const host = wrapper.get("[data-test='runtime-host-placeholder']");
+    expect(runtimeFactory).not.toHaveBeenCalled();
+    expect(host.attributes("data-runtime-load-state")).toBe("idle");
+    expect(host.attributes("aria-label")).toContain("Flunk-Out Frenzy");
+    expect(wrapper.find("[data-test='runtime-renderer-canvas']").exists()).toBe(false);
+  });
+
+  it("loads the runtime on Start and mounts the runtime canvas", async () => {
+    const runtime = new FakeRuntime();
+    const runtimeFactory = vi.fn((_options) => Promise.resolve(runtime));
+    const wrapper = mount(GameHost, {
+      props: {
+        title: "Flunk-Out Frenzy",
+        runtimeFactory,
+      },
+    });
+
+    const api = wrapper.vm as unknown as GameHostApi;
+    await api.startGame();
     await waitForRuntime(wrapper);
 
     expect(runtimeFactory).toHaveBeenCalledWith({ audioEnabled: true });
-    const host = wrapper.get("[data-test='runtime-host-placeholder']");
-    expect(host.attributes("aria-label")).toContain("Flunk-Out Frenzy");
     expect(wrapper.get("[data-test='runtime-renderer-canvas']").element.tagName).toBe("CANVAS");
   });
 
@@ -144,13 +161,18 @@ describe("GameHost", () => {
     const runtime = new FakeRuntime();
     const runtimeFactory = vi.fn((_options) => Promise.resolve(runtime));
 
-    mount(GameHost, {
+    const wrapper = mount(GameHost, {
       props: {
         title: "Flunk-Out Frenzy",
         audioEnabled: false,
         runtimeFactory,
       },
     });
+
+    expect(runtimeFactory).not.toHaveBeenCalled();
+
+    const api = wrapper.vm as unknown as GameHostApi;
+    await api.startGame();
 
     await vi.waitFor(() => {
       expect(runtimeFactory).toHaveBeenCalledWith({ audioEnabled: false });
@@ -166,15 +188,15 @@ describe("GameHost", () => {
       },
     });
 
-    await waitForRuntime(wrapper);
-
     const api = wrapper.vm as unknown as GameHostApi;
     const host = wrapper.get("[data-test='runtime-host-placeholder']");
 
-    expect(hudEvents(wrapper).at(-1)?.status).toBe("ready");
+    expect(host.attributes("data-runtime-load-state")).toBe("idle");
+    expect(wrapper.emitted("loadStateChange")).toBeUndefined();
     expect(host.attributes("data-ball-present")).toBe("false");
 
-    api.startGame();
+    await api.startGame();
+    await waitForRuntime(wrapper);
     await wrapper.vm.$nextTick();
 
     expect(hudEvents(wrapper).at(-1)?.status).toBe("running");
@@ -190,12 +212,11 @@ describe("GameHost", () => {
       },
     });
 
-    await waitForRuntime(wrapper);
-
     const api = wrapper.vm as unknown as GameHostApi;
     const host = wrapper.get("[data-test='runtime-host-placeholder']");
 
-    api.startGame();
+    await api.startGame();
+    await waitForRuntime(wrapper);
     api.pauseGame();
     await wrapper.vm.$nextTick();
     expect(hudEvents(wrapper).at(-1)?.status).toBe("paused");
@@ -218,6 +239,9 @@ describe("GameHost", () => {
         runtimeFactory: (_options) => Promise.reject(new Error("WebGL init failed.")),
       },
     });
+
+    const api = wrapper.vm as unknown as GameHostApi;
+    await api.startGame();
 
     await vi.waitFor(() => {
       expect(wrapper.get("[data-test='runtime-error']").text()).toContain("WebGL init failed.");

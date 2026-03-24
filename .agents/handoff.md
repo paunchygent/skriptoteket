@@ -11,11 +11,11 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-23
+- Date: 2026-03-24
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, and `PR-0106`.
+- Completed: `ST-24-01`, `ST-24-05`, `ST-24-02`, `ST-24-03`, `ST-24-04`, `PR-0090`, `PR-0091`, `PR-0092`, `PR-0093`, `PR-0101`, `PR-0102`, `PR-0103`, `PR-0104`, `PR-0105`, `PR-0106`, `PR-0107`, `PR-0109`, `PR-0110`, `PR-0112`, and `PR-0113`.
 
 ## Status
 
@@ -51,20 +51,35 @@ Keep this file updated so the next session can pick up work quickly.
   - `ST-24-08` is now drafted as the final landing cutover and exit-to-origin slice
   - `PR-0109` and `PR-0110` are shipped, `PR-0112` is the current local overview/planner design simplification pass, `PR-0111` remains the resumable-CTA follow-up, and `PR-0113` is now in progress as the separate in-place `Börja om` reset slice spanning `ST-24-03` and `ST-24-04`
   - `PR-0112` now also has a dedicated browser proof in `scripts/playwright_pr_0112_design_transition_check.py`, and the shared `scripts/playwright_classroom_planner_smoke.py` helpers were refreshed to match the current `Klassarbetsyta` shell and protected-route login modal
-- `PR-0113` is now implemented locally:
+- `PR-0113` is now shipped:
   - `classroomPlannerStoreMutations.ts` adds no-op-safe in-place reset actions for grouping and seating assignments
   - `useClassroomState.ts` exposes those reset actions through the existing autosave and backend-owned undo/redo flow
   - `GroupBoard.vue` and `PlannerWorkspaceShell.vue` now show explicit `Börja om` actions with the planner-native confirmation dialog
   - reset keeps the same draft, classroom context, groups, seats, and student planning metadata intact
   - the dedicated browser proof `scripts/playwright_pr_0113_reset_current_draft.py` now proves `Börja om` in both modes plus undo restoration on the live local SPA
+- `PR-0111` / `ST-24-08` planning has now changed:
+  - no long-lived duplicate landing + overview CTA phase
+  - copy only the minimum resumable/home logic onto the new main page, improve it there, then cut over quickly
+  - the new main-page resumable surface should expose explicit grouping/seating continuation, settings, dismiss `×`, and a cleaner compact `Avsluta`
+  - implementation should follow the same subagent loop used successfully here:
+    - main rollout implements
+    - one `GPT-5.4 High` ruthless reviewer audits the diff
+    - main rollout addresses any valid findings before commit
+- `PR-0111` is now implemented locally and has passed ruthless review:
+  - `PlannerClassWorkspace.vue` renders compact overview-owned continuation cards for grouping and seating with continue, settings, and dismiss `×`
+  - `ClassroomPlannerView.vue` owns overview-local dismiss state for those cards without introducing shared landing/overview CTA state
+  - the seating resume card now targets its own draft template for continue/settings rather than the currently selected overview classroom
+  - `PlannerTopPanel.vue` keeps `Avsluta` compact in the new main-page shell
+  - `scripts/playwright_pr_0111_overview_resumable_entry.py` proves the new overview-owned continuation flow on the canonical local SPA
+  - a dedicated `GPT-5.4 High` ruthless review returned no findings after the focused proof and test pass
 - `REV-EPIC-24` amendment is now approved and recorded in `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`.
-- `PR-0109` is now implemented locally:
+- `PR-0109` is now shipped:
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStoreMutations.ts` adds seating full-draft randomization
   - `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts` exposes seating `Slumpa` through the current autosave/history path
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` adds the classroom-gated seating `Slumpa` action
   - deterministic unit coverage proves the full-reshuffle contract rather than only filling empty seats
   - the dedicated seating browser proof now covers `Slumpa` wiring plus autosave and undo/redo compatibility
-- `PR-0110` is now implemented locally:
+- `PR-0110` is now shipped:
   - `PlannerClassWorkspace.vue` expands `Översikt` into a compact desktop-first class/classroom dashboard
   - overview now exposes class switching, class creation/editing, classroom selection, compact preview, and explicit classroom create/edit/delete actions
   - `ClassroomPlannerView.vue` now keeps an overview-local selected classroom state synced to the active seating draft when appropriate
@@ -73,7 +88,8 @@ Keep this file updated so the next session can pick up work quickly.
   - focused view/component tests cover roster switching from overview and opening classroom editing from the selected overview classroom
 - Competitive-games lane is separate:
   - `ST-25-01` and `ST-25-02` are done through `PR-0104`
-  - next planned chain there is `PR-0107` -> `PR-0108` -> `ST-25-03`
+  - `PR-0107` is now done: importing `GameRuntime.ts` no longer imports Pixi at jsdom test-module load time, so the focused Flunk-Out Vitest suite runs without `HTMLCanvasElement.getContext()` warnings and without a test-setup canvas shim
+  - next planned chain there is `PR-0108` -> `ST-25-03`
 
 ## Previous Sessions
 
@@ -119,6 +135,9 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerToolbarIconButton.vue src/views/apps/components/PlannerToolbarOverflowMenu.vue src/views/apps/components/RoomCanvas.vue src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED for the accepted `PR-0112` ruthless-review fixes and docs refresh).
 - 2026-03-23: `pdm run ruff check scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0112_design_transition_check.py`; `pdm run python -m scripts.playwright_pr_0112_design_transition_check --base-url http://127.0.0.1:5173` (PASSED; proved honest overview/grouping/seating transitions on the canonical local SPA, kept grouping/seating `Slumpa` visible while `Historik` / edit actions stayed in overflow, and saved fresh artifacts in `.artifacts/pr-0112-live-check/overview.png`, `.artifacts/pr-0112-live-check/groups.png`, and `.artifacts/pr-0112-live-check/seating.png`).
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/classroomPlannerStoreMutations.ts src/views/apps/components/GroupBoard.vue src/views/apps/components/GroupBoard.spec.ts src/views/apps/components/PlannerWorkspaceShell.vue src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerConfirmationDialog.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run ruff check scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0105_seating_continuity.py scripts/playwright_pr_0113_reset_current_draft.py`; `pdm run python -m scripts.playwright_pr_0113_reset_current_draft --base-url http://127.0.0.1:5173` (PASSED for local `PR-0113`; proved in-place `Börja om` reset for both grouping and seating plus undo restoration on the canonical local SPA; artifact in `.artifacts/pr-0113-live-check/pr0113-reset-current-draft.png`).
+- 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run 'src/components/apps/flunk-out-frenzy/**/*.spec.ts' src/views/apps/FlunkOutFrenzyView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/components/apps/flunk-out-frenzy src/views/apps/FlunkOutFrenzyView.vue src/views/apps/FlunkOutFrenzyView.spec.ts src/test/setup.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run docs-validate` (PASSED for `PR-0107`; focused Flunk-Out Vitest suite is now free of jsdom `HTMLCanvasElement.getContext()` warnings after lazy-loading the default Pixi renderer inside `GameRuntime.create()`).
+- 2026-03-23: `pdm run python - <<'PY' ... PY` authenticated Playwright probe against `http://127.0.0.1:5173/apps/games.flunk_out_frenzy` (PASSED for `PR-0107`; verified `data-runtime-mounted=true`, `Start` advances the host to `data-runtime-status=running`, and one runtime canvas is present; artifact in `.artifacts/pr-0107-live-check/flunk-out-frenzy-pr0107-dev.png`).
+- 2026-03-24: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/PlannerClassWorkspace.vue src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/PlannerTopPanel.vue src/views/apps/ClassroomPlannerView.vue src/views/apps/ClassroomPlannerView.spec.ts`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run ruff check scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0111_overview_resumable_entry.py`; `pdm run python -m scripts.playwright_pr_0111_overview_resumable_entry --base-url http://127.0.0.1:5173` (PASSED for local `PR-0111`; proved compact overview-owned grouping/seating continuation cards, modal settings entry, dismiss `×`, and direct reopen into the correct live workspace; artifact in `.artifacts/pr-0111-live-check/pr0111-overview-resumable-entry.png`).
 
 ## How to Run
 
@@ -140,16 +159,15 @@ pdm run docs-validate
 
 - Room-template editing must stay outside seating undo/redo; only seating-draft state belongs to the seating history stack.
 - `scripts/playwright_classroom_planner_smoke.py` still covers a broader surface than PR-level proofs; prefer the dedicated `PR-0105` browser proof for seating lifecycle regressions.
-- `ST-24-07` intentionally duplicates the resumable CTA in both landing and overview before the
-  later big-bang cutover in `ST-24-08`; no compatibility layer should survive the final cutover.
+- `PR-0111` / `ST-24-08` no longer assume a prolonged duplicated landing + overview CTA phase; the
+  replacement home surface should be copied, improved, and then followed by a fast cutover.
 - Seating `Slumpa` keeps its exact full-reshuffle contract anchored in deterministic unit tests;
   the live Playwright proof is intentionally smoke-level for the random UI path.
 
 ## Next Steps
 
 - EPIC-24 next planned implementation chain is:
-  - run the ruthless review for the now-local `PR-0113` implementation and address any valid findings
-  - then land the current local `PR-0113` in-place `Börja om` reset slice
-  - then land `PR-0111` (duplicated resumable CTA + overview-entry/browser proof)
-  - `ST-24-08` only after overview-first management is fully proven
+  - `PR-0113` is now shipped
+  - `PR-0111` is now locally implemented, verified, and review-approved; next step is user approval before any commit
+  - then move directly into the tandem `ST-24-08` landing removal and exit-to-origin cutover
 - Competitive-games lane remains separate and should not be conflated with Klassrumskartan planning.

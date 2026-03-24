@@ -102,7 +102,7 @@ function selectWorkspaceMode(value: string): void {
 
       <button
         type="button"
-        class="btn-ghost border-navy/30 bg-canvas shadow-none"
+        class="btn-ghost self-start border-navy/30 bg-canvas px-3 py-2 text-sm shadow-none lg:self-auto"
         @click="emit('exit')"
       >
         {{ exitLabel }}

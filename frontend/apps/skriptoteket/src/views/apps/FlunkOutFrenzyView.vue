@@ -15,6 +15,7 @@ import {
   labelGameSessionStatus,
   type GameHostApi,
   type GameHudSnapshot,
+  type GameRuntimeLoadState,
   type GameRuntimeFactory,
 } from "../../components/apps/flunk-out-frenzy/gameHostTypes";
 import { useFlunkOutFrenzyBootstrap } from "./useFlunkOutFrenzyBootstrap";
@@ -43,6 +44,7 @@ const gameHost = ref<GameHostApi | null>(null);
 const sceneElement = ref<HTMLElement | null>(null);
 const isSettingsOpen = ref(false);
 const runtimeBootError = ref<string | null>(null);
+const runtimeLoadState = ref<GameRuntimeLoadState>("idle");
 const runtimeHostKey = ref(0);
 const hud = ref<GameHudSnapshot>({
   score: 0,
@@ -89,7 +91,7 @@ const pauseLabel = computed(() => {
 });
 
 const canPause = computed(() => {
-  if (runtimeBootError.value) {
+  if (runtimeBootError.value || runtimeLoadState.value !== "ready") {
     return false;
   }
 
@@ -109,6 +111,26 @@ const hostFrameStyle = computed(() => {
 
 const isAudioAvailable = computed(() => bootstrap.value?.feature_flags.audio_enabled ?? true);
 
+const startLabel = computed(() => {
+  return runtimeLoadState.value === "loading" ? "Laddar spelmotor…" : "Start";
+});
+
+const canStart = computed(() => {
+  if (runtimeBootError.value) {
+    return false;
+  }
+
+  return runtimeLoadState.value !== "loading" && hud.value.status !== "running";
+});
+
+const canRestart = computed(() => {
+  return !runtimeBootError.value && runtimeLoadState.value === "ready";
+});
+
+const canToggleMute = computed(() => {
+  return !runtimeBootError.value && isAudioAvailable.value && runtimeLoadState.value === "ready";
+});
+
 const muteLabel = computed(() => {
   if (!isAudioAvailable.value) {
     return "Ljud avstängt";
@@ -125,6 +147,7 @@ function onRuntimeBootError(message: string | null): void {
   runtimeBootError.value = message;
 
   if (message) {
+    runtimeLoadState.value = "error";
     hud.value = {
       score: 0,
       ballsRemaining: 3,
@@ -135,12 +158,16 @@ function onRuntimeBootError(message: string | null): void {
   }
 }
 
+function onRuntimeLoadStateChange(nextState: GameRuntimeLoadState): void {
+  runtimeLoadState.value = nextState;
+}
+
 function onStart(): void {
   if (runtimeBootError.value) {
     return;
   }
 
-  gameHost.value?.startGame();
+  void gameHost.value?.startGame();
 }
 
 function onPauseToggle(): void {
@@ -161,7 +188,7 @@ function onRestart(): void {
     return;
   }
 
-  gameHost.value?.restartGame();
+  void gameHost.value?.restartGame();
 }
 
 function onToggleMute(): void {
@@ -174,6 +201,7 @@ function onToggleMute(): void {
 
 function retryRuntimeHost(): void {
   runtimeBootError.value = null;
+  runtimeLoadState.value = "idle";
   hud.value = {
     score: 0,
     ballsRemaining: 3,
@@ -326,6 +354,7 @@ onBeforeUnmount(() => {
             :runtime-factory="props.runtimeFactory"
             @boot-error="onRuntimeBootError"
             @hud-change="onHudChange"
+            @load-state-change="onRuntimeLoadStateChange"
           />
         </div>
 
@@ -373,10 +402,10 @@ onBeforeUnmount(() => {
             <button
               class="fof-action fof-action--primary"
               type="button"
-              :disabled="Boolean(runtimeBootError)"
+              :disabled="!canStart"
               @click="onStart"
             >
-              Start
+              {{ startLabel }}
             </button>
             <button
               class="fof-action"
@@ -389,7 +418,7 @@ onBeforeUnmount(() => {
             <button
               class="fof-action"
               type="button"
-              :disabled="Boolean(runtimeBootError)"
+              :disabled="!canRestart"
               @click="onRestart"
             >
               Starta om
@@ -397,7 +426,7 @@ onBeforeUnmount(() => {
             <button
               class="fof-action"
               type="button"
-              :disabled="Boolean(runtimeBootError) || !isAudioAvailable"
+              :disabled="!canToggleMute"
               @click="onToggleMute"
             >
               {{ muteLabel }}
