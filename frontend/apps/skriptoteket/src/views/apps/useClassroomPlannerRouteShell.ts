@@ -16,6 +16,7 @@ import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellEr
 import { createClassroomPlannerExitFlow } from "./classroomPlannerRouteShellExit";
 import { createClassroomPlannerOverviewCrudFlow } from "./classroomPlannerRouteShellOverviewCrud";
 import { createClassroomPlannerWorkspaceFlow } from "./classroomPlannerRouteShellWorkspace";
+import { useSeatingExportFlow } from "./useSeatingExportFlow";
 import { useClassroomState } from "./useClassroomState";
 
 export function useClassroomPlannerRouteShell() {
@@ -139,6 +140,9 @@ export function useClassroomPlannerRouteShell() {
     plannerState,
     clearOverviewWorkspaceState: overviewStore.clearOverviewWorkspaceState,
   });
+  const seatingExportFlow = useSeatingExportFlow({
+    plannerState,
+  });
 
   onMounted(async () => {
     isBootstrapping.value = true;
@@ -181,6 +185,10 @@ export function useClassroomPlannerRouteShell() {
     isDeletingOverviewTemplate: overviewCrudFlow.isDeletingOverviewTemplate,
     isSeatingLifecycleBusy,
     busySeatingHistoryDraftId,
+    isSeatingExportBusy: seatingExportFlow.isBusy,
+    seatingExportStatusLabel: seatingExportFlow.statusLabel,
+    seatingExportErrorMessage: seatingExportFlow.errorMessage,
+    canDownloadLatestSeatingExport: seatingExportFlow.canDownloadLatest,
     isExitConfirmationOpen: exitFlow.isExitConfirmationOpen,
     isExitingWithoutSave: exitFlow.isExitingWithoutSave,
     dismissOverviewGroupingDraft: overviewStore.dismissOverviewGroupingDraft,
@@ -206,6 +214,9 @@ export function useClassroomPlannerRouteShell() {
     deleteGroupingHistoryDraft: workspaceFlow.deleteGroupingHistoryDraft,
     openSeatingHistoryDraft: workspaceFlow.openSeatingHistoryDraft,
     deleteSeatingHistoryDraft: workspaceFlow.deleteSeatingHistoryDraft,
+    startDefaultSeatingExport: seatingExportFlow.startDefaultExport,
+    startSeatingExportOption: seatingExportFlow.startExportOption,
+    downloadLatestSeatingExport: seatingExportFlow.downloadLatest,
     selectPlannerWorkspaceMode: workspaceFlow.selectPlannerWorkspaceMode,
     upsertRoster: overviewCrudFlow.upsertRoster,
     removeRosterFromOverview: overviewCrudFlow.removeRosterFromOverview,

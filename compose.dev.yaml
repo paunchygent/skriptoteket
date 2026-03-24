@@ -18,6 +18,11 @@ services:
       - ENVIRONMENT=development
       - ENABLE_DOCS=true
       - COOKIE_SECURE=false
+      # Local PDF export lane: Docker web reaches the host-run Sir Convert
+      # service, which calls back through the backend's published host port.
+      - SIR_CONVERT_A_LOT_V2_BASE_URL=http://host.docker.internal:8085
+      - SIR_CONVERT_A_LOT_V2_API_KEY=${SIR_CONVERT_A_LOT_V2_API_KEY:-${SIR_CONVERT_A_LOT_API_KEY:-}}
+      - SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=http://127.0.0.1:8000
       # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
       - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
       - VAULT_ROOT=/var/lib/skriptoteket/vault

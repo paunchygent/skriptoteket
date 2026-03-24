@@ -1,0 +1,314 @@
+/**
+ * Seating export flow tests.
+ *
+ * These tests cover the frontend-only seating export orchestration so the
+ * route shell can stay thin while the happy-path export semantics remain
+ * explicit and easy to reason about.
+ */
+
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { useSeatingExportFlow } from "./useSeatingExportFlow";
+import type { SeatingExportJob } from "./classroomPlannerExportApi";
+import type { PlanDraft, SaveStatus } from "./classroomPlannerTypes";
+
+const exportApiMocks = vi.hoisted(() => ({
+  createSeatingExportJob: vi.fn(),
+  getSeatingExportJob: vi.fn(),
+  downloadSeatingExportJob: vi.fn(),
+}));
+
+const toastMocks = vi.hoisted(() => ({
+  success: vi.fn(),
+}));
+
+vi.mock("./classroomPlannerExportApi", () => ({
+  createSeatingExportJob: exportApiMocks.createSeatingExportJob,
+  getSeatingExportJob: exportApiMocks.getSeatingExportJob,
+  downloadSeatingExportJob: exportApiMocks.downloadSeatingExportJob,
+}));
+
+vi.mock("../../composables/useToast", () => ({
+  useToast: () => toastMocks,
+}));
+
+type PlannerStateMock = {
+  draft: PlanDraft | null;
+  saveMessage: string | null;
+  saveStatus: SaveStatus;
+  flushPendingSave: () => Promise<boolean>;
+};
+
+function createDraft(): PlanDraft {
+  return {
+    id: "draft-1",
+    roster_id: "roster-1",
+    draft_kind: "seating",
+    template_id: "template-1",
+    status: "active",
+    revision: 4,
+    last_opened_at: "2026-03-24T10:00:00Z",
+  };
+}
+
+function createPlannerState(overrides?: Partial<PlannerStateMock>): PlannerStateMock {
+  return {
+    draft: createDraft(),
+    saveMessage: null,
+    saveStatus: "saved",
+    flushPendingSave: vi.fn().mockResolvedValue(true),
+    ...overrides,
+  };
+}
+
+function createJob(
+  overrides?: Partial<SeatingExportJob>,
+): SeatingExportJob {
+  return {
+    job_id: "job-1",
+    draft_id: "draft-1",
+    export_kind: "pdf",
+    layout_id: "pretty_brutalist_poster",
+    paper_size: "a3_landscape",
+    status: "submitted",
+    created_at: "2026-03-24T10:00:00Z",
+    download_url: "/api/v1/apps/classroom.group-seating-studio/exports/jobs/job-1/download",
+    vault_artifact: null,
+    error: null,
+    ...overrides,
+  };
+}
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}
+
+describe("useSeatingExportFlow", () => {
+  beforeEach(() => {
+    exportApiMocks.createSeatingExportJob.mockReset();
+    exportApiMocks.getSeatingExportJob.mockReset();
+    exportApiMocks.downloadSeatingExportJob.mockReset();
+    toastMocks.success.mockReset();
+    window.sessionStorage.clear();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:export");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+  });
+
+  it("flushes pending save, exports the default A3 poster, and auto-downloads on success", async () => {
+    const plannerState = createPlannerState();
+    exportApiMocks.createSeatingExportJob.mockResolvedValue(createJob());
+    exportApiMocks.getSeatingExportJob
+      .mockResolvedValueOnce(createJob({ status: "processing" }))
+      .mockResolvedValueOnce(
+        createJob({
+          status: "succeeded",
+          vault_artifact: {
+            file_id: "file-1",
+            name: "klassrumskarta-a3.pdf",
+            bytes: 1234,
+            created_at: "2026-03-24T10:00:05Z",
+          },
+        }),
+      );
+    exportApiMocks.downloadSeatingExportJob.mockResolvedValue(new Blob(["pdf"]));
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 3,
+    });
+
+    await flow.startDefaultExport();
+
+    expect(plannerState.flushPendingSave).toHaveBeenCalledTimes(1);
+    expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "a3_landscape");
+    expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
+    expect(flow.statusLabel.value).toBe("PDF hämtad och sparad i Mina filer.");
+    expect(flow.errorMessage.value).toBeNull();
+    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(toastMocks.success).toHaveBeenCalledWith("PDF hämtad och sparad i Mina filer.");
+  });
+
+  it("uses the requested paper size for alternate export options", async () => {
+    const plannerState = createPlannerState();
+    exportApiMocks.createSeatingExportJob.mockResolvedValue(
+      createJob({
+        paper_size: "a4_landscape",
+      }),
+    );
+    exportApiMocks.getSeatingExportJob.mockResolvedValue(
+      createJob({
+        paper_size: "a4_landscape",
+        status: "succeeded",
+        vault_artifact: {
+          file_id: "file-2",
+          name: "klassrumskarta-a4.pdf",
+          bytes: 1234,
+          created_at: "2026-03-24T10:00:05Z",
+        },
+      }),
+    );
+    exportApiMocks.downloadSeatingExportJob.mockResolvedValue(new Blob(["pdf"]));
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await flow.startExportOption("a4_landscape");
+
+    expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "a4_landscape");
+  });
+
+  it("blocks export when the pending save ends in a conflict", async () => {
+    const plannerState = createPlannerState({
+      saveStatus: "conflict",
+    });
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await flow.startDefaultExport();
+
+    expect(exportApiMocks.createSeatingExportJob).not.toHaveBeenCalled();
+    expect(flow.errorMessage.value).toBe("Lös sparkonflikten innan du exporterar.");
+  });
+
+  it("blocks duplicate export starts while the create-job request is still pending", async () => {
+    const flushDeferred = createDeferred<boolean>();
+    const plannerState = createPlannerState({
+      flushPendingSave: vi.fn().mockReturnValue(flushDeferred.promise),
+    });
+    const createJobDeferred = createDeferred<SeatingExportJob>();
+    exportApiMocks.createSeatingExportJob.mockReturnValue(createJobDeferred.promise);
+    exportApiMocks.getSeatingExportJob.mockResolvedValue(
+      createJob({
+        status: "succeeded",
+        vault_artifact: {
+          file_id: "file-3",
+          name: "klassrumskarta-a3.pdf",
+          bytes: 1234,
+          created_at: "2026-03-24T10:00:05Z",
+        },
+      }),
+    );
+    exportApiMocks.downloadSeatingExportJob.mockResolvedValue(new Blob(["pdf"]));
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    const firstExportPromise = flow.startDefaultExport();
+    const secondExportPromise = flow.startDefaultExport();
+
+    expect(flow.isBusy.value).toBe(true);
+    expect(exportApiMocks.createSeatingExportJob).not.toHaveBeenCalled();
+
+    flushDeferred.resolve(true);
+    await vi.waitFor(() => {
+      expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledTimes(1);
+    });
+
+    createJobDeferred.resolve(createJob());
+    await Promise.all([firstExportPromise, secondExportPromise]);
+  });
+
+  it("keeps the active job recoverable when the first polling window times out", async () => {
+    const plannerState = createPlannerState();
+    const deferredCompletion = createDeferred<SeatingExportJob>();
+    exportApiMocks.createSeatingExportJob.mockResolvedValue(createJob());
+    exportApiMocks.getSeatingExportJob
+      .mockResolvedValueOnce(createJob({ status: "processing" }))
+      .mockReturnValueOnce(deferredCompletion.promise);
+    exportApiMocks.downloadSeatingExportJob.mockResolvedValue(new Blob(["pdf"]));
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await flow.startDefaultExport();
+
+    expect(flow.isBusy.value).toBe(true);
+    expect(flow.statusLabel.value).toBe(
+      "PDF-exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.",
+    );
+    expect(flow.errorMessage.value).toBeNull();
+    expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
+
+    deferredCompletion.resolve(
+      createJob({
+        status: "succeeded",
+        vault_artifact: {
+          file_id: "file-4",
+          name: "klassrumskarta-a3.pdf",
+          bytes: 1234,
+          created_at: "2026-03-24T10:00:05Z",
+        },
+      }),
+    );
+
+    await vi.waitFor(() => {
+      expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
+    });
+    expect(flow.isBusy.value).toBe(false);
+    expect(flow.canDownloadLatest.value).toBe(true);
+  });
+
+  it("rehydrates an in-flight export after reload and preserves a later download path", async () => {
+    const plannerState = createPlannerState();
+    window.sessionStorage.setItem(
+      "skriptoteket:classroom-planner:seating-export-recovery",
+      JSON.stringify({
+        draftId: "draft-1",
+        activeJobId: "job-1",
+        latestCompletedJobId: null,
+      }),
+    );
+    exportApiMocks.getSeatingExportJob
+      .mockResolvedValueOnce(createJob({ status: "processing" }))
+      .mockResolvedValueOnce(
+        createJob({
+          status: "succeeded",
+          vault_artifact: {
+            file_id: "file-5",
+            name: "klassrumskarta-a3.pdf",
+            bytes: 1234,
+            created_at: "2026-03-24T10:00:05Z",
+          },
+        }),
+      );
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await vi.waitFor(() => {
+      expect(flow.statusLabel.value).toBe("PDF klar för nedladdning.");
+    });
+
+    expect(flow.isBusy.value).toBe(false);
+    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
+    expect(JSON.parse(window.sessionStorage.getItem(
+      "skriptoteket:classroom-planner:seating-export-recovery",
+    ) ?? "{}")).toEqual({
+      draftId: "draft-1",
+      activeJobId: null,
+      latestCompletedJobId: "job-1",
+    });
+  });
+});

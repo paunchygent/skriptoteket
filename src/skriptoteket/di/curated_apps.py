@@ -110,6 +110,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
 from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs import (
     PostgreSQLSeatingExportJobRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_export_webhook_bindings import (
+    PostgreSQLSeatingExportWebhookBindingRepository,
+)
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
@@ -117,6 +120,7 @@ from skriptoteket.protocols.classroom_planner import (
 )
 from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
+    SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -587,6 +591,7 @@ class CuratedAppsProvider(Provider):
         self,
         prepare: PrepareSeatingExportHandler,
         jobs: SeatingExportJobRepositoryProtocol,
+        webhook_bindings: SeatingExportWebhookBindingRepositoryProtocol,
         renderer: SeatingPosterRendererProtocol,
         client: SirConvertALotClientV2Protocol,
         uow: UnitOfWorkProtocol,
@@ -597,6 +602,7 @@ class CuratedAppsProvider(Provider):
         return CreateSeatingExportJobHandler(
             prepare=prepare,
             jobs=jobs,
+            webhook_bindings=webhook_bindings,
             renderer=renderer,
             client=client,
             uow=uow,
@@ -766,6 +772,13 @@ class CuratedAppsProvider(Provider):
         self, session: AsyncSession
     ) -> SeatingExportJobRepositoryProtocol:
         return PostgreSQLSeatingExportJobRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def seating_export_webhook_binding_repository(
+        self,
+        session: AsyncSession,
+    ) -> SeatingExportWebhookBindingRepositoryProtocol:
+        return PostgreSQLSeatingExportWebhookBindingRepository(session=session)
 
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:

@@ -25,6 +25,7 @@ from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertJobV2,
     SirConvertSubmitRequestV2,
     SirConvertSubmittedJobV2,
+    SirConvertWebhookSubscriptionSummaryV2,
     SirConvertWebhookSubscriptionV2,
 )
 
@@ -274,6 +275,55 @@ class SirConvertALotClientV2:
             callback_url=response_callback_url,
             secret=secret_value,
         )
+
+    async def list_webhook_subscriptions(
+        self,
+        *,
+        correlation_id: str | None,
+    ) -> list[SirConvertWebhookSubscriptionSummaryV2]:
+        response = await self._client.get(
+            "/v2/push/webhooks/subscriptions",
+            headers=self._headers(correlation_id=correlation_id),
+        )
+        if response.status_code != 200:
+            raise _extract_service_error(
+                response,
+                message_fallback="Failed to list Sir Convert webhook subscriptions.",
+            )
+
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Sir Convert-a-Lot v2 returned an invalid webhook list payload.",
+                details={},
+            )
+        subscriptions = payload.get("subscriptions")
+        if not isinstance(subscriptions, list):
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message="Sir Convert-a-Lot v2 webhook list is missing subscriptions.",
+                details={},
+            )
+
+        result: list[SirConvertWebhookSubscriptionSummaryV2] = []
+        for item in subscriptions:
+            if not isinstance(item, dict):
+                continue
+            subscription_id = item.get("subscription_id")
+            callback_url = item.get("callback_url")
+            if (
+                isinstance(subscription_id, str)
+                and subscription_id
+                and isinstance(callback_url, str)
+            ):
+                result.append(
+                    SirConvertWebhookSubscriptionSummaryV2(
+                        subscription_id=subscription_id,
+                        callback_url=callback_url,
+                    )
+                )
+        return result
 
     async def delete_webhook_subscription(
         self,

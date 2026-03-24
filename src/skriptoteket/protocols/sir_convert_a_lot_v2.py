@@ -61,6 +61,12 @@ class SirConvertWebhookSubscriptionV2:
     secret: str
 
 
+@dataclass(frozen=True, slots=True)
+class SirConvertWebhookSubscriptionSummaryV2:
+    subscription_id: str
+    callback_url: str
+
+
 class SirConvertALotClientV2Protocol(Protocol):
     async def submit_job(
         self,
@@ -81,6 +87,12 @@ class SirConvertALotClientV2Protocol(Protocol):
         event_types: list[str],
         correlation_id: str | None,
     ) -> SirConvertWebhookSubscriptionV2: ...
+
+    async def list_webhook_subscriptions(
+        self,
+        *,
+        correlation_id: str | None,
+    ) -> list[SirConvertWebhookSubscriptionSummaryV2]: ...
 
     async def delete_webhook_subscription(
         self,

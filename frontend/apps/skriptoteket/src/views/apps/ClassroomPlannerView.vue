@@ -38,6 +38,10 @@ const {
   isDeletingOverviewTemplate,
   isSeatingLifecycleBusy,
   busySeatingHistoryDraftId,
+  isSeatingExportBusy,
+  seatingExportStatusLabel,
+  seatingExportErrorMessage,
+  canDownloadLatestSeatingExport,
   isExitConfirmationOpen,
   isExitingWithoutSave,
   dismissOverviewGroupingDraft,
@@ -63,6 +67,9 @@ const {
   deleteGroupingHistoryDraft,
   openSeatingHistoryDraft,
   deleteSeatingHistoryDraft,
+  startDefaultSeatingExport,
+  startSeatingExportOption,
+  downloadLatestSeatingExport,
   selectPlannerWorkspaceMode,
   upsertRoster,
   removeRosterFromOverview,
@@ -151,10 +158,17 @@ const {
       :workspace-summary="classWorkspaceSummary"
       :seating-lifecycle-busy="isSeatingLifecycleBusy"
       :seating-history-busy-draft-id="busySeatingHistoryDraftId"
+      :seating-export-busy="isSeatingExportBusy"
+      :seating-export-status-label="seatingExportStatusLabel"
+      :seating-export-error-message="seatingExportErrorMessage"
+      :can-download-latest-seating-export="canDownloadLatestSeatingExport"
       @change-grouping-template="void changeGroupingTemplate($event)"
       @change-seating-template="void changeSeatingTemplate($event)"
       @new-grouping-draft="void startNewGroupingDraft($event)"
       @new-seating-draft="void startNewSeatingDraft($event)"
+      @export-seating-default="void startDefaultSeatingExport()"
+      @export-seating-option="void startSeatingExportOption($event)"
+      @download-latest-seating-export="void downloadLatestSeatingExport()"
       @edit-roster="openSelectedRosterEdit"
       @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
       @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"

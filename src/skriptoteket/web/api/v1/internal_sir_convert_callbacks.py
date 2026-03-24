@@ -25,20 +25,45 @@ from skriptoteket.web.request_metadata import get_correlation_id
 router = APIRouter(prefix="/api/v1/internal/sir-convert-a-lot", tags=["internal"])
 
 
-@router.post("/classroom-planner/seating-export-jobs/{job_id}")
-@inject
-async def receive_seating_export_job_callback(
-    job_id: UUID,
+async def _handle_seating_export_job_callback(
     request: Request,
-    handler: FromDishka[CompleteSeatingExportJobFromWebhookHandler],
+    handler: CompleteSeatingExportJobFromWebhookHandler,
+    callback_job_id_hint: UUID | None = None,
 ) -> dict[str, str]:
     """Receive one signed Sir Convert webhook callback for a seating export job."""
 
     correlation_id_uuid = get_correlation_id(request)
     await handler.handle(
-        job_id=job_id,
         headers={key: value for key, value in request.headers.items()},
         raw_body=await request.body(),
         correlation_id=str(correlation_id_uuid) if correlation_id_uuid is not None else None,
+        callback_job_id_hint=callback_job_id_hint,
     )
     return {"status": "ok"}
+
+
+@router.post("/classroom-planner/seating-export-jobs")
+@inject
+async def receive_seating_export_job_callback(
+    request: Request,
+    handler: FromDishka[CompleteSeatingExportJobFromWebhookHandler],
+) -> dict[str, str]:
+    """Receive the canonical shared seating export callback."""
+
+    return await _handle_seating_export_job_callback(request, handler)
+
+
+@router.post("/classroom-planner/seating-export-jobs/{job_id}")
+@inject
+async def receive_seating_export_job_cutover_callback(
+    job_id: UUID,
+    request: Request,
+    handler: FromDishka[CompleteSeatingExportJobFromWebhookHandler],
+) -> dict[str, str]:
+    """Receive the per-job callback path during the route cutover window."""
+
+    return await _handle_seating_export_job_callback(
+        request,
+        handler,
+        callback_job_id_hint=job_id,
+    )

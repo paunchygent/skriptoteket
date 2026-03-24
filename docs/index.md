@@ -43,6 +43,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0116-klassrumskartan-room-template-editor-modularization-and-shared-room-scene.md`
 - Seating workspace zoom parity follow-up:
   `docs/backlog/prs/pr-0117-klassrumskartan-seating-workspace-viewport-zoom-parity.md`
+- Seating export webhook hardening follow-up:
+  `docs/backlog/prs/pr-0121-klassrumskartan-shared-seating-export-webhook-dispatcher.md`
+- Seating export production/Hemma wiring follow-up:
+  `docs/backlog/prs/pr-0122-klassrumskartan-seating-export-production-wiring-and-hemma-deploy-orchestration.md`
+- Seating scene remediation follow-up:
+  `docs/backlog/prs/pr-0123-klassrumskartan-seating-scene-remediation-wall-markers-localization-and-print-contrast.md`
 - Proposed Klassrumskartan export/import epic:
   `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan export/import review:
@@ -277,6 +283,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0118-klassrumskartan-seating-export-contract-and-standalone-poster-scene-model.md`
 - `docs/backlog/prs/pr-0119-klassrumskartan-seating-pdf-poster-renderer-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md`
+- `docs/backlog/prs/pr-0121-klassrumskartan-shared-seating-export-webhook-dispatcher.md`
+- `docs/backlog/prs/pr-0122-klassrumskartan-seating-export-production-wiring-and-hemma-deploy-orchestration.md`
+- `docs/backlog/prs/pr-0123-klassrumskartan-seating-scene-remediation-wall-markers-localization-and-print-contrast.md`
+- `docs/backlog/prs/pr-0124-klassrumskartan-seating-export-reload-recovery-and-draft-scoped-rehydration.md`
+- `docs/backlog/prs/pr-0125-klassrumskartan-legacy-seating-export-callback-cutover-and-decommission.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`

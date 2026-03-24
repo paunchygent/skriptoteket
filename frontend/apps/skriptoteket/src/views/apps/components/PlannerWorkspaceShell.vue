@@ -16,6 +16,7 @@ import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
+import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
 
 type PlannerView = "groups" | "seats";
@@ -27,6 +28,10 @@ const props = withDefaults(
     workspaceSummary?: ClassWorkspaceSummary | null;
     seatingLifecycleBusy?: boolean;
     seatingHistoryBusyDraftId?: string | null;
+    seatingExportBusy?: boolean;
+    seatingExportStatusLabel?: string | null;
+    seatingExportErrorMessage?: string | null;
+    canDownloadLatestSeatingExport?: boolean;
   }>(),
   {
     availableTemplates: () => [],
@@ -34,6 +39,10 @@ const props = withDefaults(
     workspaceSummary: null,
     seatingLifecycleBusy: false,
     seatingHistoryBusyDraftId: null,
+    seatingExportBusy: false,
+    seatingExportStatusLabel: null,
+    seatingExportErrorMessage: null,
+    canDownloadLatestSeatingExport: false,
   },
 );
 
@@ -47,6 +56,9 @@ const emit = defineEmits<{
   (e: "delete-grouping-history-draft", draftId: string): void;
   (e: "open-seating-history-draft", draftId: string): void;
   (e: "delete-seating-history-draft", draftId: string): void;
+  (e: "export-seating-default"): void;
+  (e: "export-seating-option", paperSize: SeatingExportPaperSize): void;
+  (e: "download-latest-seating-export"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
   (e: "exit-app"): void;
@@ -300,9 +312,16 @@ watch(
       :available-templates="availableTemplates"
       :selected-template-id="pendingSeatingTemplateId"
       :seating-lifecycle-busy="seatingLifecycleBusy"
+      :export-busy="seatingExportBusy"
+      :export-status-label="seatingExportStatusLabel"
+      :export-error-message="seatingExportErrorMessage"
+      :can-download-latest-export="canDownloadLatestSeatingExport"
       @student-selected="selectStudent"
       @change-seating-template="changeSeatingTemplate"
       @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
+      @export-default="emit('export-seating-default')"
+      @export-option="emit('export-seating-option', $event)"
+      @download-latest-export="emit('download-latest-seating-export')"
       @edit-current-template="editCurrentTemplate"
       @open-history="openSeatingHistoryDrawer"
     />

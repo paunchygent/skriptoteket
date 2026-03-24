@@ -20,7 +20,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportJobStatus,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
+from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
@@ -120,6 +120,7 @@ class SeatingExportJobFinalizer:
         error_message: str | None,
         correlation_id: str | None,
     ) -> SeatingExportJob:
+        del correlation_id
         updated = job.model_copy(
             update={
                 "status": status,
@@ -128,17 +129,7 @@ class SeatingExportJobFinalizer:
             }
         )
         async with self._uow:
-            updated = await self._jobs.update(job=updated)
-
-        if job.webhook_subscription_id is not None:
-            try:
-                await self._client.delete_webhook_subscription(
-                    job.webhook_subscription_id,
-                    correlation_id=correlation_id,
-                )
-            except Exception:
-                return updated
-        return updated
+            return await self._jobs.update(job=updated)
 
     async def _save_to_vault(
         self,
@@ -210,25 +201,21 @@ class CompleteSeatingExportJobFromWebhookHandler:
     async def handle(
         self,
         *,
-        job_id: UUID,
         headers: dict[str, str],
         raw_body: bytes,
         correlation_id: str | None,
+        callback_job_id_hint: UUID | None = None,
     ) -> None:
-        async with self._uow:
-            job = await self._jobs.get_by_id(job_id=job_id)
-        if job is None:
-            raise not_found("SeatingExportJob", str(job_id))
-        if job.webhook_secret is None:
-            raise DomainError(
-                code=ErrorCode.UNAUTHORIZED,
-                message="Ogiltig webhook-signatur.",
-                details={},
-            )
-        verify_webhook_signature(secret=job.webhook_secret, headers=headers, raw_body=raw_body)
         payload = parse_webhook_payload(raw_body)
-        if payload["job_id"] != job.upstream_job_id:
+        async with self._uow:
+            job = await self._jobs.get_by_upstream_job_id(upstream_job_id=payload["job_id"])
+        if job is None:
             return
+        if callback_job_id_hint is not None and job.id != callback_job_id_hint:
+            return
+        if job.webhook_secret is None:
+            return
+        verify_webhook_signature(secret=job.webhook_secret, headers=headers, raw_body=raw_body)
         if job.status in {SeatingExportJobStatus.SUCCEEDED, SeatingExportJobStatus.FAILED}:
             return
 

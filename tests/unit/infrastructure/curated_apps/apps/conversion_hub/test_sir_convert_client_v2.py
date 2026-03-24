@@ -154,3 +154,37 @@ async def test_create_webhook_subscription_returns_subscription_id_and_secret() 
 
     assert subscription.subscription_id == "whsub-1"
     assert subscription.secret == "whsec-1"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_list_webhook_subscriptions_returns_subscription_summaries() -> None:
+    async def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "api_version": "v2",
+                "subscriptions": [
+                    {
+                        "subscription_id": "whsub-1",
+                        "callback_url": "https://consumer.example/hooks/scal",
+                        "enabled": True,
+                    }
+                ],
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        svc = SirConvertALotClientV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="test-key",
+                timeout_seconds=10.0,
+            ),
+            client=client,
+        )
+        subscriptions = await svc.list_webhook_subscriptions(correlation_id="corr-1")
+
+    assert len(subscriptions) == 1
+    assert subscriptions[0].subscription_id == "whsub-1"

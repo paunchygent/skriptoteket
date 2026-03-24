@@ -30,6 +30,7 @@ from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
+    SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -51,6 +52,7 @@ from .seating_export_job_support import (
 from .seating_exports import PrepareSeatingExportHandler
 
 _WEBHOOK_EVENT_TYPES = ["job.succeeded", "job.failed", "job.canceled"]
+_SHARED_WEBHOOK_PATH = "/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs"
 
 
 class CreateSeatingExportJobHandler:
@@ -61,6 +63,7 @@ class CreateSeatingExportJobHandler:
         *,
         prepare: PrepareSeatingExportHandler,
         jobs: SeatingExportJobRepositoryProtocol,
+        webhook_bindings: SeatingExportWebhookBindingRepositoryProtocol,
         renderer: SeatingPosterRendererProtocol,
         client: SirConvertALotClientV2Protocol,
         uow: UnitOfWorkProtocol,
@@ -70,6 +73,7 @@ class CreateSeatingExportJobHandler:
     ) -> None:
         self._prepare = prepare
         self._jobs = jobs
+        self._webhook_bindings = webhook_bindings
         self._renderer = renderer
         self._client = client
         self._uow = uow
@@ -111,18 +115,12 @@ class CreateSeatingExportJobHandler:
             paper_size=paper_size,
             output_filename=rendered.output_filename,
         )
-        callback_url = (
-            f"{callback_base_url.rstrip('/')}"
-            f"/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs/{job.id}"
-        )
-        subscription_id: str | None = None
         try:
-            subscription = await self._client.create_webhook_subscription(
-                callback_url=callback_url,
-                event_types=_WEBHOOK_EVENT_TYPES,
+            job = await self._attach_shared_webhook_binding(
+                job=job,
+                callback_base_url=callback_base_url,
                 correlation_id=correlation_id,
             )
-            subscription_id = subscription.subscription_id
             submitted = await self._client.submit_job(
                 request=SirConvertSubmitRequestV2(
                     filename=rendered.html_filename,
@@ -148,19 +146,12 @@ class CreateSeatingExportJobHandler:
                 job=job,
                 error_message="Kunde inte starta PDF-exporten just nu. Försök igen.",
             )
-            if subscription_id is not None:
-                await self._safe_delete_subscription(
-                    subscription_id=subscription_id,
-                    correlation_id=correlation_id,
-                )
             raise
 
         updated_job = job.model_copy(
             update={
                 "status": map_upstream_status(submitted.status),
                 "upstream_job_id": submitted.job_id,
-                "webhook_subscription_id": subscription.subscription_id,
-                "webhook_secret": subscription.secret,
             }
         )
         async with self._uow:
@@ -194,6 +185,73 @@ class CreateSeatingExportJobHandler:
                 )
             )
 
+    async def _attach_shared_webhook_binding(
+        self,
+        *,
+        job: SeatingExportJob,
+        callback_base_url: str,
+        correlation_id: str | None,
+    ) -> SeatingExportJob:
+        expected_callback_url = f"{callback_base_url.rstrip('/')}{_SHARED_WEBHOOK_PATH}"
+        async with self._uow:
+            shared_binding = await self._webhook_bindings.get_shared_for_update()
+            if await self._can_reuse_shared_binding(
+                subscription_id=shared_binding.subscription_id,
+                callback_url=shared_binding.callback_url,
+                secret=shared_binding.secret,
+                expected_callback_url=expected_callback_url,
+                correlation_id=correlation_id,
+            ):
+                bound_subscription_id = shared_binding.subscription_id
+                bound_secret = shared_binding.secret
+            else:
+                subscription = await self._client.create_webhook_subscription(
+                    callback_url=expected_callback_url,
+                    event_types=_WEBHOOK_EVENT_TYPES,
+                    correlation_id=correlation_id,
+                )
+                shared_binding = await self._webhook_bindings.update_shared(
+                    binding=shared_binding.model_copy(
+                        update={
+                            "subscription_id": subscription.subscription_id,
+                            "callback_url": subscription.callback_url,
+                            "secret": subscription.secret,
+                        }
+                    )
+                )
+                bound_subscription_id = shared_binding.subscription_id
+                bound_secret = shared_binding.secret
+            return await self._jobs.update(
+                job=job.model_copy(
+                    update={
+                        "webhook_subscription_id": bound_subscription_id,
+                        "webhook_secret": bound_secret,
+                    }
+                )
+            )
+
+    async def _can_reuse_shared_binding(
+        self,
+        *,
+        subscription_id: str | None,
+        callback_url: str | None,
+        secret: str | None,
+        expected_callback_url: str,
+        correlation_id: str | None,
+    ) -> bool:
+        if (
+            subscription_id is None
+            or callback_url is None
+            or secret is None
+            or callback_url != expected_callback_url
+        ):
+            return False
+        subscriptions = await self._client.list_webhook_subscriptions(correlation_id=correlation_id)
+        return any(
+            item.subscription_id == subscription_id and item.callback_url == expected_callback_url
+            for item in subscriptions
+        )
+
     async def _mark_job_failed(self, *, job: SeatingExportJob, error_message: str) -> None:
         async with self._uow:
             await self._jobs.update(
@@ -204,20 +262,6 @@ class CreateSeatingExportJobHandler:
                     }
                 )
             )
-
-    async def _safe_delete_subscription(
-        self,
-        *,
-        subscription_id: str,
-        correlation_id: str | None,
-    ) -> None:
-        try:
-            await self._client.delete_webhook_subscription(
-                subscription_id,
-                correlation_id=correlation_id,
-            )
-        except Exception:
-            return
 
 
 class GetSeatingExportJobHandler:

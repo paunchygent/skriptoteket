@@ -10,11 +10,13 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
+import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
+import PlannerExportActionGroup from "./PlannerExportActionGroup.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
@@ -28,12 +30,20 @@ const props = withDefaults(
     availableTemplates?: RoomTemplate[];
     selectedTemplateId?: string | null;
     seatingLifecycleBusy?: boolean;
+    exportBusy?: boolean;
+    exportStatusLabel?: string | null;
+    exportErrorMessage?: string | null;
+    canDownloadLatestExport?: boolean;
   }>(),
   {
     selectedStudentId: null,
     availableTemplates: () => [],
     selectedTemplateId: null,
     seatingLifecycleBusy: false,
+    exportBusy: false,
+    exportStatusLabel: null,
+    exportErrorMessage: null,
+    canDownloadLatestExport: false,
   },
 );
 
@@ -43,6 +53,9 @@ const emit = defineEmits<{
   (e: "new-seating-draft", templateId: string): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-history"): void;
+  (e: "export-default"): void;
+  (e: "export-option", paperSize: SeatingExportPaperSize): void;
+  (e: "download-latest-export"): void;
 }>();
 
 const plannerState = useClassroomState();
@@ -305,6 +318,15 @@ watch(
         >
           Nytt sittschema
         </button>
+        <PlannerExportActionGroup
+          :busy="exportBusy"
+          :status-label="exportStatusLabel"
+          :error-message="exportErrorMessage"
+          :can-download-latest="canDownloadLatestExport"
+          @export-default="emit('export-default')"
+          @export-option="emit('export-option', $event)"
+          @download-latest="emit('download-latest-export')"
+        />
         <PlannerToolbarOverflowMenu
           label="Fler sittplatsåtgärder"
           :items="secondaryActionItems"

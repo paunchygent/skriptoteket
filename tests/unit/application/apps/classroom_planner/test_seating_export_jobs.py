@@ -34,6 +34,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
 from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
+    SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
@@ -70,6 +71,30 @@ class _FixedIdGenerator:
 
     def new_uuid(self):
         return self._values.pop(0)
+
+
+class _DummyBinding:
+    def __init__(
+        self,
+        *,
+        subscription_id: str | None = None,
+        callback_url: str | None = None,
+        secret: str | None = None,
+    ) -> None:
+        now = datetime(2026, 3, 24, tzinfo=timezone.utc)
+        self.binding_key = "classroom-planner-seating-export"
+        self.subscription_id = subscription_id
+        self.callback_url = callback_url
+        self.secret = secret
+        self.created_at = now
+        self.updated_at = now
+
+    def model_copy(self, *, update: dict[str, str | None]):
+        return _DummyBinding(
+            subscription_id=update.get("subscription_id", self.subscription_id),
+            callback_url=update.get("callback_url", self.callback_url),
+            secret=update.get("secret", self.secret),
+        )
 
 
 def _prepared_contract() -> PreparedSeatingExportContract:
@@ -127,6 +152,7 @@ async def test_create_seating_export_job_submits_rendered_html_and_css_bundle():
     prepare = AsyncMock(spec=PrepareSeatingExportHandler)
     prepare.handle.return_value = _prepared_contract()
     jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    bindings = AsyncMock(spec=SeatingExportWebhookBindingRepositoryProtocol)
     renderer = AsyncMock(spec=SeatingPosterRendererProtocol)
     renderer.render.return_value = RenderedSeatingPosterBundle(
         html_filename="index.html",
@@ -138,7 +164,7 @@ async def test_create_seating_export_job_submits_rendered_html_and_css_bundle():
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.create_webhook_subscription.return_value = SimpleNamespace(
         subscription_id="whsub-1",
-        callback_url="http://127.0.0.1:8000/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs/job-1",
+        callback_url="http://127.0.0.1:8000/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs",
         secret="whsec-1",
     )
     client.submit_job.return_value = SirConvertSubmittedJobV2(
@@ -165,10 +191,17 @@ async def test_create_seating_export_job_submits_rendered_html_and_css_bundle():
     )
     jobs.create.return_value = created_job
     jobs.update.return_value = updated_job
+    bindings.get_shared_for_update.return_value = _DummyBinding()
+    bindings.update_shared.return_value = _DummyBinding(
+        subscription_id="whsub-1",
+        callback_url="http://127.0.0.1:8000/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs",
+        secret="whsec-1",
+    )
 
     handler = CreateSeatingExportJobHandler(
         prepare=prepare,
         jobs=jobs,
+        webhook_bindings=bindings,
         renderer=renderer,
         client=client,
         uow=_DummyUow(),
@@ -202,6 +235,7 @@ async def test_create_seating_export_job_marks_persisted_job_failed_when_webhook
     prepare = AsyncMock(spec=PrepareSeatingExportHandler)
     prepare.handle.return_value = _prepared_contract()
     jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    bindings = AsyncMock(spec=SeatingExportWebhookBindingRepositoryProtocol)
     renderer = AsyncMock(spec=SeatingPosterRendererProtocol)
     renderer.render.return_value = RenderedSeatingPosterBundle(
         html_filename="index.html",
@@ -232,10 +266,12 @@ async def test_create_seating_export_job_marks_persisted_job_failed_when_webhook
     )
     jobs.create.return_value = created_job
     jobs.update.return_value = failed_job
+    bindings.get_shared_for_update.return_value = _DummyBinding()
 
     handler = CreateSeatingExportJobHandler(
         prepare=prepare,
         jobs=jobs,
+        webhook_bindings=bindings,
         renderer=renderer,
         client=client,
         uow=_DummyUow(),
@@ -342,7 +378,7 @@ async def test_webhook_completion_saves_pdf_to_vault_and_marks_job_succeeded():
     vault_usage = AsyncMock(spec=VaultUsageRepositoryProtocol)
     vault_storage = AsyncMock(spec=VaultStorageProtocol)
     job = _job(owner_user_id=actor.id, status=SeatingExportJobStatus.PROCESSING)
-    jobs.get_by_id.return_value = job
+    jobs.get_by_upstream_job_id.return_value = job
     client.download_artifact.return_value = SimpleNamespace(
         artifact=SimpleNamespace(filename="klassrumskarta.pdf", content=b"%PDF-1.4"),
     )
@@ -386,7 +422,6 @@ async def test_webhook_completion_saves_pdf_to_vault_and_marks_job_succeeded():
     )
 
     await handler.handle(
-        job_id=job.id,
         headers={
             "x-scal-webhook-timestamp": timestamp,
             "x-scal-webhook-signature": f"v1={signature}",
@@ -397,7 +432,6 @@ async def test_webhook_completion_saves_pdf_to_vault_and_marks_job_succeeded():
 
     vault_storage.store_file.assert_awaited_once()
     jobs.update.assert_awaited()
-    client.delete_webhook_subscription.assert_awaited_once()
     created_file = vault_files.create.await_args.kwargs["file"]
     assert created_file.name == "klass-7a-a3.pdf"
 

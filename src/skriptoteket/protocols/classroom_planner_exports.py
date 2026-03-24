@@ -22,6 +22,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.rendering i
     RenderedSeatingPosterBundle,
     SeatingPosterRenderRequest,
 )
+from skriptoteket.application.curated_apps.classroom_planner.exports.webhook_bindings import (
+    SeatingExportWebhookBinding,
+)
 
 
 class SeatingExportJobRepositoryProtocol(Protocol):
@@ -34,6 +37,18 @@ class SeatingExportJobRepositoryProtocol(Protocol):
     async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> SeatingExportJob | None: ...
 
     async def update(self, *, job: SeatingExportJob) -> SeatingExportJob: ...
+
+
+class SeatingExportWebhookBindingRepositoryProtocol(Protocol):
+    """Persist the single shared seating-export webhook binding."""
+
+    async def get_shared_for_update(self) -> SeatingExportWebhookBinding: ...
+
+    async def update_shared(
+        self,
+        *,
+        binding: SeatingExportWebhookBinding,
+    ) -> SeatingExportWebhookBinding: ...
 
 
 class SeatingPosterRendererProtocol(Protocol):
