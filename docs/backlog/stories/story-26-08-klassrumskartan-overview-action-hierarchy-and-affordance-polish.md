@@ -11,7 +11,7 @@ dependencies:
   - "ST-24-07"
   - "ST-26-07"
 acceptance_criteria:
-  - "Given the teacher is in `Oversikt`, when class and classroom management actions render, then create is the clear primary action while edit and delete read as lighter secondary and destructive affordances rather than equal-weight siblings."
+  - "Given the teacher is in `Översikt`, when class and classroom management actions render, then create is the clear primary action while edit and delete read as lighter secondary and destructive affordances rather than equal-weight siblings."
   - "Given resumable overview surfaces and history controls remain in the planner, when secondary controls are shown, then they use a consistent planner button language instead of one-off symbols or ad hoc destructive cues."
   - "Given this polish slice ships, when compared with the editor's button hierarchy and affordance discipline, then the planner reads as more deliberate without changing the approved desktop-first overview layout."
   - "Given the planner's teacher-note semantics are still provisional, when this story is implemented, then it does not finalize or broaden that unfinished settings model under the guise of UI polish."

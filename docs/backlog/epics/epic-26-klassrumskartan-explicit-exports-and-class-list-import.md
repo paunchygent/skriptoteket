@@ -6,7 +6,7 @@ status: active
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
-outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, and later export grouping layouts through separate artifacts without conflating draft autosave or undo/redo history with teacher-facing saved outputs."
+outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, later export grouping layouts through separate artifacts, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 ---
 
@@ -35,6 +35,12 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 - Follow seating exports with separate grouping export artifacts:
   - grouping PDF
   - grouping XLSX
+- Plan the next desktop-first UX hardening slices that support the same teacher I/O lane without
+  reopening EPIC-24:
+  - fixed-preview overflow handling in `Oversikt`
+  - task-local student-pool scroll regions in grouping and seating
+  - stable grouping/seating action bars
+  - clearer primary/secondary/destructive hierarchy across planner controls
 
 ## Out of scope
 
@@ -43,6 +49,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 - Advanced teacher-facing checkpoint/history UX beyond the minimal explicit export contract.
 - Student metadata expansion beyond what class-list import strictly needs to create or update a class roster.
 - Zoning, smart placement, pair rules, weighting, or assignment intelligence.
+- Finalizing unfinished teacher-note / smart-placement semantics under a generic UI-polish label.
 - Reusing live planner CSS, DOM, or screenshots as the export implementation.
 - Shipping multiple seating PDF layouts in the first export story.
 - `DOCX` export in this epic unless a later approved story explicitly adds it.
@@ -60,6 +67,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 - [ ] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [ ] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
+- [ ] [ST-26-06: Scrollable fixed previews and student-pool scroll regions](../stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md)
+- [ ] [ST-26-07: Stable task toolbars and action zoning](../stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md)
+- [ ] [ST-26-08: Overview action hierarchy and affordance polish](../stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md)
 
 ## Implementation Summary (as of 2026-03-24)
 
@@ -76,6 +86,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
   now extends that operator flow with review-fixed canonical replacement,
   fail-closed canonical-only validation, saved webhook inventories, and a
   successful rerun of the Hemma deploy/readiness gate for the revised build.
+- Follow-up desktop UX hardening docs are now planned under this same epic
+  through `ST-26-06`, `ST-26-07`, and `ST-26-08` so export/import and nearby
+  planner teacher controls can keep converging without reopening the earlier
+  foundational planner epic.
 
 ## Notes
 

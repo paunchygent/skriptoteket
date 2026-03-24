@@ -223,6 +223,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`
 - `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md`
 - `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md`
+- `docs/backlog/stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md`
+- `docs/backlog/stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md`
+- `docs/backlog/stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md`
 
 ### Backlog Reviews
 
@@ -291,6 +294,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0124-klassrumskartan-seating-export-reload-recovery-and-draft-scoped-rehydration.md`
 - `docs/backlog/prs/pr-0125-klassrumskartan-legacy-seating-export-callback-cutover-and-decommission.md`
 - `docs/backlog/prs/pr-0126-klassrumskartan-wall-fixture-parity-resize-anchoring-and-poster-header-branding.md`
+- `docs/backlog/prs/pr-0127-klassrumskartan-overview-roster-preview-overflow-and-fixed-height-scrolling.md`
+- `docs/backlog/prs/pr-0128-klassrumskartan-grouping-and-seating-student-pool-split-pane-scrolling.md`
+- `docs/backlog/prs/pr-0129-klassrumskartan-shared-planner-action-bar-zoning-and-grouping-toolbar-stabilization.md`
+- `docs/backlog/prs/pr-0130-klassrumskartan-seating-toolbar-stabilization-export-cluster-alignment-and-responsive-proof.md`
+- `docs/backlog/prs/pr-0131-klassrumskartan-overview-button-hierarchy-and-destructive-action-de-emphasis.md`
+- `docs/backlog/prs/pr-0132-klassrumskartan-resume-history-affordance-normalization-and-planner-control-polish.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`

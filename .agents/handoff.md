@@ -195,5 +195,4 @@ pdm run docs-validate
 - Seating `Slumpa` keeps its exact full-reshuffle contract anchored in deterministic unit tests; the live Playwright proof is intentionally smoke-level for the random UI path.
 
 ## Next Steps
-
-- The next natural Klassrumskartan follow-up is outside the callback-cutover lane now that `PR-0125` is landed; continue with the next explicit export/import slice, and keep the competitive-games lane separate from Klassrumskartan planning.
+- EPIC-26 planning now also includes the ready docs for planner UX hardening around the same teacher I/O lane: `ST-26-06`, `ST-26-07`, `ST-26-08` with linked PR slices `PR-0127` through `PR-0132`; keep that work separate from the competitive-games lane.

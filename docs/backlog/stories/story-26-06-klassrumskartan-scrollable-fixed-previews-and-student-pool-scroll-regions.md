@@ -12,7 +12,7 @@ dependencies:
   - "ST-24-04"
   - "ST-24-07"
 acceptance_criteria:
-  - "Given the teacher is in `Oversikt`, when the active class roster is longer than the fixed preview height, then the roster preview scrolls internally without changing the card height or breaking the balanced desktop layout."
+  - "Given the teacher is in `Översikt`, when the active class roster is longer than the fixed preview height, then the roster preview scrolls internally without changing the card height or breaking the balanced desktop layout."
   - "Given the overview class preview is fixed-height by design, when roster overflow appears, then the preview preserves the current symmetric card geometry instead of auto-growing or clipping names."
   - "Given the teacher is in `Grupper`, when the unassigned student list is longer than the visible pane height, then the student pool becomes a true local scroll region while the group board stays visible."
   - "Given the teacher is in `Sittplatser`, when the teacher places students into lower seats, then the student pool remains independently scrollable and usable without forcing page-level hunting back to top names."
