@@ -2,7 +2,7 @@
 type: pr
 id: PR-0126
 title: "Klassrumskartan: wall-fixture parity, resize anchoring, and poster header branding"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24

@@ -13,6 +13,7 @@ import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } fro
 import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
+import { setSeatStyledStudentDragPreview } from "../roomSeatDragPreview";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
@@ -159,6 +160,12 @@ function onStudentDragStart(event: DragEvent, studentId: string): void {
     event.dataTransfer.setData("studentId", studentId);
     event.dataTransfer.effectAllowed = "move";
   }
+
+  const student = plannerState.studentsById[studentId];
+  if (!student) {
+    return;
+  }
+  setSeatStyledStudentDragPreview(event, student.display_name);
 }
 
 function onDropToPool(event: DragEvent): void {

@@ -2,9 +2,10 @@
 type: epic
 id: EPIC-12
 title: "Advanced input and output handling"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-21
+updated: 2026-03-25
 outcome: "Scripts can accept multiple input files, generate native PDFs, and access user-specific settings, enabling complex multi-file workflows without manual file merging."
 dependencies: ["EPIC-11"]
 ---
@@ -39,8 +40,13 @@ dependencies: ["EPIC-11"]
 - [ST-12-03: Personalized tool settings](../stories/story-12-03-personalized-tool-settings.md) (done)
 - [ST-12-04: Interactive text/dropdown inputs](../stories/story-12-04-interactive-text-dropdown-inputs.md) (done)
 - [ST-12-05: Session-scoped file persistence](../stories/story-12-05-session-file-persistence.md) (done)
-- [ST-12-06: Session file cleanup policies](../stories/story-12-06-session-file-cleanup.md) (ready)
+- [ST-12-06: Session file cleanup policies](../stories/story-12-06-session-file-cleanup.md) (done)
 - [ST-12-07: Explicit session file reuse controls](../stories/story-12-07-explicit-session-file-reuse-controls.md) (done)
+
+## Implementation Summary (as of 2026-03-25)
+
+- All EPIC-12 stories are now complete, including the session-file cleanup/metrics/admin-tooling follow-up in `ST-12-06`.
+- The shipped result covers multi-file inputs, native PDF output support, personalized memory-backed settings, interactive structured inputs, session-scoped file persistence, cleanup policies, and explicit file-reuse controls.
 
 ## Risks
 

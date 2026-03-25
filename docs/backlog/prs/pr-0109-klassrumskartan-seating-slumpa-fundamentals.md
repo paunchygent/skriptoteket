@@ -2,10 +2,10 @@
 type: pr
 id: PR-0109
 title: "Klassrumskartan: seating `Slumpa` fundamentals"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-25
 stories:
   - "ST-24-06"
 tags: ["frontend", "backend", "integration", "ux"]

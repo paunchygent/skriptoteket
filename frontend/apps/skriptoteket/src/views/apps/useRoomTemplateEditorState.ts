@@ -38,6 +38,7 @@ import {
   buildParsedFixtures,
   buildParsedSeats,
   findFloorFixtureAt,
+  findSameKindFixtureAt,
   findWallFixtureAt,
   fixtureFits,
   hydrateRoomTemplateEditor,
@@ -224,6 +225,12 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
       return;
     }
 
+    const sameKindFixture = findSameKindFixtureAt(fixtures.value, selectedTool.value, row, col);
+    if (sameKindFixture) {
+      removeFixtureById(sameKindFixture.id);
+      return;
+    }
+
     const wallSide = isWallFixtureType(selectedTool.value)
       ? resolveWallSideForPlacement(event, row, col)
       : null;
@@ -335,15 +342,22 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     return {
       ...placement,
       type: selectedTool.value,
-      canPlace: fixtureFits(
-        fixtures.value,
-        seatCells.value,
-        selectedTool.value,
-        hoveredCell.value.row,
-        hoveredCell.value.col,
-        roomGrid.value,
-        wallSide,
-      ),
+      canPlace:
+        !!findSameKindFixtureAt(
+          fixtures.value,
+          selectedTool.value,
+          hoveredCell.value.row,
+          hoveredCell.value.col,
+        )
+        || fixtureFits(
+          fixtures.value,
+          seatCells.value,
+          selectedTool.value,
+          hoveredCell.value.row,
+          hoveredCell.value.col,
+          roomGrid.value,
+          wallSide,
+        ),
     };
   });
 

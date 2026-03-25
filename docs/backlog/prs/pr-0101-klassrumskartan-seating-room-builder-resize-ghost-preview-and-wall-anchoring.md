@@ -2,10 +2,10 @@
 type: pr
 id: PR-0101
 title: "Klassrumskartan: seating room-builder resize, ghost preview, and wall anchoring"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-25
 stories:
   - "ST-24-04"
 tags: ["frontend", "integration", "ux"]

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0120
 title: "Klassrumskartan: seating export action, teacher flow, and browser proof"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24

@@ -116,6 +116,7 @@ Most EPIC-02 stories are complete (self-registration, profiles, lockout). ST-02-
 - ST-07-04: `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
 - ST-05-12: `docs/backlog/stories/story-05-12-mobile-editor-ux.md`
 - ST-04-04: `docs/backlog/stories/story-04-04-governance-audit-rollback.md`
+- EPIC-23 (Klassrumskartan Slice 1): `docs/backlog/epics/epic-23-group-seating-studio.md`
 
 ### Recent context links (from handoff compression)
 - EPIC-14 admin tool authoring: `docs/backlog/epics/epic-14-admin-tool-authoring.md`

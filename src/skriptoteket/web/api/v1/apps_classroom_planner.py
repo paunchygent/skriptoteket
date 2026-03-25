@@ -8,7 +8,7 @@ seating, and student planning notes.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from skriptoteket.application.curated_apps.classroom_planner import (
@@ -31,6 +31,12 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
+)
+from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
+    CreateClassListImportPreviewHandler,
+)
+from skriptoteket.application.curated_apps.classroom_planner.import_contracts import (
+    ClassListImportPreview,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DEFAULT_ROOM_GRID_COLS,
@@ -426,6 +432,22 @@ async def get_class_workspace_summary(
 ) -> ClassWorkspaceSummaryDto:
     return serialize_class_workspace_summary(
         await handler.handle(roster_id=roster_id, owner_user_id=user.id)
+    )
+
+
+@router.post("/rosters/import-preview", response_model=ClassListImportPreview)
+@inject
+async def import_preview(
+    file: UploadFile,
+    handler: FromDishka[CreateClassListImportPreviewHandler],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> ClassListImportPreview:
+    content = await file.read()
+    return await handler.handle(
+        file_content=content,
+        file_name=file.filename or "unknown",
+        content_type=file.content_type or "application/octet-stream",
     )
 
 

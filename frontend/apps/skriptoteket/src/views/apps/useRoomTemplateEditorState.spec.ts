@@ -124,4 +124,78 @@ describe("useRoomTemplateEditorState", () => {
     expect(editor.parsedSeats.value).toEqual([]);
     expect(editor.error.value).toContain("väggobjektet");
   });
+
+  it("removes a floor fixture when the same selected tool is clicked again", () => {
+    const template = ref({
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [{ id: "bench-1", type: "bench" as const, x: 96, y: 96, width: 96, height: 96, label: null }],
+    });
+
+    const editor = useRoomTemplateEditorState(template);
+    editor.selectedTool.value = "bench";
+    editor.updateHoverState(createMouseEvent(), 1, 1);
+
+    expect(editor.ghostPlacement.value?.canPlace).toBe(true);
+
+    editor.toggleGridCell(1, 1, createMouseEvent());
+
+    expect(editor.parsedFixtures.value).toEqual([]);
+    expect(editor.error.value).toBeNull();
+  });
+
+  it("removes a wall fixture when the same selected tool is clicked again", () => {
+    const template = ref({
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [
+        { id: "whiteboard-1", type: "whiteboard" as const, x: 0, y: 0, width: 288, height: 96, label: "Whiteboard" },
+      ],
+    });
+
+    const editor = useRoomTemplateEditorState(template);
+    editor.selectedTool.value = "whiteboard";
+    editor.updateHoverState(createMouseEvent(), 0, 1);
+
+    expect(editor.ghostPlacement.value?.canPlace).toBe(true);
+
+    editor.toggleGridCell(0, 1, createMouseEvent());
+
+    expect(editor.parsedFixtures.value).toEqual([]);
+    expect(editor.error.value).toBeNull();
+  });
+
+  it("keeps the existing object when a different selected tool conflicts with it", () => {
+    const template = ref({
+      id: "template-1",
+      name: "Sal 101",
+      grid_cols: 14,
+      grid_rows: 9,
+      seats: [],
+      fixtures: [{ id: "bench-1", type: "bench" as const, x: 96, y: 96, width: 96, height: 96, label: null }],
+    });
+
+    const editor = useRoomTemplateEditorState(template);
+    editor.selectedTool.value = "square_table";
+    editor.toggleGridCell(1, 1, createMouseEvent());
+
+    expect(editor.parsedFixtures.value).toEqual([
+      {
+        id: "bench-1",
+        type: "bench",
+        x: 96,
+        y: 96,
+        width: 96,
+        height: 96,
+        label: null,
+      },
+    ]);
+    expect(editor.error.value).toContain("krockar");
+  });
 });

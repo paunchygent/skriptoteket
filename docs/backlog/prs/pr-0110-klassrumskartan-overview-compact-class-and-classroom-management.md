@@ -2,10 +2,10 @@
 type: pr
 id: PR-0110
 title: "Klassrumskartan: overview compact class and classroom management"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-25
 stories:
   - "ST-24-07"
 tags: ["frontend", "ux", "integration"]

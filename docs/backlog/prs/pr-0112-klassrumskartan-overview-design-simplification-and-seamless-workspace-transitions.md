@@ -2,10 +2,10 @@
 type: pr
 id: PR-0112
 title: "Klassrumskartan: overview design simplification and seamless workspace transitions"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-25
 stories:
   - "ST-24-07"
 tags: ["frontend", "ux", "design"]

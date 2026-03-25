@@ -70,6 +70,21 @@ export function findWallFixtureAt(
   );
 }
 
+export function findSameKindFixtureAt(
+  fixtures: readonly FixturePlacement[],
+  type: RoomFixtureType,
+  row: number,
+  col: number,
+): FixturePlacement | null {
+  const occupiedFixture = isWallFixtureType(type)
+    ? findWallFixtureAt(fixtures, row, col)
+    : findFloorFixtureAt(fixtures, row, col);
+  if (!occupiedFixture || occupiedFixture.type !== type) {
+    return null;
+  }
+  return occupiedFixture;
+}
+
 export function fixtureFits(
   fixtures: readonly FixturePlacement[],
   seatCells: readonly string[],

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0093
 title: "Klassrumskartan: grouping class history and draft continuity"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-25
 stories:
   - "ST-24-03"
 tags: ["frontend", "backend", "integration"]

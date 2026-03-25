@@ -2,10 +2,10 @@
 type: pr
 id: PR-0113
 title: "Klassrumskartan: börja om current grouping and seating draft without new draft"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-25
 stories:
   - "ST-24-03"
   - "ST-24-04"

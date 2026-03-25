@@ -5,7 +5,7 @@ title: "Klassrumskartan — Seating fundamentals, room-builder ergonomics, and d
 status: done
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-23
+updated: 2026-03-25
 epic: "EPIC-24"
 acceptance_criteria:
   - "Given the teacher is in a class workspace, when they open or create a seating draft, then the seating workflow is clearly tied to that class and the selected classroom."
@@ -266,6 +266,9 @@ Shipped in this story so far:
 
 `ST-24-04` is now closed. The shipped work covers the remaining acceptance criteria for
 seating-specific undo/redo, bounded in-draft history, and resumed autosaved seating state.
+
+`PR-0113` later completed the remaining in-place reset affordance by adding `Börja om` for the
+active seating draft without creating a new draft or changing classroom context.
 
 ## Notes
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildParsedFixtures,
   buildParsedSeats,
+  findSameKindFixtureAt,
   fixtureFits,
   hydrateRoomTemplateEditor,
   reanchorFixtureToGrid,
@@ -122,5 +123,20 @@ describe("roomTemplateEditorDomain", () => {
         label: "Kateder",
       },
     ]);
+  });
+
+  it("finds same-kind fixtures through any occupied cell without matching other types", () => {
+    const fixtures = [
+      { id: "square-table-1", type: "square_table" as const, row: 2, col: 3, width: 2, height: 2, label: null },
+      { id: "window-1", type: "window" as const, row: 1, col: 13, width: 1, height: 2, label: null },
+    ];
+
+    expect(findSameKindFixtureAt(fixtures, "square_table", 3, 4)).toMatchObject({
+      id: "square-table-1",
+    });
+    expect(findSameKindFixtureAt(fixtures, "window", 2, 13)).toMatchObject({
+      id: "window-1",
+    });
+    expect(findSameKindFixtureAt(fixtures, "bench", 3, 4)).toBeNull();
   });
 });

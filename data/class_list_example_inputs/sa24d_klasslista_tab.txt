@@ -1,0 +1,36 @@
+Klasslista
+Hulebäcksgymnasiet
+SA24D
+Nr	Namn
+1	Aitman, Kerstin
+2	Andblad, Alva
+3	Andersson, Sofia
+4	Antonsson, Elliot
+5	Axelsson, Julia
+6	Essle, Freja
+7	Grahn, Hilda
+8	Isfeldt, Inger
+9	Johansson, Nora
+10	Jonson, Nellie
+11	Kjellman, Ella
+12	Klemets, Alexander
+13	Kristiansson, Lucas
+14	Leandersson, Agnes
+15	Neijlind, Molly
+16	Odéhn, Petter
+17	Odenman, Ellen
+18	Olofsson Reijer, Otilia
+19	Ossner, Vilma
+20	Parsons, Mary
+21	Post, Julia
+22	Sandahl, Lily
+23	Schneider, Nora
+24	Strandberg Gunnarsson, Vincent
+25	Svartling, Leo
+26	Svensson, Moa
+27	Thornblad, Viktor
+28	Walfridson, Linnea
+29	Vesterberg, Liam
+30	Winald, Alma
+31	Winlund Strandler, Edith
+den 23 mars 2026	Sida	1	 av 	1

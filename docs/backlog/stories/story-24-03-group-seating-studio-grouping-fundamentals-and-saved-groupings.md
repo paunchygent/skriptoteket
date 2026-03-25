@@ -5,7 +5,7 @@ title: "Klassrumskartan — Grouping Fundamentals and Draft History"
 status: done
 owners: "agents"
 created: 2026-03-21
-updated: 2026-03-23
+updated: 2026-03-25
 epic: "EPIC-24"
 acceptance_criteria:
   - "Given the teacher is in a class workspace, when they open or create a grouping draft, then the grouping workflow operates on that class without implying that seating work must happen at the same time."
@@ -61,3 +61,5 @@ undo/redo without implying that seating and grouping are one combined workflow.
   - autosave plus bounded in-draft undo/redo
 - The active grouping draft resumes directly, while older grouping drafts remain secondary in the
   overlay continuity drawer and can be reopened or deleted there with confirmation.
+- `PR-0113` later added the in-place `Börja om` reset affordance for the active grouping draft so
+  teachers can clear current placements without creating a new grouping draft.

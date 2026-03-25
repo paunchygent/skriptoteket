@@ -2,10 +2,10 @@
 type: epic
 id: EPIC-07
 title: "Observability and operations integration"
-status: active
+status: done
 owners: "agents"
 created: 2025-12-16
-updated: 2026-01-22
+updated: 2026-03-25
 outcome: "Skriptoteket is operable in production with HuleEdu-compatible logs, correlation, and a clear path to metrics + traces."
 ---
 
@@ -27,7 +27,7 @@ outcome: "Skriptoteket is operable in production with HuleEdu-compatible logs, c
 - [ST-07-05: Deploy observability stack (Prometheus, Grafana, Jaeger, Loki)](../stories/story-07-05-observability-stack-deployment.md) (done)
 - [ST-07-06: ASGI correlation middleware so access logs include correlation_id](../stories/story-07-06-asgi-correlation-middleware.md) (done)
 
-Note: EPIC-07 was previously marked `done`, but is reopened for ST-07-06 (access-log correlation for successful and streaming requests).
+Note: EPIC-07 was previously reopened for ST-07-06 (access-log correlation for successful and streaming requests). That follow-up is now complete, so the epic is closed again.
 
 ## Implementation Summary (as of 2026-01-22)
 
