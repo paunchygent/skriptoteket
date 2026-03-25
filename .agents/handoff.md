@@ -48,27 +48,19 @@ Keep this file updated so the next session can pick up work quickly.
   - XLSX generation is local `openpyxl` delivery through `SeatingXlsxRenderer`, not Sir Convert
   - seating download delivery now returns the media type from the stored artifact instead of assuming PDF
   - key files: `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py`, `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/seating_xlsx_renderer.py`, `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportApi.ts`, `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.ts`
-- The clean-checkout Hemma redeploy exposed one real packaging regression:
-  - `class_list_document_extractor.py` imports `pdfplumber`
-  - `pdfplumber` had only been declared in the `dev` dependency group
-  - repo fix is committed and deployed via `c09b17e`
+- Local 2026-03-25 delete-rule follow-up changed overview asset deletion semantics:
+  - deleting a class list now removes all dependent planner drafts for that roster instead of blocking on active-draft dependency
+  - deleting a classroom now removes all dependent planner drafts for that template instead of blocking on active-draft dependency
+  - the overview confirmation dialogs now say that dependent grouping/seating drafts will also be removed
+  - delete failures in the overview now render locally inside the confirmation dialog instead of behind the modal
+- The clean-checkout Hemma redeploy packaging regression is already fixed and deployed via `c09b17e` (`pdfplumber` runtime dependency).
 - Current local state:
   - `EPIC-26` export work is still in flight with multiple unrelated local changes
   - `EPIC-27` smart-assignment docs + first implementation slice are now also in the worktree
   - do not overwrite export-lane changes while continuing smart-assignment work
 - Current planning/implementation focus is now split between EPIC-26 export follow-on and the first EPIC-27 smart-assignment slice:
   - [EPIC-26](docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md)
-  - local verification was unblocked on 2026-03-25 by a clean DB reset + schema rebuild during the PR-0142 check
-  - completed export slice: [PR-0142](docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md)
-  - next export slice: [PR-0143](docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md)
-  - follow with grouping export contract/UI via [PR-0139](docs/backlog/prs/pr-0139-klassrumskartan-grouping-export-action-hierarchy-and-shared-presentation-contract.md)
-  - then [PR-0140](docs/backlog/prs/pr-0140-klassrumskartan-grouping-xlsx-workbook-layout-and-artifact-delivery.md) and [PR-0141](docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md)
-  - planned PR slices:
-    - [PR-0142](docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md)
-    - [PR-0143](docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md)
-    - [PR-0139](docs/backlog/prs/pr-0139-klassrumskartan-grouping-export-action-hierarchy-and-shared-presentation-contract.md)
-    - [PR-0140](docs/backlog/prs/pr-0140-klassrumskartan-grouping-xlsx-workbook-layout-and-artifact-delivery.md)
-    - [PR-0141](docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md)
+  - next locked export order: [PR-0143](docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md) -> [PR-0139](docs/backlog/prs/pr-0139-klassrumskartan-grouping-export-action-hierarchy-and-shared-presentation-contract.md) -> [PR-0140](docs/backlog/prs/pr-0140-klassrumskartan-grouping-xlsx-workbook-layout-and-artifact-delivery.md) -> [PR-0141](docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md)
 - Smart-assignment planning docs are now approved and implementation has started:
   - decision memo: `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
   - ADR / epic / review: `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md` (`accepted`), `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md` (`active`), `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md` (`approved`)
@@ -93,6 +85,14 @@ Keep this file updated so the next session can pick up work quickly.
   - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 
 ## Verification
+
+- 2026-03-25 overview asset delete cascade follow-up:
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_asset_delete_guards.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/web/apps/classroom_planner/test_api.py`
+  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+  - `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
+  - live proof with dev service on `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via one-off `pdm run python - <<'PY' ... PY`:
+    - created temporary roster/template pairs plus active seating drafts, then verified roster deletion returned workspace-summary `404` and template deletion cleared the dependent active seating draft
+    - artifacts: `.artifacts/roster-template-delete-cascade-proof/before-roster-delete.png`, `.artifacts/roster-template-delete-cascade-proof/after-roster-delete.png`, `.artifacts/roster-template-delete-cascade-proof/before-template-delete.png`, `.artifacts/roster-template-delete-cascade-proof/after-template-delete.png`
 
 - 2026-03-25 PR-0142 seating XLSX export lane:
   - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/useSeatingExportFlow.spec.ts`
