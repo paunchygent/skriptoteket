@@ -45,7 +45,9 @@ def _close_history_drawer(page: Any, *, title: str) -> None:
     )
     if history_drawer.count() == 0 or not history_drawer.first.is_visible():
         return
-    history_drawer.get_by_role("button", name="×").click()
+    history_drawer.get_by_role(
+        "button", name=re.compile(r"(×|Stäng historik)", re.IGNORECASE)
+    ).click()
 
 
 def _verify_grouping_history_starts_empty(page: Any) -> None:
@@ -276,7 +278,7 @@ def _verify_seating_zoom_and_assignment(page: Any) -> None:
 
     seat_drop_target = (
         page.locator('[data-test="room-seat-token"]')
-        .filter(has_text=re.compile(r"seat-1", re.IGNORECASE))
+        .filter(has_text=re.compile(r"(seat|plats)-1", re.IGNORECASE))
         .locator("xpath=ancestor::div[contains(@class, 'absolute')][1]")
     )
     data_transfer = page.evaluate_handle("new DataTransfer()")

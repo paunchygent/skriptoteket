@@ -7,7 +7,9 @@
  * behavior to the parent surface.
  */
 
-withDefaults(defineProps<{
+import { computed } from "vue";
+
+const props = withDefaults(defineProps<{
   seatId: string;
   studentName?: string | null;
   selected?: boolean;
@@ -17,6 +19,8 @@ withDefaults(defineProps<{
   selected: false,
   ghost: false,
 });
+
+const displaySeatId = computed(() => props.seatId.replace(/^seat-/i, "plats-"));
 </script>
 
 <template>
@@ -46,14 +50,14 @@ withDefaults(defineProps<{
         {{ studentName }}
       </span>
       <span class="mt-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-        {{ seatId }}
+        {{ displaySeatId }}
       </span>
     </div>
     <div
       v-else
       class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
     >
-      {{ seatId }}
+      {{ displaySeatId }}
     </div>
   </div>
 </template>

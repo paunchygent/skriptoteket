@@ -9,7 +9,7 @@
 
 import { computed } from "vue";
 
-import { IconSettings, IconX } from "../../../components/icons";
+import { IconX } from "../../../components/icons";
 import type { PlanDraftSummary, RoomTemplate } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -88,15 +88,6 @@ function describeSeatingDraft(draft: PlanDraftSummary): string {
         >
           Fortsätt grupper
         </button>
-        <button
-          type="button"
-          class="inline-flex h-10 items-center justify-center rounded-none border border-navy/20 bg-white px-3 text-navy transition-colors hover:border-navy/35 hover:bg-canvas"
-          aria-label="Inställningar för grupper"
-          data-test="grouping-draft-settings"
-          @click="emit('edit-roster')"
-        >
-          <IconSettings :size="16" />
-        </button>
       </div>
     </article>
 
@@ -135,16 +126,6 @@ function describeSeatingDraft(draft: PlanDraftSummary): string {
           @click="emit('open-seating', visibleSeatingDraft.template_id ?? null)"
         >
           Fortsätt sittschema
-        </button>
-        <button
-          type="button"
-          class="inline-flex h-10 items-center justify-center rounded-none border border-navy/20 bg-white px-3 text-navy transition-colors hover:border-navy/35 hover:bg-canvas"
-          aria-label="Inställningar för sittplatser"
-          data-test="seating-draft-settings"
-          :disabled="!visibleSeatingDraftTemplate"
-          @click="visibleSeatingDraftTemplate ? emit('edit-current-template', visibleSeatingDraftTemplate) : undefined"
-        >
-          <IconSettings :size="16" />
         </button>
       </div>
     </article>

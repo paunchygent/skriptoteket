@@ -61,7 +61,7 @@ const labelStyle = computed<CSSProperties>(() => {
         right: "calc(100% + 6px)",
         top: "50%",
         transform: "translateY(-50%)",
-        writingMode: verticalLabel ? "vertical-rl" : undefined,
+        writingMode: verticalLabel ? "vertical-lr" : undefined,
         textOrientation: verticalLabel ? "mixed" : undefined,
       };
     case "right":

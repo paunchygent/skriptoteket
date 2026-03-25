@@ -9,6 +9,8 @@
  */
 
 import { ref, watch } from "vue";
+
+import { IconTrash, IconX } from "../../../components/icons";
 import type { DraftGroup, Student } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -87,7 +89,7 @@ function commitName(): void {
     @dragover="onDragOver"
     @drop="onDrop"
   >
-    <div class="flex items-start justify-between gap-3 border-b border-navy/20 pb-3">
+    <div class="flex items-center justify-between gap-3 border-b border-navy/20 pb-3">
       <div class="min-w-0 flex-1 space-y-2">
         <label class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
           Gruppnamn
@@ -126,26 +128,15 @@ function commitName(): void {
           type="button"
           class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-burgundy/40 bg-white text-burgundy"
           :disabled="props.disabled"
+          aria-label="Ta bort grupp"
           @click="emit('group-removed', group.id)"
         >
-          ×
+          <IconTrash :size="14" />
         </button>
       </div>
     </div>
 
-    <div class="mt-4 flex items-center justify-between gap-3">
-      <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-        {{ students.length }} elever
-      </span>
-      <span
-        data-test="group-order-badge"
-        class="border border-navy bg-canvas px-2 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
-      >
-        Ordning {{ group.sort_order + 1 }}
-      </span>
-    </div>
-
-    <div class="mt-4 flex flex-col gap-2">
+    <div class="mt-3 flex flex-col gap-2">
       <div
         v-for="student in students"
         :key="student.id"
@@ -169,11 +160,12 @@ function commitName(): void {
         </button>
         <button
           type="button"
-          class="mt-0.5 shrink-0 text-lg leading-none text-burgundy"
+          class="mt-0.5 shrink-0 text-burgundy opacity-60 transition-opacity hover:opacity-100"
           :disabled="props.disabled"
+          :aria-label="`Ta bort ${student.display_name} från grupp`"
           @click.stop="emit('student-removed', student.id)"
         >
-          ×
+          <IconX :size="14" />
         </button>
       </div>
 

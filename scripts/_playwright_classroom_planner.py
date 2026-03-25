@@ -112,19 +112,31 @@ def create_template(page: Page, *, template_name: str) -> None:
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
 
-    expect(builder_viewport.get_by_text("seat-1", exact=True)).to_be_visible()
-    expect(builder_viewport.get_by_text("seat-2", exact=True)).to_be_visible()
+    expect(
+        builder_viewport.get_by_text(re.compile(r"^(seat|plats)-1$", re.IGNORECASE))
+    ).to_be_visible()
+    expect(
+        builder_viewport.get_by_text(re.compile(r"^(seat|plats)-2$", re.IGNORECASE))
+    ).to_be_visible()
     page.get_by_role("button", name=re.compile(r"Bänk", re.IGNORECASE)).click()
     grid_buttons.nth(15).click()
     page.locator('[data-test="builder-clear-room"]').click()
-    expect(builder_viewport.get_by_text("seat-1", exact=True)).not_to_be_visible()
-    expect(builder_viewport.get_by_text("seat-2", exact=True)).not_to_be_visible()
+    expect(
+        builder_viewport.get_by_text(re.compile(r"^(seat|plats)-1$", re.IGNORECASE))
+    ).not_to_be_visible()
+    expect(
+        builder_viewport.get_by_text(re.compile(r"^(seat|plats)-2$", re.IGNORECASE))
+    ).not_to_be_visible()
 
     page.get_by_role("button", name=re.compile(r"Placera plats", re.IGNORECASE)).click()
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
-    expect(builder_viewport.get_by_text("seat-1", exact=True)).to_be_visible()
-    expect(builder_viewport.get_by_text("seat-2", exact=True)).to_be_visible()
+    expect(
+        builder_viewport.get_by_text(re.compile(r"^(seat|plats)-1$", re.IGNORECASE))
+    ).to_be_visible()
+    expect(
+        builder_viewport.get_by_text(re.compile(r"^(seat|plats)-2$", re.IGNORECASE))
+    ).to_be_visible()
 
     page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
     template_heading = page.get_by_role("heading", name=re.compile(re.escape(template_name)))

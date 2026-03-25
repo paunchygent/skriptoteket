@@ -4,7 +4,7 @@ This script reuses the established classroom-planner Playwright helpers to log
 in, create one real class list and classroom, seed active grouping and seating
 drafts through the live UI, and then verify the cutover behavior end to end:
 direct entry into the overview-first home surface, separate grouping/seating
-continue cards, compact settings affordances, and `Avsluta` returning to the
+continue cards, compact dismiss affordances, and `Avsluta` returning to the
 teacher's true entry origin with a catalog fallback for deep links.
 """
 
@@ -128,32 +128,12 @@ def _verify_resume_cards(page: Any, *, template_name: str) -> None:
     expect(surface).to_contain_text("Fortsätt grupper")
     expect(surface).to_contain_text("Fortsätt sittschema")
     expect(surface).to_contain_text(template_name)
-
-
-def _close_visible_modal(page: Any, *, heading_pattern: re.Pattern[str]) -> None:
-    """Close one visible planner modal through its visible header close button."""
-
-    dialog = page.locator("div.fixed.inset-0.z-50").filter(
-        has=page.get_by_role("heading", name=heading_pattern)
+    expect(page.locator('[data-test="dismiss-grouping-resume"]')).to_have_attribute(
+        "aria-label", re.compile(r"Stäng fortsätt grupper", re.IGNORECASE)
     )
-    expect(dialog).to_be_visible()
-    dialog.get_by_role("button", name="×").click()
-
-
-def _verify_settings_affordances(page: Any) -> None:
-    """Open both settings affordances and prove they reach the expected edit modals."""
-
-    page.locator('[data-test="grouping-draft-settings"]').click()
-    roster_heading = re.compile(r"Redigera klasslista", re.IGNORECASE)
-    expect(page.get_by_role("heading", name=roster_heading)).to_be_visible()
-    _close_visible_modal(page, heading_pattern=roster_heading)
-    expect(page.get_by_role("heading", name=roster_heading)).to_have_count(0)
-
-    page.locator('[data-test="seating-draft-settings"]').click()
-    room_heading = re.compile(r"Redigera klassrum", re.IGNORECASE)
-    expect(page.get_by_role("heading", name=room_heading)).to_be_visible()
-    _close_visible_modal(page, heading_pattern=room_heading)
-    expect(page.get_by_role("heading", name=room_heading)).to_have_count(0)
+    expect(page.locator('[data-test="dismiss-seating-resume"]')).to_have_attribute(
+        "aria-label", re.compile(r"Stäng fortsätt sittschema", re.IGNORECASE)
+    )
 
 
 def _verify_continue_actions(page: Any) -> None:
@@ -216,7 +196,6 @@ def main() -> None:
         _return_to_overview(page)
 
         _verify_resume_cards(page, template_name=template_name)
-        _verify_settings_affordances(page)
         _verify_continue_actions(page)
         _exit_app_and_expect_path(page, expected_path="/browse")
 

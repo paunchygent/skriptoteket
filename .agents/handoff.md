@@ -11,7 +11,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-24
+- Date: 2026-03-25
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
@@ -24,6 +24,7 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0124` is now implemented locally: backend `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports/jobs/recover` returns the latest recoverable export for the active teacher + draft, and `useSeatingExportFlow.ts` now rehydrates from backend-owned draft state on seating-draft open, resumes in-flight polling without depending on `sessionStorage`, restores `Ladda ned igen` for the latest successful export after reload, blocks stale background polling from leaking export state across draft switches, reruns recovery when the teacher returns to the same draft, and falls back to the latest downloadable PDF if an in-flight Sir Convert refresh fails.
 - `PR-0125` is now Hemma-verified for the revised build: the internal Sir Convert webhook surface keeps only the canonical shared seating-export callback route, the per-job compatibility webhook route plus `callback_job_id_hint` plumbing are removed, reconciliation now replaces an invalid existing canonical subscription instead of attempting a duplicate create against Sir Convert's conflict contract, normal job creation fails closed if a canonical upstream callback exists while the local shared binding is broken, and the Hemma operator flow saved inventory/reconcile/smoke artifacts under `.artifacts/pr-0125-seat-export-cutover-20260324-223417/` after a successful deploy/readiness gate with `export_job_id=39ba1b71-c669-4d56-8de5-a841adfdf419` and `vault_file_id=d9634ca5-0bd2-4a44-8bfc-f116133f1983`.
 - `PR-0126` is implemented locally: builder/preview/export now share wall-annotation normalization for vertical side-wall labels, right/bottom wall fixtures reanchor when the room grows or shrinks, wall-bound spans block conflicting floor placements, the poster preserves shrink-to-fit classroom sizing while reserving readable side-wall annotation bands, and the header now carries a subtle top-right Skriptoteket logo watermark from `frontend/apps/skriptoteket/public/logo-horizontal.svg`.
+- Current local planner UX hardening also covers the pending EPIC-26 desktop polish lane: overview roster/classroom panels now de-emphasize edit/delete relative to create, grouping/seating workspaces use bounded split-pane posture with sticky student pools and steadier toolbars/export zoning, resume/history surfaces use labeled icon affordances instead of ad hoc glyphs, the seating export status lives in a dismissible workspace bar, `RoomSeatToken.vue` now renders teacher-facing `plats-*` labels, and the seating canvas helper copy about saved geometry is removed.
 - Klassrumskartan fundamentals lane is largely shipped:
   - grouping has blank `Nytt grupputkast`, grouping-only undo/redo, and a continuity drawer with reopen/delete for historic grouping drafts
   - overview is now quiet; the segmented toggle is the single mode switch
@@ -58,10 +59,6 @@ Keep this file updated so the next session can pick up work quickly.
   - continuity: seating reuses `PlannerHistoryDrawer.vue` for `Aktuellt sittschema` + `Tidigare sittscheman`
   - guardrail: `Nytt sittschema` requires a selected classroom and otherwise focuses the classroom picker with a teacher-facing hint
   - safety: seating create/open/delete actions now lock the seating toolbar and drawer while in flight
-- Ruthless review of `PR-0105` was completed with a `GPT-5.4` high subagent:
-  - busy-state / reentrancy issue: fixed and covered by tests
-  - non-null `template_id` contract gap: fixed and covered by tests
-  - flaky shared smoke dependency: replaced with a dedicated `PR-0105` browser proof
 - `PR-0106` is now implemented locally:
   - backend/domain: draft history is now neutral across grouping and seating via `DraftHistoryStatus`
   - repository: seating snapshots persist `seat_assignments`, remain bounded to 10 steps, ignore `template_id` on replay, and reset history when the classroom changes so template switching is not undoable
@@ -77,11 +74,10 @@ Keep this file updated so the next session can pick up work quickly.
   - reset keeps the same draft, classroom context, groups, seats, and student planning metadata intact
   - the dedicated browser proof `scripts/playwright_pr_0113_reset_current_draft.py` now proves `Börja om` in both modes plus undo restoration on the live local SPA
 - `PR-0111` is now shipped and merged:
-  - `PlannerClassWorkspace.vue` renders compact overview-owned continuation cards for grouping and seating with continue, settings, and dismiss `×`
-  - `ClassroomPlannerView.vue` owns overview-local dismiss state for those cards without introducing shared landing/overview CTA state
-  - the seating resume card now targets its own draft template for continue/settings rather than the currently selected overview classroom
+  - `PlannerClassWorkspace.vue` still owns overview-local draft visibility without introducing shared landing/overview CTA state
+  - `PlannerOverviewResumeCards.vue` now keeps only continue + labeled dismiss affordances; the extra settings buttons are intentionally gone
   - `PlannerTopPanel.vue` keeps `Avsluta` compact in the new main-page shell
-  - `scripts/playwright_pr_0111_overview_resumable_entry.py` now also proves the final overview-first cutover and exit-to-origin behavior
+  - `scripts/playwright_pr_0111_overview_resumable_entry.py` remains the dedicated live proof for overview-first entry, resumable cards, dismiss actions, and exit-to-origin behavior
 - `ST-24-08` is now implemented locally as the focused Option A cutover:
   - `ClassroomPlannerView.vue` boots directly into the overview-first workspace and deletes the superseded landing state machine
   - `PlannerSelectionGate.vue` and `PlannerSelectionGate.spec.ts` are deleted
@@ -114,6 +110,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Verification
 
+- 2026-03-25: `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/GroupCard.vue src/views/apps/components/PlannerExportActionGroup.vue src/views/apps/components/PlannerGroupingWorkspacePane.vue src/views/apps/components/PlannerHistoryDrawer.vue src/views/apps/components/PlannerOverviewResumeCards.vue src/views/apps/components/PlannerRosterOverviewPanel.vue src/views/apps/components/PlannerSeatingWorkspacePane.vue src/views/apps/components/PlannerStudentPool.vue src/views/apps/components/PlannerTemplateOverviewPanel.vue src/views/apps/components/PlannerWorkspaceActionBar.vue src/views/apps/components/RoomCanvas.vue src/views/apps/components/RoomFixtureArtwork.vue src/views/apps/components/RoomSeatToken.vue src/views/apps/components/SeatNode.vue`; `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`; `pdm run ruff check scripts/_playwright_classroom_planner.py scripts/playwright_classroom_planner_smoke.py scripts/playwright_pr_0111_overview_resumable_entry.py`; `pdm run python -m scripts.playwright_pr_0111_overview_resumable_entry --base-url http://127.0.0.1:5173`; `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (PASSED; the live local SPA verified the refreshed overview/action hierarchy, dismissible resume/history controls, updated `plats-*` seat labels, and the removed seating-helper sentence; artifacts in `.artifacts/pr-0111-live-check/` and `.artifacts/classroom-planner-smoke/`).
 - 2026-03-24: `rsync -av --relative src/skriptoteket/application/curated_apps/classroom_planner/exports/webhook_contract.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_webhook_reconciliation.py src/skriptoteket/cli/commands/reconcile_seating_export_webhooks.py src/skriptoteket/web/api/v1/internal_sir_convert_callbacks.py scripts/hemma_deploy_and_verify_seating_export.sh hemma:~/apps/skriptoteket/`; `ssh hemma "/bin/bash -lc 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh'"` (PASSED for the revised `PR-0125` build; reconciliation kept canonical subscription `whsub_01KMGT4ASQWFWBYRMGR7NF5W9Q`, post-smoke inventory stayed canonical-only, and the production smoke completed with `export_job_id=39ba1b71-c669-4d56-8de5-a841adfdf419`, `vault_file_id=d9634ca5-0bd2-4a44-8bfc-f116133f1983`, artifact root `.artifacts/pr-0125-seat-export-cutover-20260324-223417/`).
 - 2026-03-24: `pdm run pytest tests/unit/application/apps/classroom_planner/test_seating_export_webhook_reconciliation.py tests/unit/application/apps/classroom_planner/test_seating_export_webhook_dispatch.py tests/unit/application/apps/classroom_planner/test_seating_export_jobs.py -q`; `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_webhook_reconciliation.py tests/unit/application/apps/classroom_planner/test_seating_export_webhook_dispatch.py tests/unit/application/apps/classroom_planner/test_seating_export_webhook_reconciliation.py`; `pdm run mypy src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_webhook_reconciliation.py tests/unit/application/apps/classroom_planner/test_seating_export_webhook_dispatch.py tests/unit/application/apps/classroom_planner/test_seating_export_webhook_reconciliation.py`; `PYTHONPATH=src pdm run uvicorn skriptoteket.web.app:app --host 127.0.0.1 --port 8011` plus `curl -X POST http://127.0.0.1:8011/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs` (`422`, route present) and `curl -X POST http://127.0.0.1:8011/api/v1/internal/sir-convert-a-lot/classroom-planner/seating-export-jobs/11111111-1111-1111-1111-111111111111` (`405`, legacy route absent) (passed).
 - 2026-03-23: `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts -t 'starts a brand-new seating draft through the dedicated lifecycle endpoint|activates a historical seating draft through the dedicated lifecycle endpoint|deletes a historical seating draft through the dedicated lifecycle endpoint' --reporter=verbose` (3 PASSED).
@@ -195,4 +192,4 @@ pdm run docs-validate
 - Seating `Slumpa` keeps its exact full-reshuffle contract anchored in deterministic unit tests; the live Playwright proof is intentionally smoke-level for the random UI path.
 
 ## Next Steps
-- EPIC-26 planning now also includes the ready docs for planner UX hardening around the same teacher I/O lane: `ST-26-06`, `ST-26-07`, `ST-26-08` with linked PR slices `PR-0127` through `PR-0132`; keep that work separate from the competitive-games lane.
+- EPIC-26 next priority stays on the remaining explicit teacher I/O slices (`ST-26-02` through `ST-26-05`) now that the nearby desktop polish lane has local verification coverage.

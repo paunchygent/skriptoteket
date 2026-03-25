@@ -103,102 +103,62 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="ml-auto flex min-w-[14rem] flex-col items-end gap-1 border-l border-navy/15 pl-3"
+    ref="menuRef"
+    class="relative flex items-stretch border-l border-navy/15 pl-3"
     data-test="seating-export-group"
   >
-    <span class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-      Export
-    </span>
+    <button
+      type="button"
+      class="bg-navy px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:bg-navy/40"
+      data-test="seating-export-default"
+      :disabled="disabled || busy"
+      @click="emit('export-default')"
+    >
+      {{ busy ? "Exporterar…" : "Exportera" }}
+    </button>
 
-    <div class="flex items-stretch gap-1">
-      <button
-        type="button"
-        class="btn-primary"
-        data-test="seating-export-default"
-        :disabled="disabled || busy"
-        @click="emit('export-default')"
-      >
-        {{ busy ? "Exporterar…" : "Exportera" }}
-      </button>
+    <button
+      type="button"
+      class="flex items-center border-l border-white/15 bg-navy px-2 text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:bg-navy/40"
+      aria-label="Fler exportval"
+      aria-haspopup="menu"
+      :aria-expanded="isMenuOpen"
+      :disabled="isMenuDisabled"
+      data-test="seating-export-menu-trigger"
+      @click.stop="toggleMenu"
+    >
+      <IconArrow
+        :size="12"
+        direction="down"
+      />
+    </button>
 
+    <Transition name="popover">
       <div
-        ref="menuRef"
-        class="relative"
+        v-if="isMenuOpen"
+        class="absolute right-0 top-full z-50 mt-1 min-w-[11rem] border border-navy bg-white shadow-brutal-sm"
+        role="menu"
+        aria-label="Exportval"
+        @click.stop
       >
         <button
+          v-for="option in exportOptions"
+          :key="option.id"
           type="button"
-          class="grid h-9 w-9 place-items-center border border-navy/30 bg-white text-navy transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-          aria-label="Fler exportval"
-          title="Fler exportval"
-          aria-haspopup="menu"
-          :aria-expanded="isMenuOpen"
-          :disabled="isMenuDisabled"
-          data-test="seating-export-menu-trigger"
-          @click.stop="toggleMenu"
+          role="menuitem"
+          class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-navy transition-colors hover:bg-canvas"
+          :data-test="`seating-export-option-${option.id}`"
+          @click="selectOption(option.paperSize)"
         >
-          <IconArrow
-            :size="16"
-            direction="down"
-          />
-        </button>
-
-        <Transition name="popover">
-          <div
-            v-if="isMenuOpen"
-            class="absolute right-0 z-50 mt-2 min-w-[11rem] border border-navy bg-white shadow-brutal-sm"
-            role="menu"
-            aria-label="Exportval"
-            @click.stop
+          <span>{{ option.label }}</span>
+          <span
+            v-if="option.paperSize === 'a3_landscape'"
+            class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/50"
           >
-            <button
-              v-for="option in exportOptions"
-              :key="option.id"
-              type="button"
-              role="menuitem"
-              class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-navy transition-colors hover:bg-canvas"
-              :data-test="`seating-export-option-${option.id}`"
-              @click="selectOption(option.paperSize)"
-            >
-              <span>{{ option.label }}</span>
-              <span
-                v-if="option.paperSize === 'a3_landscape'"
-                class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/50"
-              >
-                Standard
-              </span>
-            </button>
-          </div>
-        </Transition>
+            Standard
+          </span>
+        </button>
       </div>
-    </div>
-
-    <div
-      v-if="statusLabel || errorMessage || canDownloadLatest"
-      class="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs"
-    >
-      <p
-        v-if="statusLabel"
-        class="text-navy/60"
-        data-test="seating-export-status"
-      >
-        {{ statusLabel }}
-      </p>
-      <p
-        v-if="errorMessage"
-        class="font-semibold text-burgundy"
-        data-test="seating-export-error"
-      >
-        {{ errorMessage }}
-      </p>
-      <button
-        v-if="canDownloadLatest"
-        type="button"
-        class="font-semibold text-navy underline underline-offset-2 transition-colors hover:text-burgundy"
-        data-test="seating-export-download-latest"
-        @click="emit('download-latest')"
-      >
-        Ladda ned igen
-      </button>
-    </div>
+    </Transition>
   </div>
 </template>

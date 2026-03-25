@@ -39,7 +39,7 @@ const emit = defineEmits<{
 
 <template>
   <aside
-    class="flex min-h-[320px] flex-col border border-navy bg-white p-4 shadow-brutal-sm"
+    class="flex flex-col border border-navy bg-white p-4 shadow-brutal-sm xl:sticky xl:top-4 xl:max-h-[calc(100svh-6rem)]"
     :data-test="rootTestId"
     @dragover="emit('pool-dragover', $event)"
     @drop="emit('pool-drop', $event)"

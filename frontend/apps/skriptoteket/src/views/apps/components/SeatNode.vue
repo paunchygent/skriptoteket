@@ -48,10 +48,31 @@ function onDragOver(event: DragEvent): void {
 }
 
 function onDragStart(event: DragEvent): void {
-  if (event.dataTransfer && props.student) {
-    event.dataTransfer.setData("studentId", props.student.id);
-    event.dataTransfer.effectAllowed = "move";
+  if (!event.dataTransfer || !props.student) {
+    return;
   }
+  event.dataTransfer.setData("studentId", props.student.id);
+  event.dataTransfer.effectAllowed = "move";
+
+  // The seat node is inside a CSS transform:scale() surface.
+  // Browsers capture drag images before applying ancestor transforms,
+  // producing a mispositioned or blank ghost. Fix: clone the element
+  // outside the transform context and use it as the explicit drag image.
+  const el = event.currentTarget as HTMLElement;
+  const clone = el.cloneNode(true) as HTMLElement;
+  Object.assign(clone.style, {
+    position: "fixed",
+    top: "-9999px",
+    left: "0",
+    width: `${el.offsetWidth}px`,
+    height: `${el.offsetHeight}px`,
+    pointerEvents: "none",
+  });
+  document.body.appendChild(clone);
+  event.dataTransfer.setDragImage(clone, el.offsetWidth / 2, el.offsetHeight / 2);
+  requestAnimationFrame(() => {
+    document.body.removeChild(clone);
+  });
 }
 </script>
 

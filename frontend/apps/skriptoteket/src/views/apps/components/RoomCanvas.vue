@@ -117,9 +117,6 @@ onBeforeUnmount(() => {
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
           Dra elever till en plats eller byt två elevers placering genom att släppa ovanpå en upptagen stol.
         </p>
-        <p class="mt-1 text-xs text-navy/60">
-          Anpassa vyn utan att ändra sittschemats sparade geometri.
-        </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <span

@@ -9,7 +9,7 @@
 
 import { computed, nextTick, ref, watch } from "vue";
 
-import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
+import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } from "../../../components/icons";
 import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
@@ -62,6 +62,7 @@ const plannerState = useClassroomState();
 const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
 const isResetSeatingDialogOpen = ref(false);
+const isExportStatusDismissed = ref(false);
 
 const isSeatWorkspaceWithoutTemplate = computed(() => plannerState.template === null);
 const seatingRoomGrid = computed(() => normalizeRoomGrid(plannerState.template));
@@ -203,157 +204,205 @@ watch(
     showSeatingTemplateRequiredHint.value = false;
   },
 );
+
+watch(
+  () => [props.exportStatusLabel, props.exportErrorMessage, props.canDownloadLatestExport] as const,
+  () => {
+    isExportStatusDismissed.value = false;
+  },
+);
 </script>
 
 <template>
-  <div class="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
-    <PlannerStudentPool
-      title="Ej placerade"
-      :students="plannerState.unseatedStudents"
-      :selected-student-id="selectedStudentId"
-      empty-label="Alla elever har fått plats"
-      root-test-id="seating-student-pool"
-      @student-selected="emit('student-selected', $event)"
-      @student-dragstart="onStudentDragStart($event.event, $event.studentId)"
-      @pool-dragover="onDragOver"
-      @pool-drop="onDropToPool"
-    />
-
-    <section class="space-y-4">
-      <PlannerWorkspaceActionBar>
-        <template #leading>
-          <label
-            class="block min-w-[16rem] space-y-1"
-            data-test="seating-workspace-setup"
+  <div class="flex flex-col gap-3">
+    <PlannerWorkspaceActionBar>
+      <template #leading>
+        <label
+          class="block w-[12rem] space-y-1"
+          data-test="seating-workspace-setup"
+        >
+          <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+            Klassrum
+          </span>
+          <select
+            ref="seatingTemplateSelect"
+            data-test="seating-template-select"
+            class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
+            :value="selectedTemplateId ?? ''"
+            @change="changeSeatingTemplateFromEvent"
           >
-            <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Klassrum
-            </span>
-            <select
-              ref="seatingTemplateSelect"
-              data-test="seating-template-select"
-              class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
-              :value="selectedTemplateId ?? ''"
-              @change="changeSeatingTemplateFromEvent"
+            <option value="">
+              Välj klassrum
+            </option>
+            <option
+              v-for="template in availableTemplates"
+              :key="template.id"
+              :value="template.id"
             >
-              <option value="">
-                Välj klassrum
-              </option>
-              <option
-                v-for="template in availableTemplates"
-                :key="template.id"
-                :value="template.id"
-              >
-                {{ template.name }} · {{ template.seats.length }} platser
-              </option>
-            </select>
-            <p
-              v-if="showSeatingTemplateRequiredHint"
-              class="text-xs font-semibold text-burgundy"
-            >
-              Välj klassrum innan du startar ett nytt sittschema.
-            </p>
-          </label>
-        </template>
+              {{ template.name }} · {{ template.seats.length }} platser
+            </option>
+          </select>
+          <p
+            v-if="showSeatingTemplateRequiredHint"
+            class="text-xs font-semibold text-burgundy"
+          >
+            Välj klassrum innan du startar ett nytt sittschema.
+          </p>
+        </label>
+      </template>
 
-        <PlannerToolbarIconButton
-          label="Ångra"
-          class="2xl:hidden"
-          data-test="undo-seating-draft"
-          :disabled="!plannerState.canUndo || seatingLifecycleBusy"
-          @click="void undoSeatingDraft()"
-        >
-          <IconUndo :size="18" />
-        </PlannerToolbarIconButton>
-        <button
-          type="button"
-          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
-          :disabled="!plannerState.canUndo || seatingLifecycleBusy"
-          @click="void undoSeatingDraft()"
-        >
-          Ångra
-        </button>
-        <PlannerToolbarIconButton
-          label="Gör om"
-          class="2xl:hidden"
-          data-test="redo-seating-draft"
-          :disabled="!plannerState.canRedo || seatingLifecycleBusy"
-          @click="void redoSeatingDraft()"
-        >
-          <IconRedo :size="18" />
-        </PlannerToolbarIconButton>
-        <button
-          type="button"
-          class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
-          :disabled="!plannerState.canRedo || seatingLifecycleBusy"
-          @click="void redoSeatingDraft()"
-        >
-          Gör om
-        </button>
-        <button
-          type="button"
-          class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-          data-test="randomize-seating"
-          :disabled="!canRandomizeSeating"
-          @click="randomizeCurrentSeatingDraft"
-        >
-          <IconShuffle :size="16" />
-          <span>Slumpa</span>
-        </button>
-        <button
-          type="button"
-          class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
-          data-test="reset-seating-draft"
-          :disabled="seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
-          @click="openResetSeatingDialog"
-        >
-          Börja om
-        </button>
-        <button
-          type="button"
-          class="btn-ghost border-navy/30 bg-white shadow-none"
-          data-test="new-seating-draft"
-          :disabled="seatingLifecycleBusy"
-          @click="void startNewSeatingDraft()"
-        >
-          Nytt sittschema
-        </button>
-        <PlannerExportActionGroup
-          :busy="exportBusy"
-          :status-label="exportStatusLabel"
-          :error-message="exportErrorMessage"
-          :can-download-latest="canDownloadLatestExport"
-          @export-default="emit('export-default')"
-          @export-option="emit('export-option', $event)"
-          @download-latest="emit('download-latest-export')"
-        />
-        <PlannerToolbarOverflowMenu
-          label="Fler sittplatsåtgärder"
-          :items="secondaryActionItems"
-          test-id="seating-actions-menu"
-        />
-      </PlannerWorkspaceActionBar>
-
-      <RoomCanvas
-        v-if="!isSeatWorkspaceWithoutTemplate"
-        data-test="seating-workspace"
-        :scale-percent="seatingCanvasScalePercent"
-        :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
-        :selected-student-id="selectedStudentId"
-        :surface-scale="seatingCanvasScale"
-        @student-selected="emit('student-selected', $event)"
-        @viewport-size="setSeatingCanvasViewportSize"
-        @zoom-fit="resetSeatingCanvasZoom"
-        @zoom-in="zoomInSeatingCanvas"
-        @zoom-out="zoomOutSeatingCanvas"
-      />
-      <div
-        v-else
-        class="border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
+      <PlannerToolbarIconButton
+        label="Ångra"
+        class="2xl:hidden"
+        data-test="undo-seating-draft"
+        :disabled="!plannerState.canUndo || seatingLifecycleBusy"
+        @click="void undoSeatingDraft()"
       >
-        Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
+        <IconUndo :size="18" />
+      </PlannerToolbarIconButton>
+      <button
+        type="button"
+        class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
+        :disabled="!plannerState.canUndo || seatingLifecycleBusy"
+        @click="void undoSeatingDraft()"
+      >
+        Ångra
+      </button>
+      <PlannerToolbarIconButton
+        label="Gör om"
+        class="2xl:hidden"
+        data-test="redo-seating-draft"
+        :disabled="!plannerState.canRedo || seatingLifecycleBusy"
+        @click="void redoSeatingDraft()"
+      >
+        <IconRedo :size="18" />
+      </PlannerToolbarIconButton>
+      <button
+        type="button"
+        class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
+        :disabled="!plannerState.canRedo || seatingLifecycleBusy"
+        @click="void redoSeatingDraft()"
+      >
+        Gör om
+      </button>
+      <button
+        type="button"
+        class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+        data-test="randomize-seating"
+        :disabled="!canRandomizeSeating"
+        @click="randomizeCurrentSeatingDraft"
+      >
+        <IconShuffle :size="16" />
+        <span>Slumpa</span>
+      </button>
+      <button
+        type="button"
+        class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+        data-test="reset-seating-draft"
+        :disabled="seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
+        @click="openResetSeatingDialog"
+      >
+        Börja om
+      </button>
+      <button
+        type="button"
+        class="btn-ghost border-navy/30 bg-white shadow-none"
+        data-test="new-seating-draft"
+        :disabled="seatingLifecycleBusy"
+        @click="void startNewSeatingDraft()"
+      >
+        Nytt sittschema
+      </button>
+      <PlannerExportActionGroup
+        :busy="exportBusy"
+        :status-label="exportStatusLabel"
+        :error-message="exportErrorMessage"
+        :can-download-latest="canDownloadLatestExport"
+        @export-default="emit('export-default')"
+        @export-option="emit('export-option', $event)"
+        @download-latest="emit('download-latest-export')"
+      />
+      <PlannerToolbarOverflowMenu
+        label="Fler sittplatsåtgärder"
+        :items="secondaryActionItems"
+        test-id="seating-actions-menu"
+      />
+    </PlannerWorkspaceActionBar>
+
+    <div
+      v-if="!isExportStatusDismissed && (exportStatusLabel || exportErrorMessage || canDownloadLatestExport)"
+      class="flex flex-wrap items-center gap-x-4 gap-y-1 border border-navy/30 bg-white px-3 py-2 text-xs"
+      data-test="seating-export-status-bar"
+    >
+      <p
+        v-if="exportStatusLabel"
+        class="text-navy"
+        data-test="seating-export-status"
+      >
+        {{ exportStatusLabel }}
+      </p>
+      <p
+        v-if="exportErrorMessage"
+        class="font-semibold text-burgundy"
+        data-test="seating-export-error"
+      >
+        {{ exportErrorMessage }}
+      </p>
+      <button
+        v-if="canDownloadLatestExport"
+        type="button"
+        class="font-semibold text-navy underline underline-offset-2 transition-colors hover:text-burgundy"
+        data-test="seating-export-download-latest"
+        @click="emit('download-latest-export')"
+      >
+        Ladda ned igen
+      </button>
+      <button
+        type="button"
+        class="ml-auto text-navy/50 transition-colors hover:text-navy"
+        aria-label="Stäng exportstatus"
+        data-test="seating-export-status-dismiss"
+        @click="isExportStatusDismissed = true"
+      >
+        <IconX :size="14" />
+      </button>
+    </div>
+
+    <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-stretch">
+      <PlannerStudentPool
+        title="Ej placerade"
+        :students="plannerState.unseatedStudents"
+        :selected-student-id="selectedStudentId"
+        empty-label="Alla elever har fått plats"
+        root-test-id="seating-student-pool"
+        @student-selected="emit('student-selected', $event)"
+        @student-dragstart="onStudentDragStart($event.event, $event.studentId)"
+        @pool-dragover="onDragOver"
+        @pool-drop="onDropToPool"
+      />
+
+      <div>
+        <RoomCanvas
+          v-if="!isSeatWorkspaceWithoutTemplate"
+          data-test="seating-workspace"
+          :scale-percent="seatingCanvasScalePercent"
+          :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
+          :selected-student-id="selectedStudentId"
+          :surface-scale="seatingCanvasScale"
+          @student-selected="emit('student-selected', $event)"
+          @viewport-size="setSeatingCanvasViewportSize"
+          @zoom-fit="resetSeatingCanvasZoom"
+          @zoom-in="zoomInSeatingCanvas"
+          @zoom-out="zoomOutSeatingCanvas"
+        />
+        <div
+          v-else
+          class="border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
+        >
+          Välj ett klassrum ovan för att börja placera sittplatser. Du kan byta klassrum här senare utan att lämna sittschemat.
+        </div>
       </div>
-    </section>
+    </div>
 
     <PlannerConfirmationDialog
       v-if="isResetSeatingDialogOpen"

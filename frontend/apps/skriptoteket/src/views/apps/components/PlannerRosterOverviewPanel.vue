@@ -7,6 +7,7 @@
  * workspace-level state and modal orchestration.
  */
 
+import { IconSettings } from "../../../components/icons";
 import type { Roster } from "../classroomPlannerTypes";
 
 const OVERVIEW_PREVIEW_HEIGHT_CLASS = "h-[20rem]";
@@ -87,12 +88,12 @@ function selectRoster(event: Event): void {
     </label>
 
     <div
-      :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
+      :class="['relative overflow-y-auto border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
       data-test="overview-roster-preview"
     >
       <div
         v-if="selectedRoster && selectedRosterPreviewNames.length > 0"
-        class="grid h-full grid-cols-3 content-start gap-x-4 gap-y-1 overflow-hidden p-4 text-[0.8rem] leading-5 text-navy/72"
+        class="grid grid-cols-3 content-start gap-x-4 gap-y-1 p-4 text-[0.8rem] leading-5 text-navy/72"
       >
         <span
           v-for="name in selectedRosterPreviewNames"
@@ -120,15 +121,16 @@ function selectRoster(event: Event): void {
       </button>
       <button
         type="button"
-        class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
+        class="btn-ghost inline-flex w-full items-center justify-center gap-2 border-navy/30 bg-white shadow-none"
         :disabled="!selectedRoster"
         @click="emit('edit-roster')"
       >
+        <IconSettings :size="14" />
         Redigera klass
       </button>
       <button
         type="button"
-        class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
+        class="btn-ghost w-full justify-center border-navy/30 bg-white text-navy/50 shadow-none hover:text-burgundy disabled:text-navy/40"
         :disabled="!selectedRoster"
         data-test="overview-delete-roster"
         @click="emit('delete-current-roster')"

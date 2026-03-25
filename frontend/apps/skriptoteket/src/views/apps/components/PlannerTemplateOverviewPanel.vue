@@ -9,6 +9,7 @@
 
 import { computed, type CSSProperties } from "vue";
 
+import { IconSettings } from "../../../components/icons";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
@@ -176,15 +177,16 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
       </button>
       <button
         type="button"
-        class="btn-ghost w-full justify-center border-navy/30 bg-white shadow-none"
+        class="btn-ghost inline-flex w-full items-center justify-center gap-2 border-navy/30 bg-white shadow-none"
         :disabled="!selectedTemplate"
         @click="emit('edit-current-template', selectedTemplate ?? undefined)"
       >
+        <IconSettings :size="14" />
         Redigera klassrum
       </button>
       <button
         type="button"
-        class="btn-ghost w-full justify-center border-navy/30 bg-white text-burgundy shadow-none disabled:text-navy/40"
+        class="btn-ghost w-full justify-center border-navy/30 bg-white text-navy/50 shadow-none hover:text-burgundy disabled:text-navy/40"
         :disabled="!selectedTemplate"
         data-test="overview-delete-template"
         @click="emit('delete-current-template')"
