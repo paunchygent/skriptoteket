@@ -157,7 +157,9 @@ async def test_list_rosters_returns_from_repo(rosters):
 
 @pytest.mark.asyncio
 async def test_update_roster_updates_and_saves(uow, rosters, now, clock):
-    handler = UpdateRosterHandler(uow, rosters, clock)
+    drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
+    drafts.has_active_for_roster.return_value = False
+    handler = UpdateRosterHandler(uow=uow, rosters=rosters, clock=clock, drafts=drafts)
     owner_id = uuid4()
     roster_id = uuid4()
     old_roster = Roster(
@@ -181,6 +183,48 @@ async def test_update_roster_updates_and_saves(uow, rosters, now, clock):
     assert result.students == new_students
     assert result.updated_at == new_now
     rosters.save.assert_awaited_once()
+    drafts.has_active_for_roster.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+    )
+
+
+@pytest.mark.asyncio
+async def test_update_roster_rejects_student_changes_when_active_draft_exists(
+    uow,
+    rosters,
+    now,
+    clock,
+):
+    drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
+    drafts.has_active_for_roster.return_value = True
+    handler = UpdateRosterHandler(uow=uow, rosters=rosters, clock=clock, drafts=drafts)
+    owner_id = uuid4()
+    roster_id = uuid4()
+    old_roster = Roster(
+        id=roster_id,
+        owner_user_id=owner_id,
+        name="Old Name",
+        students=[Student(id="student-1", display_name="Ada")],
+        created_at=now,
+        updated_at=now,
+    )
+    rosters.get_by_id.return_value = old_roster
+
+    with pytest.raises(DomainError) as excinfo:
+        await handler.handle(
+            roster_id=roster_id,
+            owner_user_id=owner_id,
+            name="Old Name",
+            students=[Student(id="student-2", display_name="Bea")],
+        )
+
+    assert excinfo.value.code == ErrorCode.CONFLICT
+    assert excinfo.value.details == {
+        "roster_id": str(roster_id),
+        "reason": "active_draft_dependency",
+    }
+    rosters.save.assert_not_awaited()
 
 
 @pytest.mark.asyncio

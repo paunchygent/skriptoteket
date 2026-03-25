@@ -9,6 +9,9 @@ import httpx
 import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
+    sir_convert_client_v2 as sir_convert_client_v2_module,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
@@ -119,6 +122,120 @@ async def test_submit_job_maps_upstream_error_to_domain_error_with_details() -> 
     assert excinfo.value.details.get("upstream_status_code") == 503
     assert excinfo.value.details.get("upstream_code") == "service_unavailable"
     assert excinfo.value.details.get("upstream_retryable") is True
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_extract_text_direct_submits_pdf_to_markdown_job_and_decodes_artifact() -> None:
+    captured_body: str | None = None
+    captured_correlation_ids: list[str | None] = []
+    captured_requests: list[tuple[str, str]] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal captured_body
+        captured_requests.append((request.method, request.url.path))
+        captured_correlation_ids.append(request.headers.get("X-Correlation-ID"))
+        if request.method == "POST":
+            captured_body = request.content.decode("utf-8", errors="replace")
+            return httpx.Response(
+                200,
+                json={"job": {"job_id": "job-1", "status": "succeeded"}},
+            )
+        if request.method == "GET":
+            return httpx.Response(
+                200,
+                content="# SA24D\n\nKerstin Aitman\nEdith Winlund Strandler\n".encode("utf-8"),
+                headers={
+                    "Content-Type": "text/markdown; charset=utf-8",
+                    "Content-Disposition": 'attachment; filename="sa24d.md"',
+                },
+            )
+        raise AssertionError(f"Unexpected request: {request.method} {request.url}")
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        svc = SirConvertALotClientV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="test-key",
+                timeout_seconds=10.0,
+                class_list_import_pdf_backend_strategy="pymupdf",
+                class_list_import_acceleration_policy="cpu_only",
+            ),
+            client=client,
+        )
+        text = await svc.extract_text_direct(
+            file_bytes=b"%PDF-1.7",
+            filename="sa24d_klasslista.pdf",
+            correlation_id="corr-1",
+        )
+
+    assert text.startswith("# SA24D")
+    assert captured_requests == [
+        ("POST", "/v2/convert/jobs"),
+        ("GET", "/v2/convert/jobs/job-1/artifact"),
+    ]
+    assert captured_correlation_ids == ["corr-1", "corr-1"]
+    assert captured_body is not None
+    assert '"output_format":"md"' in captured_body
+    assert '"format":"pdf"' in captured_body
+    assert '"backend_strategy":"pymupdf"' in captured_body
+    assert '"ocr_mode":"off"' in captured_body
+    assert '"acceleration_policy":"cpu_only"' in captured_body
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_extract_text_direct_raises_when_pdf_job_reaches_failed_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requests_seen: list[tuple[str, str]] = []
+    captured_correlation_ids: list[str | None] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        requests_seen.append((request.method, request.url.path))
+        captured_correlation_ids.append(request.headers.get("X-Correlation-ID"))
+        if request.method == "POST":
+            return httpx.Response(
+                202,
+                json={"job": {"job_id": "job-1", "status": "queued"}},
+            )
+        if request.method == "GET":
+            return httpx.Response(
+                200,
+                json={"job": {"job_id": "job-1", "status": "failed"}},
+            )
+        raise AssertionError(f"Unexpected request: {request.method} {request.url}")
+
+    async def _no_sleep(_: float) -> None:
+        return None
+
+    monkeypatch.setattr(sir_convert_client_v2_module.asyncio, "sleep", _no_sleep)
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport, base_url="https://convert.example") as client:
+        svc = SirConvertALotClientV2(
+            settings=SirConvertClientSettingsV2(
+                base_url="https://convert.example",
+                api_key="test-key",
+                timeout_seconds=10.0,
+            ),
+            client=client,
+        )
+        with pytest.raises(DomainError) as excinfo:
+            await svc.extract_text_direct(
+                file_bytes=b"%PDF-1.7",
+                filename="sa24d_klasslista.pdf",
+                correlation_id="corr-1",
+            )
+
+    assert excinfo.value.code == ErrorCode.SERVICE_UNAVAILABLE
+    assert excinfo.value.details.get("job_id") == "job-1"
+    assert excinfo.value.details.get("upstream_status") == "failed"
+    assert requests_seen == [
+        ("POST", "/v2/convert/jobs"),
+        ("GET", "/v2/convert/jobs/job-1"),
+    ]
+    assert captured_correlation_ids == ["corr-1", "corr-1"]
 
 
 @pytest.mark.unit

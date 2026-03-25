@@ -99,7 +99,13 @@ async def test_ensure_smoke_assets_repairs_named_assets_when_ids_drift(monkeypat
     update_calls: dict[str, dict[str, object]] = {}
 
     class _CapturingUpdateRosterHandler:
-        def __init__(self, *, uow, rosters, clock) -> None:
+        def __init__(self, *, uow, rosters, clock, drafts=None) -> None:
+            update_calls["roster_init"] = {
+                "uow": uow,
+                "rosters": rosters,
+                "clock": clock,
+                "drafts": drafts,
+            }
             return None
 
         async def handle(self, **kwargs):
@@ -159,5 +165,6 @@ async def test_ensure_smoke_assets_repairs_named_assets_when_ids_drift(monkeypat
 
     assert roster_id == drifting_roster.id
     assert template_id == drifting_template.id
+    assert update_calls["roster_init"]["drafts"] is None
     assert update_calls["roster"]["students"] == list(smoke_command._SMOKE_STUDENTS)
     assert update_calls["template"]["seats"] == list(smoke_command._SMOKE_SEATS)

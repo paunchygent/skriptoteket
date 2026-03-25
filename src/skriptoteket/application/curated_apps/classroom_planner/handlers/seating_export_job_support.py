@@ -17,7 +17,6 @@ import hmac
 import json
 from collections.abc import Iterable
 from io import BytesIO
-from typing import Any
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -144,7 +143,7 @@ def verify_webhook_signature(*, secret: str, headers: dict[str, str], raw_body: 
         )
 
 
-def parse_webhook_payload(raw_body: bytes) -> dict[str, Any]:
+def parse_webhook_payload(raw_body: bytes) -> dict[str, str]:
     """Parse the minimal webhook payload fields needed for export completion."""
 
     try:

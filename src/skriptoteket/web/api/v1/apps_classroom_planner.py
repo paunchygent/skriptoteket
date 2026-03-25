@@ -8,7 +8,7 @@ seating, and student planning notes.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, UploadFile, status
+from fastapi import APIRouter, Depends, Request, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from skriptoteket.application.curated_apps.classroom_planner import (
@@ -69,6 +69,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.request_metadata import get_correlation_id
 
 router = APIRouter(
     prefix="/api/v1/apps/classroom.group-seating-studio", tags=["apps", "classroom-planner"]
@@ -438,16 +439,19 @@ async def get_class_workspace_summary(
 @router.post("/rosters/import-preview", response_model=ClassListImportPreview)
 @inject
 async def import_preview(
+    request: Request,
     file: UploadFile,
     handler: FromDishka[CreateClassListImportPreviewHandler],
     user: User = Depends(require_user_api),
     _: None = Depends(require_csrf_token),
 ) -> ClassListImportPreview:
     content = await file.read()
+    correlation_id_uuid = get_correlation_id(request)
     return await handler.handle(
         file_content=content,
         file_name=file.filename or "unknown",
         content_type=file.content_type or "application/octet-stream",
+        correlation_id=str(correlation_id_uuid) if correlation_id_uuid is not None else None,
     )
 
 

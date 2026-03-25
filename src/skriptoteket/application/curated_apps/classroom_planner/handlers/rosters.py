@@ -32,6 +32,10 @@ def _validate_students(*, students: list[Student]) -> None:
         )
 
 
+def _student_list_changed(*, current: list[Student], updated: list[Student]) -> bool:
+    return current != updated
+
+
 class ListRostersHandler:
     """List rosters owned by the current user."""
 
@@ -94,9 +98,11 @@ class UpdateRosterHandler:
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
         clock: ClockProtocol,
+        drafts: PlanDraftRepositoryProtocol | None = None,
     ) -> None:
         self._uow = uow
         self._rosters = rosters
+        self._drafts = drafts
         self._clock = clock
 
     async def handle(
@@ -106,6 +112,23 @@ class UpdateRosterHandler:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(roster_id))
+        if self._drafts is not None and _student_list_changed(
+            current=roster.students,
+            updated=students,
+        ):
+            has_active_draft = await self._drafts.has_active_for_roster(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+            )
+            if has_active_draft:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message=(
+                        "Du kan inte ändra eleverna i klasslistan eftersom ett aktivt "
+                        "utkast fortfarande använder den."
+                    ),
+                    details={"roster_id": str(roster_id), "reason": "active_draft_dependency"},
+                )
 
         updated = Roster(
             id=roster.id,

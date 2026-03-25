@@ -68,6 +68,16 @@ class SirConvertWebhookSubscriptionSummaryV2:
 
 
 class SirConvertALotClientV2Protocol(Protocol):
+    async def extract_text_direct(
+        self,
+        *,
+        file_bytes: bytes,
+        filename: str,
+        correlation_id: str | None = None,
+    ) -> str:
+        """Extract text from a file via the Sir Convert v2 PDF-to-Markdown job flow."""
+        ...
+
     async def submit_job(
         self,
         *,

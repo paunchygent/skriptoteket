@@ -1731,4 +1731,5 @@ describe("ClassroomPlannerView", () => {
 
     wrapper.unmount();
   });
+
 });

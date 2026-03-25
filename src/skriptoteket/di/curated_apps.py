@@ -43,6 +43,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     UpdateRoomTemplateHandler,
     UpdateRosterHandler,
 )
+from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
+    CreateClassListImportPreviewHandler,
+)
 from skriptoteket.application.curated_apps.flunk_out_frenzy import (
     GetFlunkOutFrenzyBootstrapHandler,
 )
@@ -78,6 +81,12 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_risk_
     ReagentPrepChefSaveRiskPdfHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.classroom_planner.import_heuristics import (
+    ClassListHeuristicParser,
+)
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner import (
+    class_list_document_extractor as class_list_document_extractor_module,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
     BrutalistPosterRenderer,
 )
@@ -123,6 +132,10 @@ from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
+)
+from skriptoteket.protocols.classroom_planner_imports import (
+    ClassListHeuristicParserProtocol,
+    DocumentTextExtractorProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -170,6 +183,12 @@ class CuratedAppsProvider(Provider):
             base_url=settings.SIR_CONVERT_A_LOT_V2_BASE_URL,
             api_key=settings.SIR_CONVERT_A_LOT_V2_API_KEY,
             timeout_seconds=settings.SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS,
+            class_list_import_pdf_backend_strategy=(
+                settings.SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY
+            ),
+            class_list_import_acceleration_policy=(
+                settings.SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_ACCELERATION_POLICY
+            ),
         )
 
     @provide(scope=Scope.APP)
@@ -433,9 +452,10 @@ class CuratedAppsProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         rosters: RosterRepositoryProtocol,
+        drafts: PlanDraftRepositoryProtocol,
         clock: ClockProtocol,
     ) -> UpdateRosterHandler:
-        return UpdateRosterHandler(uow=uow, rosters=rosters, clock=clock)
+        return UpdateRosterHandler(uow=uow, rosters=rosters, drafts=drafts, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def delete_roster_handler(
@@ -801,3 +821,24 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
         return BrutalistPosterRenderer()
+
+    @provide(scope=Scope.APP)
+    def class_list_document_extractor(
+        self, settings: Settings, client: SirConvertALotClientV2Protocol
+    ) -> DocumentTextExtractorProtocol:
+        return class_list_document_extractor_module.ClassListDocumentExtractor(
+            settings=settings,
+            sir_convert=client,
+        )
+
+    @provide(scope=Scope.APP)
+    def class_list_heuristic_parser(self) -> ClassListHeuristicParserProtocol:
+        return ClassListHeuristicParser()
+
+    @provide(scope=Scope.REQUEST)
+    def create_class_list_import_preview_handler(
+        self,
+        extractor: DocumentTextExtractorProtocol,
+        parser: ClassListHeuristicParserProtocol,
+    ) -> CreateClassListImportPreviewHandler:
+        return CreateClassListImportPreviewHandler(extractor=extractor, parser=parser)

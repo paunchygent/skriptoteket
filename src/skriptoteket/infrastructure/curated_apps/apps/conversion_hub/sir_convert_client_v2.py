@@ -12,9 +12,12 @@ Relationships:
 
 from __future__ import annotations
 
+import asyncio
 import io
 import json
+import time
 from dataclasses import dataclass
+from uuid import uuid4
 
 import httpx
 
@@ -35,6 +38,13 @@ class SirConvertClientSettingsV2:
     base_url: str
     api_key: str
     timeout_seconds: float
+    class_list_import_pdf_backend_strategy: str = "pymupdf"
+    class_list_import_acceleration_policy: str = "cpu_only"
+
+
+_PDF_TEXT_EXTRACTION_WAIT_SECONDS = 0
+_PDF_TEXT_EXTRACTION_POLL_INTERVAL_SECONDS = 0.5
+_PDF_TEXT_EXTRACTION_TERMINAL_FAILURES = frozenset({"failed", "canceled", "cancelled"})
 
 
 def _extract_service_error(
@@ -107,6 +117,40 @@ def _read_job_id_and_status(payload: object) -> tuple[str, str]:
     return job_id_obj, status_obj
 
 
+def _build_pdf_text_extraction_job_spec(
+    *,
+    filename: str,
+    backend_strategy: str,
+    acceleration_policy: str,
+) -> dict[str, object]:
+    """Build the canonical Sir Convert v2 job spec for PDF-to-Markdown extraction."""
+
+    return {
+        "api_version": "v2",
+        "source": {"kind": "upload", "filename": filename, "format": "pdf"},
+        "conversion": {
+            "output_format": "md",
+            "template": None,
+            "css_filenames": [],
+            "reference_docx_filename": None,
+        },
+        "pdf_options": {
+            "backend_strategy": backend_strategy,
+            "ocr_mode": "off",
+            "ocr_engine": "auto",
+            "ocr_languages": [],
+            "table_mode": "accurate",
+            "normalize": "strict",
+        },
+        "execution": {
+            "acceleration_policy": acceleration_policy,
+            "priority": "normal",
+            "document_timeout_seconds": 1800,
+        },
+        "retention": {"pin": False},
+    }
+
+
 class SirConvertALotClientV2:
     def __init__(self, *, settings: SirConvertClientSettingsV2, client: httpx.AsyncClient) -> None:
         self._settings = settings
@@ -121,6 +165,38 @@ class SirConvertALotClientV2:
         if correlation_id is not None:
             headers["X-Correlation-ID"] = correlation_id
         return headers
+
+    async def _wait_for_text_extraction_job(
+        self,
+        *,
+        job_id: str,
+        initial_status: str,
+        correlation_id: str | None,
+    ) -> None:
+        """Poll one PDF-to-Markdown job until it succeeds or fails."""
+
+        current_status = initial_status
+        deadline = time.monotonic() + self._settings.timeout_seconds
+
+        while True:
+            if current_status == "succeeded":
+                return
+            if current_status in _PDF_TEXT_EXTRACTION_TERMINAL_FAILURES:
+                raise DomainError(
+                    code=ErrorCode.SERVICE_UNAVAILABLE,
+                    message="Sir Convert-a-Lot v2 PDF extraction job failed.",
+                    details={"job_id": job_id, "upstream_status": current_status},
+                )
+            if time.monotonic() >= deadline:
+                raise DomainError(
+                    code=ErrorCode.SERVICE_UNAVAILABLE,
+                    message="Sir Convert-a-Lot v2 PDF extraction timed out.",
+                    details={"job_id": job_id, "upstream_status": current_status},
+                )
+
+            await asyncio.sleep(_PDF_TEXT_EXTRACTION_POLL_INTERVAL_SECONDS)
+            current_job = await self.get_job(job_id, correlation_id=correlation_id)
+            current_status = current_job.status
 
     async def submit_job(self, *, request: SirConvertSubmitRequestV2) -> SirConvertSubmittedJobV2:
         files: dict[str, tuple[str, io.BytesIO, str]] = {
@@ -340,3 +416,34 @@ class SirConvertALotClientV2:
                 response,
                 message_fallback="Failed to delete Sir Convert webhook subscription.",
             )
+
+    async def extract_text_direct(
+        self,
+        *,
+        file_bytes: bytes,
+        filename: str,
+        correlation_id: str | None = None,
+    ) -> str:
+        submitted = await self.submit_job(
+            request=SirConvertSubmitRequestV2(
+                filename=filename,
+                content_type="application/pdf",
+                file_bytes=file_bytes,
+                job_spec=_build_pdf_text_extraction_job_spec(
+                    filename=filename,
+                    backend_strategy=self._settings.class_list_import_pdf_backend_strategy,
+                    acceleration_policy=self._settings.class_list_import_acceleration_policy,
+                ),
+                idempotency_key=f"class-list-import-pdf-{uuid4().hex}",
+                wait_seconds=_PDF_TEXT_EXTRACTION_WAIT_SECONDS,
+                correlation_id=correlation_id,
+            )
+        )
+        await self._wait_for_text_extraction_job(
+            job_id=submitted.job_id,
+            initial_status=submitted.status,
+            correlation_id=correlation_id,
+        )
+        artifact = await self.download_artifact(submitted.job_id, correlation_id=correlation_id)
+
+        return artifact.artifact.content.decode("utf-8", errors="replace")

@@ -3,14 +3,16 @@
  * Roster create/edit modal.
  *
  * This modal owns the CRUD surface for reusable class lists used by the
- * classroom planner. It keeps roster editing outside the draft workspace so the
- * selection gate can manage class assets without leaking that responsibility
- * into the planner canvas components.
+ * classroom planner. Import-from-file now lives inside the same workflow so
+ * teachers can start from a Skola24 export, review the parsed result, and only
+ * fall back to manual edits when the parser needs help.
  */
 
 import { computed, ref, watch } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
+import type { AmbiguousRow } from "../useClassListImportFlow";
+import { useClassListImportFlow } from "../useClassListImportFlow";
 import type { Roster, Student } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -27,18 +29,59 @@ const name = ref("");
 const rawStudents = ref("");
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
-const error = ref<string | null>(null);
+const formError = ref<string | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
+const ambiguousRows = ref<AmbiguousRow[]>([]);
+
+const { isUploading, preview, error: importError, uploadFile, cancel: resetImportState } =
+  useClassListImportFlow();
 
 const isEditing = computed(() => Boolean(props.roster));
+
+function buildStudentsForSubmit(lines: string[], existingStudents: Student[]): Student[] {
+  const availableIdsByName = new Map<string, string[]>();
+
+  for (const student of existingStudents) {
+    const trimmedName = student.display_name.trim();
+    const idsForName = availableIdsByName.get(trimmedName) ?? [];
+    idsForName.push(student.id);
+    availableIdsByName.set(trimmedName, idsForName);
+  }
+
+  return lines.map((displayName) => {
+    const existingId = availableIdsByName.get(displayName)?.shift();
+    return {
+      id: existingId ?? crypto.randomUUID(),
+      display_name: displayName,
+    };
+  });
+}
 
 watch(
   () => props.roster,
   (roster) => {
     name.value = roster?.name ?? "";
     rawStudents.value = roster?.students.map((student) => student.display_name).join("\n") ?? "";
-    error.value = null;
+    formError.value = null;
+    ambiguousRows.value = [];
+    resetImportState();
   },
   { immediate: true },
+);
+
+watch(
+  () => preview.value,
+  (nextPreview) => {
+    if (!nextPreview) {
+      ambiguousRows.value = [];
+      return;
+    }
+
+    name.value = nextPreview.suggested_class_name?.trim() || name.value;
+    rawStudents.value = nextPreview.parsed_students.map((student) => student.full_name).join("\n");
+    ambiguousRows.value = [...nextPreview.ambiguous_rows];
+    formError.value = null;
+  },
 );
 
 const parsedStudents = computed<Student[]>(() => {
@@ -46,12 +89,7 @@ const parsedStudents = computed<Student[]>(() => {
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
-  const existingStudents = props.roster?.students ?? [];
-
-  return lines.map((displayName, index) => ({
-    id: existingStudents[index]?.id ?? crypto.randomUUID(),
-    display_name: displayName,
-  }));
+  return buildStudentsForSubmit(lines, props.roster?.students ?? []);
 });
 
 const isValid = computed(() => {
@@ -64,7 +102,7 @@ async function submit(): Promise<void> {
   }
 
   isSubmitting.value = true;
-  error.value = null;
+  formError.value = null;
 
   try {
     const payload = {
@@ -79,7 +117,8 @@ async function submit(): Promise<void> {
       : await apiPost<Roster>("/api/v1/apps/classroom.group-seating-studio/rosters", payload);
     emit("saved", response);
   } catch (submitError: unknown) {
-    error.value = submitError instanceof Error ? submitError.message : "Kunde inte spara klasslistan.";
+    formError.value =
+      submitError instanceof Error ? submitError.message : "Kunde inte spara klasslistan.";
   } finally {
     isSubmitting.value = false;
   }
@@ -91,16 +130,56 @@ async function removeRoster(): Promise<void> {
   }
 
   isDeleting.value = true;
-  error.value = null;
+  formError.value = null;
 
   try {
     await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/rosters/${props.roster.id}`);
     emit("deleted", props.roster.id);
   } catch (deleteError: unknown) {
-    error.value = deleteError instanceof Error ? deleteError.message : "Kunde inte radera klasslistan.";
+    formError.value =
+      deleteError instanceof Error ? deleteError.message : "Kunde inte radera klasslistan.";
   } finally {
     isDeleting.value = false;
   }
+}
+
+function triggerFileInput(): void {
+  fileInput.value?.click();
+}
+
+async function onFileSelected(event: Event): Promise<void> {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const file = target.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  await uploadFile(file);
+  target.value = "";
+}
+
+function appendAmbiguousRow(index: number): void {
+  const row = ambiguousRows.value[index];
+  if (!row) {
+    return;
+  }
+
+  const nextValue = rawStudents.value.trim();
+  rawStudents.value = nextValue.length > 0 ? `${nextValue}\n${row.raw_text}` : row.raw_text;
+  ambiguousRows.value.splice(index, 1);
+}
+
+function dismissAmbiguousRow(index: number): void {
+  ambiguousRows.value.splice(index, 1);
+}
+
+function closeModal(): void {
+  resetImportState();
+  emit("close");
 }
 </script>
 
@@ -110,7 +189,7 @@ async function removeRoster(): Promise<void> {
       type="button"
       aria-label="Stäng modal"
       class="fixed inset-0 bg-navy/70"
-      @click="emit('close')"
+      @click="closeModal"
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
       <div class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-white shadow-brutal">
@@ -126,7 +205,7 @@ async function removeRoster(): Promise<void> {
           <button
             type="button"
             class="mr-6 mt-6 btn-ghost h-[32px] w-[32px] px-0 py-0 shadow-none border-navy/30 bg-canvas md:mr-8 md:mt-8"
-            @click="emit('close')"
+            @click="closeModal"
           >
             ×
           </button>
@@ -134,20 +213,88 @@ async function removeRoster(): Promise<void> {
 
         <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
           <div
-            v-if="error"
+            v-if="formError"
             class="system-message system-message-error"
           >
             <div class="system-message-content">
-              {{ error }}
+              {{ formError }}
             </div>
           </div>
 
           <div class="mt-6 space-y-5">
+            <section class="space-y-3 border border-navy/20 bg-canvas p-4 shadow-brutal-sm">
+              <input
+                ref="fileInput"
+                type="file"
+                class="hidden"
+                accept=".xlsx,.xls,.csv,.tsv,.txt,.pdf"
+                @change="onFileSelected"
+              >
+
+              <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div class="space-y-1">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                    Importera från fil
+                  </p>
+                  <p class="text-sm leading-relaxed text-navy/75">
+                    Börja gärna med en Skola24-klasslista eller grupplista i Excel
+                    (`.xls`), PDF eller text (`.txt`). Även `.csv` och `.tsv` stöds.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="btn-primary shrink-0"
+                  data-test="roster-modal-import-trigger"
+                  :disabled="isUploading"
+                  @click="triggerFileInput"
+                >
+                  {{ isUploading ? "Läser in fil..." : "Importera från fil" }}
+                </button>
+              </div>
+
+              <div
+                v-if="importError"
+                class="system-message system-message-error"
+              >
+                <div class="system-message-content">
+                  {{ importError }}
+                </div>
+              </div>
+
+              <div
+                v-if="preview"
+                class="space-y-2 border border-navy/20 bg-white p-3"
+                data-test="roster-import-summary"
+              >
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="space-y-1">
+                    <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                      Importförslag
+                    </p>
+                    <p class="text-sm text-navy">
+                      {{ preview.file_name }}
+                    </p>
+                  </div>
+                  <div class="text-right text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                    {{ preview.parsed_students.length }} elever
+                  </div>
+                </div>
+                <p class="text-sm text-navy/70">
+                  Klassnamn och elevlista har fyllts i automatiskt nedan. Justera bara om parsern
+                  har missat något.
+                </p>
+              </div>
+            </section>
+
             <div class="space-y-1">
-              <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+              <label
+                for="roster-name"
+                class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+              >
                 Klassens namn
               </label>
               <input
+                id="roster-name"
                 v-model="name"
                 type="text"
                 placeholder="Till exempel Klass 9A"
@@ -157,7 +304,10 @@ async function removeRoster(): Promise<void> {
 
             <div class="space-y-2">
               <div class="flex items-end justify-between gap-3">
-                <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                <label
+                  for="roster-students"
+                  class="text-xs font-semibold uppercase tracking-wide text-navy/70"
+                >
                   Elever
                 </label>
                 <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
@@ -165,6 +315,7 @@ async function removeRoster(): Promise<void> {
                 </span>
               </div>
               <textarea
+                id="roster-students"
                 v-model="rawStudents"
                 rows="12"
                 placeholder="Anna Andersson&#10;Bilal Berg&#10;Cecilia Ceder"
@@ -173,6 +324,50 @@ async function removeRoster(): Promise<void> {
               <p class="text-[11px] leading-relaxed text-navy/60">
                 Skriv eller klistra in ett namn per rad.
               </p>
+            </div>
+
+            <div
+              v-if="ambiguousRows.length > 0"
+              class="space-y-3 border border-burgundy/20 bg-burgundy/5 p-4"
+              data-test="roster-import-ambiguous"
+            >
+              <div class="space-y-1">
+                <p class="text-xs font-semibold uppercase tracking-wide text-burgundy">
+                  Otydliga rader från importen
+                </p>
+                <p class="text-sm text-burgundy/80">
+                  Lägg till sådant som faktiskt är elevnamn, eller ignorera rader som inte hör till
+                  klasslistan.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <div
+                  v-for="(row, index) in ambiguousRows"
+                  :key="`${row.raw_text}-${index}`"
+                  class="space-y-2 border border-burgundy/20 bg-white p-3"
+                >
+                  <div class="break-all font-mono text-sm text-burgundy">
+                    {{ row.raw_text }}
+                  </div>
+                  <div class="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-burgundy underline"
+                      @click="appendAmbiguousRow(index)"
+                    >
+                      Lägg till i elevlistan
+                    </button>
+                    <button
+                      type="button"
+                      class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60 underline"
+                      @click="dismissAmbiguousRow(index)"
+                    >
+                      Ignorera
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -193,7 +388,7 @@ async function removeRoster(): Promise<void> {
             <button
               type="button"
               class="btn-ghost border-navy/30 bg-canvas shadow-none"
-              @click="emit('close')"
+              @click="closeModal"
             >
               Avbryt
             </button>

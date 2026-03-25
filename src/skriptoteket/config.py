@@ -1,3 +1,14 @@
+"""Application settings for Skriptoteket.
+
+Purpose:
+  Centralize environment-driven configuration for web, workers, curated apps,
+  and infrastructure adapters.
+
+Relationships:
+  - Loaded by Dishka providers in `skriptoteket.di.*`.
+  - Consumed by infrastructure integrations such as Sir Convert-a-Lot.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -67,6 +78,12 @@ class Settings(BaseSettings):
     SIR_CONVERT_A_LOT_V2_API_KEY: str = ""
     SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: float = 60.0
     SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: str = ""
+    SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY: Literal["auto", "pymupdf"] = (
+        "pymupdf"
+    )
+    SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_ACCELERATION_POLICY: Literal[
+        "gpu_required", "gpu_prefer", "cpu_only"
+    ] = "cpu_only"
 
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000
