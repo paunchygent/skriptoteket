@@ -15,6 +15,9 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.classroom_planner.exports import (
+    seating_xlsx_view_model,
+)
 from skriptoteket.application.curated_apps.classroom_planner.exports.jobs import (
     SeatingExportJob,
 )
@@ -69,3 +72,13 @@ class SeatingPosterRendererProtocol(Protocol):
     """Render a standalone poster scene into export-owned HTML/CSS."""
 
     def render(self, *, request: SeatingPosterRenderRequest) -> RenderedSeatingPosterBundle: ...
+
+
+class SeatingXlsxRendererProtocol(Protocol):
+    """Render a teacher-facing seating workbook into XLSX bytes."""
+
+    def render(
+        self,
+        *,
+        view_model: seating_xlsx_view_model.SeatingXlsxWorkbookViewModel,
+    ) -> bytes: ...

@@ -602,6 +602,7 @@ describe("useClassroomState", () => {
         can_redo: false,
       }),
     );
+    clientMocks.apiPatch.mockClear();
 
     state.renameGroup("group-a", "Handledargrupp");
     expect(state.canUndo).toBe(true);
@@ -771,6 +772,7 @@ describe("useClassroomState", () => {
     const state = seedWorkspace();
     state.draft = createDraft();
     clientMocks.apiPatch.mockResolvedValue(createWorkspaceResponse());
+    clientMocks.apiPatch.mockClear();
 
     state.setStudentPlanningMeta("s1", { notes: "Fokusera nära fönstret" });
     await vi.advanceTimersByTimeAsync(900);

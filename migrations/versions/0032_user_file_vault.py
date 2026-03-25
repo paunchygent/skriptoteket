@@ -81,6 +81,7 @@ def upgrade() -> None:
             ),
         )
 
+    inspector = inspect(conn)
     tables = set(inspector.get_table_names())
     if "user_vault_files" in tables:
         if not _table_has_index(

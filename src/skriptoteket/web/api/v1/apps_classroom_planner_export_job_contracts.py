@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportJobResult,
@@ -30,8 +30,20 @@ class CreateSeatingExportJobRequest(BaseModel):
     """Deserialize the public job-creation payload for seating exports."""
 
     export_kind: SeatingExportKind
-    layout_id: SeatingExportLayoutId
-    paper_size: SeatingExportPaperSize
+    layout_id: SeatingExportLayoutId | None = None
+    paper_size: SeatingExportPaperSize | None = None
+
+    @model_validator(mode="after")
+    def validate_export_shape(self) -> CreateSeatingExportJobRequest:
+        """Require PDF layout inputs only for PDF exports."""
+
+        if self.export_kind is SeatingExportKind.PDF:
+            if self.layout_id is None or self.paper_size is None:
+                raise ValueError("PDF-export kräver layout och pappersstorlek.")
+            return self
+        if self.layout_id is not None or self.paper_size is not None:
+            raise ValueError("Excel-export använder inte layout eller pappersstorlek.")
+        return self
 
 
 class SeatingExportVaultArtifactDto(BaseModel):
@@ -53,8 +65,8 @@ class SeatingExportJobDto(BaseModel):
     job_id: UUID
     draft_id: UUID
     export_kind: SeatingExportKind
-    layout_id: SeatingExportLayoutId
-    paper_size: SeatingExportPaperSize
+    layout_id: SeatingExportLayoutId | None = None
+    paper_size: SeatingExportPaperSize | None = None
     status: SeatingExportJobStatus
     created_at: datetime
     download_url: str | None = None

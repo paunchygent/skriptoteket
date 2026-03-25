@@ -3,7 +3,7 @@
 This module owns the mutable planner workspace flows that remain in the active
 fundamentals contract: resolving one active draft per class and draft kind,
 hydrating that workspace for the SPA, abandoning drafts, and patching
-draft-scoped grouping, seating, and student-note state with optimistic
+draft-scoped grouping, seating, and smart-planning state with optimistic
 concurrency.
 """
 
@@ -394,6 +394,7 @@ class PatchDraftHandler:
         draft_id: UUID,
         owner_user_id: UUID,
         expected_revision: int | None = None,
+        smart_enabled: bool | None = None,
         groups: list[DraftGroup] | None = None,
         group_assignments: list[GroupAssignment] | None = None,
         seat_assignments: list[SeatAssignment] | None = None,
@@ -415,6 +416,11 @@ class PatchDraftHandler:
         updated_workspace = DraftWorkspace(
             draft=workspace.draft.model_copy(
                 update={
+                    "smart_enabled": (
+                        smart_enabled
+                        if smart_enabled is not None
+                        else workspace.draft.smart_enabled
+                    ),
                     "revision": workspace.draft.revision + 1,
                     "updated_at": self._clock.now(),
                 }

@@ -264,6 +264,7 @@ class UpdatePlanDraftRequest(BaseModel):
     """Deserialize mutable draft workspace patches."""
 
     expected_revision: int | None = None
+    smart_enabled: bool | None = None
     groups: list[DraftGroupDto] | None = None
     group_assignments: list[GroupAssignmentDto] | None = None
     seat_assignments: list[SeatAssignmentDto] | None = None
@@ -643,26 +644,35 @@ async def update_draft(
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=request.expected_revision,
-        groups=[DraftGroup.model_validate(group.model_dump()) for group in request.groups]
-        if request.groups is not None
-        else None,
-        group_assignments=[
-            GroupAssignment.model_validate(assignment.model_dump())
-            for assignment in request.group_assignments
-        ]
-        if request.group_assignments is not None
-        else None,
-        seat_assignments=[
-            SeatAssignment.model_validate(assignment.model_dump())
-            for assignment in request.seat_assignments
-        ]
-        if request.seat_assignments is not None
-        else None,
-        student_planning_meta=[
-            StudentPlanningMeta.model_validate(meta.model_dump())
-            for meta in request.student_planning_meta
-        ]
-        if request.student_planning_meta is not None
-        else None,
+        smart_enabled=request.smart_enabled,
+        groups=(
+            [DraftGroup.model_validate(group.model_dump()) for group in request.groups]
+            if request.groups is not None
+            else None
+        ),
+        group_assignments=(
+            [
+                GroupAssignment.model_validate(assignment.model_dump())
+                for assignment in request.group_assignments
+            ]
+            if request.group_assignments is not None
+            else None
+        ),
+        seat_assignments=(
+            [
+                SeatAssignment.model_validate(assignment.model_dump())
+                for assignment in request.seat_assignments
+            ]
+            if request.seat_assignments is not None
+            else None
+        ),
+        student_planning_meta=(
+            [
+                StudentPlanningMeta.model_validate(meta.model_dump())
+                for meta in request.student_planning_meta
+            ]
+            if request.student_planning_meta is not None
+            else None
+        ),
     )
     return _serialize_workspace(workspace)

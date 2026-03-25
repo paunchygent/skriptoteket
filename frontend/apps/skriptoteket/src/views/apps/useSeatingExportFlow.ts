@@ -1,10 +1,10 @@
 /**
  * Seating export orchestration for the planner route shell.
  *
- * This composable owns the explicit teacher-facing export workflow for seating
- * posters: flush pending autosave, create the async export job, poll status,
- * and trigger download on completion. Components stay presentational and only
- * render the compact export affordance.
+ * This composable owns the explicit teacher-facing seating export workflow:
+ * flush pending autosave, create the export job, poll status, and trigger
+ * download on completion for both PDF posters and local XLSX workbooks.
+ * Components stay presentational and only render the compact export affordance.
  */
 
 import { computed, ref, watch } from "vue";
@@ -17,7 +17,7 @@ import {
   getRecoverableSeatingExportJob,
   getSeatingExportJob,
   type SeatingExportJob,
-  type SeatingExportPaperSize,
+  type SeatingExportOption,
 } from "./classroomPlannerExportApi";
 import {
   flushPlannerRouteShellSave,
@@ -37,8 +37,7 @@ type UseSeatingExportFlowOptions = {
 
 const DEFAULT_POLL_DELAY_MS = 1200;
 const DEFAULT_MAX_POLL_ATTEMPTS = 75;
-const RECOVERY_STATUS_MESSAGE = "PDF-exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.";
-const RECOVERY_READY_MESSAGE = "PDF klar för nedladdning.";
+const RECOVERY_STATUS_MESSAGE = "Exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.";
 
 type ExportScope = {
   draftId: string;
@@ -80,11 +79,61 @@ function statusLabelForJob(job: SeatingExportJob | null): string | null {
   if (!job) {
     return null;
   }
+  if (job.export_kind === "xlsx") {
+    return job.status === "processing" ? "Skapar Excel…" : "Förbereder Excel…";
+  }
   return job.status === "processing" ? "Skapar PDF…" : "Förbereder affisch…";
 }
 
 function fallbackDownloadName(job: SeatingExportJob): string {
-  return `klassrumskarta-${job.paper_size}.pdf`;
+  if (job.export_kind === "xlsx") {
+    return "klassrumskarta.xlsx";
+  }
+  return `klassrumskarta-${job.paper_size ?? "export"}.pdf`;
+}
+
+function initialStatusLabelForOption(option: SeatingExportOption): string {
+  return option === "xlsx" ? "Förbereder Excel…" : "Förbereder affisch…";
+}
+
+function readyMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx" ? "Excel klar för nedladdning." : "PDF klar för nedladdning.";
+}
+
+function successMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Excel-filen hämtad och sparad i Mina filer."
+    : "PDF hämtad och sparad i Mina filer.";
+}
+
+function autoDownloadFailureMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Excel-filen skapades men kunde inte laddas ned automatiskt."
+    : "PDF skapades men kunde inte laddas ned automatiskt.";
+}
+
+function exportErrorMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Det gick inte att exportera Excel-filen just nu."
+    : "Det gick inte att exportera affischen just nu.";
+}
+
+function restoreErrorMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Kunde inte återställa Excel-exporten efter omladdning."
+    : "Kunde inte återställa PDF-exporten efter omladdning.";
+}
+
+function startErrorMessageForOption(option: SeatingExportOption): string {
+  return option === "xlsx"
+    ? "Det gick inte att exportera Excel-filen just nu."
+    : "Det gick inte att exportera affischen just nu.";
+}
+
+function downloadErrorMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Det gick inte att ladda ned Excel-filen."
+    : "Det gick inte att ladda ned PDF-filen.";
 }
 
 function triggerBrowserDownload(blob: Blob, filename: string): void {
@@ -160,7 +209,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
         return job;
       }
       if (job.status === "failed") {
-        throw new Error(job.error ?? "Det gick inte att exportera affischen just nu.");
+        throw new Error(job.error ?? exportErrorMessageForJob(job));
       }
       attemptsRemaining -= 1;
       if (attemptsRemaining <= 0) {
@@ -186,8 +235,6 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       toastOnSuccess?: boolean;
     } = {
       autoDownload: true,
-      successMessage: "PDF hämtad och sparad i Mina filer.",
-      readyMessage: RECOVERY_READY_MESSAGE,
       toastOnSuccess: true,
     },
   ): Promise<void> {
@@ -196,16 +243,17 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     activeJob.value = null;
     backgroundPollJobId.value = null;
     if (!options.autoDownload) {
-      statusLabel.value = options.readyMessage ?? RECOVERY_READY_MESSAGE;
+      statusLabel.value = options.readyMessage ?? readyMessageForJob(job);
       return;
     }
     try {
       ensureActiveScope(scope);
       await downloadJob(job);
       ensureActiveScope(scope);
-      statusLabel.value = options.successMessage ?? "PDF hämtad och sparad i Mina filer.";
+      const successMessage = options.successMessage ?? successMessageForJob(job);
+      statusLabel.value = successMessage;
       if (options.toastOnSuccess ?? true) {
-        toast.success(options.successMessage ?? "PDF hämtad och sparad i Mina filer.");
+        toast.success(successMessage);
       }
     } catch (error: unknown) {
       if (error instanceof ExportFlowScopeChangedError) {
@@ -214,10 +262,10 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       if (!isActiveScope(scope)) {
         return;
       }
-      statusLabel.value = options.readyMessage ?? RECOVERY_READY_MESSAGE;
+      statusLabel.value = options.readyMessage ?? readyMessageForJob(job);
       errorMessage.value = normalizeExportError(
         error,
-        "PDF skapades men kunde inte laddas ned automatiskt.",
+        autoDownloadFailureMessageForJob(job),
       );
     }
   }
@@ -230,7 +278,6 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       readyMessage?: string;
     } = {
       autoDownload: true,
-      readyMessage: RECOVERY_READY_MESSAGE,
     },
   ): Promise<void> {
     const backgroundPollKey = `${scope.draftId}:${jobId}`;
@@ -243,7 +290,6 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       await finalizeCompletedJob(completedJob, scope, {
         autoDownload: options.autoDownload,
         readyMessage: options.readyMessage,
-        successMessage: "PDF hämtad och sparad i Mina filer.",
         toastOnSuccess: options.autoDownload,
       });
     } catch (error: unknown) {
@@ -262,7 +308,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       statusLabel.value = null;
       errorMessage.value = normalizeExportError(
         error,
-        "Det gick inte att exportera affischen just nu.",
+        activeJob.value ? exportErrorMessageForJob(activeJob.value) : "Det gick inte att exportera filen just nu.",
       );
     }
   }
@@ -286,7 +332,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       if (recoveredJob.status === "succeeded") {
         await finalizeCompletedJob(recoveredJob, scope, {
           autoDownload: false,
-          readyMessage: RECOVERY_READY_MESSAGE,
+          readyMessage: readyMessageForJob(recoveredJob),
           toastOnSuccess: false,
         });
         return;
@@ -297,7 +343,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       statusLabel.value = RECOVERY_STATUS_MESSAGE;
       void continuePollingInBackground(recoveredJob.job_id, scope, {
         autoDownload: false,
-        readyMessage: RECOVERY_READY_MESSAGE,
+        readyMessage: readyMessageForJob(recoveredJob),
       });
     } catch (error: unknown) {
       if (error instanceof ExportFlowScopeChangedError) {
@@ -312,12 +358,12 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       statusLabel.value = null;
       errorMessage.value = normalizeExportError(
         error,
-        "Kunde inte återställa PDF-exporten efter omladdning.",
+        activeJob.value ? restoreErrorMessageForJob(activeJob.value) : "Kunde inte återställa exporten efter omladdning.",
       );
     }
   }
 
-  async function startExport(paperSize: SeatingExportPaperSize): Promise<void> {
+  async function startExport(option: SeatingExportOption): Promise<void> {
     if (isBusy.value) {
       return;
     }
@@ -335,7 +381,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     } satisfies ExportScope;
 
     errorMessage.value = null;
-    statusLabel.value = "Förbereder affisch…";
+    statusLabel.value = initialStatusLabelForOption(option);
     isStarting.value = true;
 
     const saveOutcome = await flushPlannerRouteShellSave(options.plannerState, {
@@ -361,7 +407,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     }
 
     try {
-      const createdJob = await createSeatingExportJob(activeDraft.id, paperSize);
+      const createdJob = await createSeatingExportJob(activeDraft.id, option);
       ensureActiveScope(scope);
       isStarting.value = false;
       activeJob.value = createdJob;
@@ -395,7 +441,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       statusLabel.value = null;
       errorMessage.value = normalizeExportError(
         error,
-        "Det gick inte att exportera affischen just nu.",
+        startErrorMessageForOption(option),
       );
     }
   }
@@ -408,7 +454,10 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     try {
       await downloadJob(latestCompletedJob.value);
     } catch (error: unknown) {
-      errorMessage.value = normalizeExportError(error, "Det gick inte att ladda ned PDF-filen.");
+      errorMessage.value = normalizeExportError(
+        error,
+        downloadErrorMessageForJob(latestCompletedJob.value),
+      );
     }
   }
 
@@ -437,7 +486,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     errorMessage,
     canDownloadLatest,
     startDefaultExport: async () => await startExport("a3_landscape"),
-    startExportOption: async (paperSize: SeatingExportPaperSize) => await startExport(paperSize),
+    startExportOption: async (option: SeatingExportOption) => await startExport(option),
     downloadLatest,
   };
 }

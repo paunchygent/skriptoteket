@@ -10,35 +10,28 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { IconArrow } from "../../../components/icons";
-import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
+import type { SeatingExportOption } from "../classroomPlannerExportApi";
 
 type ExportOption = {
   id: string;
   label: string;
-  paperSize: SeatingExportPaperSize;
+  option: SeatingExportOption;
 };
 
 const props = withDefaults(
   defineProps<{
     disabled?: boolean;
     busy?: boolean;
-    statusLabel?: string | null;
-    errorMessage?: string | null;
-    canDownloadLatest?: boolean;
   }>(),
   {
     disabled: false,
     busy: false,
-    statusLabel: null,
-    errorMessage: null,
-    canDownloadLatest: false,
   },
 );
 
 const emit = defineEmits<{
   (e: "export-default"): void;
-  (e: "export-option", paperSize: SeatingExportPaperSize): void;
-  (e: "download-latest"): void;
+  (e: "export-option", option: SeatingExportOption): void;
 }>();
 
 const menuRef = ref<HTMLElement | null>(null);
@@ -47,12 +40,17 @@ const exportOptions = computed<ExportOption[]>(() => [
   {
     id: "a3",
     label: "Affisch (A3)",
-    paperSize: "a3_landscape",
+    option: "a3_landscape",
   },
   {
     id: "a4",
     label: "Affisch (A4)",
-    paperSize: "a4_landscape",
+    option: "a4_landscape",
+  },
+  {
+    id: "xlsx",
+    label: "Excel (.xlsx)",
+    option: "xlsx",
   },
 ]);
 const isMenuDisabled = computed(() => props.disabled || props.busy);
@@ -85,8 +83,8 @@ function handleEscape(event: KeyboardEvent): void {
   closeMenu();
 }
 
-function selectOption(paperSize: SeatingExportPaperSize): void {
-  emit("export-option", paperSize);
+function selectOption(option: SeatingExportOption): void {
+  emit("export-option", option);
   closeMenu();
 }
 
@@ -148,11 +146,11 @@ onBeforeUnmount(() => {
           role="menuitem"
           class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-navy transition-colors hover:bg-canvas"
           :data-test="`seating-export-option-${option.id}`"
-          @click="selectOption(option.paperSize)"
+          @click="selectOption(option.option)"
         >
           <span>{{ option.label }}</span>
           <span
-            v-if="option.paperSize === 'a3_landscape'"
+            v-if="option.option === 'a3_landscape'"
             class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/50"
           >
             Standard

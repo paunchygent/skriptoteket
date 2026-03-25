@@ -66,10 +66,14 @@ const routerMocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("../../api/client", () => ({
-  apiDelete: clientMocks.apiDelete,
-  apiGet: clientMocks.apiGet,
-}));
+vi.mock("../../api/client", async () => {
+  const actual = await vi.importActual<typeof import("../../api/client")>("../../api/client");
+  return {
+    ...actual,
+    apiDelete: clientMocks.apiDelete,
+    apiGet: clientMocks.apiGet,
+  };
+});
 
 vi.mock("vue-router", async () => {
   const actual = await vi.importActual<typeof import("vue-router")>("vue-router");
@@ -1604,6 +1608,9 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("Är du säker?");
+    expect(wrapper.text()).toContain(
+      "tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.",
+    );
     expect(wrapper.find("[data-test='template-modal']").exists()).toBe(false);
 
     await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
@@ -1658,6 +1665,9 @@ describe("ClassroomPlannerView", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("Är du säker?");
+    expect(wrapper.text()).toContain(
+      "tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.",
+    );
     expect(wrapper.find("[data-test='roster-modal']").exists()).toBe(false);
 
     await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
@@ -1667,6 +1677,52 @@ describe("ClassroomPlannerView", () => {
       "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1",
     );
     expect(wrapper.text()).not.toContain("Är du säker?");
+
+    wrapper.unmount();
+  });
+
+  it("shows roster delete failures inside the confirmation dialog", async () => {
+    const summary: ClassWorkspaceSummary = {
+      roster: { id: "roster-1", name: "SA24D", student_count: 1 },
+      task_entry_options: [
+        { draft_kind: "grouping", classroom_selection_mode: "optional" },
+        { draft_kind: "seating", classroom_selection_mode: "optional" },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    };
+    stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(summary);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+    clientMocks.apiDelete.mockRejectedValueOnce(new Error("Kunde inte ta bort klasslistan just nu."));
+    clientMocks.apiGet
+      .mockResolvedValueOnce([{ id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] }])
+      .mockResolvedValueOnce([{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }]);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          PlannerClassWorkspace: {
+            template:
+              "<div><button type='button' data-test='delete-current-roster' @click=\"$emit('delete-current-roster')\">Ta bort klasslista</button></div>",
+          },
+          PlannerWorkspaceShell: true,
+          CreateRoomTemplateModal: true,
+          CreateRosterModal: true,
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    await wrapper.get("[data-test='delete-current-roster']").trigger("click");
+    await flushPromises();
+    await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Är du säker?");
+    expect(wrapper.text()).toContain("Kunde inte ta bort klasslistan just nu.");
 
     wrapper.unmount();
   });

@@ -230,7 +230,6 @@ async def test_update_roster_rejects_student_changes_when_active_draft_exists(
 @pytest.mark.asyncio
 async def test_delete_roster_calls_repo_delete(uow, rosters, now):
     drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
-    drafts.has_active_for_roster.return_value = False
     handler = DeleteRosterHandler(uow, rosters, drafts=drafts)
     owner_id = uuid4()
     roster_id = uuid4()
@@ -246,6 +245,7 @@ async def test_delete_roster_calls_repo_delete(uow, rosters, now):
 
     await handler.handle(roster_id=roster_id, owner_user_id=owner_id)
 
+    drafts.delete_for_roster.assert_awaited_once_with(owner_user_id=owner_id, roster_id=roster_id)
     rosters.delete.assert_awaited_once_with(roster_id=roster_id)
 
 
@@ -333,7 +333,6 @@ async def test_update_template_updates_and_saves(uow, templates, now, clock):
 @pytest.mark.asyncio
 async def test_delete_template_calls_repo_delete(uow, templates, now):
     drafts = AsyncMock(spec=PlanDraftRepositoryProtocol)
-    drafts.has_active_for_template.return_value = False
     handler = DeleteRoomTemplateHandler(
         uow,
         templates,
@@ -354,6 +353,10 @@ async def test_delete_template_calls_repo_delete(uow, templates, now):
 
     await handler.handle(template_id=template_id, owner_user_id=owner_id)
 
+    drafts.delete_for_template.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        template_id=template_id,
+    )
     templates.delete.assert_awaited_once_with(template_id=template_id)
 
 

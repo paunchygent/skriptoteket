@@ -82,6 +82,38 @@ async def test_create_seating_export_job_calls_handler_with_explicit_paper_size(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_create_seating_export_job_calls_handler_with_xlsx_payload():
+    user = make_user()
+    draft_id = uuid4()
+    handler = AsyncMock(spec=CreateSeatingExportJobHandler)
+    handler.handle.return_value = _job_result().model_copy(
+        update={
+            "export_kind": SeatingExportKind.XLSX,
+            "layout_id": None,
+            "paper_size": None,
+        }
+    )
+
+    result = await _unwrap_dishka(api.create_seating_export_job)(
+        draft_id=draft_id,
+        request=_request(),
+        payload=CreateSeatingExportJobRequest(
+            export_kind=SeatingExportKind.XLSX,
+            layout_id=None,
+            paper_size=None,
+        ),
+        handler=handler,
+        user=user,
+    )
+
+    assert result.export_kind is SeatingExportKind.XLSX
+    assert result.layout_id is None
+    assert result.paper_size is None
+    handler.handle.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_get_seating_export_job_serializes_status_response():
     user = make_user()
     handler = AsyncMock(spec=GetSeatingExportJobHandler)
@@ -175,7 +207,7 @@ async def test_get_seating_export_job_serializes_saved_vault_artifact():
 async def test_download_seating_export_job_returns_pdf_attachment_response():
     user = make_user()
     handler = AsyncMock(spec=DownloadSeatingExportJobHandler)
-    handler.handle.return_value = ("klass-7a-a3.pdf", b"%PDF")
+    handler.handle.return_value = ("klass-7a-a3.pdf", "application/pdf", b"%PDF")
 
     response = await _unwrap_dishka(api.download_seating_export_job)(
         job_id=uuid4(),
@@ -189,10 +221,60 @@ async def test_download_seating_export_job_returns_pdf_attachment_response():
 
 
 @pytest.mark.unit
+@pytest.mark.asyncio
+async def test_download_seating_export_job_returns_xlsx_attachment_response():
+    user = make_user()
+    handler = AsyncMock(spec=DownloadSeatingExportJobHandler)
+    xlsx_bytes = b"PK\x03\x04"
+    handler.handle.return_value = (
+        "klass-7a-sittplacering.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        xlsx_bytes,
+    )
+
+    response = await _unwrap_dishka(api.download_seating_export_job)(
+        job_id=uuid4(),
+        handler=handler,
+        user=user,
+    )
+
+    assert (
+        response.media_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert response.headers["Content-Disposition"] == (
+        'attachment; filename="klass-7a-sittplacering.xlsx"'
+    )
+    assert response.body == xlsx_bytes
+
+
+@pytest.mark.unit
 def test_create_seating_export_job_request_rejects_unknown_paper_size():
     with pytest.raises(ValidationError):
         CreateSeatingExportJobRequest(
             export_kind=SeatingExportKind.PDF,
             layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
             paper_size="a5_landscape",
+        )
+
+
+@pytest.mark.unit
+def test_create_seating_export_job_request_accepts_xlsx_without_layout_inputs():
+    payload = CreateSeatingExportJobRequest(
+        export_kind=SeatingExportKind.XLSX,
+        layout_id=None,
+        paper_size=None,
+    )
+
+    assert payload.export_kind is SeatingExportKind.XLSX
+    assert payload.layout_id is None
+    assert payload.paper_size is None
+
+
+@pytest.mark.unit
+def test_create_seating_export_job_request_rejects_xlsx_layout_inputs():
+    with pytest.raises(ValidationError):
+        CreateSeatingExportJobRequest(
+            export_kind=SeatingExportKind.XLSX,
+            layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
+            paper_size=None,
         )

@@ -13,12 +13,44 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal
+from urllib.parse import ParseResult, urlparse, urlunparse
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LlmReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
 LlmTextVerbosity = Literal["low", "medium", "high"]
+
+_CONTAINER_ARTIFACTS_ROOT = Path("/var/lib/skriptoteket/artifacts")
+_CONTAINER_VAULT_ROOT = Path("/var/lib/skriptoteket/vault")
+_HOST_DEV_ARTIFACTS_ROOT = Path("/tmp/skriptoteket/artifacts")
+_HOST_DEV_VAULT_ROOT = Path("/tmp/skriptoteket/vault")
+_DOCKER_HOST_ALIASES = frozenset({"host.docker.internal", "gateway.docker.internal"})
+
+
+def _is_running_in_container() -> bool:
+    return Path("/.dockerenv").exists()
+
+
+def _replace_url_hostname(*, parsed: ParseResult, hostname: str) -> str:
+    userinfo = ""
+    if parsed.username is not None:
+        userinfo = parsed.username
+        if parsed.password is not None:
+            userinfo = f"{userinfo}:{parsed.password}"
+        userinfo = f"{userinfo}@"
+    port = f":{parsed.port}" if parsed.port is not None else ""
+    return urlunparse(parsed._replace(netloc=f"{userinfo}{hostname}{port}"))
+
+
+def _normalize_host_dev_sir_convert_base_url(raw_url: str) -> str:
+    stripped = raw_url.strip()
+    if stripped == "":
+        return stripped
+    parsed = urlparse(stripped)
+    if parsed.hostname not in _DOCKER_HOST_ALIASES:
+        return stripped
+    return _replace_url_hostname(parsed=parsed, hostname="127.0.0.1")
 
 
 class Settings(BaseSettings):
@@ -236,3 +268,20 @@ class Settings(BaseSettings):
     LLM_DEVSTRAL_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4
     LLM_HEURISTIC_MESSAGE_OVERHEAD_TOKENS: int = 4
     LLM_HEURISTIC_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4
+
+    @model_validator(mode="after")
+    def _normalize_host_dev_runtime(self) -> Settings:
+        if self.ENVIRONMENT != "development" or _is_running_in_container():
+            return self
+
+        if self.ARTIFACTS_ROOT == _CONTAINER_ARTIFACTS_ROOT:
+            self.ARTIFACTS_ROOT = _HOST_DEV_ARTIFACTS_ROOT
+        if self.VAULT_ROOT == _CONTAINER_VAULT_ROOT:
+            self.VAULT_ROOT = _HOST_DEV_VAULT_ROOT
+
+        normalized_base_url = _normalize_host_dev_sir_convert_base_url(
+            self.SIR_CONVERT_A_LOT_V2_BASE_URL
+        )
+        if normalized_base_url != self.SIR_CONVERT_A_LOT_V2_BASE_URL:
+            self.SIR_CONVERT_A_LOT_V2_BASE_URL = normalized_base_url
+        return self

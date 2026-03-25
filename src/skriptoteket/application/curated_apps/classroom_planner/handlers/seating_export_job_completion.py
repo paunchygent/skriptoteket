@@ -13,6 +13,7 @@ Relationships:
 
 from __future__ import annotations
 
+from pathlib import Path
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -81,10 +82,27 @@ class SeatingExportJobFinalizer:
             job.upstream_job_id,
             correlation_id=correlation_id,
         )
+        return await self.complete_local_success(
+            job=job,
+            content=outcome.artifact.content,
+            filename=job.output_filename or outcome.artifact.filename,
+            correlation_id=correlation_id,
+        )
+
+    async def complete_local_success(
+        self,
+        *,
+        job: SeatingExportJob,
+        content: bytes,
+        filename: str | None = None,
+        correlation_id: str | None,
+    ) -> SeatingExportJob:
+        """Persist one locally generated artifact and complete the export job."""
+
         vault_file = await self._save_to_vault(
             owner_user_id=job.owner_user_id,
-            filename=job.output_filename or outcome.artifact.filename,
-            content=outcome.artifact.content,
+            filename=filename or job.output_filename,
+            content=content,
         )
         return await self._persist_terminal_status(
             job=job,
@@ -140,8 +158,8 @@ class SeatingExportJobFinalizer:
     ) -> VaultFile:
         actual_bytes = len(content)
         if actual_bytes > self._settings.VAULT_MAX_FILE_BYTES:
-            raise validation_error("PDF-exporten är för stor för Vault.")
-        safe_name = sanitize_input_filename(input_filename=filename or "klassrumskarta.pdf")
+            raise validation_error("Exportfilen är för stor för Vault.")
+        safe_name = sanitize_input_filename(input_filename=filename or "klassrumskarta-export")
         now = self._clock.now()
         file_id = self._id_generator.new_uuid()
 
@@ -245,7 +263,7 @@ class DownloadSeatingExportJobHandler:
         self._vault_storage = vault_storage
         self._uow = uow
 
-    async def handle(self, *, actor: User, job_id: UUID) -> tuple[str, bytes]:
+    async def handle(self, *, actor: User, job_id: UUID) -> tuple[str, str, bytes]:
         async with self._uow:
             job = await self._jobs.get_by_id(job_id=job_id)
             if job is None or job.owner_user_id != actor.id:
@@ -255,7 +273,20 @@ class DownloadSeatingExportJobHandler:
             vault_file = await self._vault_files.get_by_id(file_id=job.vault_file_id)
             if vault_file is None or vault_file.user_id != actor.id:
                 raise not_found("VaultFile", str(job.vault_file_id))
-        return vault_file.name, await self._vault_storage.read_file(
-            user_id=actor.id,
-            file_id=vault_file.id,
+        return (
+            vault_file.name,
+            _media_type_for_filename(vault_file.name),
+            await self._vault_storage.read_file(
+                user_id=actor.id,
+                file_id=vault_file.id,
+            ),
         )
+
+
+def _media_type_for_filename(filename: str) -> str:
+    """Resolve the public download media type from the teacher-facing filename."""
+
+    suffix = Path(filename).suffix.lower()
+    if suffix == ".xlsx":
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    return "application/pdf"

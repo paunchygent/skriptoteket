@@ -582,6 +582,7 @@ async def test_update_draft_calls_handler():
         draft_id=draft_id,
         owner_user_id=user.id,
         expected_revision=0,
+        smart_enabled=None,
         groups=None,
         group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],

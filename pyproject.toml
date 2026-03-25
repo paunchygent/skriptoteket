@@ -338,6 +338,7 @@ format = "ruff format --force-exclude ."
 lint = { composite = [
     "ruff format --check --diff --force-exclude .",
     "ruff check --force-exclude .",
+    "python -m scripts.check_migration_test_coverage",
     "python -m scripts.check_agent_doc_budgets",
     "python -m scripts.validate_docs",
     "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment",
@@ -352,6 +353,7 @@ test-sequential = "pytest -n 0"
 
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"
+check-migration-test-coverage = "python -m scripts.check_migration_test_coverage"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
 sds-check-hazard-alignment = "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment"

@@ -179,9 +179,9 @@ async def download_seating_export_job(
     handler: FromDishka[DownloadSeatingExportJobHandler],
     user: User = Depends(require_user_api),
 ) -> Response:
-    filename, content = await handler.handle(actor=user, job_id=job_id)
+    filename, media_type, content = await handler.handle(actor=user, job_id=job_id)
     return Response(
         content=content,
-        media_type="application/pdf",
+        media_type=media_type,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RoomTemplate,
     Seat,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
+from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
@@ -158,7 +158,7 @@ class UpdateRoomTemplateHandler:
 
 
 class DeleteRoomTemplateHandler:
-    """Delete a reusable room template asset."""
+    """Delete a room template and every dependent planner draft."""
 
     def __init__(
         self,
@@ -174,18 +174,10 @@ class DeleteRoomTemplateHandler:
         template = await self._templates.get_by_id(template_id=template_id)
         if not template or template.owner_user_id != owner_user_id:
             raise not_found("RoomTemplate", str(template_id))
-        if await self._drafts.has_active_for_template(
-            owner_user_id=owner_user_id,
-            template_id=template_id,
-        ):
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message=(
-                    "Du kan inte radera klassrummet eftersom ett aktivt utkast "
-                    "fortfarande använder det."
-                ),
-                details={"template_id": str(template_id), "reason": "active_draft_dependency"},
-            )
 
         async with self._uow:
+            await self._drafts.delete_for_template(
+                owner_user_id=owner_user_id,
+                template_id=template_id,
+            )
             await self._templates.delete(template_id=template_id)

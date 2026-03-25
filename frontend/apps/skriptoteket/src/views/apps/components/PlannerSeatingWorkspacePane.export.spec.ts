@@ -2,8 +2,8 @@
  * Seating workspace export integration tests.
  *
  * These tests verify that the seating pane renders the compact export cluster
- * and forwards its export events without growing the larger planner shell test
- * suites.
+ * and teacher-facing export status behaviors without hard-coding presentation
+ * copy into the contract.
  */
 
 import { mount } from "@vue/test-utils";
@@ -92,17 +92,21 @@ describe("PlannerSeatingWorkspacePane export wiring", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="seating-export-group"]').text()).toContain("Export");
+    expect(wrapper.find('[data-test="seating-export-group"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-export-default"]').trigger("click");
     expect(wrapper.emitted("export-default")).toEqual([[]]);
 
     await wrapper.get('[data-test="seating-export-menu-trigger"]').trigger("click");
-    await wrapper.get('[data-test="seating-export-option-a4"]').trigger("click");
-    expect(wrapper.emitted("export-option")).toEqual([["a4_landscape"]]);
+    expect(wrapper.get('[data-test="seating-export-option-xlsx"]').text()).toContain(
+      "Excel (.xlsx)",
+    );
+
+    await wrapper.get('[data-test="seating-export-option-xlsx"]').trigger("click");
+    expect(wrapper.emitted("export-option")).toEqual([["xlsx"]]);
   });
 
-  it("shows export status, error, and download-again state from props", () => {
+  it("shows status state, supports retry, and allows dismissal", async () => {
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
@@ -121,12 +125,15 @@ describe("PlannerSeatingWorkspacePane export wiring", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="seating-export-status"]').text()).toContain(
-      "PDF hämtad och sparad i Mina filer.",
-    );
-    expect(wrapper.get('[data-test="seating-export-error"]').text()).toContain(
-      "PDF skapades men kunde inte laddas ned automatiskt.",
-    );
+    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-export-status"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-export-error"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-export-download-latest"]').exists()).toBe(true);
+
+    await wrapper.get('[data-test="seating-export-download-latest"]').trigger("click");
+    expect(wrapper.emitted("download-latest-export")).toEqual([[]]);
+
+    await wrapper.get('[data-test="seating-export-status-dismiss"]').trigger("click");
+    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
   });
 });

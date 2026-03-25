@@ -2,8 +2,8 @@
 
 Purpose:
     Define typed job-state contracts for explicit seating exports so the
-    application layer can orchestrate async HTML/CSS rendering, conversion, and
-    Vault delivery without leaking persistence or web concerns.
+    application layer can orchestrate PDF and XLSX artifact delivery without
+    leaking persistence or web concerns.
 
 Relationships:
     - Persisted through `SeatingExportJobRepositoryProtocol`.
@@ -60,8 +60,8 @@ class SeatingExportJob(BaseModel):
     roster_id: UUID
     template_id: UUID
     export_kind: SeatingExportKind
-    layout_id: SeatingExportLayoutId
-    paper_size: SeatingExportPaperSize
+    layout_id: SeatingExportLayoutId | None = None
+    paper_size: SeatingExportPaperSize | None = None
     output_filename: str
     status: SeatingExportJobStatus
     upstream_job_id: str | None = None
@@ -81,8 +81,8 @@ class SeatingExportJobResult(BaseModel):
     job_id: UUID
     draft_id: UUID
     export_kind: SeatingExportKind
-    layout_id: SeatingExportLayoutId
-    paper_size: SeatingExportPaperSize
+    layout_id: SeatingExportLayoutId | None = None
+    paper_size: SeatingExportPaperSize | None = None
     status: SeatingExportJobStatus
     created_at: datetime
     download_url: str | None = None

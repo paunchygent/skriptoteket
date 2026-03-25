@@ -144,7 +144,7 @@ class UpdateRosterHandler:
 
 
 class DeleteRosterHandler:
-    """Delete a reusable roster asset."""
+    """Delete a roster and every dependent planner draft."""
 
     def __init__(
         self,
@@ -160,18 +160,10 @@ class DeleteRosterHandler:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(roster_id))
-        if await self._drafts.has_active_for_roster(
-            owner_user_id=owner_user_id,
-            roster_id=roster_id,
-        ):
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message=(
-                    "Du kan inte radera klasslistan eftersom ett aktivt utkast "
-                    "fortfarande använder den."
-                ),
-                details={"roster_id": str(roster_id), "reason": "active_draft_dependency"},
-            )
 
         async with self._uow:
+            await self._drafts.delete_for_roster(
+                owner_user_id=owner_user_id,
+                roster_id=roster_id,
+            )
             await self._rosters.delete(roster_id=roster_id)

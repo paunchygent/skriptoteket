@@ -174,12 +174,12 @@ describe("CreateRosterModal", () => {
     randomUuidSpy.mockRestore();
   });
 
-  it("shows the backend message when roster delete is blocked by an active draft", async () => {
+  it("shows the backend message when roster delete fails", async () => {
     clientMocks.apiDelete.mockRejectedValueOnce(
       new ApiError({
-        code: "CONFLICT",
-        message: "Du kan inte radera klasslistan eftersom ett aktivt utkast fortfarande använder den.",
-        status: 409,
+        code: "INTERNAL_ERROR",
+        message: "Kunde inte radera klasslistan just nu.",
+        status: 500,
       }),
     );
 
@@ -197,7 +197,7 @@ describe("CreateRosterModal", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain(
-      "Du kan inte radera klasslistan eftersom ett aktivt utkast fortfarande använder den.",
+      "Kunde inte radera klasslistan just nu.",
     );
     expect(wrapper.emitted("deleted")).toBeUndefined();
   });

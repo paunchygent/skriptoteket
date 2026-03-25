@@ -10,7 +10,7 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } from "../../../components/icons";
-import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
+import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { setSeatStyledStudentDragPreview } from "../roomSeatDragPreview";
@@ -55,7 +55,7 @@ const emit = defineEmits<{
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-history"): void;
   (e: "export-default"): void;
-  (e: "export-option", paperSize: SeatingExportPaperSize): void;
+  (e: "export-option", option: SeatingExportOption): void;
   (e: "download-latest-export"): void;
 }>();
 
@@ -205,6 +205,14 @@ function editCurrentTemplate(): void {
   }
 }
 
+function updateSmartEnabled(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  plannerState.setDraftSmartEnabled(target.checked);
+}
+
 watch(
   () => props.selectedTemplateId,
   () => {
@@ -302,6 +310,19 @@ watch(
         <IconShuffle :size="16" />
         <span>Slumpa</span>
       </button>
+      <label
+        class="inline-flex items-center gap-2 rounded-md border border-navy/20 bg-canvas px-3 py-2 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+        data-test="seating-smart-toggle"
+      >
+        <input
+          type="checkbox"
+          class="h-4 w-4 border-navy/40 text-navy"
+          :checked="plannerState.draft?.smart_enabled ?? false"
+          :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+          @change="updateSmartEnabled"
+        >
+        <span>Smart</span>
+      </label>
       <button
         type="button"
         class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
@@ -322,12 +343,8 @@ watch(
       </button>
       <PlannerExportActionGroup
         :busy="exportBusy"
-        :status-label="exportStatusLabel"
-        :error-message="exportErrorMessage"
-        :can-download-latest="canDownloadLatestExport"
         @export-default="emit('export-default')"
         @export-option="emit('export-option', $event)"
-        @download-latest="emit('download-latest-export')"
       />
       <PlannerToolbarOverflowMenu
         label="Fler sittplatsåtgärder"

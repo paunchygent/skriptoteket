@@ -5,7 +5,7 @@ title: "Curated app: Klassrumskartan (Fundamentals Recovery)"
 status: done
 owners: "agents"
 created: 2026-03-20
-updated: 2026-03-24
+updated: 2026-03-25
 outcome: "Teachers work from a class-first workspace with a compact overview-first dashboard, enter separate grouping or seating drafts as needed, use classrooms as secondary context, rely on autosave plus bounded undo/redo draft history, and get task-local `Slumpa` without being forced through undeclared advanced planning controls."
 dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 ---
@@ -66,7 +66,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
 - [x] [ST-24-07: Overview-first workspace management](../stories/story-24-07-group-seating-studio-overview-first-workspace-management.md)
 - [x] [ST-24-08: Landing-page cutover and exit-to-origin flow](../stories/story-24-08-group-seating-studio-landing-cutover-and-exit-to-origin.md)
 
-## Implementation Summary (as of 2026-03-24)
+## Implementation Summary (as of 2026-03-25)
 
 - EPIC-24 has been re-scoped away from the earlier “show everything” Slice 2 surface.
 - The governing product direction is now fundamentals first:
@@ -94,7 +94,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
   - landing page no longer exposes lesson mode as part of the default teacher workflow
   - planner start currently depends on class + classroom only and returns cleanly to the landing page
   - resumable work is explicit through `POST /drafts/resolve` and `GET /drafts/resumable`
-  - roster/template delete is blocked when an active draft still depends on the asset, with teacher-facing modal feedback
+  - roster/template delete now cascades dependent drafts instead of blocking on active-draft dependency, with planner-native confirmation copy that explains the destructive scope
   - this slice is explicitly transitional; ST-24-02 replaces the symmetric class/classroom launch model with a class-first workspace
 - The newer review guidance also clarifies three structural decisions for implementation:
   - class-first workspace with classrooms as secondary context

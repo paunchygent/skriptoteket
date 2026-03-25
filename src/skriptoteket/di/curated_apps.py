@@ -90,6 +90,9 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner import (
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
     BrutalistPosterRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
+    SeatingXlsxRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
@@ -132,6 +135,7 @@ from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
+    SeatingXlsxRendererProtocol,
 )
 from skriptoteket.protocols.classroom_planner_imports import (
     ClassListHeuristicParserProtocol,
@@ -613,8 +617,11 @@ class CuratedAppsProvider(Provider):
         prepare: PrepareSeatingExportHandler,
         jobs: SeatingExportJobRepositoryProtocol,
         webhook_bindings: SeatingExportWebhookBindingRepositoryProtocol,
-        renderer: SeatingPosterRendererProtocol,
+        poster_renderer: SeatingPosterRendererProtocol,
+        xlsx_renderer: SeatingXlsxRendererProtocol,
         client: SirConvertALotClientV2Protocol,
+        finalizer: SeatingExportJobFinalizer,
+        vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -624,8 +631,11 @@ class CuratedAppsProvider(Provider):
             prepare=prepare,
             jobs=jobs,
             webhook_bindings=webhook_bindings,
-            renderer=renderer,
+            poster_renderer=poster_renderer,
+            xlsx_renderer=xlsx_renderer,
             client=client,
+            finalizer=finalizer,
+            vault_files=vault_files,
             uow=uow,
             clock=clock,
             id_generator=id_generator,
@@ -821,6 +831,10 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
         return BrutalistPosterRenderer()
+
+    @provide(scope=Scope.APP)
+    def seating_xlsx_renderer(self) -> SeatingXlsxRendererProtocol:
+        return SeatingXlsxRenderer()
 
     @provide(scope=Scope.APP)
     def class_list_document_extractor(

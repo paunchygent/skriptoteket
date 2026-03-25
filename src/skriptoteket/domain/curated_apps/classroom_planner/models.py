@@ -3,7 +3,8 @@
 This module defines the active classroom-planner aggregates shared by the
 domain, application handlers, repositories, and bespoke SPA API contract. The
 current fundamentals contract keeps reusable roster and room assets separate
-from mutable draft state for groups, seat assignments, and teacher notes.
+from mutable draft state for groups, seat assignments, and smart-planning
+preferences.
 """
 
 from __future__ import annotations
@@ -167,6 +168,7 @@ class PlanDraft(BaseModel):
     roster_id: UUID
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
+    smart_enabled: bool = False
     status: PlanDraftStatus = PlanDraftStatus.ACTIVE
     revision: int = 0
     last_opened_at: datetime

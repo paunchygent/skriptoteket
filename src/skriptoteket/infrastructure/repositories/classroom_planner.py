@@ -2,7 +2,7 @@
 
 This module maps SQLAlchemy models to the active classroom-planner domain
 models. It persists reusable teacher assets plus the mutable draft workspace
-for grouping, seating, and teacher-note fundamentals.
+for grouping, seating, and draft-scoped smart-planning fundamentals.
 """
 
 from __future__ import annotations
@@ -85,6 +85,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             roster_id=model.roster_id,
             draft_kind=PlanDraftKind(model.draft_kind),
             template_id=model.template_id,
+            smart_enabled=model.smart_enabled,
             status=PlanDraftStatus(model.status),
             revision=model.revision,
             last_opened_at=model.last_opened_at,
@@ -351,12 +352,31 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
         return bool(result.scalar())
 
+    async def delete_for_roster(self, *, owner_user_id: UUID, roster_id: UUID) -> None:
+        await self._session.execute(
+            delete(PlanDraftModel).where(
+                PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.roster_id == roster_id,
+            )
+        )
+        await self._session.flush()
+
+    async def delete_for_template(self, *, owner_user_id: UUID, template_id: UUID) -> None:
+        await self._session.execute(
+            delete(PlanDraftModel).where(
+                PlanDraftModel.owner_user_id == owner_user_id,
+                PlanDraftModel.template_id == template_id,
+            )
+        )
+        await self._session.flush()
+
     async def save(self, *, draft: PlanDraft) -> None:
         model = await self._session.get(PlanDraftModel, draft.id)
         if model:
             model.roster_id = draft.roster_id
             model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
+            model.smart_enabled = draft.smart_enabled
             model.status = draft.status.value
             model.revision = draft.revision
             model.last_opened_at = draft.last_opened_at
@@ -368,6 +388,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
+                smart_enabled=draft.smart_enabled,
                 status=draft.status.value,
                 revision=draft.revision,
                 last_opened_at=draft.last_opened_at,
@@ -393,6 +414,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
 
         snapshot = {
+            "smart_enabled": workspace.draft.smart_enabled,
             "groups": [
                 {
                     "id": group.id,
@@ -457,6 +479,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 roster_id=draft.roster_id,
                 draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
+                smart_enabled=draft.smart_enabled,
                 status=draft.status.value,
                 revision=draft.revision,
                 last_opened_at=draft.last_opened_at,
@@ -468,6 +491,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.roster_id = draft.roster_id
             model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
+            model.smart_enabled = draft.smart_enabled
             model.status = draft.status.value
             model.revision = draft.revision
             model.last_opened_at = draft.last_opened_at
@@ -601,6 +625,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
 
         if model.draft_kind == PlanDraftKind.GROUPING.value:
             model.template_id = snapshot.get("template_id")
+        model.smart_enabled = bool(snapshot.get("smart_enabled", False))
 
         await self._replace_related_collection(
             model=model,

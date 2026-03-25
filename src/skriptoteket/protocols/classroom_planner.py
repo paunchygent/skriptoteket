@@ -80,6 +80,14 @@ class PlanDraftRepositoryProtocol(Protocol):
         """Return whether an active draft still depends on a room template."""
         ...
 
+    async def delete_for_roster(self, *, owner_user_id: UUID, roster_id: UUID) -> None:
+        """Delete every draft owned by one user that depends on a roster."""
+        ...
+
+    async def delete_for_template(self, *, owner_user_id: UUID, template_id: UUID) -> None:
+        """Delete every draft owned by one user that depends on a room template."""
+        ...
+
     async def save(self, *, draft: PlanDraft) -> None:
         """Save or update a draft root record."""
         ...

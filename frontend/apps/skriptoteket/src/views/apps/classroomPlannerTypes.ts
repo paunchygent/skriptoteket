@@ -86,6 +86,7 @@ export type PlanDraft = {
   roster_id: string;
   draft_kind: PlanDraftKind;
   template_id?: string | null;
+  smart_enabled?: boolean;
   status: "active" | "abandoned" | "superseded";
   revision: number;
   last_opened_at: string;

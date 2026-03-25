@@ -5,8 +5,8 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-24
-outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, later export grouping layouts through separate artifacts, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
+updated: 2026-03-25
+outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 ---
 
@@ -32,9 +32,12 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 - Require teacher preview and confirmation before imported students or class names are saved.
 - Prefer Hule internal-network service routing for Sir Convert-a-Lot in planning and implementation where available, with public/external access treated as a fallback rather than the primary lane.
 - Follow seating exports with editable seating `XLSX`.
-- Follow seating exports with separate grouping export artifacts:
-  - grouping PDF
-  - grouping XLSX
+- Make grouping `XLSX` the first grouping export artifact because teachers often need to swap students, reorder members, and do final cleanup after export.
+- Follow grouping `XLSX` with a separate grouping `PDF` presentation artifact.
+- Treat grouping exports as their own artifact family rather than as seating exports with renamed labels:
+  - grouping `XLSX` is the editable collaboration artifact
+  - grouping `PDF` is the presentation/share artifact
+- Default the grouping `PDF` lane to `A4` portrait and optimize it first for Teams / Google Classroom style digital sharing rather than for wall-poster display.
 - Plan the next desktop-first UX hardening slices that support the same teacher I/O lane without
   reopening EPIC-24:
   - fixed-preview overflow handling in `Oversikt`
@@ -59,6 +62,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 - A weak export renderer contract could accidentally couple artifact quality to current SPA layout constraints.
 - PDF import could become over-scoped if it tries to perfectly understand arbitrary school documents instead of staying preview-first and teacher-confirmed.
 - Grouping exports could drift into seating-first assumptions if the artifact models are not kept separate.
+- Grouping XLSX could collapse into a backend-shaped dump unless workbook shape, headings, and page setup are specified before implementation starts.
 
 ## Stories
 
@@ -100,6 +104,16 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
   - readable at distance
   - no second-page filler
 - Editable/tabular needs belong to `XLSX`, not to extra PDF pages.
+- For seating, `PDF` remains the default export action:
+  - `XLSX` joins the same export menu as a secondary operational artifact
+  - the workbook is generated locally rather than through Sir Convert-a-Lot
+- For grouping, editable/tabular needs come first:
+  - `XLSX` is the primary teacher workflow artifact
+  - `PDF` follows as the cleaner presentation/share artifact
+- Grouping `PDF` should read like a digital handout:
+  - `A4` portrait by default
+  - easy to post in Teams or Google Classroom
+  - printable when needed, but not designed as a classroom wall poster
 - PDF import should use the existing Sir Convert-a-Lot service model rather than introducing a bespoke heavy parsing lane inside Klassrumskartan itself.
 - PDF and document export planning should prefer the dedicated Sir Convert-a-Lot service boundary rather than folding conversion concerns into planner-owned rendering/runtime responsibilities.
 - A review doc should be created and approved before implementation begins, per the repo review workflow.

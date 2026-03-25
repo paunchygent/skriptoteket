@@ -68,6 +68,9 @@ from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
     BrutalistPosterRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
+    SeatingXlsxRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
@@ -88,6 +91,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner_export_webhook_b
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
+)
+from skriptoteket.infrastructure.repositories.user_vault_usage_repository import (
+    PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 
@@ -398,6 +404,22 @@ async def _create_export_job(
             base_url=client_settings.base_url,
             timeout=client_settings.timeout_seconds,
         ) as http_client:
+            vault_files = PostgreSQLUserVaultFileRepository(session)
+            vault_storage = LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT))
+            finalizer = seating_export_job_completion_handlers.SeatingExportJobFinalizer(
+                jobs=PostgreSQLSeatingExportJobRepository(session),
+                client=SirConvertALotClientV2(
+                    settings=client_settings,
+                    client=http_client,
+                ),
+                vault_files=vault_files,
+                vault_usage=PostgreSQLUserVaultUsageRepository(session),
+                vault_storage=vault_storage,
+                uow=SQLAlchemyUnitOfWork(session),
+                clock=UTCClock(),
+                id_generator=UUID4Generator(),
+                settings=settings,
+            )
             create_job = CreateSeatingExportJobHandler(
                 prepare=PrepareSeatingExportHandler(
                     drafts=PostgreSQLPlanDraftRepository(session),
@@ -406,11 +428,14 @@ async def _create_export_job(
                 ),
                 jobs=PostgreSQLSeatingExportJobRepository(session),
                 webhook_bindings=PostgreSQLSeatingExportWebhookBindingRepository(session),
-                renderer=BrutalistPosterRenderer(),
+                poster_renderer=BrutalistPosterRenderer(),
+                xlsx_renderer=SeatingXlsxRenderer(),
                 client=SirConvertALotClientV2(
                     settings=client_settings,
                     client=http_client,
                 ),
+                finalizer=finalizer,
+                vault_files=vault_files,
                 uow=SQLAlchemyUnitOfWork(session),
                 clock=UTCClock(),
                 id_generator=UUID4Generator(),
@@ -470,6 +495,7 @@ async def _download_export_from_vault(
             uow=SQLAlchemyUnitOfWork(session),
         )
         try:
-            return await download_handler.handle(actor=actor, job_id=export_job_id)
+            filename, _, content = await download_handler.handle(actor=actor, job_id=export_job_id)
+            return filename, content
         except DomainError as exc:
             raise SystemExit(exc.message) from exc

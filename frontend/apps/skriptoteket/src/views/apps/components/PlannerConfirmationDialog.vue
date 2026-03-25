@@ -12,6 +12,7 @@ defineProps<{
   message: string;
   confirmLabel: string;
   isSubmitting?: boolean;
+  errorMessage?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -40,6 +41,15 @@ const emit = defineEmits<{
           <p class="text-sm leading-relaxed text-navy/70">
             {{ message }}
           </p>
+        </div>
+
+        <div
+          v-if="errorMessage"
+          class="system-message system-message-error mt-4"
+        >
+          <div class="system-message-content">
+            {{ errorMessage }}
+          </div>
         </div>
 
         <div class="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-navy/15 pt-4">

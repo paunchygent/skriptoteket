@@ -34,6 +34,8 @@ const {
   activeTemplateModal,
   overviewDeleteRosterTarget,
   overviewDeleteTemplateTarget,
+  overviewDeleteRosterError,
+  overviewDeleteTemplateError,
   isDeletingOverviewRoster,
   isDeletingOverviewTemplate,
   isSeatingLifecycleBusy,
@@ -199,8 +201,9 @@ const {
       v-if="overviewDeleteRosterTarget"
       eyebrow="Ta bort klasslista"
       title="Är du säker?"
-      :message="`Klasslistan ${overviewDeleteRosterTarget.name} tas bort från översikten. Aktiva utkast som fortfarande använder klassen skyddas av backend-reglerna och kan stoppa borttagningen.`"
+      :message="`Klasslistan ${overviewDeleteRosterTarget.name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.`"
       confirm-label="Ta bort klasslista"
+      :error-message="overviewDeleteRosterError"
       :is-submitting="isDeletingOverviewRoster"
       @cancel="closeOverviewRosterDelete"
       @confirm="void confirmOverviewRosterDelete()"
@@ -210,8 +213,9 @@ const {
       v-if="overviewDeleteTemplateTarget"
       eyebrow="Ta bort klassrum"
       title="Är du säker?"
-      :message="`Klassrummet ${overviewDeleteTemplateTarget.name} tas bort från översikten. Utkast som fortfarande använder klassrummet skyddas av backend-reglerna och kan stoppa borttagningen.`"
+      :message="`Klassrummet ${overviewDeleteTemplateTarget.name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.`"
       confirm-label="Ta bort klassrum"
+      :error-message="overviewDeleteTemplateError"
       :is-submitting="isDeletingOverviewTemplate"
       @cancel="closeOverviewTemplateDelete"
       @confirm="void confirmOverviewTemplateDelete()"

@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -14,6 +14,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     CompleteSeatingExportJobFromWebhookHandler,
     CreateSeatingExportJobHandler,
     PrepareSeatingExportHandler,
+    SeatingExportJobFinalizer,
     SeatingExportKind,
     SeatingExportLayoutId,
     SeatingExportPaperSize,
@@ -32,6 +33,7 @@ from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
+    SeatingXlsxRendererProtocol,
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertALotClientV2Protocol,
@@ -147,6 +149,7 @@ async def test_create_seating_export_job_reuses_existing_shared_webhook_binding(
         css_content="body{color:black;}",
         output_filename="klass-7a-a3.pdf",
     )
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.list_webhook_subscriptions.return_value = [
         SirConvertWebhookSubscriptionSummaryV2(
@@ -186,8 +189,11 @@ async def test_create_seating_export_job_reuses_existing_shared_webhook_binding(
         prepare=prepare,
         jobs=jobs,
         webhook_bindings=bindings,
-        renderer=renderer,
+        poster_renderer=renderer,
+        xlsx_renderer=xlsx_renderer,
         client=client,
+        finalizer=AsyncMock(spec=SeatingExportJobFinalizer),
+        vault_files=AsyncMock(),
         uow=_DummyUow(),
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([created_job.id]),
@@ -227,6 +233,7 @@ async def test_create_seating_export_job_recreates_missing_shared_webhook_bindin
         css_content="body{color:black;}",
         output_filename="klass-7a-a3.pdf",
     )
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.list_webhook_subscriptions.return_value = []
     client.create_webhook_subscription.return_value = SirConvertWebhookSubscriptionV2(
@@ -271,8 +278,11 @@ async def test_create_seating_export_job_recreates_missing_shared_webhook_bindin
         prepare=prepare,
         jobs=jobs,
         webhook_bindings=bindings,
-        renderer=renderer,
+        poster_renderer=renderer,
+        xlsx_renderer=xlsx_renderer,
         client=client,
+        finalizer=AsyncMock(spec=SeatingExportJobFinalizer),
+        vault_files=AsyncMock(),
         uow=_DummyUow(),
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([created_job.id]),
@@ -311,6 +321,7 @@ async def test_create_seating_export_job_fails_closed_when_canonical_binding_sec
         css_content="body{color:black;}",
         output_filename="klass-7a-a3.pdf",
     )
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.list_webhook_subscriptions.return_value = [
         SirConvertWebhookSubscriptionSummaryV2(
@@ -344,8 +355,11 @@ async def test_create_seating_export_job_fails_closed_when_canonical_binding_sec
         prepare=prepare,
         jobs=jobs,
         webhook_bindings=bindings,
-        renderer=renderer,
+        poster_renderer=renderer,
+        xlsx_renderer=xlsx_renderer,
         client=client,
+        finalizer=AsyncMock(spec=SeatingExportJobFinalizer),
+        vault_files=AsyncMock(),
         uow=_DummyUow(),
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([created_job.id]),
@@ -388,6 +402,7 @@ async def test_create_seating_export_job_recreates_shared_binding_when_callback_
         css_content="body{color:black;}",
         output_filename="klass-7a-a3.pdf",
     )
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.list_webhook_subscriptions.return_value = [
         SirConvertWebhookSubscriptionSummaryV2(
@@ -437,8 +452,11 @@ async def test_create_seating_export_job_recreates_shared_binding_when_callback_
         prepare=prepare,
         jobs=jobs,
         webhook_bindings=bindings,
-        renderer=renderer,
+        poster_renderer=renderer,
+        xlsx_renderer=xlsx_renderer,
         client=client,
+        finalizer=AsyncMock(spec=SeatingExportJobFinalizer),
+        vault_files=AsyncMock(),
         uow=_DummyUow(),
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([created_job.id]),

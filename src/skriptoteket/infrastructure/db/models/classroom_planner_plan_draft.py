@@ -2,7 +2,7 @@
 
 This module persists the mutable classroom-planner workspace used by the
 active fundamentals flow. Draft child tables capture group structure, seating
-assignments, and teacher-only student notes scoped to one plan draft.
+assignments, and teacher-owned planning state scoped to one plan draft.
 """
 
 from __future__ import annotations
@@ -65,6 +65,12 @@ class PlanDraftModel(Base):
         PGUUID(as_uuid=True),
         ForeignKey("classroom_planner_room_templates.id", ondelete="CASCADE"),
         nullable=True,
+    )
+    smart_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=text("false"),
     )
     status: Mapped[str] = mapped_column(
         String(32),

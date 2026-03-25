@@ -181,6 +181,8 @@ export function useClassroomPlannerRouteShell() {
     activeTemplateModal: overviewCrudFlow.activeTemplateModal,
     overviewDeleteRosterTarget: overviewCrudFlow.overviewDeleteRosterTarget,
     overviewDeleteTemplateTarget: overviewCrudFlow.overviewDeleteTemplateTarget,
+    overviewDeleteRosterError: overviewCrudFlow.overviewDeleteRosterError,
+    overviewDeleteTemplateError: overviewCrudFlow.overviewDeleteTemplateError,
     isDeletingOverviewRoster: overviewCrudFlow.isDeletingOverviewRoster,
     isDeletingOverviewTemplate: overviewCrudFlow.isDeletingOverviewTemplate,
     isSeatingLifecycleBusy,

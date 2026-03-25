@@ -15,6 +15,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - PRD (Tool Authoring): `docs/prd/prd-tool-authoring-v0.1.md`
 - PRD (Klassrumskartan current): `docs/prd/prd-group-seating-studio-v0.3.md`
 - Product direction (Klassrumskartan): `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
+- Smart assignment V1 decision memo:
+  `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
 - Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
 - Editor sandbox preview plan: `docs/reference/ref-editor-sandbox-preview-plan.md`
 - Runner execution flow codemap: `docs/reference/reports/codemaps/runner-execution-flow.md`
@@ -57,10 +59,20 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0137-klassrumskartan-class-list-import-remediation-example-corpus-and-overview-reconciliation.md`
 - Seating export single-key/runtime remediation follow-up:
   `docs/backlog/prs/pr-0138-seating-export-single-canonical-sir-convert-v2-key-and-runtime-wiring.md`
+- Local export runtime parity/schema remediation follow-up:
+  `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`
+- Alembic migration integrity/idempotency remediation follow-up:
+  `docs/backlog/prs/pr-0145-alembic-migration-integrity-and-full-idempotency-coverage.md`
 - Proposed Klassrumskartan export/import epic:
   `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan export/import review:
   `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
+- Proposed Klassrumskartan smart assignment ADR:
+  `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
+- Proposed Klassrumskartan smart assignment epic:
+  `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
+- Proposed Klassrumskartan smart assignment review:
+  `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -156,6 +168,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0071-group-seating-studio-fundamentals-workflow-and-saved-artifacts.md`
 - `docs/adr/adr-0072-group-seating-studio-class-first-workspace-and-draft-kinds.md`
 - `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
+- `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -202,6 +215,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-24-group-seating-studio-slice-2.md`
 - `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
 - `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
+- `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
 
 ### Backlog Stories
 
@@ -232,6 +246,11 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md`
 - `docs/backlog/stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md`
 - `docs/backlog/stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md`
+- `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md`
+- `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md`
+- `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md`
+- `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`
+- `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md`
 
 ### Backlog Reviews
 
@@ -258,6 +277,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md`
 - `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
+- `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 
 ### Backlog Sprints
 
@@ -309,6 +329,13 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0136-klassrumskartan-seat-drag-preview-and-room-editor-same-tool-toggle-removal.md`
 - `docs/backlog/prs/pr-0137-klassrumskartan-class-list-import-remediation-example-corpus-and-overview-reconciliation.md`
 - `docs/backlog/prs/pr-0138-seating-export-single-canonical-sir-convert-v2-key-and-runtime-wiring.md`
+- `docs/backlog/prs/pr-0139-klassrumskartan-grouping-export-action-hierarchy-and-shared-presentation-contract.md`
+- `docs/backlog/prs/pr-0140-klassrumskartan-grouping-xlsx-workbook-layout-and-artifact-delivery.md`
+- `docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md`
+- `docs/backlog/prs/pr-0142-klassrumskartan-seating-xlsx-menu-option-local-export-contract-and-flow.md`
+- `docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md`
+- `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`
+- `docs/backlog/prs/pr-0145-alembic-migration-integrity-and-full-idempotency-coverage.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`
@@ -635,6 +662,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-editor-sandbox-preview-plan.md`
 - `docs/reference/ref-frontend-test-gaps-2025-12-29.md`
 - `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
+- `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
 - `docs/reference/ref-home-server-architecture.md`
 - `docs/reference/ref-home-server-cleanup-timers.md`
 - `docs/reference/ref-home-server-cli-tools.md`

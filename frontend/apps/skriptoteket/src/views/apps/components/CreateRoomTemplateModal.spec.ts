@@ -330,12 +330,12 @@ describe("CreateRoomTemplateModal", () => {
     );
   });
 
-  it("shows the backend message when classroom delete is blocked by an active draft", async () => {
+  it("shows the backend message when classroom delete fails", async () => {
     clientMocks.apiDelete.mockRejectedValueOnce(
       new ApiError({
-        code: "CONFLICT",
-        message: "Du kan inte radera klassrummet eftersom ett aktivt utkast fortfarande använder det.",
-        status: 409,
+        code: "INTERNAL_ERROR",
+        message: "Kunde inte radera klassrummet just nu.",
+        status: 500,
       }),
     );
 
@@ -356,7 +356,7 @@ describe("CreateRoomTemplateModal", () => {
     await Promise.resolve();
 
     expect(wrapper.text()).toContain(
-      "Du kan inte radera klassrummet eftersom ett aktivt utkast fortfarande använder det.",
+      "Kunde inte radera klassrummet just nu.",
     );
     expect(wrapper.emitted("deleted")).toBeUndefined();
   });

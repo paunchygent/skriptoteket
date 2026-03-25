@@ -5,7 +5,7 @@ title: "Review: Klassrumskartan explicit exports and class-list import"
 status: approved
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-03-25
 reviewer: "lead-developer"
 epic: EPIC-26
 adrs:
@@ -102,6 +102,19 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 | 3 | `REV-EPIC-26`, `ST-26-03`, `ST-26-04`, `ST-26-05` | Added later stories to the review surface and tightened export artifact-shape acceptance criteria for reviewable `ready` status. |
 | 4 | `EPIC-26`, `ST-26-01` to `ST-26-05`, `REV-EPIC-26` | Clarified Sir Convert-a-Lot as the preferred dedicated service boundary for import/export planning, with Hule internal-network routing preferred where available. |
 | 5 | `ST-26-01`, `PR-0118`, `PR-0119` | Locked the planning contract for seating export around explicit `seatingDraftId`, export-specific HTML/CSS as the canonical intermediate source, deterministic `first name + last initial` poster labels, and required room markers including windows and benches/tables where present. |
+
+## Post-Approval Refinements
+
+- 2026-03-25 backlog tightening aligned the grouping export stories with the approved product direction from the active planning thread:
+  - grouping `XLSX` is now explicitly the first grouping export artifact
+  - grouping `PDF` now defaults to `A4` portrait and a digital-handout posture for Teams / Google Classroom sharing
+  - the workbook and PDF stories now lock more of the artifact shape up front so implementation can be handed to a junior developer with fewer open presentation decisions
+- 2026-03-25 seating `XLSX` refinement also locked the remaining workbook-shape questions from the active planning thread:
+  - seating `PDF` remains the default export action
+  - seating `XLSX` stays in the export menu as a secondary operational artifact
+  - the workbook is local/generated in Skriptoteket, not routed through Sir Convert-a-Lot
+  - the workbook now has an explicit two-sheet posture with an operational first tab and a secondary presentation sheet
+- Added planned implementation-slice docs `PR-0139`, `PR-0140`, and `PR-0141` so the next implementation team can work from file-level checklist docs rather than from generic story text alone.
 
 ## Suggested Approval Wording
 

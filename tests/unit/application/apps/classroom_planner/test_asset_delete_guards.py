@@ -9,7 +9,6 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     DeleteRosterHandler,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import RoomTemplate, Roster
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
@@ -29,7 +28,7 @@ def now():
 
 
 @pytest.mark.asyncio
-async def test_delete_roster_blocks_when_active_draft_depends_on_it(now):
+async def test_delete_roster_removes_dependent_drafts_before_roster(now):
     owner_id = uuid4()
     roster_id = uuid4()
     rosters = AsyncMock(spec=RosterRepositoryProtocol)
@@ -42,18 +41,16 @@ async def test_delete_roster_blocks_when_active_draft_depends_on_it(now):
         created_at=now,
         updated_at=now,
     )
-    drafts.has_active_for_roster.return_value = True
     handler = DeleteRosterHandler(FakeUow(), rosters, drafts)
 
-    with pytest.raises(DomainError) as exc:
-        await handler.handle(roster_id=roster_id, owner_user_id=owner_id)
+    await handler.handle(roster_id=roster_id, owner_user_id=owner_id)
 
-    assert exc.value.code == ErrorCode.CONFLICT
-    rosters.delete.assert_not_called()
+    drafts.delete_for_roster.assert_awaited_once_with(owner_user_id=owner_id, roster_id=roster_id)
+    rosters.delete.assert_awaited_once_with(roster_id=roster_id)
 
 
 @pytest.mark.asyncio
-async def test_delete_template_blocks_when_active_draft_depends_on_it(now):
+async def test_delete_template_removes_dependent_drafts_before_template(now):
     owner_id = uuid4()
     template_id = uuid4()
     templates = AsyncMock(spec=RoomTemplateRepositoryProtocol)
@@ -67,11 +64,12 @@ async def test_delete_template_blocks_when_active_draft_depends_on_it(now):
         created_at=now,
         updated_at=now,
     )
-    drafts.has_active_for_template.return_value = True
     handler = DeleteRoomTemplateHandler(FakeUow(), templates, drafts)
 
-    with pytest.raises(DomainError) as exc:
-        await handler.handle(template_id=template_id, owner_user_id=owner_id)
+    await handler.handle(template_id=template_id, owner_user_id=owner_id)
 
-    assert exc.value.code == ErrorCode.CONFLICT
-    templates.delete.assert_not_called()
+    drafts.delete_for_template.assert_awaited_once_with(
+        owner_user_id=owner_id,
+        template_id=template_id,
+    )
+    templates.delete.assert_awaited_once_with(template_id=template_id)

@@ -6,7 +6,7 @@ import hashlib
 import hmac
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -32,11 +32,24 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingPosterScene,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassroomPlannerWorkspace,
+    DraftHistoryStatus,
+    PlanDraft,
+    PlanDraftKind,
+    PlanDraftStatus,
+    RoomTemplate,
+    Roster,
+    Seat,
+    SeatAssignment,
+    Student,
+)
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
 from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
+    SeatingXlsxRendererProtocol,
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertALotClientV2Protocol,
@@ -116,6 +129,49 @@ def _prepared_contract() -> PreparedSeatingExportContract:
     )
 
 
+def _workspace(*, owner_user_id) -> ClassroomPlannerWorkspace:
+    now = datetime(2026, 3, 24, tzinfo=timezone.utc)
+    draft_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    return ClassroomPlannerWorkspace(
+        draft=PlanDraft(
+            id=draft_id,
+            owner_user_id=owner_user_id,
+            roster_id=roster_id,
+            draft_kind=PlanDraftKind.SEATING,
+            template_id=template_id,
+            status=PlanDraftStatus.ACTIVE,
+            revision=4,
+            last_opened_at=now,
+            created_at=now,
+            updated_at=now,
+        ),
+        roster=Roster(
+            id=roster_id,
+            owner_user_id=owner_user_id,
+            name="Klass 7A",
+            students=[
+                Student(id="student-1", display_name="Ada Lovelace"),
+                Student(id="student-2", display_name="Linus Torvalds"),
+            ],
+            created_at=now,
+            updated_at=now,
+        ),
+        template=RoomTemplate(
+            id=template_id,
+            owner_user_id=owner_user_id,
+            name="Sal A",
+            seats=[Seat(id="seat-1", x=0, y=0)],
+            fixtures=[],
+            created_at=now,
+            updated_at=now,
+        ),
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-1")],
+        history_status=DraftHistoryStatus(can_undo=False, can_redo=False),
+    )
+
+
 def _job(
     *,
     owner_user_id,
@@ -162,6 +218,7 @@ async def test_create_seating_export_job_submits_rendered_html_and_css_bundle():
         css_content="body{color:black;}",
         output_filename="klass-7a-a3.pdf",
     )
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.create_webhook_subscription.return_value = SimpleNamespace(
         subscription_id="whsub-1",
@@ -203,8 +260,11 @@ async def test_create_seating_export_job_submits_rendered_html_and_css_bundle():
         prepare=prepare,
         jobs=jobs,
         webhook_bindings=bindings,
-        renderer=renderer,
+        poster_renderer=renderer,
+        xlsx_renderer=xlsx_renderer,
         client=client,
+        finalizer=AsyncMock(spec=SeatingExportJobFinalizer),
+        vault_files=AsyncMock(spec=VaultFileRepositoryProtocol),
         uow=_DummyUow(),
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([job_id]),
@@ -248,6 +308,7 @@ async def test_create_seating_export_job_marks_persisted_job_failed_when_webhook
         css_content="body{color:black;}",
         output_filename="klass-7a-a3.pdf",
     )
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     client = AsyncMock(spec=SirConvertALotClientV2Protocol)
     client.create_webhook_subscription.side_effect = RuntimeError("webhook down")
     job_id = uuid4()
@@ -276,8 +337,11 @@ async def test_create_seating_export_job_marks_persisted_job_failed_when_webhook
         prepare=prepare,
         jobs=jobs,
         webhook_bindings=bindings,
-        renderer=renderer,
+        poster_renderer=renderer,
+        xlsx_renderer=xlsx_renderer,
         client=client,
+        finalizer=AsyncMock(spec=SeatingExportJobFinalizer),
+        vault_files=AsyncMock(spec=VaultFileRepositoryProtocol),
         uow=_DummyUow(),
         clock=_FixedClock(now),
         id_generator=_FixedIdGenerator([job_id]),
@@ -297,6 +361,100 @@ async def test_create_seating_export_job_marks_persisted_job_failed_when_webhook
     updated = jobs.update.await_args.kwargs["job"]
     assert updated.status is SeatingExportJobStatus.FAILED
     assert updated.error_message == "Kunde inte starta PDF-exporten just nu. Försök igen."
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_create_seating_export_job_completes_local_xlsx_export_without_upstream_submission():
+    actor = make_user()
+    now = datetime(2026, 3, 24, tzinfo=timezone.utc)
+    workspace = _workspace(owner_user_id=actor.id)
+    assert workspace.template is not None
+    prepare = AsyncMock(spec=PrepareSeatingExportHandler)
+    prepare.load_workspace.return_value = workspace
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    bindings = AsyncMock(spec=SeatingExportWebhookBindingRepositoryProtocol)
+    poster_renderer = MagicMock(spec=SeatingPosterRendererProtocol)
+    xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
+    xlsx_renderer.render.return_value = b"xlsx-bytes"
+    client = AsyncMock(spec=SirConvertALotClientV2Protocol)
+    finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
+    vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
+    job_id = uuid4()
+    vault_file_id = uuid4()
+    created_job = SeatingExportJob(
+        id=job_id,
+        owner_user_id=actor.id,
+        draft_id=workspace.draft.id,
+        roster_id=workspace.roster.id,
+        template_id=workspace.template.id,
+        export_kind=SeatingExportKind.XLSX,
+        layout_id=None,
+        paper_size=None,
+        output_filename="klass-7a-sittplacering-deadbeef.xlsx",
+        status=SeatingExportJobStatus.SUBMITTED,
+        created_at=now,
+        updated_at=now,
+    )
+    completed_job = created_job.model_copy(
+        update={
+            "status": SeatingExportJobStatus.SUCCEEDED,
+            "vault_file_id": vault_file_id,
+        }
+    )
+    jobs.create.return_value = created_job
+    finalizer.complete_local_success.return_value = completed_job
+    vault_files.get_by_id.return_value = VaultFile(
+        id=vault_file_id,
+        user_id=actor.id,
+        name="klass-7a-sittplacering.xlsx",
+        bytes=len(b"xlsx-bytes"),
+        source_kind=VaultFileSourceKind.APP_EXPORT,
+        source_run_id=None,
+        source_artifact_id="classroom.group-seating-studio",
+        created_at=now,
+        deleted_at=None,
+    )
+
+    handler = CreateSeatingExportJobHandler(
+        prepare=prepare,
+        jobs=jobs,
+        webhook_bindings=bindings,
+        poster_renderer=poster_renderer,
+        xlsx_renderer=xlsx_renderer,
+        client=client,
+        finalizer=finalizer,
+        vault_files=vault_files,
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+        id_generator=_FixedIdGenerator([job_id]),
+        settings=Settings(),
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        draft_id=workspace.draft.id,
+        export_kind=SeatingExportKind.XLSX,
+        layout_id=None,
+        paper_size=None,
+        correlation_id="corr-1",
+    )
+
+    created_payload = jobs.create.await_args.kwargs["job"]
+    assert created_payload.export_kind is SeatingExportKind.XLSX
+    assert created_payload.layout_id is None
+    assert created_payload.paper_size is None
+    assert created_payload.output_filename.endswith(".xlsx")
+    poster_renderer.render.assert_not_called()
+    client.submit_job.assert_not_called()
+    finalizer.complete_local_success.assert_awaited_once_with(
+        job=created_job,
+        content=b"xlsx-bytes",
+        correlation_id="corr-1",
+    )
+    assert result.status is SeatingExportJobStatus.SUCCEEDED
+    assert result.vault_artifact is not None
+    assert result.vault_artifact.name == "klass-7a-sittplacering.xlsx"
 
 
 @pytest.mark.unit
@@ -649,7 +807,8 @@ async def test_download_seating_export_job_reads_pdf_from_vault():
         uow=_DummyUow(),
     )
 
-    filename, content = await handler.handle(actor=actor, job_id=job.id)
+    filename, media_type, content = await handler.handle(actor=actor, job_id=job.id)
 
     assert filename == "klass-7a-a3.pdf"
+    assert media_type == "application/pdf"
     assert content == b"%PDF"

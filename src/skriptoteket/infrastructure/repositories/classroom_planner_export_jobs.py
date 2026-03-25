@@ -46,8 +46,8 @@ class PostgreSQLSeatingExportJobRepository(SeatingExportJobRepositoryProtocol):
             roster_id=job.roster_id,
             template_id=job.template_id,
             export_kind=job.export_kind.value,
-            layout_id=job.layout_id.value,
-            paper_size=job.paper_size.value,
+            layout_id=job.layout_id.value if job.layout_id is not None else None,
+            paper_size=job.paper_size.value if job.paper_size is not None else None,
             output_filename=job.output_filename,
             status=job.status.value,
             upstream_job_id=job.upstream_job_id,
@@ -67,8 +67,12 @@ class PostgreSQLSeatingExportJobRepository(SeatingExportJobRepositoryProtocol):
             roster_id=model.roster_id,
             template_id=model.template_id,
             export_kind=SeatingExportKind(model.export_kind),
-            layout_id=SeatingExportLayoutId(model.layout_id),
-            paper_size=SeatingExportPaperSize(model.paper_size),
+            layout_id=SeatingExportLayoutId(model.layout_id)
+            if model.layout_id is not None
+            else None,
+            paper_size=SeatingExportPaperSize(model.paper_size)
+            if model.paper_size is not None
+            else None,
             output_filename=model.output_filename,
             status=SeatingExportJobStatus(model.status),
             upstream_job_id=model.upstream_job_id,
@@ -161,9 +165,9 @@ class PostgreSQLSeatingExportJobRepository(SeatingExportJobRepositoryProtocol):
         model.webhook_secret = job.webhook_secret
         model.vault_file_id = job.vault_file_id
         model.error_message = job.error_message
-        model.paper_size = job.paper_size.value
+        model.paper_size = job.paper_size.value if job.paper_size is not None else None
         model.output_filename = job.output_filename
-        model.layout_id = job.layout_id.value
+        model.layout_id = job.layout_id.value if job.layout_id is not None else None
         model.export_kind = job.export_kind.value
         model.roster_id = job.roster_id
         model.template_id = job.template_id

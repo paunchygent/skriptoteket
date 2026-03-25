@@ -16,7 +16,7 @@ import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
-import type { SeatingExportPaperSize } from "../classroomPlannerExportApi";
+import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
 
 type PlannerView = "groups" | "seats";
@@ -57,7 +57,7 @@ const emit = defineEmits<{
   (e: "open-seating-history-draft", draftId: string): void;
   (e: "delete-seating-history-draft", draftId: string): void;
   (e: "export-seating-default"): void;
-  (e: "export-seating-option", paperSize: SeatingExportPaperSize): void;
+  (e: "export-seating-option", option: SeatingExportOption): void;
   (e: "download-latest-seating-export"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
@@ -160,16 +160,12 @@ const currentViewHint = computed(() => {
   if (currentView.value === "groups") {
     return "Dra elever mellan grupperna tills grupparbetet sitter.";
   }
-  return "Dra elever till platserna och öppna elevanteckningar vid behov.";
+  return "Dra elever till platserna och justera sittschemat direkt i klassrummet.";
 });
 
 function selectStudent(studentId: string): void {
   selectedStudentId.value = studentId;
-  if (currentView.value !== "seats") {
-    isMetadataDrawerOpen.value = false;
-    return;
-  }
-  isMetadataDrawerOpen.value = true;
+  isMetadataDrawerOpen.value = false;
 }
 
 async function reloadAfterConflict(): Promise<void> {

@@ -116,6 +116,14 @@ function confirmResetGroupingDraft(): void {
   state.clearGroupingAssignments();
   closeResetGroupingDialog();
 }
+
+function updateSmartEnabled(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  state.setDraftSmartEnabled(target.checked);
+}
 </script>
 
 <template>
@@ -207,6 +215,19 @@ function confirmResetGroupingDraft(): void {
         <IconShuffle :size="16" />
         <span>Slumpa</span>
       </button>
+      <label
+        class="inline-flex items-center gap-2 rounded-md border border-navy/20 bg-canvas px-3 py-2 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+        data-test="grouping-smart-toggle"
+      >
+        <input
+          type="checkbox"
+          class="h-4 w-4 border-navy/40 text-navy"
+          :checked="state.draft?.smart_enabled ?? false"
+          :disabled="state.isWorkspaceBusy"
+          @change="updateSmartEnabled"
+        >
+        <span>Smart</span>
+      </label>
       <button
         type="button"
         class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"

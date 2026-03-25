@@ -170,6 +170,45 @@ describe("useSeatingExportFlow", () => {
     expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "a4_landscape");
   });
 
+  it("exports xlsx with the dedicated status and download messages", async () => {
+    const plannerState = createPlannerState();
+    exportApiMocks.createSeatingExportJob.mockResolvedValue(
+      createJob({
+        export_kind: "xlsx",
+        layout_id: null,
+        paper_size: null,
+      }),
+    );
+    exportApiMocks.getSeatingExportJob.mockResolvedValue(
+      createJob({
+        export_kind: "xlsx",
+        layout_id: null,
+        paper_size: null,
+        status: "succeeded",
+        vault_artifact: {
+          file_id: "file-xlsx",
+          name: "klass-7a-sittplacering.xlsx",
+          bytes: 1234,
+          created_at: "2026-03-24T10:00:05Z",
+        },
+      }),
+    );
+    exportApiMocks.downloadSeatingExportJob.mockResolvedValue(new Blob(["xlsx"]));
+
+    const flow = useSeatingExportFlow({
+      plannerState,
+      pollDelayMs: 0,
+      maxPollAttempts: 1,
+    });
+
+    await flow.startExportOption("xlsx");
+
+    expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "xlsx");
+    expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
+    expect(flow.statusLabel.value).toBe("Excel-filen hämtad och sparad i Mina filer.");
+    expect(toastMocks.success).toHaveBeenCalledWith("Excel-filen hämtad och sparad i Mina filer.");
+  });
+
   it("blocks export when the pending save ends in a conflict", async () => {
     const plannerState = createPlannerState({
       saveStatus: "conflict",
@@ -245,9 +284,7 @@ describe("useSeatingExportFlow", () => {
     await flow.startDefaultExport();
 
     expect(flow.isBusy.value).toBe(true);
-    expect(flow.statusLabel.value).toBe(
-      "PDF-exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.",
-    );
+    expect(flow.statusLabel.value).toBe("Exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.");
     expect(flow.errorMessage.value).toBeNull();
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
 
@@ -348,9 +385,7 @@ describe("useSeatingExportFlow", () => {
     });
 
     await vi.waitFor(() => {
-      expect(flow.statusLabel.value).toBe(
-        "PDF-exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.",
-      );
+      expect(flow.statusLabel.value).toBe("Exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.");
     });
 
     plannerState.draft = {

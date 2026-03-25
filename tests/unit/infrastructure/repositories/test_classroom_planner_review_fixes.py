@@ -82,6 +82,7 @@ def _make_draft_model(
         roster_id=draft.roster_id,
         draft_kind=draft.draft_kind.value,
         template_id=draft.template_id,
+        smart_enabled=False,
         status=draft.status.value,
         revision=draft.revision,
         last_opened_at=now,
@@ -148,7 +149,9 @@ async def test_first_step_undo_seeds_blank_grouping_state() -> None:
     history = _require_history(model)
     assert len(history) == 2
     assert model.undo_index == 1
+    assert history[0]["smart_enabled"] is False
     assert history[0]["groups"] == []
+    assert history[1]["smart_enabled"] is False
     assert history[1]["groups"] == [
         {"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}
     ]
@@ -188,6 +191,7 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
     history = _require_history(model)
     assert len(history) == 2
     snapshot = history[1]
+    assert snapshot["smart_enabled"] is False
     assert snapshot["template_id"] == str(template_id)
     assert snapshot["student_planning_meta"] == [
         {
@@ -220,18 +224,21 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
     )
     history: list[HistorySnapshot] = [
         {
+            "smart_enabled": False,
             "template_id": None,
             "groups": [{"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
             "student_planning_meta": [],
         },
         {
+            "smart_enabled": False,
             "template_id": None,
             "groups": [{"id": "g2", "name": "G2", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
             "student_planning_meta": [],
         },
         {
+            "smart_enabled": False,
             "template_id": None,
             "groups": [{"id": "g3", "name": "G3", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
@@ -253,6 +260,8 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
 
     history = _require_history(model)
     assert len(history) == 2
+    assert history[0]["smart_enabled"] is False
+    assert history[1]["smart_enabled"] is False
     assert _first_group_id(history[0]) == "g1"
     assert _first_group_id(history[1]) == "new"
     assert model.undo_index == 1
@@ -306,6 +315,8 @@ async def test_logically_identical_snapshots_do_not_append_history() -> None:
 
     history = _require_history(model)
     assert len(history) == 2
+    assert history[0]["smart_enabled"] is False
+    assert history[1]["smart_enabled"] is False
     assert model.undo_index == 1
 
 
@@ -347,6 +358,7 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
 
     history = _require_history(model)
     assert len(history) == 1
+    assert history[0]["smart_enabled"] is False
     assert "template_id" not in history[0]
     assert history[0]["seat_assignments"] == [{"student_id": "student-1", "seat_id": "seat-2"}]
     assert history[0]["student_planning_meta"] == [
@@ -383,12 +395,14 @@ async def test_seating_undo_restores_assignments_without_restoring_template_id()
     )
     history: list[HistorySnapshot] = [
         {
+            "smart_enabled": False,
             "groups": [],
             "group_assignments": [],
             "seat_assignments": [],
             "student_planning_meta": [],
         },
         {
+            "smart_enabled": False,
             "groups": [],
             "group_assignments": [],
             "seat_assignments": [{"student_id": "student-1", "seat_id": "seat-2"}],

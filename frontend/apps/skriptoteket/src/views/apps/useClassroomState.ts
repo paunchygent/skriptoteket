@@ -199,6 +199,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
   function serializeWorkspacePatch(): Record<string, unknown> {
     return {
       expected_revision: draft.value?.revision ?? null,
+      smart_enabled: draft.value?.smart_enabled ?? false,
       groups: groups.value,
       group_assignments: groupAssignments.value,
       seat_assignments: seatAssignments.value,
@@ -281,6 +282,20 @@ export const useClassroomState = defineStore("classroom-state", () => {
     hasPendingAutosave.value = false;
     saveStatus.value = "idle";
     saveMessage.value = null;
+  }
+
+  function setDraftSmartEnabled(enabled: boolean): void {
+    if (!draft.value || isWorkspaceBusy.value) {
+      return;
+    }
+    if ((draft.value.smart_enabled ?? false) === enabled) {
+      return;
+    }
+    draft.value = {
+      ...draft.value,
+      smart_enabled: enabled,
+    };
+    markDirty();
   }
 
   async function waitForPendingSave(): Promise<void> {
@@ -606,6 +621,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     getResumableDraft,
     getClassWorkspaceSummary,
     abandonDraft,
+    setDraftSmartEnabled,
     assignStudentToGroup,
     removeStudentFromGroup,
     clearGroupingAssignments,

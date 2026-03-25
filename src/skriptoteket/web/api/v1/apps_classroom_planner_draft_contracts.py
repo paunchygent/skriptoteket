@@ -25,6 +25,7 @@ class PlanDraftDto(BaseModel):
     roster_id: UUID
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
+    smart_enabled: bool = False
     status: str
     revision: int
     last_opened_at: datetime

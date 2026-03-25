@@ -17,7 +17,6 @@ from pathlib import Path
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
-    PreparedSeatingExportContract,
     SeatingExportJob,
     SeatingExportJobResult,
     SeatingExportJobStatus,
@@ -25,6 +24,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportLayoutId,
     SeatingExportPaperSize,
     SeatingPosterRenderRequest,
+    seating_xlsx_view_model,
 )
 from skriptoteket.application.curated_apps.classroom_planner.exports.webhook_contract import (
     SEATING_EXPORT_WEBHOOK_EVENT_TYPES,
@@ -37,6 +37,7 @@ from skriptoteket.protocols.classroom_planner_exports import (
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
+    SeatingXlsxRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -67,8 +68,11 @@ class CreateSeatingExportJobHandler:
         prepare: PrepareSeatingExportHandler,
         jobs: SeatingExportJobRepositoryProtocol,
         webhook_bindings: SeatingExportWebhookBindingRepositoryProtocol,
-        renderer: SeatingPosterRendererProtocol,
+        poster_renderer: SeatingPosterRendererProtocol,
+        xlsx_renderer: SeatingXlsxRendererProtocol,
         client: SirConvertALotClientV2Protocol,
+        finalizer: SeatingExportJobFinalizer,
+        vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -77,8 +81,11 @@ class CreateSeatingExportJobHandler:
         self._prepare = prepare
         self._jobs = jobs
         self._webhook_bindings = webhook_bindings
-        self._renderer = renderer
+        self._poster_renderer = poster_renderer
+        self._xlsx_renderer = xlsx_renderer
         self._client = client
+        self._finalizer = finalizer
+        self._vault_files = vault_files
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
@@ -90,10 +97,20 @@ class CreateSeatingExportJobHandler:
         actor: User,
         draft_id: UUID,
         export_kind: SeatingExportKind,
-        layout_id: SeatingExportLayoutId,
-        paper_size: SeatingExportPaperSize,
+        layout_id: SeatingExportLayoutId | None,
+        paper_size: SeatingExportPaperSize | None,
         correlation_id: str | None,
     ) -> SeatingExportJobResult:
+        if export_kind is SeatingExportKind.XLSX:
+            return await self._handle_xlsx_export(
+                actor=actor,
+                draft_id=draft_id,
+                correlation_id=correlation_id,
+            )
+
+        if layout_id is None or paper_size is None:
+            raise validation_error("PDF-export kräver layout och pappersstorlek.")
+
         callback_base_url = self._settings.SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL.strip()
         if callback_base_url == "":
             raise validation_error("PDF-export är inte konfigurerad ännu.")
@@ -104,7 +121,7 @@ class CreateSeatingExportJobHandler:
             export_kind=export_kind,
             layout_id=layout_id,
         )
-        rendered = self._renderer.render(
+        rendered = self._poster_renderer.render(
             request=SeatingPosterRenderRequest(
                 roster_name=prepared.roster_name,
                 template_name=prepared.template_name,
@@ -114,7 +131,11 @@ class CreateSeatingExportJobHandler:
         )
         job = await self._create_job_record(
             actor=actor,
-            prepared=prepared,
+            draft_id=prepared.seating_draft_id,
+            roster_id=prepared.roster_id,
+            template_id=prepared.template_id,
+            export_kind=prepared.export_kind,
+            layout_id=prepared.layout_id,
             paper_size=paper_size,
             output_filename=rendered.output_filename,
         )
@@ -166,14 +187,50 @@ class CreateSeatingExportJobHandler:
             updated_job = await self._jobs.update(job=updated_job)
         return await build_job_result(job=updated_job, vault_files=None)
 
+    async def _handle_xlsx_export(
+        self,
+        *,
+        actor: User,
+        draft_id: UUID,
+        correlation_id: str | None,
+    ) -> SeatingExportJobResult:
+        workspace = await self._prepare.load_workspace(
+            draft_id=draft_id,
+            owner_user_id=actor.id,
+        )
+        view_model = seating_xlsx_view_model.build_seating_xlsx_view_model(workspace=workspace)
+        artifact_bytes = self._xlsx_renderer.render(view_model=view_model)
+        job = await self._create_job_record(
+            actor=actor,
+            draft_id=workspace.draft.id,
+            roster_id=workspace.roster.id,
+            template_id=workspace.template.id if workspace.template is not None else None,
+            export_kind=SeatingExportKind.XLSX,
+            layout_id=None,
+            paper_size=None,
+            output_filename=view_model.output_filename,
+        )
+        completed_job = await self._finalizer.complete_local_success(
+            job=job,
+            content=artifact_bytes,
+            correlation_id=correlation_id,
+        )
+        return await build_job_result(job=completed_job, vault_files=self._vault_files)
+
     async def _create_job_record(
         self,
         *,
         actor: User,
-        prepared: PreparedSeatingExportContract,
-        paper_size: SeatingExportPaperSize,
+        draft_id: UUID,
+        roster_id: UUID,
+        template_id: UUID | None,
+        export_kind: SeatingExportKind,
+        layout_id: SeatingExportLayoutId | None,
+        paper_size: SeatingExportPaperSize | None,
         output_filename: str,
     ) -> SeatingExportJob:
+        if template_id is None:
+            raise validation_error("Välj klassrum innan du exporterar sittschemat.")
         now = self._clock.now()
         job_id = self._id_generator.new_uuid()
         async with self._uow:
@@ -181,11 +238,11 @@ class CreateSeatingExportJobHandler:
                 job=SeatingExportJob(
                     id=job_id,
                     owner_user_id=actor.id,
-                    draft_id=prepared.seating_draft_id,
-                    roster_id=prepared.roster_id,
-                    template_id=prepared.template_id,
-                    export_kind=prepared.export_kind,
-                    layout_id=prepared.layout_id,
+                    draft_id=draft_id,
+                    roster_id=roster_id,
+                    template_id=template_id,
+                    export_kind=export_kind,
+                    layout_id=layout_id,
                     paper_size=paper_size,
                     output_filename=_stamp_output_filename(
                         filename=output_filename,

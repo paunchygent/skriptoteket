@@ -24,6 +24,7 @@ class SeatingExportKind(StrEnum):
     """Enumerate the teacher-facing seating export kinds."""
 
     PDF = "pdf"
+    XLSX = "xlsx"
 
 
 class SeatingExportLayoutId(StrEnum):

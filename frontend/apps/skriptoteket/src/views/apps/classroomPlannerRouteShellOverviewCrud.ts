@@ -42,6 +42,8 @@ export function createClassroomPlannerOverviewCrudFlow(
   const activeTemplateModal = ref<RoomTemplate | null>(null);
   const overviewDeleteRosterTarget = ref<Roster | null>(null);
   const overviewDeleteTemplateTarget = ref<RoomTemplate | null>(null);
+  const overviewDeleteRosterError = ref<string | null>(null);
+  const overviewDeleteTemplateError = ref<string | null>(null);
   const isDeletingOverviewRoster = ref(false);
   const isDeletingOverviewTemplate = ref(false);
 
@@ -92,6 +94,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     if (isDeletingOverviewRoster.value) {
       return;
     }
+    overviewDeleteRosterError.value = null;
     overviewDeleteRosterTarget.value = null;
   }
 
@@ -115,6 +118,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     if (isDeletingOverviewTemplate.value) {
       return;
     }
+    overviewDeleteTemplateError.value = null;
     overviewDeleteTemplateTarget.value = null;
   }
 
@@ -137,6 +141,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     if (!selectedRoster) {
       return;
     }
+    overviewDeleteRosterError.value = null;
     overviewDeleteRosterTarget.value = selectedRoster;
   }
 
@@ -177,6 +182,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     if (!selectedTemplate) {
       return;
     }
+    overviewDeleteTemplateError.value = null;
     overviewDeleteTemplateTarget.value = selectedTemplate;
   }
 
@@ -187,12 +193,13 @@ export function createClassroomPlannerOverviewCrudFlow(
 
     isDeletingOverviewTemplate.value = true;
     state.plannerActionError.value = null;
+    overviewDeleteTemplateError.value = null;
     try {
       await deleteClassroomPlannerTemplate(overviewDeleteTemplateTarget.value.id);
       removeTemplateFromOverview(overviewDeleteTemplateTarget.value.id);
       overviewDeleteTemplateTarget.value = null;
     } catch (error: unknown) {
-      state.plannerActionError.value = normalizeClassroomPlannerUiError(
+      overviewDeleteTemplateError.value = normalizeClassroomPlannerUiError(
         error,
         "Kunde inte ta bort klassrummet just nu.",
       );
@@ -208,12 +215,13 @@ export function createClassroomPlannerOverviewCrudFlow(
 
     isDeletingOverviewRoster.value = true;
     state.plannerActionError.value = null;
+    overviewDeleteRosterError.value = null;
     try {
       await deleteClassroomPlannerRoster(overviewDeleteRosterTarget.value.id);
       await removeRosterFromOverview(overviewDeleteRosterTarget.value.id);
       overviewDeleteRosterTarget.value = null;
     } catch (error: unknown) {
-      state.plannerActionError.value = normalizeClassroomPlannerUiError(
+      overviewDeleteRosterError.value = normalizeClassroomPlannerUiError(
         error,
         "Kunde inte ta bort klasslistan just nu.",
       );
@@ -229,6 +237,8 @@ export function createClassroomPlannerOverviewCrudFlow(
     activeTemplateModal,
     overviewDeleteRosterTarget,
     overviewDeleteTemplateTarget,
+    overviewDeleteRosterError,
+    overviewDeleteTemplateError,
     isDeletingOverviewRoster,
     isDeletingOverviewTemplate,
     upsertRoster,

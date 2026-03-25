@@ -110,6 +110,6 @@ def test_prepare_seating_export_request_rejects_unknown_layout():
 def test_prepare_seating_export_request_rejects_unknown_export_kind():
     with pytest.raises(ValidationError):
         PrepareSeatingExportRequest(
-            export_kind="xlsx",
+            export_kind="invalid-export-kind",
             layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
         )

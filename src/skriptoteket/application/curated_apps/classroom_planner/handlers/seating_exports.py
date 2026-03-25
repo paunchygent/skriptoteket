@@ -60,7 +60,7 @@ class PrepareSeatingExportHandler:
         if export_kind != SeatingExportKind.PDF:
             raise validation_error("Det här exportformatet stöds inte ännu.")
 
-        workspace = await self._load_workspace(
+        workspace = await self.load_workspace(
             draft_id=draft_id,
             owner_user_id=owner_user_id,
         )
@@ -78,7 +78,7 @@ class PrepareSeatingExportHandler:
             poster_scene=translate_workspace_to_poster_scene(workspace=workspace),
         )
 
-    async def _load_workspace(
+    async def load_workspace(
         self,
         *,
         draft_id: UUID,
