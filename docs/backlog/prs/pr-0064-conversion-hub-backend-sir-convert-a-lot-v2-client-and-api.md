@@ -68,7 +68,7 @@ Implement the backend portion of the Conversion Hub curated app:
 - `pdm run test`: pass
 - OpenAPI contract: `pdm run pytest -q tests/test_openapi_contracts.py::test_openapi_schema_builds`: pass
 - Historical local test for this PR slice (not a canonical current lane guide):
-  - Started Sir Convert-a-Lot v2 service on `http://127.0.0.1:8085` with `SIR_CONVERT_A_LOT_API_KEY=dev-only-key`
+  - Started Sir Convert-a-Lot v2 service on `http://127.0.0.1:8085` with `SIR_CONVERT_A_LOT_V2_API_KEY=dev-only-key`
   - Started Skriptoteket with `SIR_CONVERT_A_LOT_V2_BASE_URL=http://127.0.0.1:8085` and
     `SIR_CONVERT_A_LOT_V2_API_KEY=dev-only-key`
   - Performed `HTML -> PDF` via `/api/v1/apps/documents.conversion_hub/jobs`, polled status, downloaded artifact, and

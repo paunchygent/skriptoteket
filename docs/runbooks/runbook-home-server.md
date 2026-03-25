@@ -486,7 +486,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up
 
 Important: updating the env file is not enough on its own. `compose.prod.yaml` must also pass the variable through to
 the target service. Conversion Hub, for example, requires `SIR_CONVERT_A_LOT_V2_BASE_URL` and
-`SIR_CONVERT_A_LOT_V2_API_KEY` to be wired into the `web` service environment.
+`SIR_CONVERT_A_LOT_V2_API_KEY` to be wired into both the `web` and `worker` service environments.
 
 If the change affects worker configuration, recreate worker too:
 
@@ -629,10 +629,20 @@ Why the public URL: Sir Convert-a-Lot is published on Hemma as `127.0.0.1:28085`
 binding is not reachable from inside `skriptoteket-web` via `host.docker.internal:28085`, so the curated app must use
 the public domain (or another container-reachable address).
 
+Local-dev policy:
+
+- Default local Skriptoteket development to the same public Sir Convert domain,
+  `https://convert.hule.education`.
+- Do not run a host-local Sir Convert `uvicorn` process on the laptop as the
+  normal path.
+- If a local converter lane is explicitly needed for debugging, it must be a
+  separate CPU-only Docker dev profile that runs on the MacBook without ROCm.
+
 Validation:
 
 ```bash
 ssh hemma "sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_'"
+ssh hemma "sudo docker exec skriptoteket-worker env | grep '^SIR_CONVERT_A_LOT_V2_'"
 ssh hemma "sudo docker exec skriptoteket-web getent hosts host.docker.internal"
 ```
 
@@ -651,7 +661,7 @@ The script is intentionally fail-closed. It:
 - recreates `sir_convert_a_lot_prod` through the supported Sir Convert Hemma surface if that preflight fails
 - builds/redeploys Skriptoteket with `compose.prod.yaml`
 - runs `pdm run db-upgrade` inside `skriptoteket-web`
-- verifies the required `SIR_CONVERT_A_LOT_V2_*` env vars are present inside `skriptoteket-web`
+- verifies the required `SIR_CONVERT_A_LOT_V2_*` env vars are present inside both `skriptoteket-web` and `skriptoteket-worker`
 - reconciles shared seating-export webhook state until exactly one canonical shared callback remains
 - captures post-reconcile and post-smoke webhook inventories plus the reconciliation/smoke JSON output as operator evidence
 - hard-fails if any stale shared callback or legacy per-job callback remains after reconciliation or after the smoke run

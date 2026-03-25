@@ -112,7 +112,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--api-key",
         default="",
-        help="Sir Convert-a-Lot v2 API key. Defaults to SIR_CONVERT_A_LOT_API_KEY env var.",
+        help="Sir Convert-a-Lot v2 API key. Defaults to SIR_CONVERT_A_LOT_V2_API_KEY env var.",
     )
     parser.add_argument(
         "--fetch-missing-artifacts",
@@ -475,7 +475,7 @@ def main() -> None:
     source_dir = args.source_dir.resolve()
     output_dir = args.output_dir.resolve()
     api_key = args.api_key.strip() or ""
-    api_key = api_key or _as_optional_string(os.environ.get("SIR_CONVERT_A_LOT_API_KEY")) or ""
+    api_key = api_key or _as_optional_string(os.environ.get("SIR_CONVERT_A_LOT_V2_API_KEY")) or ""
 
     service_client: ServiceClientProtocol | None = None
     if api_key:

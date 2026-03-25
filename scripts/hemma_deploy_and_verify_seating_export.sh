@@ -140,6 +140,10 @@ echo "==> Verifying production Sir Convert env wiring inside skriptoteket-web"
 sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_BASE_URL=' >/dev/null
 sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_API_KEY=' >/dev/null
 sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=' >/dev/null
+echo "==> Verifying production Sir Convert env wiring inside skriptoteket-worker"
+sudo docker exec skriptoteket-worker env | grep '^SIR_CONVERT_A_LOT_V2_BASE_URL=' >/dev/null
+sudo docker exec skriptoteket-worker env | grep '^SIR_CONVERT_A_LOT_V2_API_KEY=' >/dev/null
+sudo docker exec skriptoteket-worker env | grep '^SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=' >/dev/null
 
 echo "==> Re-probing Sir Convert-a-Lot after Skriptoteket deploy"
 probe_sir_convert

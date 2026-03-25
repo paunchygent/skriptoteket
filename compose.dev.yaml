@@ -18,11 +18,12 @@ services:
       - ENVIRONMENT=development
       - ENABLE_DOCS=true
       - COOKIE_SECURE=false
-      # Local PDF export lane: Docker web reaches the host-run Sir Convert
-      # service, which calls back through the backend's published host port.
-      - SIR_CONVERT_A_LOT_V2_BASE_URL=${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://host.docker.internal:8085}
-      - SIR_CONVERT_A_LOT_V2_API_KEY=${SIR_CONVERT_A_LOT_V2_API_KEY:-${SIR_CONVERT_A_LOT_API_KEY:-}}
-      - SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=http://127.0.0.1:8000
+      # Default dockerized dev uses the same Hemma Sir Convert v2 public lane as
+      # production. Only override this in `.env` when explicitly debugging a
+      # local CPU-only Docker converter profile on the MacBook.
+      - SIR_CONVERT_A_LOT_V2_BASE_URL=${SIR_CONVERT_A_LOT_V2_BASE_URL:-https://convert.hule.education}
+      - SIR_CONVERT_A_LOT_V2_API_KEY=${SIR_CONVERT_A_LOT_V2_API_KEY:-}
+      - SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-}
       - SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY=${SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY:-pymupdf}
       - SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_ACCELERATION_POLICY=${SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_ACCELERATION_POLICY:-cpu_only}
       # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
@@ -38,6 +39,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - ENVIRONMENT=development
+      # Keep worker runtime on the same canonical Sir Convert v2 env contract as
+      # web. Default to the Hemma public lane unless `.env` explicitly points at
+      # a local CPU-only Docker converter profile.
+      - SIR_CONVERT_A_LOT_V2_BASE_URL=${SIR_CONVERT_A_LOT_V2_BASE_URL:-https://convert.hule.education}
+      - SIR_CONVERT_A_LOT_V2_API_KEY=${SIR_CONVERT_A_LOT_V2_API_KEY:-}
+      - SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-}
+      - SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY=${SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY:-pymupdf}
+      - SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_ACCELERATION_POLICY=${SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_ACCELERATION_POLICY:-cpu_only}
       # Ensure container uses the mounted artifacts dir (avoids relying on host-dev `.env` defaults like `/tmp/...`).
       - ARTIFACTS_ROOT=/var/lib/skriptoteket/artifacts
       - VAULT_ROOT=/var/lib/skriptoteket/vault

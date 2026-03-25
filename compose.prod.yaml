@@ -133,6 +133,12 @@ services:
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      # Keep worker runtime on the same canonical Sir Convert v2 env contract as web
+      # so queue/CLI flows never depend on stale aliases or partial recreates.
+      SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-https://convert.hule.education}
+      SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
+      SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
+      SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}
     command: ["pdm", "run", "python", "-m", "skriptoteket.cli", "run-execution-worker", "--queue", "default"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro

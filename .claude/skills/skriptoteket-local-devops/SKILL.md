@@ -11,6 +11,13 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
 - For DB-only workflows, `docker compose up -d db` is acceptable.
 - Prefer the full docker hot-reload stack (`pdm run dev-start`) when you need parity with worker/runner/frontend.
 - Host-only backend (`pdm run dev`) is fine for quick iteration, but keep the DB in Docker (see `.env.example` host port mapping).
+- Default Skriptoteket local development to the Hemma production Sir Convert v2
+  service, not a laptop-local converter lane.
+- Never use `pdm run serve:sir-convert-a-lot` or any host-run
+  `uvicorn ...service:app` process on `:8085`.
+- If you explicitly need a local Sir Convert lane for converter debugging, it
+  must be a dedicated CPU-only Docker dev service that runs deterministically on
+  the MacBook. Do not use ROCm/GPU assumptions in that local profile.
 - Dev services are long-running; do not stop them unless the user explicitly asks.
 
 ## PDM script map (most used)
@@ -65,6 +72,16 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
 - Full dev containers (long-running; don’t stop unless asked):
   - `pdm run dev-start` / `pdm run dev-stop`
   - Logs: `pdm run dev-containers-logs`
+- Sir Convert default upstream for local Skriptoteket work:
+  - use `https://convert.hule.education` via `SIR_CONVERT_A_LOT_V2_BASE_URL`
+  - keep `SIR_CONVERT_A_LOT_V2_API_KEY` in `.env`
+  - set `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL` only when the chosen flow
+    actually requires an externally reachable webhook target
+- Local Sir Convert debugging is opt-in only:
+  - if a sibling `sir-convert-a-lot` local profile is used, it must be a
+    CPU-only Docker dev service on the MacBook
+  - never switch the default Skriptoteket dev stack to a host-run or ROCm-only
+    local lane
 - Destructive resets (explicit approval required):
   - `pdm run dev-db-reset`
 
