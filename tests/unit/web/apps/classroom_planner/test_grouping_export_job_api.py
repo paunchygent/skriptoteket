@@ -177,6 +177,31 @@ async def test_download_grouping_export_job_returns_xlsx_attachment_response():
 
 
 @pytest.mark.unit
+@pytest.mark.asyncio
+async def test_download_grouping_export_job_returns_pdf_attachment_response():
+    user = make_user()
+    handler = AsyncMock(spec=DownloadGroupingExportJobHandler)
+    pdf_bytes = b"%PDF-1.7"
+    handler.handle.return_value = (
+        "klass-7a-gruppindelning-a4-portrait.pdf",
+        "application/pdf",
+        pdf_bytes,
+    )
+
+    response = await _unwrap_dishka(api.download_grouping_export_job)(
+        job_id=uuid4(),
+        handler=handler,
+        user=user,
+    )
+
+    assert response.media_type == "application/pdf"
+    assert response.headers["Content-Disposition"] == (
+        'attachment; filename="klass-7a-gruppindelning-a4-portrait.pdf"'
+    )
+    assert response.body == pdf_bytes
+
+
+@pytest.mark.unit
 def test_create_grouping_export_job_request_rejects_non_a4_pdf_size():
     with pytest.raises(ValidationError):
         CreateGroupingExportJobRequest(

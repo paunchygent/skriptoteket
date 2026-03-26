@@ -6,12 +6,12 @@ status: done
 owners: "agents"
 created: 2026-03-24
 epic: "EPIC-26"
-dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
+dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 acceptance_criteria:
   - "Given a teacher exports the current seating draft, when the export completes, then Skriptoteket returns a one-page PDF artifact rendered from a standalone seating-poster renderer rather than from live planner DOM or print CSS."
   - "Given a seating export request is created, when the backend receives it, then the request identifies the target draft explicitly by `seatingDraftId` rather than resolving an implicit current draft server-side."
   - "Given the exported seating PDF uses the first approved layout, when it renders, then it uses `pretty_brutalist_poster` with strong room geometry, high contrast, large student labels, and light branding only."
-  - "Given PDF artifact generation runs for seating export, when the conversion step is executed, then Skriptoteket delegates the final document conversion/rendering through the dedicated Sir Convert-a-Lot service boundary rather than introducing a planner-owned generic PDF engine path."
+  - "Given PDF artifact generation runs for seating export, when the conversion step is executed, then Skriptoteket renders and finalizes the teacher-facing artifact locally from the seating export renderer rather than routing app-owned PDF conversion through Sir Convert-a-Lot."
   - "Given the seating poster is prepared for PDF conversion, when intermediate render input is produced, then the canonical source is export-specific HTML/CSS rather than planner DOM reuse, screenshot export, or direct PDF drawing primitives."
   - "Given the teacher prints the seating PDF, when it is viewed at classroom distance, then student names and seat placements remain legible and the room orientation remains easy to understand."
   - "Given the current seating draft has room fixtures and seating geometry, when the PDF is rendered, then the artifact reflects the same classroom scene model rather than an ad hoc duplicate geometry contract, including whiteboard, teacher desk, door, windows, benches, and tables where present."
@@ -32,8 +32,13 @@ EPIC-24 established the class-first seating workflow and explicitly deferred dur
 - Keep the artifact one-page and whiteboard-focused.
 - Do not add extra PDF pages for roster legends, notes, timestamps, or similar filler.
 - The canonical intermediate render source is export-specific HTML/CSS.
+- The final artifact boundary follows `ADR-0075`: app-owned Klassrumskartan PDFs are local
+  Skriptoteket artifacts, not Sir Convert jobs.
+- The explicit migration/removal slice for the old external seating-PDF path is tracked in
+  `PR-0146`.
 - The export request should identify the target seating draft explicitly by `seatingDraftId`.
 - Poster labels use one canonical format only: `first name + last initial`.
 - Required room markers include whiteboard, teacher desk if present, door if present, windows if present, and benches/tables if present.
 - The renderer contract should be layout-ready from the start, but only `pretty_brutalist_poster` ships in this story.
-- Prefer the Hule internal-network Sir Convert-a-Lot lane where available; do not make public internet routing the primary planning assumption.
+- Sir Convert-a-Lot remains relevant for class-list import PDF extraction, but not as the canonical
+  seating PDF artifact boundary.

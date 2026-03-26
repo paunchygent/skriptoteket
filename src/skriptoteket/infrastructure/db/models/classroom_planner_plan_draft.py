@@ -72,6 +72,18 @@ class PlanDraftModel(Base):
         default=False,
         server_default=text("false"),
     )
+    use_history: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=text("false"),
+    )
+    grouping_seating_distance_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=text("false"),
+    )
     status: Mapped[str] = mapped_column(
         String(32),
         server_default="active",
@@ -109,6 +121,18 @@ class PlanDraftModel(Base):
     )
     student_planning_meta: Mapped[list[StudentPlanningMetaModel]] = relationship(
         "StudentPlanningMetaModel",
+        back_populates="draft",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    smart_preferences: Mapped[list[StudentSmartPreferenceModel]] = relationship(
+        "StudentSmartPreferenceModel",
+        back_populates="draft",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    relationship_rules: Mapped[list[RelationshipRuleModel]] = relationship(
+        "RelationshipRuleModel",
         back_populates="draft",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -194,7 +218,7 @@ class SeatAssignmentModel(Base):
 
 
 class StudentPlanningMetaModel(Base):
-    """Persist teacher-only student planning metadata for a draft."""
+    """Persist teacher-only student notes for a draft."""
 
     __tablename__ = "classroom_planner_student_planning_meta"
     __table_args__ = (UniqueConstraint("draft_id", "student_id", name="uq_cp_student_meta"),)
@@ -207,12 +231,51 @@ class StudentPlanningMetaModel(Base):
         nullable=False,
     )
     student_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    teacher_proximity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    stability_preference: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    preferred_zone: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    avoid_zone: Mapped[str | None] = mapped_column(String(255), nullable=True)
     notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     draft: Mapped[PlanDraftModel] = relationship(
         "PlanDraftModel", back_populates="student_planning_meta"
+    )
+
+
+class StudentSmartPreferenceModel(Base):
+    """Persist per-student smart assignment preferences for a draft."""
+
+    __tablename__ = "classroom_planner_student_smart_preferences"
+    __table_args__ = (UniqueConstraint("draft_id", "student_id", name="uq_cp_student_smart_pref"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    draft_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("classroom_planner_plan_drafts.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    student_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    support_seat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    draft: Mapped[PlanDraftModel] = relationship(
+        "PlanDraftModel", back_populates="smart_preferences"
+    )
+
+
+class RelationshipRuleModel(Base):
+    """Persist relationship constraints for a draft."""
+
+    __tablename__ = "classroom_planner_relationship_rules"
+    __table_args__ = (UniqueConstraint("draft_id", "rule_id", name="uq_cp_relationship_rule"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    draft_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("classroom_planner_plan_drafts.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    rule_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    student_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+
+    draft: Mapped[PlanDraftModel] = relationship(
+        "PlanDraftModel", back_populates="relationship_rules"
     )

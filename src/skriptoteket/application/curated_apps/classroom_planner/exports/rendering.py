@@ -2,8 +2,8 @@
 
 Purpose:
     Define the typed HTML/CSS bundle produced from a standalone `poster_scene`
-    so application handlers can orchestrate Sir Convert-a-Lot submissions
-    without embedding presentation details or zip-building logic.
+    so application handlers can orchestrate local PDF rendering without
+    embedding presentation details or transport concerns.
 
 Relationships:
     - Consumed by the seating export-job handlers.

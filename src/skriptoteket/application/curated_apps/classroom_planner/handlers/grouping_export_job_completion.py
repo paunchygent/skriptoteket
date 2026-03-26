@@ -6,7 +6,7 @@ Purpose:
     the correct export lane.
 
 Relationships:
-    - Consumed by the grouping XLSX export path in
+    - Consumed by the grouping XLSX and local PDF export paths in
       `handlers.grouping_export_jobs`.
     - Uses the dedicated grouping export-job repository plus Vault protocols.
 """

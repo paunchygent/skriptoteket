@@ -30,7 +30,7 @@ EPIC-24 deliberately separated live draft work from durable artifacts, but Klass
 
 ## Proposed Solution
 
-Create a new export-first epic instead of extending EPIC-24. The first story introduces a standalone seating export contract plus a one-page `pretty_brutalist_poster` PDF artifact. The second story adds teacher-confirmed class-list import from `XLSX`, `TXT`, and `PDF` via Sir Convert-a-Lot fast parsing. Later stories add seating `XLSX`, then grouping PDF/XLSX, while keeping exports separate from autosave, bounded history, and future smart-placement work. Service planning should prefer Sir Convert-a-Lot as the dedicated document-conversion/export boundary, with Hule internal-network routing preferred where available.
+Create a new export-first epic instead of extending EPIC-24. The first story introduces a standalone seating export contract plus a one-page `pretty_brutalist_poster` PDF artifact. The second story adds teacher-confirmed class-list import from `XLSX`, `TXT`, and `PDF` via Sir Convert-a-Lot fast parsing. Later stories add seating `XLSX`, then grouping PDF/XLSX, while keeping exports separate from autosave, bounded history, and future smart-placement work. Export planning should keep Klassrumskartan-owned artifacts local to Skriptoteket while using Sir Convert-a-Lot for external/general-purpose conversion and PDF parsing.
 
 ## Artifacts to Review
 
@@ -60,7 +60,7 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 | Standalone seating poster renderer | Prevent export quality from being constrained by current planner DOM/CSS limitations | [ ] |
 | First PDF layout is `pretty_brutalist_poster` | Prioritize high-contrast readability with light branding and no metadata clutter | [ ] |
 | Import stays preview-first and bounded | Keep roster ingestion useful without expanding into metadata enrichment or smart-planning prep | [ ] |
-| Prefer Sir Convert-a-Lot service boundary | Keep conversion/export responsibilities SRP-aligned and prefer Hule internal-network routing when available | [ ] |
+| Keep Klassrumskartan-owned artifacts local | Remove unnecessary distributed complexity from renderer-owned teacher artifacts while keeping Sir Convert for general conversion and parsing | [ ] |
 
 ## Review Checklist
 
@@ -91,7 +91,7 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 - [x] Standalone seating poster renderer
 - [x] `pretty_brutalist_poster` as the first layout
 - [x] Preview-first bounded import scope
-- [x] Prefer Sir Convert-a-Lot service boundary
+- [x] Keep Klassrumskartan-owned artifacts local
 
 ## Changes Made
 
@@ -100,7 +100,7 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 | 1 | `EPIC-26`, `ST-26-02`, `REV-EPIC-26` | Removed `ADR-0066` as a hard dependency so EPIC-26 can become actionable without waiting on a broader unresolved ADR. |
 | 2 | `ST-26-02`, `ST-26-04` | Trimmed false hard dependencies so sequencing preference does not masquerade as a contract prerequisite. |
 | 3 | `REV-EPIC-26`, `ST-26-03`, `ST-26-04`, `ST-26-05` | Added later stories to the review surface and tightened export artifact-shape acceptance criteria for reviewable `ready` status. |
-| 4 | `EPIC-26`, `ST-26-01` to `ST-26-05`, `REV-EPIC-26` | Clarified Sir Convert-a-Lot as the preferred dedicated service boundary for import/export planning, with Hule internal-network routing preferred where available. |
+| 4 | `EPIC-26`, `ST-26-01` to `ST-26-05`, `REV-EPIC-26` | Clarified the current export/import planning split: Klassrumskartan-owned artifacts stay local in Skriptoteket, while Sir Convert-a-Lot remains the preferred service boundary for parsing and general conversion workloads. |
 | 5 | `ST-26-01`, `PR-0118`, `PR-0119` | Locked the planning contract for seating export around explicit `seatingDraftId`, export-specific HTML/CSS as the canonical intermediate source, deterministic `first name + last initial` poster labels, and required room markers including windows and benches/tables where present. |
 
 ## Post-Approval Refinements
@@ -122,4 +122,4 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 **Date:** YYYY-MM-DD
 **Verdict:** approved
 
-EPIC-26 is approved as the next Klassrumskartan lane after EPIC-24. The package keeps the accepted draft-vs-artifact boundary intact, starts with a no-slop seating PDF poster rendered through a standalone export contract, keeps roster import preview-first and bounded, and defers advanced history, metadata, zoning, and smart-placement work. Sir Convert-a-Lot is treated as the preferred dedicated conversion/export service boundary, with Hule internal-network routing preferred where available. The epic may move from `proposed` to `active`, while its stories remain `ready` until implementation begins.
+EPIC-26 is approved as the next Klassrumskartan lane after EPIC-24. The package keeps the accepted draft-vs-artifact boundary intact, starts with a no-slop seating PDF poster rendered through a standalone export contract, keeps roster import preview-first and bounded, and defers advanced history, metadata, zoning, and smart-placement work. Klassrumskartan-owned artifacts stay local to Skriptoteket, while Sir Convert-a-Lot remains the preferred dedicated service boundary for parsing and general conversion workloads. The epic may move from `proposed` to `active`, while its stories remain `ready` until implementation begins.

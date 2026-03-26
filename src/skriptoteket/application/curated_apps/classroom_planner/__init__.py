@@ -41,7 +41,6 @@ from .handlers.rosters import (
 )
 from .handlers.seating_drafts import CreateSeatingDraftHandler
 from .handlers.seating_export_job_completion import (
-    CompleteSeatingExportJobFromWebhookHandler,
     DownloadSeatingExportJobHandler,
     SeatingExportJobFinalizer,
 )
@@ -97,7 +96,6 @@ __all__ = [
     "ListRoomTemplatesHandler",
     "ListRostersHandler",
     "PatchDraftHandler",
-    "CompleteSeatingExportJobFromWebhookHandler",
     "PrepareGroupingExportHandler",
     "PreparedGroupingExportContract",
     "PrepareSeatingExportHandler",

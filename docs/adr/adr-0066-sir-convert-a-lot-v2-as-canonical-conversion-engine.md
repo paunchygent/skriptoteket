@@ -6,6 +6,7 @@ status: proposed
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-03-01
+updated: 2026-03-26
 ---
 
 ## Context
@@ -31,6 +32,9 @@ canonical: Sir Convert-a-Lot v2.
   produces a normal PDF artifact (no separate preview engine/tool).
 - The legacy `html-to-pdf-preview` tool script is removed from the production strategy and will be
   retired from prod seeding (and later deleted when no longer needed by tests).
+- This ADR governs **Conversion Hub** and other general conversion surfaces. It does not require
+  curated app-owned export artifacts such as Klassrumskartan PDFs to route through Sir Convert;
+  that boundary is locked separately in `ADR-0075`.
 
 ## Consequences
 

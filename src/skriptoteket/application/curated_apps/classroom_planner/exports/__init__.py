@@ -20,6 +20,13 @@ from .grouping_jobs import (
     GroupingExportJobStatus,
     GroupingExportVaultArtifact,
 )
+from .grouping_pdf_view_model import (
+    GroupingPdfCard,
+    GroupingPdfCardPair,
+    GroupingPdfMemberRow,
+    GroupingPdfViewModel,
+    build_grouping_pdf_view_model,
+)
 from .grouping_presentation import (
     GroupingExportKind,
     GroupingExportPaperSize,
@@ -79,6 +86,10 @@ __all__ = [
     "GroupingExportPaperSize",
     "GroupingExportPresentation",
     "GroupingExportVaultArtifact",
+    "GroupingPdfCard",
+    "GroupingPdfCardPair",
+    "GroupingPdfMemberRow",
+    "GroupingPdfViewModel",
     "GroupingXlsxEditRow",
     "GroupingXlsxRegistryRow",
     "GroupingXlsxWorkbookViewModel",
@@ -95,6 +106,7 @@ __all__ = [
     "SeatingPosterRenderRequest",
     "PreparedGroupingExportContract",
     "build_grouping_export_presentation",
+    "build_grouping_pdf_view_model",
     "build_grouping_xlsx_view_model",
     "format_student_poster_label",
     "translate_workspace_to_poster_scene",

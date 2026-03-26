@@ -63,12 +63,16 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`
 - Alembic migration integrity/idempotency remediation follow-up:
   `docs/backlog/prs/pr-0145-alembic-migration-integrity-and-full-idempotency-coverage.md`
+- Seating PDF local cutover/removal follow-up:
+  `docs/backlog/prs/pr-0146-klassrumskartan-seating-pdf-local-cutover-and-sir-convert-path-removal.md`
 - Proposed Klassrumskartan export/import epic:
   `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan export/import review:
   `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan smart assignment ADR:
   `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
+- Proposed Klassrumskartan local-export boundary ADR:
+  `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
 - Proposed Klassrumskartan smart assignment epic:
   `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed Klassrumskartan smart assignment review:
@@ -170,6 +174,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0072-group-seating-studio-class-first-workspace-and-draft-kinds.md`
 - `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
 - `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
+- `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs

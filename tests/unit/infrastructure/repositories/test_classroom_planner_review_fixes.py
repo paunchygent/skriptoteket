@@ -13,8 +13,11 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
+    RelationshipKind,
+    RelationshipRule,
     SeatAssignment,
     StudentPlanningMeta,
+    StudentSmartPreference,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
 from skriptoteket.infrastructure.repositories.classroom_planner import (
@@ -83,6 +86,8 @@ def _make_draft_model(
         draft_kind=draft.draft_kind.value,
         template_id=draft.template_id,
         smart_enabled=False,
+        use_history=False,
+        grouping_seating_distance_enabled=False,
         status=draft.status.value,
         revision=draft.revision,
         last_opened_at=now,
@@ -94,6 +99,8 @@ def _make_draft_model(
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
+        smart_preferences=[],
+        relationship_rules=[],
     )
 
 
@@ -179,11 +186,21 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
     session.get.return_value = model
 
     workspace = DraftWorkspace(
-        draft=draft,
+        draft=draft.model_copy(
+            update={"use_history": True, "grouping_seating_distance_enabled": True}
+        ),
         groups=[],
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="test")],
+        smart_preferences=[StudentSmartPreference(student_id="s1", support_seat=True)],
+        relationship_rules=[
+            RelationshipRule(
+                id="rule-1",
+                kind=RelationshipKind.KEEP_NEAR,
+                student_ids=["s1", "s2"],
+            )
+        ],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -192,15 +209,21 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
     assert len(history) == 2
     snapshot = history[1]
     assert snapshot["smart_enabled"] is False
+    assert snapshot["use_history"] is True
+    assert snapshot["grouping_seating_distance_enabled"] is True
     assert snapshot["template_id"] == str(template_id)
     assert snapshot["student_planning_meta"] == [
         {
             "student_id": "s1",
-            "teacher_proximity": 0,
-            "stability_preference": 0,
-            "preferred_zone": None,
-            "avoid_zone": None,
             "notes": "test",
+        }
+    ]
+    assert snapshot["smart_preferences"] == [{"student_id": "s1", "support_seat": True}]
+    assert snapshot["relationship_rules"] == [
+        {
+            "rule_id": "rule-1",
+            "kind": RelationshipKind.KEEP_NEAR.value,
+            "student_ids": ["s1", "s2"],
         }
     ]
 
@@ -347,11 +370,21 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
     session.get.return_value = model
 
     workspace = DraftWorkspace(
-        draft=draft,
+        draft=draft.model_copy(
+            update={"use_history": True, "grouping_seating_distance_enabled": True}
+        ),
         groups=[],
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-2")],
         student_planning_meta=[StudentPlanningMeta(student_id="student-1", notes="front row")],
+        smart_preferences=[StudentSmartPreference(student_id="student-1", support_seat=True)],
+        relationship_rules=[
+            RelationshipRule(
+                id="rule-1",
+                kind=RelationshipKind.KEEP_APART,
+                student_ids=["student-1", "student-2"],
+            )
+        ],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -359,19 +392,61 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
     history = _require_history(model)
     assert len(history) == 1
     assert history[0]["smart_enabled"] is False
+    assert history[0]["use_history"] is True
+    assert history[0]["grouping_seating_distance_enabled"] is True
     assert "template_id" not in history[0]
     assert history[0]["seat_assignments"] == [{"student_id": "student-1", "seat_id": "seat-2"}]
     assert history[0]["student_planning_meta"] == [
         {
             "student_id": "student-1",
-            "teacher_proximity": 0,
-            "stability_preference": 0,
-            "preferred_zone": None,
-            "avoid_zone": None,
             "notes": "front row",
         }
     ]
+    assert history[0]["smart_preferences"] == [{"student_id": "student-1", "support_seat": True}]
+    assert history[0]["relationship_rules"] == [
+        {
+            "rule_id": "rule-1",
+            "kind": RelationshipKind.KEEP_APART.value,
+            "student_ids": ["student-1", "student-2"],
+        }
+    ]
     assert model.undo_index == 0
+
+
+@pytest.mark.asyncio
+async def test_save_updates_new_draft_flags() -> None:
+    """Draft-only saves must persist the new reset flags."""
+
+    session = AsyncMock()
+    repo = PostgreSQLPlanDraftRepository(session)
+
+    draft_id = uuid4()
+    owner_id = uuid4()
+    roster_id = uuid4()
+    now = datetime.now(timezone.utc)
+    stored_draft = _make_grouping_draft(
+        draft_id=draft_id,
+        owner_user_id=owner_id,
+        roster_id=roster_id,
+        now=now,
+    )
+    model = _make_draft_model(draft=stored_draft, now=now)
+    session.get.return_value = model
+
+    updated_draft = stored_draft.model_copy(
+        update={
+            "smart_enabled": True,
+            "use_history": True,
+            "grouping_seating_distance_enabled": True,
+            "revision": 1,
+        }
+    )
+
+    await repo.save(draft=updated_draft)
+
+    assert model.smart_enabled is True
+    assert model.use_history is True
+    assert model.grouping_seating_distance_enabled is True
 
 
 @pytest.mark.asyncio

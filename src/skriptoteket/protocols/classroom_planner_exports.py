@@ -18,8 +18,9 @@ from uuid import UUID
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     grouping_jobs,
-    grouping_presentation,
+    grouping_pdf_view_model,
     grouping_xlsx_view_model,
+    rendering,
     seating_xlsx_view_model,
 )
 from skriptoteket.application.curated_apps.classroom_planner.exports.jobs import (
@@ -28,9 +29,6 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.jobs import
 from skriptoteket.application.curated_apps.classroom_planner.exports.rendering import (
     RenderedSeatingPosterBundle,
     SeatingPosterRenderRequest,
-)
-from skriptoteket.application.curated_apps.classroom_planner.exports.webhook_bindings import (
-    SeatingExportWebhookBinding,
 )
 
 
@@ -98,22 +96,20 @@ class GroupingExportJobRepositoryProtocol(Protocol):
     ) -> grouping_jobs.GroupingExportJob: ...
 
 
-class SeatingExportWebhookBindingRepositoryProtocol(Protocol):
-    """Persist the single shared seating-export webhook binding."""
-
-    async def get_shared_for_update(self) -> SeatingExportWebhookBinding: ...
-
-    async def update_shared(
-        self,
-        *,
-        binding: SeatingExportWebhookBinding,
-    ) -> SeatingExportWebhookBinding: ...
-
-
 class SeatingPosterRendererProtocol(Protocol):
     """Render a standalone poster scene into export-owned HTML/CSS."""
 
     def render(self, *, request: SeatingPosterRenderRequest) -> RenderedSeatingPosterBundle: ...
+
+
+class SeatingPdfRendererProtocol(Protocol):
+    """Render one seating poster HTML/CSS bundle into final PDF bytes."""
+
+    def render(
+        self,
+        *,
+        bundle: rendering.RenderedSeatingPosterBundle,
+    ) -> bytes: ...
 
 
 class SeatingXlsxRendererProtocol(Protocol):
@@ -137,10 +133,10 @@ class GroupingXlsxRendererProtocol(Protocol):
 
 
 class GroupingPdfRendererProtocol(Protocol):
-    """Render a grouping presentation into export-owned HTML/CSS resources."""
+    """Render a grouping PDF handout into final PDF bytes."""
 
     def render(
         self,
         *,
-        presentation: grouping_presentation.GroupingExportPresentation,
+        view_model: grouping_pdf_view_model.GroupingPdfViewModel,
     ) -> bytes: ...

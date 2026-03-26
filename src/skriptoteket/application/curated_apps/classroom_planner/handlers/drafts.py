@@ -19,11 +19,13 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
+    RelationshipRule,
     ResumablePlanDraft,
     RoomTemplate,
     Roster,
     SeatAssignment,
     StudentPlanningMeta,
+    StudentSmartPreference,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
@@ -64,6 +66,8 @@ def _validate_workspace_structure(
     group_ids = [group.id for group in workspace.groups]
     group_sort_orders = [str(group.sort_order) for group in workspace.groups]
     meta_student_ids = [meta.student_id for meta in workspace.student_planning_meta]
+    smart_pref_student_ids = [pref.student_id for pref in workspace.smart_preferences]
+    rule_ids = [rule.id for rule in workspace.relationship_rules]
     group_assignment_student_ids = [
         assignment.student_id for assignment in workspace.group_assignments
     ]
@@ -76,7 +80,9 @@ def _validate_workspace_structure(
     _ensure_unique(seat_ids, label="Room seat IDs")
     _ensure_unique(group_ids, label="Group IDs")
     _ensure_unique(group_sort_orders, label="Group sort orders")
-    _ensure_unique(meta_student_ids, label="Student metadata rows")
+    _ensure_unique(meta_student_ids, label="Student notes rows")
+    _ensure_unique(smart_pref_student_ids, label="Smart preference rows")
+    _ensure_unique(rule_ids, label="Relationship rule IDs")
     _ensure_unique(group_assignment_student_ids, label="Group assignment students")
     _ensure_unique(seat_assignment_student_ids, label="Seat assignment students")
     _ensure_unique(seat_assignment_seat_ids, label="Seat assignment seats")
@@ -102,6 +108,15 @@ def _validate_workspace_structure(
     for meta in workspace.student_planning_meta:
         if meta.student_id not in valid_student_ids:
             raise validation_error("Student notes must reference roster students.")
+
+    for pref in workspace.smart_preferences:
+        if pref.student_id not in valid_student_ids:
+            raise validation_error("Smart preferences must reference roster students.")
+
+    for rule in workspace.relationship_rules:
+        for student_id in rule.student_ids:
+            if student_id not in valid_student_ids:
+                raise validation_error("Relationship rules must reference roster students.")
 
 
 async def _get_owned_active_draft(
@@ -349,6 +364,9 @@ class GetDraftWorkspaceHandler:
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
+            smart_preferences=workspace.smart_preferences,
+            relationship_rules=workspace.relationship_rules,
+            history_status=workspace.history_status,
         )
 
     async def _load_workspace_context(
@@ -383,9 +401,9 @@ class PatchDraftHandler:
         clock: ClockProtocol,
     ) -> None:
         self._uow = uow
-        self._drafts = drafts
         self._rosters = rosters
         self._templates = templates
+        self._drafts = drafts
         self._clock = clock
 
     async def handle(
@@ -395,10 +413,14 @@ class PatchDraftHandler:
         owner_user_id: UUID,
         expected_revision: int | None = None,
         smart_enabled: bool | None = None,
+        use_history: bool | None = None,
+        grouping_seating_distance_enabled: bool | None = None,
         groups: list[DraftGroup] | None = None,
         group_assignments: list[GroupAssignment] | None = None,
         seat_assignments: list[SeatAssignment] | None = None,
         student_planning_meta: list[StudentPlanningMeta] | None = None,
+        smart_preferences: list[StudentSmartPreference] | None = None,
+        relationship_rules: list[RelationshipRule] | None = None,
     ) -> ClassroomPlannerWorkspace:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
@@ -413,18 +435,26 @@ class PatchDraftHandler:
                 ),
             )
 
+        updated_draft = workspace.draft.model_copy(
+            update={
+                "smart_enabled": (
+                    smart_enabled if smart_enabled is not None else workspace.draft.smart_enabled
+                ),
+                "use_history": (
+                    use_history if use_history is not None else workspace.draft.use_history
+                ),
+                "grouping_seating_distance_enabled": (
+                    grouping_seating_distance_enabled
+                    if grouping_seating_distance_enabled is not None
+                    else workspace.draft.grouping_seating_distance_enabled
+                ),
+                "revision": workspace.draft.revision + 1,
+                "updated_at": self._clock.now(),
+            }
+        )
+
         updated_workspace = DraftWorkspace(
-            draft=workspace.draft.model_copy(
-                update={
-                    "smart_enabled": (
-                        smart_enabled
-                        if smart_enabled is not None
-                        else workspace.draft.smart_enabled
-                    ),
-                    "revision": workspace.draft.revision + 1,
-                    "updated_at": self._clock.now(),
-                }
-            ),
+            draft=updated_draft,
             groups=groups if groups is not None else workspace.groups,
             group_assignments=(
                 group_assignments if group_assignments is not None else workspace.group_assignments
@@ -436,6 +466,14 @@ class PatchDraftHandler:
                 student_planning_meta
                 if student_planning_meta is not None
                 else workspace.student_planning_meta
+            ),
+            smart_preferences=(
+                smart_preferences if smart_preferences is not None else workspace.smart_preferences
+            ),
+            relationship_rules=(
+                relationship_rules
+                if relationship_rules is not None
+                else workspace.relationship_rules
             ),
         )
         roster = await self._rosters.get_by_id(roster_id=updated_workspace.draft.roster_id)
@@ -472,5 +510,7 @@ class PatchDraftHandler:
             group_assignments=persisted_workspace.group_assignments,
             seat_assignments=persisted_workspace.seat_assignments,
             student_planning_meta=persisted_workspace.student_planning_meta,
+            smart_preferences=persisted_workspace.smart_preferences,
+            relationship_rules=persisted_workspace.relationship_rules,
             history_status=persisted_workspace.history_status,
         )

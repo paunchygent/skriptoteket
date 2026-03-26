@@ -90,6 +90,29 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
 - Health: `curl -sSf http://127.0.0.1:8000/healthz >/dev/null`
 - Tokenizer availability (Devstral/Tekken): `pdm run pytest -q tests/unit/infrastructure/llm/test_token_counter_resolver.py`
 
+## Local PDF export note (WeasyPrint assets)
+
+- For `HTML(string=...)`, pass `base_url` when the export HTML uses relative asset URLs such as
+  `<img src="logo-horizontal.svg">`.
+- The stable repo pattern is: pass the asset directory itself as a filesystem `Path` (or a plain
+  directory path string) and keep the asset reference relative to that directory.
+- Avoid `directory.as_uri()` without a trailing slash for directory bases. In local verification on
+  `2026-03-26`, that resolved `logo-horizontal.svg` and `logo-horizontal.png` one level too high
+  and produced missing-image fetch errors.
+- If you suspect asset-resolution drift, reproduce it with WeasyPrint logging enabled before
+  changing renderer code. The correct fix is the `base_url` contract, not inlining or ad hoc
+  fallbacks.
+
+## Klassrumskartan PDF export note
+
+- For Klassrumskartan app-owned `html -> pdf` bundles, the preferred architecture is local
+  Skriptoteket rendering, not Sir Convert submission.
+- Working rule of thumb:
+  - local in-process WeasyPrint renderers: `HTML(string=..., base_url=<assets_dir>)`
+  - keep logos/images/fonts as relative bundled asset paths owned by the local renderer
+- Sir Convert remains appropriate for general conversion and import/extraction flows, not for the
+  final PDF rendering of Klassrumskartan-owned teacher artifacts.
+
 ## Logging + correlation (local)
 
 - Configure via `.env`:

@@ -26,6 +26,8 @@ class PlanDraftDto(BaseModel):
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
     smart_enabled: bool = False
+    use_history: bool = False
+    grouping_seating_distance_enabled: bool = False
     status: str
     revision: int
     last_opened_at: datetime

@@ -3,9 +3,9 @@
 Purpose:
     Orchestrate the grouping export lane: validate the requested export family,
     prepare the shared presentation contract, persist dedicated grouping export
-    jobs, and expose recoverable in-flight state. In PR-0140 the XLSX lane
-    renders locally and completes through Vault while the PDF lane remains
-    placeholder scaffolding for the later renderer slice.
+    jobs, and expose recoverable in-flight state. The XLSX and PDF lanes both
+    render locally and complete through Vault while preserving the same
+    explicit export-job seam for the teacher-facing API and SPA.
 
 Relationships:
     - Reuses `PrepareGroupingExportHandler` for the canonical presentation seam.
@@ -27,6 +27,7 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     GroupingExportPaperSize,
     GroupingExportVaultArtifact,
     build_grouping_export_presentation,
+    build_grouping_pdf_view_model,
     build_grouping_xlsx_view_model,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import ClassroomPlannerWorkspace
@@ -34,6 +35,7 @@ from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner_exports import (
     GroupingExportJobRepositoryProtocol,
+    GroupingPdfRendererProtocol,
     GroupingXlsxRendererProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -53,6 +55,7 @@ class CreateGroupingExportJobHandler:
         *,
         prepare: PrepareGroupingExportHandler,
         jobs: GroupingExportJobRepositoryProtocol,
+        pdf_renderer: GroupingPdfRendererProtocol,
         xlsx_renderer: GroupingXlsxRendererProtocol,
         finalizer: GroupingExportJobFinalizer,
         uow: UnitOfWorkProtocol,
@@ -61,6 +64,7 @@ class CreateGroupingExportJobHandler:
     ) -> None:
         self._prepare = prepare
         self._jobs = jobs
+        self._pdf_renderer = pdf_renderer
         self._xlsx_renderer = xlsx_renderer
         self._finalizer = finalizer
         self._uow = uow
@@ -75,29 +79,15 @@ class CreateGroupingExportJobHandler:
         export_kind: GroupingExportKind,
         paper_size: GroupingExportPaperSize | None,
     ) -> GroupingExportJobResult:
+        if export_kind is GroupingExportKind.PDF:
+            return await self._handle_pdf_export(
+                actor=actor,
+                draft_id=draft_id,
+                paper_size=paper_size,
+            )
         if export_kind is GroupingExportKind.XLSX:
             return await self._handle_xlsx_export(actor=actor, draft_id=draft_id)
-
-        prepared = await self._prepare.handle(
-            draft_id=draft_id,
-            owner_user_id=actor.id,
-            export_kind=export_kind,
-            paper_size=paper_size,
-        )
-        output_filename = _output_filename_for_request(
-            filename_stem=prepared.presentation.filename_stem,
-            export_kind=export_kind,
-            paper_size=paper_size,
-        )
-        job = await self._create_submitted_job(
-            owner_user_id=actor.id,
-            draft_id=prepared.grouping_draft_id,
-            roster_id=prepared.roster_id,
-            export_kind=export_kind,
-            paper_size=paper_size,
-            output_filename=output_filename,
-        )
-        return await build_grouping_job_result(job=job, vault_files=None)
+        raise validation_error("Okänd exporttyp för gruppindelningen.")
 
     async def _handle_xlsx_export(
         self,
@@ -134,6 +124,46 @@ class CreateGroupingExportJobHandler:
             await self._finalizer.mark_failed(
                 job=job,
                 error_message="Kunde inte skapa Excel-exporten just nu. Försök igen.",
+            )
+            raise
+        return await build_grouping_job_result(job=completed_job, vault_files=None)
+
+    async def _handle_pdf_export(
+        self,
+        *,
+        actor: User,
+        draft_id: UUID,
+        paper_size: GroupingExportPaperSize | None,
+    ) -> GroupingExportJobResult:
+        prepared = await self._prepare.handle(
+            draft_id=draft_id,
+            owner_user_id=actor.id,
+            export_kind=GroupingExportKind.PDF,
+            paper_size=paper_size,
+        )
+        view_model = build_grouping_pdf_view_model(
+            presentation=prepared.presentation,
+            generated_at=self._clock.now(),
+        )
+        job = await self._create_submitted_job(
+            owner_user_id=actor.id,
+            draft_id=prepared.grouping_draft_id,
+            roster_id=prepared.roster_id,
+            export_kind=GroupingExportKind.PDF,
+            paper_size=paper_size,
+            output_filename=view_model.output_filename,
+        )
+        try:
+            artifact_bytes = self._pdf_renderer.render(view_model=view_model)
+            completed_job = await self._finalizer.complete_local_success(
+                job=job,
+                content=artifact_bytes,
+                filename=view_model.output_filename,
+            )
+        except Exception:
+            await self._finalizer.mark_failed(
+                job=job,
+                error_message="Kunde inte skapa PDF-exporten just nu. Försök igen.",
             )
             raise
         return await build_grouping_job_result(job=completed_job, vault_files=None)
@@ -235,7 +265,7 @@ class GetRecoverableGroupingExportJobForDraftHandler:
 
 
 class DownloadGroupingExportJobHandler:
-    """Download the finished grouping export artifact once later slices produce it."""
+    """Download the finished grouping export artifact."""
 
     def __init__(
         self,

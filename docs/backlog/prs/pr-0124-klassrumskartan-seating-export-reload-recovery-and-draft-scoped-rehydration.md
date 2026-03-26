@@ -38,12 +38,23 @@ Promote seating export recovery from a browser-session safeguard to a
 draft-scoped product contract owned by backend state and rehydrated when the
 teacher reopens the relevant seating draft.
 
+## Current status
+
+- This PR documents the shipped recovery behavior for the original external
+  seating-export lane.
+- Architecture note (2026-03-26):
+  - `ADR-0075` keeps the draft-scoped recovery goal but changes the intended
+    backend from external Sir Convert jobs to local Skriptoteket export jobs
+  - the next migration should preserve the teacher-facing recovery semantics
+    while deleting unnecessary upstream dependency assumptions
+
 ## Non-goals
 
 - Building a cross-draft export inbox, export history page, or generic download
   center.
 - Adding notifications outside the existing seating export action group.
 - Changing the export artifact contract, poster renderer, or Sir Convert lane.
+- Changing the teacher-facing recovery semantics after the local cutover.
 - Expanding into grouping export recovery.
 - Removing the current polling fallback; it remains part of the safety model.
 
@@ -110,6 +121,12 @@ unfiltered generic job list to the frontend.
 - If no recoverable job exists:
   - clear stale local recovery state for that draft
   - keep the export affordance in its normal idle state
+
+## Supersession note
+
+- This PR's product recovery contract remains desirable.
+- Its external-job assumptions are superseded by `ADR-0075`, which moves
+  Klassrumskartan-owned PDF artifacts onto a local export lane.
 
 ## Implementation plan
 

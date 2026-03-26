@@ -124,16 +124,38 @@ class SeatAssignment(BaseModel):
 
 
 class StudentPlanningMeta(BaseModel):
-    """Represent teacher-only notes and seating/grouping inputs for a student."""
+    """Represent teacher-only notes for a student, kept separate from smart rules."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
     student_id: str
-    teacher_proximity: int = 0
-    stability_preference: int = 0
-    preferred_zone: str | None = None
-    avoid_zone: str | None = None
     notes: str | None = None
+
+
+class StudentSmartPreference(BaseModel):
+    """Represent per-student smart assignment inputs."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    student_id: str
+    support_seat: bool = False
+
+
+class RelationshipKind(StrEnum):
+    """Enumerate supported relationship rule types."""
+
+    KEEP_NEAR = "keep_near"
+    KEEP_APART = "keep_apart"
+
+
+class RelationshipRule(BaseModel):
+    """Represent a relationship constraint between two or more students."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    id: str
+    kind: RelationshipKind
+    student_ids: list[str] = Field(min_length=2)
 
 
 class PlanDraftStatus(StrEnum):
@@ -169,6 +191,8 @@ class PlanDraft(BaseModel):
     draft_kind: PlanDraftKind
     template_id: UUID | None = None
     smart_enabled: bool = False
+    use_history: bool = False
+    grouping_seating_distance_enabled: bool = False
     status: PlanDraftStatus = PlanDraftStatus.ACTIVE
     revision: int = 0
     last_opened_at: datetime
@@ -186,6 +210,8 @@ class DraftWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
+    smart_preferences: list[StudentSmartPreference] = Field(default_factory=list)
+    relationship_rules: list[RelationshipRule] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
     )
@@ -203,6 +229,8 @@ class ClassroomPlannerWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
+    smart_preferences: list[StudentSmartPreference] = Field(default_factory=list)
+    relationship_rules: list[RelationshipRule] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
     )

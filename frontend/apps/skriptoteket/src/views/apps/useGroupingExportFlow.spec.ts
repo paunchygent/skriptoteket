@@ -2,8 +2,8 @@
  * Grouping export flow tests.
  *
  * These tests cover the frontend-only grouping export orchestration so the
- * route shell can stay thin while PR-0139's placeholder async behavior
- * remains explicit and reload-safe.
+ * route shell can stay thin while grouping export creation, polling, and
+ * reload recovery remain explicit and safe.
  */
 
 import { reactive } from "vue";

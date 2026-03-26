@@ -25,6 +25,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraftKind,
     PlanDraftStatus,
     PlanDraftSummary,
+    RelationshipKind,
+    RelationshipRule,
     ResumablePlanDraft,
     RoomFixture,
     RoomFixtureType,
@@ -34,13 +36,16 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
+    StudentSmartPreference,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     DraftGroupModel,
     GroupAssignmentModel,
     PlanDraftModel,
+    RelationshipRuleModel,
     SeatAssignmentModel,
     StudentPlanningMetaModel,
+    StudentSmartPreferenceModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -86,6 +91,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             draft_kind=PlanDraftKind(model.draft_kind),
             template_id=model.template_id,
             smart_enabled=model.smart_enabled,
+            use_history=model.use_history,
+            grouping_seating_distance_enabled=model.grouping_seating_distance_enabled,
             status=PlanDraftStatus(model.status),
             revision=model.revision,
             last_opened_at=model.last_opened_at,
@@ -125,13 +132,24 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             student_planning_meta=[
                 StudentPlanningMeta(
                     student_id=meta.student_id,
-                    teacher_proximity=meta.teacher_proximity,
-                    stability_preference=meta.stability_preference,
-                    preferred_zone=meta.preferred_zone,
-                    avoid_zone=meta.avoid_zone,
                     notes=meta.notes,
                 )
                 for meta in model.student_planning_meta
+            ],
+            smart_preferences=[
+                StudentSmartPreference(
+                    student_id=pref.student_id,
+                    support_seat=pref.support_seat,
+                )
+                for pref in model.smart_preferences
+            ],
+            relationship_rules=[
+                RelationshipRule(
+                    id=rule.rule_id,
+                    kind=RelationshipKind(rule.kind),
+                    student_ids=rule.student_ids,
+                )
+                for rule in model.relationship_rules
             ],
             history_status=history_status,
         )
@@ -167,6 +185,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
+                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.relationship_rules),
             )
             .where(PlanDraftModel.id == draft_id)
         )
@@ -377,6 +397,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
             model.smart_enabled = draft.smart_enabled
+            model.use_history = draft.use_history
+            model.grouping_seating_distance_enabled = draft.grouping_seating_distance_enabled
             model.status = draft.status.value
             model.revision = draft.revision
             model.last_opened_at = draft.last_opened_at
@@ -389,6 +411,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
                 smart_enabled=draft.smart_enabled,
+                use_history=draft.use_history,
+                grouping_seating_distance_enabled=draft.grouping_seating_distance_enabled,
                 status=draft.status.value,
                 revision=draft.revision,
                 last_opened_at=draft.last_opened_at,
@@ -412,9 +436,19 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             workspace.student_planning_meta,
             key=lambda meta: meta.student_id,
         )
+        ordered_smart_preferences = sorted(
+            workspace.smart_preferences,
+            key=lambda pref: pref.student_id,
+        )
+        ordered_relationship_rules = sorted(
+            workspace.relationship_rules,
+            key=lambda rule: rule.id,
+        )
 
         snapshot = {
             "smart_enabled": workspace.draft.smart_enabled,
+            "use_history": workspace.draft.use_history,
+            "grouping_seating_distance_enabled": workspace.draft.grouping_seating_distance_enabled,
             "groups": [
                 {
                     "id": group.id,
@@ -435,13 +469,24 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             "student_planning_meta": [
                 {
                     "student_id": meta.student_id,
-                    "teacher_proximity": meta.teacher_proximity,
-                    "stability_preference": meta.stability_preference,
-                    "preferred_zone": meta.preferred_zone,
-                    "avoid_zone": meta.avoid_zone,
                     "notes": meta.notes,
                 }
                 for meta in ordered_student_planning_meta
+            ],
+            "smart_preferences": [
+                {
+                    "student_id": pref.student_id,
+                    "support_seat": pref.support_seat,
+                }
+                for pref in ordered_smart_preferences
+            ],
+            "relationship_rules": [
+                {
+                    "rule_id": rule.id,
+                    "kind": rule.kind.value,
+                    "student_ids": rule.student_ids,
+                }
+                for rule in ordered_relationship_rules
             ],
         }
         if workspace.draft.draft_kind == PlanDraftKind.GROUPING:
@@ -460,6 +505,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
+                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.relationship_rules),
             ),
         )
 
@@ -480,6 +527,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 draft_kind=draft.draft_kind.value,
                 template_id=draft.template_id,
                 smart_enabled=draft.smart_enabled,
+                use_history=draft.use_history,
+                grouping_seating_distance_enabled=draft.grouping_seating_distance_enabled,
                 status=draft.status.value,
                 revision=draft.revision,
                 last_opened_at=draft.last_opened_at,
@@ -492,6 +541,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             model.draft_kind = draft.draft_kind.value
             model.template_id = draft.template_id
             model.smart_enabled = draft.smart_enabled
+            model.use_history = draft.use_history
+            model.grouping_seating_distance_enabled = draft.grouping_seating_distance_enabled
             model.status = draft.status.value
             model.revision = draft.revision
             model.last_opened_at = draft.last_opened_at
@@ -532,13 +583,32 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             new_items=[
                 StudentPlanningMetaModel(
                     student_id=meta.student_id,
-                    teacher_proximity=meta.teacher_proximity,
-                    stability_preference=meta.stability_preference,
-                    preferred_zone=meta.preferred_zone,
-                    avoid_zone=meta.avoid_zone,
                     notes=meta.notes,
                 )
                 for meta in workspace.student_planning_meta
+            ],
+        )
+        await self._replace_related_collection(
+            model=model,
+            attribute_name="smart_preferences",
+            new_items=[
+                StudentSmartPreferenceModel(
+                    student_id=pref.student_id,
+                    support_seat=pref.support_seat,
+                )
+                for pref in workspace.smart_preferences
+            ],
+        )
+        await self._replace_related_collection(
+            model=model,
+            attribute_name="relationship_rules",
+            new_items=[
+                RelationshipRuleModel(
+                    rule_id=rule.id,
+                    kind=rule.kind.value,
+                    student_ids=rule.student_ids,
+                )
+                for rule in workspace.relationship_rules
             ],
         )
 
@@ -579,6 +649,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
+                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.relationship_rules),
             ),
         )
         if model is None or not model.history_stack or model.undo_index <= 0:
@@ -603,6 +675,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
+                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.relationship_rules),
             ),
         )
         if (
@@ -626,6 +700,10 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         if model.draft_kind == PlanDraftKind.GROUPING.value:
             model.template_id = snapshot.get("template_id")
         model.smart_enabled = bool(snapshot.get("smart_enabled", False))
+        model.use_history = bool(snapshot.get("use_history", False))
+        model.grouping_seating_distance_enabled = bool(
+            snapshot.get("grouping_seating_distance_enabled", False)
+        )
 
         await self._replace_related_collection(
             model=model,
@@ -669,13 +747,34 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 new_items=[
                     StudentPlanningMetaModel(
                         student_id=meta["student_id"],
-                        teacher_proximity=meta.get("teacher_proximity"),
-                        stability_preference=meta.get("stability_preference"),
-                        preferred_zone=meta.get("preferred_zone"),
-                        avoid_zone=meta.get("avoid_zone"),
                         notes=meta.get("notes"),
                     )
                     for meta in snapshot["student_planning_meta"]
+                ],
+            )
+        if "smart_preferences" in snapshot:
+            await self._replace_related_collection(
+                model=model,
+                attribute_name="smart_preferences",
+                new_items=[
+                    StudentSmartPreferenceModel(
+                        student_id=pref["student_id"],
+                        support_seat=pref.get("support_seat", False),
+                    )
+                    for pref in snapshot["smart_preferences"]
+                ],
+            )
+        if "relationship_rules" in snapshot:
+            await self._replace_related_collection(
+                model=model,
+                attribute_name="relationship_rules",
+                new_items=[
+                    RelationshipRuleModel(
+                        rule_id=rule["rule_id"],
+                        kind=rule["kind"],
+                        student_ids=rule["student_ids"],
+                    )
+                    for rule in snapshot["relationship_rules"]
                 ],
             )
 

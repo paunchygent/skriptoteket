@@ -38,6 +38,8 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "c9c1c9270a3d",
     "e4b7c2d9a1f0",
     "f6c1e2a9b3d4",
+    "7b8a6f1d2c3e",
+    "8c4d2e1f7a9b",
     "4a9d7c1e2b34",
 )
 
@@ -280,6 +282,30 @@ async def _assert_f6c1_grouping_export_jobs(engine: AsyncEngine) -> None:
     }.issubset(indexes)
 
 
+async def _assert_7b8a_planner_draft_flags(engine: AsyncEngine) -> None:
+    columns = await _column_map(engine, "classroom_planner_plan_drafts")
+    assert {"use_history", "grouping_seating_distance_enabled"}.issubset(columns)
+    assert columns["use_history"]["is_nullable"] == "NO"
+    assert columns["grouping_seating_distance_enabled"]["is_nullable"] == "NO"
+
+
+async def _assert_8c4d_planner_smart_rule_tables(engine: AsyncEngine) -> None:
+    tables = await _table_names(engine)
+    assert {
+        "classroom_planner_student_smart_preferences",
+        "classroom_planner_relationship_rules",
+    }.issubset(tables)
+    smart_columns = await _column_map(engine, "classroom_planner_student_smart_preferences")
+    assert {"draft_id", "student_id", "support_seat"}.issubset(smart_columns)
+    relationship_columns = await _column_map(engine, "classroom_planner_relationship_rules")
+    assert {"draft_id", "rule_id", "kind", "student_ids"}.issubset(relationship_columns)
+    legacy_meta_columns = await _column_map(engine, "classroom_planner_student_planning_meta")
+    assert "teacher_proximity" not in legacy_meta_columns
+    assert "stability_preference" not in legacy_meta_columns
+    assert "preferred_zone" not in legacy_meta_columns
+    assert "avoid_zone" not in legacy_meta_columns
+
+
 async def _assert_4a9d_nullable_xlsx_fields(engine: AsyncEngine) -> None:
     columns = await _column_map(engine, "classroom_planner_seating_export_jobs")
     assert columns["layout_id"]["is_nullable"] == "YES"
@@ -309,6 +335,8 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "c9c1c9270a3d": _assert_c9c1_shared_export_binding,
     "e4b7c2d9a1f0": _assert_e4b7_smart_enabled,
     "f6c1e2a9b3d4": _assert_f6c1_grouping_export_jobs,
+    "7b8a6f1d2c3e": _assert_7b8a_planner_draft_flags,
+    "8c4d2e1f7a9b": _assert_8c4d_planner_smart_rule_tables,
     "4a9d7c1e2b34": _assert_4a9d_nullable_xlsx_fields,
 }
 

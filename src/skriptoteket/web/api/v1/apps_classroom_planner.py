@@ -45,6 +45,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
     GroupAssignment,
     PlanDraftKind,
+    RelationshipRule,
     ResumablePlanDraft,
     RoomFixture,
     RoomTemplate,
@@ -53,6 +54,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
+    StudentSmartPreference,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner import (
@@ -206,16 +208,31 @@ class SeatAssignmentDto(BaseModel):
 
 
 class StudentPlanningMetaDto(BaseModel):
-    """Serialize teacher-only student planning metadata."""
+    """Serialize teacher-only student notes."""
 
-    model_config = ConfigDict(frozen=True, from_attributes=True)
+    model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
 
     student_id: str
-    teacher_proximity: int = 0
-    stability_preference: int = 0
-    preferred_zone: str | None = None
-    avoid_zone: str | None = None
     notes: str | None = None
+
+
+class StudentSmartPreferenceDto(BaseModel):
+    """Serialize per-student smart assignment preferences."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
+
+    student_id: str
+    support_seat: bool = False
+
+
+class RelationshipRuleDto(BaseModel):
+    """Serialize a student relationship constraint."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
+
+    id: str
+    kind: str
+    student_ids: list[str]
 
 
 class ResumablePlanDraftDto(BaseModel):
@@ -249,6 +266,8 @@ class DraftWorkspaceResponse(BaseModel):
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
     student_planning_meta: list[StudentPlanningMetaDto]
+    smart_preferences: list[StudentSmartPreferenceDto]
+    relationship_rules: list[RelationshipRuleDto]
     history_status: DraftHistoryStatusDto
 
 
@@ -263,12 +282,18 @@ class ResolvePlanDraftRequest(BaseModel):
 class UpdatePlanDraftRequest(BaseModel):
     """Deserialize mutable draft workspace patches."""
 
+    model_config = ConfigDict(extra="forbid")
+
     expected_revision: int | None = None
     smart_enabled: bool | None = None
+    use_history: bool | None = None
+    grouping_seating_distance_enabled: bool | None = None
     groups: list[DraftGroupDto] | None = None
     group_assignments: list[GroupAssignmentDto] | None = None
     seat_assignments: list[SeatAssignmentDto] | None = None
     student_planning_meta: list[StudentPlanningMetaDto] | None = None
+    smart_preferences: list[StudentSmartPreferenceDto] | None = None
+    relationship_rules: list[RelationshipRuleDto] | None = None
 
     @model_validator(mode="after")
     def validate_unique_collections(self) -> "UpdatePlanDraftRequest":
@@ -278,6 +303,13 @@ class UpdatePlanDraftRequest(BaseModel):
             _assert_unique(
                 [meta.student_id for meta in self.student_planning_meta], label="Student metadata"
             )
+        if self.smart_preferences is not None:
+            _assert_unique(
+                [pref.student_id for pref in self.smart_preferences],
+                label="Smart preference student",
+            )
+        if self.relationship_rules is not None:
+            _assert_unique([rule.id for rule in self.relationship_rules], label="Relationship rule")
         if self.group_assignments is not None:
             _assert_unique(
                 [assignment.student_id for assignment in self.group_assignments],
@@ -347,6 +379,12 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
         student_planning_meta=[
             StudentPlanningMetaDto.model_validate(meta) for meta in workspace.student_planning_meta
         ],
+        smart_preferences=[
+            StudentSmartPreferenceDto.model_validate(pref) for pref in workspace.smart_preferences
+        ],
+        relationship_rules=[
+            RelationshipRuleDto.model_validate(rule) for rule in workspace.relationship_rules
+        ],
         history_status=DraftHistoryStatusDto.model_validate(workspace.history_status),
     )
 
@@ -373,6 +411,8 @@ async def undo_draft(
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
+            smart_preferences=workspace.smart_preferences,
+            relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
     )
@@ -400,6 +440,8 @@ async def redo_draft(
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
+            smart_preferences=workspace.smart_preferences,
+            relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
     )
@@ -645,6 +687,8 @@ async def update_draft(
         owner_user_id=user.id,
         expected_revision=request.expected_revision,
         smart_enabled=request.smart_enabled,
+        use_history=request.use_history,
+        grouping_seating_distance_enabled=request.grouping_seating_distance_enabled,
         groups=(
             [DraftGroup.model_validate(group.model_dump()) for group in request.groups]
             if request.groups is not None
@@ -672,6 +716,22 @@ async def update_draft(
                 for meta in request.student_planning_meta
             ]
             if request.student_planning_meta is not None
+            else None
+        ),
+        smart_preferences=(
+            [
+                StudentSmartPreference.model_validate(preference.model_dump())
+                for preference in request.smart_preferences
+            ]
+            if request.smart_preferences is not None
+            else None
+        ),
+        relationship_rules=(
+            [
+                RelationshipRule.model_validate(rule.model_dump())
+                for rule in request.relationship_rules
+            ]
+            if request.relationship_rules is not None
             else None
         ),
     )

@@ -3,8 +3,8 @@
  *
  * This composable owns the explicit teacher-facing grouping export workflow:
  * flush pending autosave, create the export job, poll status, and restore
- * in-flight exports across reloads. In PR-0139 the backend job remains a
- * recoverable placeholder until the later renderer slices land.
+ * in-flight exports across reloads for both the local XLSX and local PDF
+ * artifact lanes.
  */
 
 import { computed, ref, watch } from "vue";

@@ -29,6 +29,17 @@ Make Klassrumskartan seating export operationally deployable on Hemma by wiring
 the missing production callback configuration and by making Sir Convert-a-Lot a
 checked dependency of Skriptoteket deployment/bring-up.
 
+## Current status
+
+- This PR documents the originally shipped Sir Convert-dependent seating export
+  rollout.
+- Architecture note (2026-03-26):
+  - `ADR-0075` supersedes this dependency model for Klassrumskartan-owned PDF
+    artifacts
+  - the next seating-PDF migration should remove the Sir Convert deploy
+    dependency, callback requirement, and webhook reconciliation work from the
+    Klassrumskartan export path
+
 ## Non-goals
 
 - Moving Sir Convert-a-Lot into Skriptoteket's production compose file.
@@ -178,3 +189,10 @@ which stage.
 
 - Revert the deploy wrapper and production callback wiring while preserving the
   already-shipped export code path behind the configuration guard.
+
+## Supersession note
+
+- This PR remains relevant as historical rollout documentation for the original
+  Sir Convert seating-export lane.
+- It is no longer the desired end-state for Klassrumskartan exports after
+  `ADR-0075`.

@@ -19,6 +19,8 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingPosterScene,
 )
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
+    SEATING_POSTER_LOGO_PNG_PATH,
+    SEATING_POSTER_LOGO_SVG_PATH,
     BrutalistPosterRenderer,
 )
 
@@ -74,8 +76,13 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "poster__floor" in bundle.html_content
     assert "poster-fixture--label-vertical" in bundle.html_content
     assert "poster__header-brand" in bundle.html_content
-    assert 'src="logo-horizontal.png"' in bundle.html_content
-    assert [resource.filename for resource in bundle.resource_files] == ["logo-horizontal.png"]
+    expected_logo_filename = (
+        SEATING_POSTER_LOGO_PNG_PATH.name
+        if SEATING_POSTER_LOGO_PNG_PATH.exists()
+        else SEATING_POSTER_LOGO_SVG_PATH.name
+    )
+    assert f'<img src="{expected_logo_filename}" alt="">' in bundle.html_content
+    assert [resource.filename for resource in bundle.resource_files] == [expected_logo_filename]
     assert "@page" in bundle.css_content
     assert "A3 landscape" in bundle.css_content
     assert "margin: 0;" in bundle.css_content
@@ -85,7 +92,8 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "--top-bottom-wall-band-mm:6.5" in bundle.html_content
     assert "--page-width-mm:420.0" in bundle.html_content
     assert "justify-content: center;" in bundle.css_content
-    assert "opacity: 0.18;" in bundle.css_content
+    assert "font-family: var(--heading-serif);" in bundle.css_content
+    assert "background: var(--brand-burgundy);" in bundle.css_content
 
 
 @pytest.mark.unit

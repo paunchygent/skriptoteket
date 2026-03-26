@@ -3,7 +3,7 @@
 Purpose:
     Render the PR-0118 `poster_scene` into export-owned HTML and CSS so
     classroom-planner export jobs can hand a renderer-independent artifact
-    bundle to Sir Convert-a-Lot without reusing planner DOM or styles.
+    bundle to the local seating PDF lane without reusing planner DOM or styles.
 
 Relationships:
     - Implements `SeatingPosterRendererProtocol`.
@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from html import escape
-from pathlib import Path
 
 from skriptoteket.application.curated_apps.classroom_planner.exports.jobs import (
     SeatingExportPaperSize,
@@ -30,22 +29,27 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.rendering i
     RenderedSeatingPosterResource,
     SeatingPosterRenderRequest,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.pdf_branding import (
+    HORIZONTAL_LOGO_PNG_PATH,
+    HORIZONTAL_LOGO_SVG_PATH,
+    resolve_bundled_horizontal_logo_filename,
+)
 from skriptoteket.protocols.classroom_planner_exports import SeatingPosterRendererProtocol
 
-SEATING_POSTER_LOGO_PNG_PATH = (
-    Path(__file__).resolve().parents[6] / "frontend/apps/skriptoteket/public/logo-horizontal.png"
-)
+SEATING_POSTER_LOGO_PNG_PATH = HORIZONTAL_LOGO_PNG_PATH
+SEATING_POSTER_LOGO_SVG_PATH = HORIZONTAL_LOGO_SVG_PATH
 
 
 class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
     """Render a seating poster as export-owned HTML plus a dedicated CSS file."""
 
     def __init__(self) -> None:
-        self._logo_png_bytes: bytes | None = None
-        try:
-            self._logo_png_bytes = SEATING_POSTER_LOGO_PNG_PATH.read_bytes()
-        except FileNotFoundError:
-            self._logo_png_bytes = None
+        self._logo_resource_filename = resolve_bundled_horizontal_logo_filename()
+        self._logo_bytes: bytes | None = None
+        if self._logo_resource_filename == HORIZONTAL_LOGO_SVG_PATH.name:
+            self._logo_bytes = HORIZONTAL_LOGO_SVG_PATH.read_bytes()
+        elif self._logo_resource_filename == HORIZONTAL_LOGO_PNG_PATH.name:
+            self._logo_bytes = HORIZONTAL_LOGO_PNG_PATH.read_bytes()
 
     def render(self, *, request: SeatingPosterRenderRequest) -> RenderedSeatingPosterBundle:
         title = f"{request.roster_name} - {request.template_name}"
@@ -91,7 +95,7 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
     >
       <header class="poster__header">
         <div class="poster__header-copy">
-          <p class="poster__eyebrow">Klassrumskartan</p>
+          <p class="poster__eyebrow">Skriptoteket</p>
           <h1>{escape(request.roster_name)}</h1>
           <p class="poster__meta">{escape(request.template_name)}</p>
         </div>
@@ -120,22 +124,22 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
         )
 
     def _render_header_branding(self) -> str:
-        if self._logo_png_bytes is None:
+        if self._logo_resource_filename is None:
             return ""
 
         return (
             '<div class="poster__header-brand" aria-hidden="true">'
-            '<img alt="" src="logo-horizontal.png"/>'
+            f'<img src="{escape(self._logo_resource_filename)}" alt="">'
             "</div>"
         )
 
     def _build_resource_files(self) -> list[RenderedSeatingPosterResource]:
-        if self._logo_png_bytes is None:
+        if self._logo_resource_filename is None or self._logo_bytes is None:
             return []
         return [
             RenderedSeatingPosterResource(
-                filename="logo-horizontal.png",
-                content_bytes=self._logo_png_bytes,
+                filename=self._logo_resource_filename,
+                content_bytes=self._logo_bytes,
             )
         ]
 
@@ -373,8 +377,10 @@ def _build_css(
 :root {{
   --ink: #111111;
   --paper: #ffffff;
-  --accent: #111111;
+  --accent: #1c2e4a;
+  --brand-burgundy: #4d1521;
   --grid-line: #11111122;
+  --heading-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
 }}
 * {{
   box-sizing: border-box;
@@ -403,19 +409,42 @@ body {{
   overflow: hidden;
 }}
 .poster__header {{
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1.2mm 6mm;
-  align-items: start;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6mm;
+  padding-bottom: 2.4mm;
   overflow: hidden;
+}}
+.poster__header::after {{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.6mm;
+  background: var(--accent);
+}}
+.poster__header::before {{
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18mm;
+  height: 0.95mm;
+  background: var(--brand-burgundy);
 }}
 .poster__header-copy {{
   display: grid;
   gap: 1.2mm;
   align-content: start;
+  flex: 1 1 0;
+  min-width: 0;
 }}
 .poster__eyebrow {{
   margin: 0;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 9pt;
@@ -427,24 +456,35 @@ body {{
   margin: 0;
 }}
 .poster__header h1 {{
+  color: var(--accent);
+  font-family: var(--heading-serif);
   font-size: 22pt;
   line-height: 0.96;
   overflow-wrap: anywhere;
 }}
 .poster__meta {{
+  color: #475569;
   font-size: 10pt;
 }}
 .poster__header-brand {{
-  justify-self: end;
-  align-self: start;
-  opacity: 0.18;
+  flex: 0 0 42mm;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+  margin-top: 4.2mm;
+}}
+.poster__header-brand {{
+  width: 42mm;
+  height: 9.25mm;
 }}
 .poster__header-brand img {{
   display: block;
-  width: 38mm;
-  height: 8.35mm;
-  max-width: none;
+  width: 100%;
+  max-width: 42mm;
+  max-height: 9.25mm;
   object-fit: contain;
+  object-position: center right;
 }}
 .poster__scene {{
   display: grid;

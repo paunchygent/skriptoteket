@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-26
 outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
-dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
+dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 ---
 
 ## Scope
@@ -16,7 +16,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 - Keep exports separate from autosave, draft continuity, and bounded undo/redo history.
 - Ship seating exports before grouping exports.
 - Treat the seating PDF as a standalone print renderer, not as a print stylesheet over the live planner UI.
-- Prefer Sir Convert-a-Lot as the dedicated conversion/export service where that keeps Klassrumskartan aligned with SRP and existing platform seams.
+- Keep Klassrumskartan-owned export artifacts local to Skriptoteket and use Sir Convert-a-Lot only
+  for external/general-purpose conversion workloads where that keeps boundaries clear.
 - Start with one seating PDF layout:
   - `pretty_brutalist_poster`
 - Make the export contract layout-ready from the start so later stories can add teacher-selectable layouts without rewriting the renderer contract.
@@ -78,15 +79,18 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 ## Implementation Summary (as of 2026-03-26)
 
 - `ST-26-01` is implemented through `PR-0118`, `PR-0119`, `PR-0120`,
-  `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, and `PR-0125`.
+  `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, and `PR-0146`.
 - `ST-26-03` is implemented through `PR-0142` and `PR-0143`.
 - `ST-26-05` is implemented through `PR-0139` and `PR-0140`.
-- Seating exports now have an explicit prepare-contract seam plus an async PDF
-  export-job lane with standalone poster-scene translation, export-owned
-  HTML/CSS rendering, Sir Convert-a-Lot delivery, Vault persistence, typed
-  status/download routes, reload recovery, production webhook reconciliation,
-  clean canonical-only webhook cutover/removal, and a shared preview/export
-  scene-normalization seam.
+- Seating exports now have an explicit prepare-contract seam plus a fully local
+  PDF/XLSX artifact boundary inside Skriptoteket:
+  standalone poster-scene translation, export-owned HTML/CSS rendering, local
+  PDF/XLSX finalization, Vault persistence, typed status/download routes, and
+  draft-scoped recovery without seating-specific Sir Convert callback/webhook
+  orchestration.
+- `ADR-0075` is now reflected in the shipped seating export lane, so
+  Klassrumskartan-owned PDFs match the already-local grouping PDF/XLSX and
+  seating XLSX artifact boundaries.
 - Seating exports now also include a local `XLSX` lane that keeps `Affisch (A3)`
   as the default teacher action, exposes `Excel (.xlsx)` as a secondary option,
   and delivers a single-sheet `Sittplacering` workbook that preserves the room
@@ -127,5 +131,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
   - easy to post in Teams or Google Classroom
   - printable when needed, but not designed as a classroom wall poster
 - PDF import should use the existing Sir Convert-a-Lot service model rather than introducing a bespoke heavy parsing lane inside Klassrumskartan itself.
-- PDF and document export planning should prefer the dedicated Sir Convert-a-Lot service boundary rather than folding conversion concerns into planner-owned rendering/runtime responsibilities.
+- For Klassrumskartan-owned artifacts, export rendering/runtime stays planner-owned inside
+  Skriptoteket per `ADR-0075`.
+- Sir Convert-a-Lot remains the preferred dedicated service boundary for external/general-purpose
+  conversion and PDF extraction rather than for Klassrumskartan's final teacher-facing PDF
+  artifacts.
 - A review doc should be created and approved before implementation begins, per the repo review workflow.

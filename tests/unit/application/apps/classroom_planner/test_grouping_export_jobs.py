@@ -38,6 +38,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
 from skriptoteket.protocols.classroom_planner_exports import (
     GroupingExportJobRepositoryProtocol,
+    GroupingPdfRendererProtocol,
     GroupingXlsxRendererProtocol,
 )
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol, VaultStorageProtocol
@@ -158,6 +159,7 @@ async def test_create_grouping_export_job_persists_placeholder_submitted_job():
     prepare.load_workspace.return_value = _grouping_workspace(owner_user_id=actor.id)
     jobs = AsyncMock(spec=GroupingExportJobRepositoryProtocol)
     jobs.create.side_effect = lambda *, job: job
+    pdf_renderer = AsyncMock(spec=GroupingPdfRendererProtocol)
     xlsx_renderer = AsyncMock(spec=GroupingXlsxRendererProtocol)
     xlsx_renderer.render.return_value = b"PK\x03\x04"
     finalizer = AsyncMock(spec=GroupingExportJobFinalizer)
@@ -171,6 +173,7 @@ async def test_create_grouping_export_job_persists_placeholder_submitted_job():
     handler = CreateGroupingExportJobHandler(
         prepare=prepare,
         jobs=jobs,
+        pdf_renderer=pdf_renderer,
         xlsx_renderer=xlsx_renderer,
         finalizer=finalizer,
         uow=_DummyUow(),
@@ -190,6 +193,7 @@ async def test_create_grouping_export_job_persists_placeholder_submitted_job():
     assert persisted_job.output_filename.endswith(".xlsx")
     assert str(job_id).split("-", maxsplit=1)[0] in persisted_job.output_filename
     assert result.status is GroupingExportJobStatus.SUCCEEDED
+    pdf_renderer.render.assert_not_called()
     xlsx_renderer.render.assert_called_once()
     finalizer.complete_local_success.assert_awaited_once()
     assert result.download_url is None
@@ -197,7 +201,7 @@ async def test_create_grouping_export_job_persists_placeholder_submitted_job():
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_grouping_pdf_job_keeps_placeholder_submitted_state():
+async def test_create_grouping_pdf_job_renders_local_pdf_and_completes_successfully():
     actor = make_user()
     now = datetime(2026, 3, 26, tzinfo=timezone.utc)
     job_id = uuid4()
@@ -210,12 +214,21 @@ async def test_create_grouping_pdf_job_keeps_placeholder_submitted_state():
     )
     jobs = AsyncMock(spec=GroupingExportJobRepositoryProtocol)
     jobs.create.side_effect = lambda *, job: job
+    pdf_renderer = AsyncMock(spec=GroupingPdfRendererProtocol)
+    pdf_renderer.render.return_value = b"%PDF-1.7"
     xlsx_renderer = AsyncMock(spec=GroupingXlsxRendererProtocol)
     finalizer = AsyncMock(spec=GroupingExportJobFinalizer)
+    finalizer.complete_local_success.side_effect = lambda *, job, content, filename: job.model_copy(
+        update={
+            "status": GroupingExportJobStatus.SUCCEEDED,
+            "vault_file_id": uuid4(),
+        }
+    )
 
     handler = CreateGroupingExportJobHandler(
         prepare=prepare,
         jobs=jobs,
+        pdf_renderer=pdf_renderer,
         xlsx_renderer=xlsx_renderer,
         finalizer=finalizer,
         uow=_DummyUow(),
@@ -230,9 +243,12 @@ async def test_create_grouping_pdf_job_keeps_placeholder_submitted_state():
         paper_size=GroupingExportPaperSize.A4_PORTRAIT,
     )
 
-    assert result.status is GroupingExportJobStatus.SUBMITTED
+    persisted_job = jobs.create.await_args.kwargs["job"]
+    assert persisted_job.output_filename.endswith(".pdf")
+    assert result.status is GroupingExportJobStatus.SUCCEEDED
+    pdf_renderer.render.assert_called_once()
     xlsx_renderer.render.assert_not_called()
-    finalizer.complete_local_success.assert_not_awaited()
+    finalizer.complete_local_success.assert_awaited_once()
 
 
 @pytest.mark.unit

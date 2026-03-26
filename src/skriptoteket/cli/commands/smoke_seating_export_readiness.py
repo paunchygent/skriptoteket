@@ -1,15 +1,15 @@
 """CLI smoke gate for production seating-export readiness.
 
 Purpose:
-    Create one real Klassrumskartan seating export job, wait for terminal
-    success through the callback path (without polling the export-job read API),
-    and prove Vault-backed download delivery from the persisted artifact.
+    Create one real Klassrumskartan seating export job through the local PDF
+    rendering path and prove Vault-backed download delivery from the persisted
+    artifact.
 
 Relationships:
     - Uses classroom-planner application handlers and repositories directly
       inside the production web runtime.
-    - Consumed by `scripts/hemma_deploy_and_verify_seating_export.sh` as the
-      hard post-deploy export smoke for PR-0122.
+    - Consumed by deployment/readiness runbooks as the hard local export smoke
+      after the PR-0146 seating PDF cutover.
 """
 
 from __future__ import annotations
@@ -21,7 +21,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from uuid import UUID, uuid4
 
-import httpx
 import typer
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -68,12 +67,11 @@ from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
     BrutalistPosterRenderer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_pdf_renderer import (
+    WeasyPrintSeatingPdfRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
     SeatingXlsxRenderer,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
-    SirConvertALotClientV2,
-    SirConvertClientSettingsV2,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
@@ -84,9 +82,6 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
 )
 from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs import (
     PostgreSQLSeatingExportJobRepository,
-)
-from skriptoteket.infrastructure.repositories.classroom_planner_export_webhook_bindings import (
-    PostgreSQLSeatingExportWebhookBindingRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
@@ -122,27 +117,15 @@ class _SmokeContext:
 
 
 def smoke_seating_export_readiness(
-    timeout_seconds: int = typer.Option(
-        180,
-        min=10,
-        help="Maximum time to wait for callback-driven terminal export success.",
-    ),
-    poll_interval_seconds: float = typer.Option(
-        2.0,
-        min=0.5,
-        help="How often to poll the database for callback completion.",
-    ),
     correlation_id: str | None = typer.Option(
         None,
         help="Optional correlation id to stamp onto the smoke export flow.",
     ),
 ) -> None:
-    """Run the production callback-capable seating-export smoke gate."""
+    """Run the production local seating-export smoke gate."""
 
     asyncio.run(
         _smoke_seating_export_readiness_async(
-            timeout_seconds=timeout_seconds,
-            poll_interval_seconds=poll_interval_seconds,
             correlation_id=correlation_id,
         )
     )
@@ -150,8 +133,6 @@ def smoke_seating_export_readiness(
 
 async def _smoke_seating_export_readiness_async(
     *,
-    timeout_seconds: int,
-    poll_interval_seconds: float,
     correlation_id: str | None,
 ) -> None:
     settings = Settings()
@@ -182,12 +163,10 @@ async def _smoke_seating_export_readiness_async(
         draft_id=draft_id,
         correlation_id=effective_correlation_id,
     )
-    terminal_job = await _wait_for_callback_completion(
+    terminal_job = await _load_completed_export_job(
         settings=settings,
         actor_id=actor.id,
         export_job_id=export_job_id,
-        timeout_seconds=timeout_seconds,
-        poll_interval_seconds=poll_interval_seconds,
     )
     filename, content = await _download_export_from_vault(
         settings=settings,
@@ -394,91 +373,63 @@ async def _create_export_job(
     draft_id: UUID,
     correlation_id: str,
 ) -> UUID:
-    client_settings = SirConvertClientSettingsV2(
-        base_url=settings.SIR_CONVERT_A_LOT_V2_BASE_URL,
-        api_key=settings.SIR_CONVERT_A_LOT_V2_API_KEY,
-        timeout_seconds=settings.SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS,
-    )
     async with open_session(settings) as session:
-        async with httpx.AsyncClient(
-            base_url=client_settings.base_url,
-            timeout=client_settings.timeout_seconds,
-        ) as http_client:
-            vault_files = PostgreSQLUserVaultFileRepository(session)
-            vault_storage = LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT))
-            finalizer = seating_export_job_completion_handlers.SeatingExportJobFinalizer(
-                jobs=PostgreSQLSeatingExportJobRepository(session),
-                client=SirConvertALotClientV2(
-                    settings=client_settings,
-                    client=http_client,
-                ),
-                vault_files=vault_files,
-                vault_usage=PostgreSQLUserVaultUsageRepository(session),
-                vault_storage=vault_storage,
-                uow=SQLAlchemyUnitOfWork(session),
-                clock=UTCClock(),
-                id_generator=UUID4Generator(),
-                settings=settings,
-            )
-            create_job = CreateSeatingExportJobHandler(
-                prepare=PrepareSeatingExportHandler(
-                    drafts=PostgreSQLPlanDraftRepository(session),
-                    rosters=PostgreSQLRosterRepository(session),
-                    templates=PostgreSQLRoomTemplateRepository(session),
-                ),
-                jobs=PostgreSQLSeatingExportJobRepository(session),
-                webhook_bindings=PostgreSQLSeatingExportWebhookBindingRepository(session),
-                poster_renderer=BrutalistPosterRenderer(),
-                xlsx_renderer=SeatingXlsxRenderer(),
-                client=SirConvertALotClientV2(
-                    settings=client_settings,
-                    client=http_client,
-                ),
-                finalizer=finalizer,
-                vault_files=vault_files,
-                uow=SQLAlchemyUnitOfWork(session),
-                clock=UTCClock(),
-                id_generator=UUID4Generator(),
-                settings=settings,
-            )
-            result = await create_job.handle(
-                actor=actor,
-                draft_id=draft_id,
-                export_kind=SeatingExportKind.PDF,
-                layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
-                paper_size=SeatingExportPaperSize.A3_LANDSCAPE,
-                correlation_id=correlation_id,
-            )
+        vault_files = PostgreSQLUserVaultFileRepository(session)
+        vault_storage = LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT))
+        finalizer = seating_export_job_completion_handlers.SeatingExportJobFinalizer(
+            jobs=PostgreSQLSeatingExportJobRepository(session),
+            vault_files=vault_files,
+            vault_usage=PostgreSQLUserVaultUsageRepository(session),
+            vault_storage=vault_storage,
+            uow=SQLAlchemyUnitOfWork(session),
+            clock=UTCClock(),
+            id_generator=UUID4Generator(),
+            settings=settings,
+        )
+        create_job = CreateSeatingExportJobHandler(
+            prepare=PrepareSeatingExportHandler(
+                drafts=PostgreSQLPlanDraftRepository(session),
+                rosters=PostgreSQLRosterRepository(session),
+                templates=PostgreSQLRoomTemplateRepository(session),
+            ),
+            jobs=PostgreSQLSeatingExportJobRepository(session),
+            pdf_renderer=WeasyPrintSeatingPdfRenderer(),
+            poster_renderer=BrutalistPosterRenderer(),
+            xlsx_renderer=SeatingXlsxRenderer(),
+            finalizer=finalizer,
+            vault_files=vault_files,
+            uow=SQLAlchemyUnitOfWork(session),
+            clock=UTCClock(),
+            id_generator=UUID4Generator(),
+        )
+        result = await create_job.handle(
+            actor=actor,
+            draft_id=draft_id,
+            export_kind=SeatingExportKind.PDF,
+            layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
+            paper_size=SeatingExportPaperSize.A3_LANDSCAPE,
+            correlation_id=correlation_id,
+        )
     return result.job_id
 
 
-async def _wait_for_callback_completion(
+async def _load_completed_export_job(
     *,
     settings: Settings,
     actor_id: UUID,
     export_job_id: UUID,
-    timeout_seconds: int,
-    poll_interval_seconds: float,
 ):
-    deadline = asyncio.get_running_loop().time() + timeout_seconds
-    while True:
-        async with open_session(settings) as session:
-            jobs = PostgreSQLSeatingExportJobRepository(session)
-            job = await jobs.get_by_id(job_id=export_job_id)
-        if job is None or job.owner_user_id != actor_id:
-            raise SystemExit("Seating export smoke lost the export job before completion.")
-        if job.status is SeatingExportJobStatus.SUCCEEDED and job.vault_file_id is not None:
-            return job
-        if job.status is SeatingExportJobStatus.FAILED:
-            raise SystemExit(
-                f"Seating export smoke failed before Vault download: status={job.status.value} "
-                f"error={job.error_message!r}"
-            )
-        if asyncio.get_running_loop().time() >= deadline:
-            raise SystemExit(
-                "Seating export smoke timed out waiting for callback-driven terminal success."
-            )
-        await asyncio.sleep(poll_interval_seconds)
+    async with open_session(settings) as session:
+        jobs = PostgreSQLSeatingExportJobRepository(session)
+        job = await jobs.get_by_id(job_id=export_job_id)
+    if job is None or job.owner_user_id != actor_id:
+        raise SystemExit("Seating export smoke lost the export job before completion.")
+    if job.status is SeatingExportJobStatus.SUCCEEDED and job.vault_file_id is not None:
+        return job
+    raise SystemExit(
+        f"Seating export smoke did not finish locally as expected: "
+        f"status={job.status.value} error={job.error_message!r}"
+    )
 
 
 async def _download_export_from_vault(

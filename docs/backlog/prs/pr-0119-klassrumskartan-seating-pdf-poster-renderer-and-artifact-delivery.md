@@ -27,15 +27,21 @@ Render and deliver the first poster-grade seating PDF artifact.
 ## Current status
 
 - Implemented locally on `main`.
-- The async export lane now renders the canonical `poster_scene` into dedicated
-  `index.html` + `poster.css`, submits a multi-file HTML/CSS job to
-  Sir Convert-a-Lot, persists the finished PDF to Vault, and exposes typed
+- The originally shipped lane rendered the canonical `poster_scene` into
+  dedicated `index.html` + `poster.css`, submitted that bundle to
+  Sir Convert-a-Lot, persisted the finished PDF to Vault, and exposed typed
   create/status/download routes.
 - Review follow-up fixes are included:
   - webhook-onboarding failures now mark the local job as `failed`
   - polling can recover a completed upstream job if webhook delivery is missed
   - the renderer-owned teacher-facing filename is preserved through Vault and
     download instead of collapsing to `output.pdf`
+- Architecture note (2026-03-26):
+  - `ADR-0075` now supersedes the Sir Convert boundary for Klassrumskartan
+    app-owned PDFs
+  - `PR-0146` is the explicit seating-PDF follow-up that migrates this artifact
+    to a fully local render/finalize path and removes the upstream export
+    dependency
 
 ## Non-goals
 
@@ -162,3 +168,12 @@ Response shape:
 ## Rollback plan
 
 - Remove PDF rendering and delivery while preserving the explicit export contract.
+
+## Supersession note
+
+- The long-term architecture in `ADR-0075` changes the final PDF conversion
+  boundary for Klassrumskartan from Sir Convert-a-Lot to a local Skriptoteket
+  renderer/finalizer path.
+- This PR remains a historical shipped slice, but its Sir Convert-specific
+  delivery path is now an approved migration target rather than the desired
+  end-state.

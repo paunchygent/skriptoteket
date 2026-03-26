@@ -36,6 +36,11 @@ job contract and Vault-backed artifact delivery.
   subscription binding instead of onboarding one webhook subscription per job.
 - Callback completion now resolves the owning `SeatingExportJob` by upstream Sir
   Convert job id, while polling fallback remains intact.
+- Architecture note (2026-03-26):
+  - `ADR-0075` supersedes this webhook architecture for Klassrumskartan-owned
+    PDF artifacts
+  - the next seating-PDF migration should delete the shared subscription path
+    instead of extending it further
 
 ## Non-goals
 
@@ -72,3 +77,10 @@ job contract and Vault-backed artifact delivery.
 
 - Restore per-job webhook onboarding while keeping polling fallback and the
   current export-job API intact.
+
+## Supersession note
+
+- This PR remains historical documentation for the original Sir Convert-based
+  seating export lane.
+- It is an approved removal target after the local seating-PDF cutover defined
+  by `ADR-0075`.

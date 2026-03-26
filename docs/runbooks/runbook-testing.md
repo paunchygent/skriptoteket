@@ -48,6 +48,30 @@ pdm run test
 - Integration tests use Docker (testcontainers). Ensure Docker Desktop is running and accessible.
 - Migration idempotency tests live in `tests/integration/test_migration_####_*_idempotent.py` and must stay green.
 
+### Local PDF renderer checks
+
+- For WeasyPrint renderers built from `HTML(string=...)`, treat relative image/logo URLs as invalid
+  unless `base_url` is supplied.
+- The repo-safe pattern is to pass the asset directory itself as a filesystem `Path` (or plain
+  directory path string) and keep asset references relative, for example
+  `HTML(string=html, base_url=assets_dir)`.
+- Do not use `assets_dir.as_uri()` as a directory base unless you also prove the URI form resolves
+  correctly in the current renderer. During local verification on `2026-03-26`, the URI-directory
+  form without a trailing slash resolved relative assets one directory too high and silently
+  dropped the logo from exported PDFs.
+- When a PDF asset is missing, enable WeasyPrint logging and run a small focused probe before
+  changing production code. The expected failure signature is a fetch path that has lost the final
+  asset-directory segment.
+
+### Klassrumskartan PDF export rule
+
+- Klassrumskartan app-owned PDF artifacts should render locally inside Skriptoteket.
+- Practical rule:
+  - local in-process WeasyPrint renderer: `base_url` + relative asset path
+  - do not route Klassrumskartan-owned PDF export rendering through Sir Convert-a-Lot
+- Sir Convert remains relevant for general conversion workloads such as Conversion Hub and
+  class-list import PDF extraction.
+
 ## Frontend (Vitest)
 
 ### Locations

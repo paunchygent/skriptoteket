@@ -13,7 +13,6 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     AbandonDraftHandler,
     ActivateGroupingHistoryDraftHandler,
     ActivateSeatingHistoryDraftHandler,
-    CompleteSeatingExportJobFromWebhookHandler,
     CreateGroupingDraftHandler,
     CreateGroupingExportJobHandler,
     CreateRoomTemplateHandler,
@@ -93,11 +92,17 @@ from skriptoteket.domain.curated_apps.classroom_planner.import_heuristics import
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner import (
     class_list_document_extractor as class_list_document_extractor_module,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.grouping_pdf_renderer import (
+    GroupingPdfRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.grouping_xlsx_renderer import (
     GroupingXlsxRenderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
     BrutalistPosterRenderer,
+)
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_pdf_renderer import (
+    WeasyPrintSeatingPdfRenderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
     SeatingXlsxRenderer,
@@ -132,9 +137,6 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
 from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs import (
     PostgreSQLSeatingExportJobRepository,
 )
-from skriptoteket.infrastructure.repositories.classroom_planner_export_webhook_bindings import (
-    PostgreSQLSeatingExportWebhookBindingRepository,
-)
 from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_jobs import (
     PostgreSQLGroupingExportJobRepository,
 )
@@ -145,9 +147,10 @@ from skriptoteket.protocols.classroom_planner import (
 )
 from skriptoteket.protocols.classroom_planner_exports import (
     GroupingExportJobRepositoryProtocol,
+    GroupingPdfRendererProtocol,
     GroupingXlsxRendererProtocol,
     SeatingExportJobRepositoryProtocol,
-    SeatingExportWebhookBindingRepositoryProtocol,
+    SeatingPdfRendererProtocol,
     SeatingPosterRendererProtocol,
     SeatingXlsxRendererProtocol,
 )
@@ -643,30 +646,26 @@ class CuratedAppsProvider(Provider):
         self,
         prepare: PrepareSeatingExportHandler,
         jobs: SeatingExportJobRepositoryProtocol,
-        webhook_bindings: SeatingExportWebhookBindingRepositoryProtocol,
+        pdf_renderer: SeatingPdfRendererProtocol,
         poster_renderer: SeatingPosterRendererProtocol,
         xlsx_renderer: SeatingXlsxRendererProtocol,
-        client: SirConvertALotClientV2Protocol,
         finalizer: SeatingExportJobFinalizer,
         vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-        settings: Settings,
     ) -> CreateSeatingExportJobHandler:
         return CreateSeatingExportJobHandler(
             prepare=prepare,
             jobs=jobs,
-            webhook_bindings=webhook_bindings,
+            pdf_renderer=pdf_renderer,
             poster_renderer=poster_renderer,
             xlsx_renderer=xlsx_renderer,
-            client=client,
             finalizer=finalizer,
             vault_files=vault_files,
             uow=uow,
             clock=clock,
             id_generator=id_generator,
-            settings=settings,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -674,6 +673,7 @@ class CuratedAppsProvider(Provider):
         self,
         prepare: PrepareGroupingExportHandler,
         jobs: GroupingExportJobRepositoryProtocol,
+        pdf_renderer: GroupingPdfRendererProtocol,
         xlsx_renderer: GroupingXlsxRendererProtocol,
         finalizer: GroupingExportJobFinalizer,
         uow: UnitOfWorkProtocol,
@@ -683,6 +683,7 @@ class CuratedAppsProvider(Provider):
         return CreateGroupingExportJobHandler(
             prepare=prepare,
             jobs=jobs,
+            pdf_renderer=pdf_renderer,
             xlsx_renderer=xlsx_renderer,
             finalizer=finalizer,
             uow=uow,
@@ -694,7 +695,6 @@ class CuratedAppsProvider(Provider):
     def seating_export_job_finalizer(
         self,
         jobs: SeatingExportJobRepositoryProtocol,
-        client: SirConvertALotClientV2Protocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -705,7 +705,6 @@ class CuratedAppsProvider(Provider):
     ) -> SeatingExportJobFinalizer:
         return SeatingExportJobFinalizer(
             jobs=jobs,
-            client=client,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,
@@ -743,15 +742,11 @@ class CuratedAppsProvider(Provider):
         self,
         jobs: SeatingExportJobRepositoryProtocol,
         vault_files: VaultFileRepositoryProtocol,
-        client: SirConvertALotClientV2Protocol,
-        finalizer: SeatingExportJobFinalizer,
         uow: UnitOfWorkProtocol,
     ) -> GetSeatingExportJobHandler:
         return GetSeatingExportJobHandler(
             jobs=jobs,
             vault_files=vault_files,
-            client=client,
-            finalizer=finalizer,
             uow=uow,
         )
 
@@ -773,15 +768,11 @@ class CuratedAppsProvider(Provider):
         self,
         jobs: SeatingExportJobRepositoryProtocol,
         vault_files: VaultFileRepositoryProtocol,
-        client: SirConvertALotClientV2Protocol,
-        finalizer: SeatingExportJobFinalizer,
         uow: UnitOfWorkProtocol,
     ) -> GetRecoverableSeatingExportJobForDraftHandler:
         return GetRecoverableSeatingExportJobForDraftHandler(
             jobs=jobs,
             vault_files=vault_files,
-            client=client,
-            finalizer=finalizer,
             uow=uow,
         )
 
@@ -795,19 +786,6 @@ class CuratedAppsProvider(Provider):
         return GetRecoverableGroupingExportJobForDraftHandler(
             jobs=jobs,
             vault_files=vault_files,
-            uow=uow,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def complete_seating_export_job_from_webhook_handler(
-        self,
-        jobs: SeatingExportJobRepositoryProtocol,
-        finalizer: SeatingExportJobFinalizer,
-        uow: UnitOfWorkProtocol,
-    ) -> CompleteSeatingExportJobFromWebhookHandler:
-        return CompleteSeatingExportJobFromWebhookHandler(
-            jobs=jobs,
-            finalizer=finalizer,
             uow=uow,
         )
 
@@ -939,16 +917,13 @@ class CuratedAppsProvider(Provider):
     ) -> GroupingExportJobRepositoryProtocol:
         return PostgreSQLGroupingExportJobRepository(session=session)
 
-    @provide(scope=Scope.REQUEST)
-    def seating_export_webhook_binding_repository(
-        self,
-        session: AsyncSession,
-    ) -> SeatingExportWebhookBindingRepositoryProtocol:
-        return PostgreSQLSeatingExportWebhookBindingRepository(session=session)
-
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
         return BrutalistPosterRenderer()
+
+    @provide(scope=Scope.APP)
+    def seating_pdf_renderer(self) -> SeatingPdfRendererProtocol:
+        return WeasyPrintSeatingPdfRenderer()
 
     @provide(scope=Scope.APP)
     def seating_xlsx_renderer(self) -> SeatingXlsxRendererProtocol:
@@ -957,6 +932,10 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def grouping_xlsx_renderer(self) -> GroupingXlsxRendererProtocol:
         return GroupingXlsxRenderer()
+
+    @provide(scope=Scope.APP)
+    def grouping_pdf_renderer(self) -> GroupingPdfRendererProtocol:
+        return GroupingPdfRenderer()
 
     @provide(scope=Scope.APP)
     def class_list_document_extractor(
