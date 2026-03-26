@@ -5,7 +5,7 @@ title: "Klassrumskartan smart assignment v1"
 status: active
 owners: "agents"
 created: 2026-03-25
-outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, use a deliberately small visible rule model, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
+outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a class-wide workspace surface, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
 
@@ -13,11 +13,13 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 
 - Reintroduce smart assignment through a fresh, explicitly approved contract rather than by
   reviving the removed solver-era surface.
-- Keep the visible teacher model intentionally small:
-  - `Support seat`
+- Keep the visible teacher model intentionally small and authored from a class-wide visual
+  workspace surface rather than from per-student drawer editing:
   - `Keep apart`
   - `Keep near`
   - `Use history`
+- Allow one seating-only rule:
+  - `Närmare läraren`
 - Allow one explicit grouping-only seat-distance toggle without turning it into a fifth shared
   smart control.
 - Add one small `Smart` toggle per mode, persisted per draft and defaulting to `off` on new drafts.
@@ -40,6 +42,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - Reusing autosave state, undo/redo stacks, or abandoned drafts as history inputs.
 - Preserving or mapping forward the old visible planner-note / proximity / stability model.
 - Re-exposing multi-slider planning profiles, suggestion panels, or raw score surfaces.
+- Making the student metadata drawer a primary smart-rule editing workflow.
 - Shipping a general teacher-facing checkpoint UX before export-backed checkpoints are trusted.
 - Treating grouping and seating as one blended visible task.
 - Long-form debugging or score-breakdown panels for teachers.
@@ -49,6 +52,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 
 - The `Slumpa` + `Smart` toggle design must stay readable so teachers do not confuse random and
   smart behavior.
+- The toolbar-based class overview must stay comprehensible so rule selection and rule targets are
+  visible without overwhelming the teacher.
 - Smart grouping history partly depends on seating export checkpoints until grouping export
   checkpoints exist later under the export lane.
 - The package must define one explicit no-checkpoint behavior for `Use history`; teams must not
@@ -69,6 +74,13 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 
 - This epic intentionally follows the accepted fundamentals/export direction rather than reopening
   the old slice-2 solver shell.
+- The metadata drawer may remain for advanced notes/history, but it is not the primary smart-rule
+  authoring concept.
+- The first visible smart-rule interaction model is locked:
+  - `Närmare läraren` is unary click-to-toggle
+  - `Keep apart` / `Keep near` are 2+ student clusters authored through multi-select plus explicit
+    commit
+  - overlapping visible relationship clusters are blocked in V1
 - Smart history must start from explicit exports, not from draft mechanics.
 - The first grouping-history source may be seating checkpoints before grouping export checkpoints
   exist later under the export lane.

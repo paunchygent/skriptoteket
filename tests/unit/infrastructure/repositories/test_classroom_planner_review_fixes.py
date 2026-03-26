@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RelationshipRule,
     SeatAssignment,
     StudentPlanningMeta,
-    StudentSmartPreference,
+    StudentSeatingPreference,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
 from skriptoteket.infrastructure.repositories.classroom_planner import (
@@ -99,7 +99,7 @@ def _make_draft_model(
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        smart_preferences=[],
+        seating_preferences=[],
         relationship_rules=[],
     )
 
@@ -193,7 +193,7 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="test")],
-        smart_preferences=[StudentSmartPreference(student_id="s1", support_seat=True)],
+        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=True)],
         relationship_rules=[
             RelationshipRule(
                 id="rule-1",
@@ -218,7 +218,7 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
             "notes": "test",
         }
     ]
-    assert snapshot["smart_preferences"] == [{"student_id": "s1", "support_seat": True}]
+    assert snapshot["seating_preferences"] == [{"student_id": "s1", "near_teacher": True}]
     assert snapshot["relationship_rules"] == [
         {
             "rule_id": "rule-1",
@@ -377,7 +377,7 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-2")],
         student_planning_meta=[StudentPlanningMeta(student_id="student-1", notes="front row")],
-        smart_preferences=[StudentSmartPreference(student_id="student-1", support_seat=True)],
+        seating_preferences=[StudentSeatingPreference(student_id="student-1", near_teacher=True)],
         relationship_rules=[
             RelationshipRule(
                 id="rule-1",
@@ -402,7 +402,7 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
             "notes": "front row",
         }
     ]
-    assert history[0]["smart_preferences"] == [{"student_id": "student-1", "support_seat": True}]
+    assert history[0]["seating_preferences"] == [{"student_id": "student-1", "near_teacher": True}]
     assert history[0]["relationship_rules"] == [
         {
             "rule_id": "rule-1",

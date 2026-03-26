@@ -247,6 +247,37 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
+  it("opens the notes drawer when a seating student is selected", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
+
+    await wrapper.get("[data-test='seating-student-pool'] button").trigger("click");
+
+    expect(wrapper.get("[data-test='drawer']").text()).toBe("open");
+  });
+
   it("keeps classroom-aware grouping as an optional in-workspace picker", async () => {
     stateMocks.plannerState.template = null;
     const wrapper = mount(PlannerWorkspaceShell, {

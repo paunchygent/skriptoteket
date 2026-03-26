@@ -36,7 +36,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    StudentSmartPreference,
+    StudentSeatingPreference,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     DraftGroupModel,
@@ -45,7 +45,7 @@ from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     RelationshipRuleModel,
     SeatAssignmentModel,
     StudentPlanningMetaModel,
-    StudentSmartPreferenceModel,
+    StudentSeatingPreferenceModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -136,12 +136,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 )
                 for meta in model.student_planning_meta
             ],
-            smart_preferences=[
-                StudentSmartPreference(
+            seating_preferences=[
+                StudentSeatingPreference(
                     student_id=pref.student_id,
-                    support_seat=pref.support_seat,
+                    near_teacher=pref.near_teacher,
                 )
-                for pref in model.smart_preferences
+                for pref in model.seating_preferences
             ],
             relationship_rules=[
                 RelationshipRule(
@@ -185,7 +185,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.seating_preferences),
                 selectinload(PlanDraftModel.relationship_rules),
             )
             .where(PlanDraftModel.id == draft_id)
@@ -436,8 +436,8 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             workspace.student_planning_meta,
             key=lambda meta: meta.student_id,
         )
-        ordered_smart_preferences = sorted(
-            workspace.smart_preferences,
+        ordered_seating_preferences = sorted(
+            workspace.seating_preferences,
             key=lambda pref: pref.student_id,
         )
         ordered_relationship_rules = sorted(
@@ -473,12 +473,12 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 }
                 for meta in ordered_student_planning_meta
             ],
-            "smart_preferences": [
+            "seating_preferences": [
                 {
                     "student_id": pref.student_id,
-                    "support_seat": pref.support_seat,
+                    "near_teacher": pref.near_teacher,
                 }
-                for pref in ordered_smart_preferences
+                for pref in ordered_seating_preferences
             ],
             "relationship_rules": [
                 {
@@ -505,7 +505,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.seating_preferences),
                 selectinload(PlanDraftModel.relationship_rules),
             ),
         )
@@ -590,13 +590,13 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
         )
         await self._replace_related_collection(
             model=model,
-            attribute_name="smart_preferences",
+            attribute_name="seating_preferences",
             new_items=[
-                StudentSmartPreferenceModel(
+                StudentSeatingPreferenceModel(
                     student_id=pref.student_id,
-                    support_seat=pref.support_seat,
+                    near_teacher=pref.near_teacher,
                 )
-                for pref in workspace.smart_preferences
+                for pref in workspace.seating_preferences
             ],
         )
         await self._replace_related_collection(
@@ -649,7 +649,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.seating_preferences),
                 selectinload(PlanDraftModel.relationship_rules),
             ),
         )
@@ -675,7 +675,7 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.smart_preferences),
+                selectinload(PlanDraftModel.seating_preferences),
                 selectinload(PlanDraftModel.relationship_rules),
             ),
         )
@@ -752,16 +752,16 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                     for meta in snapshot["student_planning_meta"]
                 ],
             )
-        if "smart_preferences" in snapshot:
+        if "seating_preferences" in snapshot:
             await self._replace_related_collection(
                 model=model,
-                attribute_name="smart_preferences",
+                attribute_name="seating_preferences",
                 new_items=[
-                    StudentSmartPreferenceModel(
+                    StudentSeatingPreferenceModel(
                         student_id=pref["student_id"],
-                        support_seat=pref.get("support_seat", False),
+                        near_teacher=pref.get("near_teacher", False),
                     )
-                    for pref in snapshot["smart_preferences"]
+                    for pref in snapshot["seating_preferences"]
                 ],
             )
         if "relationship_rules" in snapshot:

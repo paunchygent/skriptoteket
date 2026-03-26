@@ -20,6 +20,7 @@ import {
   type GroupAssignment,
   type PlanDraft,
   type PlanDraftKind,
+  type RelationshipRule,
   type ResumablePlanDraft,
   type RoomTemplate,
   type Roster,
@@ -27,6 +28,7 @@ import {
   type SeatAssignment,
   type Student,
   type StudentPlanningMeta,
+  type StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import {
   buildFixtureMap,
@@ -48,6 +50,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
   const groupAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const studentPlanningMetaByStudentId = ref<Record<string, StudentPlanningMeta>>({});
+  const seatingPreferences = ref<StudentSeatingPreference[]>([]);
+  const relationshipRules = ref<RelationshipRule[]>([]);
   const historyStatus = ref<DraftHistoryStatus>({
     can_undo: false,
     can_redo: false,
@@ -189,6 +193,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     studentPlanningMetaByStudentId.value = Object.fromEntries(
       workspace.student_planning_meta.map((meta) => [meta.student_id, meta]),
     );
+    seatingPreferences.value = [...workspace.seating_preferences];
+    relationshipRules.value = [...workspace.relationship_rules];
     historyStatus.value = workspace.history_status;
     historyActionInFlight.value = false;
     hasPendingAutosave.value = false;
@@ -204,6 +210,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
       group_assignments: groupAssignments.value,
       seat_assignments: seatAssignments.value,
       student_planning_meta: studentPlanningMeta.value,
+      seating_preferences: seatingPreferences.value,
+      relationship_rules: relationshipRules.value,
     };
   }
 
@@ -273,6 +281,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupAssignmentsByStudentId.value = {};
     seatAssignmentsByStudentId.value = {};
     studentPlanningMetaByStudentId.value = {};
+    seatingPreferences.value = [];
+    relationshipRules.value = [];
     historyStatus.value = {
       can_undo: false,
       can_redo: false,
@@ -592,6 +602,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
     studentPlanningMetaByStudentId,
+    seatingPreferences,
+    relationshipRules,
     studentPlanningMeta,
     groupAssignments,
     seatAssignments,

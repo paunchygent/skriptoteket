@@ -34,36 +34,11 @@ Keep this file updated so the next session can pick up work quickly.
 - `PR-0145` is now implemented locally:
   - `scripts/check_migration_test_coverage.py` now enforces explicit integration coverage for all 49 Alembic revisions
   - `migrations/versions/0032_user_file_vault.py` now refreshes inspection state before index creation, so fresh upgrades keep the `user_vault_files` indexes and host `pdm run db-upgrade` reruns no-op cleanly
-- `PR-0142` shipped the first locked EPIC-26 export slice for seating XLSX:
-  - seating export contract now supports `pdf` and `xlsx` without a compatibility shim; `layout_id` / `paper_size` are nullable only for XLSX
-  - seating keeps `Affisch (A3)` as the default action and exposes `Excel (.xlsx)` as a menu option
-  - XLSX generation is local `openpyxl` delivery through `SeatingXlsxRenderer`, not Sir Convert
-  - seating download delivery now returns the media type from the stored artifact instead of assuming PDF
-  - key files: `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py`, `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/seating_xlsx_renderer.py`, `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportApi.ts`, `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.ts`
-- `PR-0143` is now implemented locally and `ST-26-03` is marked done:
-  - the seating workbook is now a single-sheet `Sittplacering` artifact that preserves the classroom as a spatial grid instead of flattening seats into a table
-  - empty seats and aisle gaps remain explicit, unplaced students render in a compact section below the grid, and the unplaced section is skipped entirely when everyone is seated
-  - the local workbook proof in `.artifacts/epic26-pr0143-workbook-check/` confirms the printed sheet stays clean enough to share or save as PDF without a duplicate presentation tab
-- `PR-0139` is now implemented locally and verified on the host lane:
-  - grouping now has its own export action hierarchy with `Exportera` defaulting to `Excel (.xlsx)` and a compact adjacent menu for `Excel (.xlsx)` and `PDF (A4 stående)`
-  - backend/frontend now share a dedicated `GroupingExportPresentation` contract plus grouping-specific export job routes, DTOs, persistence, and reload recovery
-  - grouping export jobs are currently deliberate placeholder scaffolding in dev: real jobs are created, stay recoverable in `submitted` / `processing`, and do not render final artifacts until `PR-0140` / `PR-0141`
-  - key files: `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_exports.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_export_jobs.py`, `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py`, `frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.ts`, `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue`
-- `PR-0140` is now implemented locally and `ST-26-05` is marked done:
-  - grouping `xlsx` now completes locally, stores a Vault-backed artifact, and downloads as the default grouping export
-  - the workbook uses a protected `Redigera grupper` sheet with a student reassignment table (`Nr i grupp`, `Elev`, `Grupp (välj)`), a separate `Gruppregister` table (`Grupp`, `Gruppordning (välj)`), concise in-sheet guidance, and locked non-editable surfaces
-  - `Dela och exportera` stays formula-linked to the editable grouping surfaces for already assigned students, keeps blank-group rows out of the presentation, and prints cleanly with fixed spacing between group sections
-  - key files: `src/skriptoteket/application/curated_apps/classroom_planner/exports/grouping_xlsx_view_model.py`, `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/grouping_xlsx_renderer.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_export_jobs.py`
-- `PR-0141` is now in progress and the grouping PDF slice is implemented locally:
-  - grouping `PDF (A4 stående)` renders locally with WeasyPrint from export-owned HTML/CSS, uses the two-column paired card layout, and shows the Skriptoteket logo in the upper-right letterhead on the host `5173` lane
-  - backend-owned shared branding assets now live under `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/assets/` so local host runs and Docker web containers resolve the same logo path
-  - architecture pivot approved on 2026-03-26:
-    - `ADR-0075` locks Klassrumskartan app-owned PDF artifacts to a local Skriptoteket render/finalize boundary
-    - Sir Convert remains for general conversion workloads and class-list import extraction, not the final seating-PDF artifact path
-  - the seating follow-up is now shipped through `PR-0146`:
-    - seating `pdf` renders/finalizes locally through `WeasyPrintSeatingPdfRenderer`
-    - seating-specific Sir Convert callback/webhook/reconciliation code is deleted
-    - live `5173` proof now downloads a fresh branded seating PDF artifact
+- EPIC-26 export baseline is in place locally:
+  - `PR-0139` / `PR-0140` shipped grouping export hierarchy plus local XLSX delivery
+  - `PR-0141` / `PR-0146` moved grouping + seating PDFs to local WeasyPrint renderers and removed the seating-specific Sir Convert callback lane
+  - `PR-0142` / `PR-0143` shipped seating XLSX with the spatial single-sheet workbook shape
+  - keep using the host `dev-local` lane for real planner/export proofs; container-only logs are not enough
 - Local 2026-03-25 delete-rule follow-up changed overview asset deletion semantics:
   - deleting a class list or classroom now removes dependent planner drafts instead of blocking on active-draft dependency
   - the overview confirmation dialogs and local error rendering were updated to match the cascade behavior
@@ -78,15 +53,40 @@ Keep this file updated so the next session can pick up work quickly.
   - ADR / epic / review: `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md` (`accepted`), `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md` (`active`), `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md` (`approved`)
   - stories: `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md`
   - locked product shape: per-mode `Smart` toggles beside `Slumpa`, export-only checkpoints, no migration/compat layer for old metadata, seating + grouping smart mode day one, and grouping-specific seating-distance toggle
+  - 2026-03-26 product-direction correction now locked in docs:
+    - primary smart-rule authoring is class-wide and visual, not drawer-first per student
+    - `Support seat` is dropped from the teacher-facing model and replaced with seating-only `Närmare läraren`
+    - the student metadata drawer is demoted to advanced notes/history only and must not be treated as the main smart editing surface
+  - PR-sliced follow-up is now documented:
+    - `docs/backlog/prs/pr-0147-klassrumskartan-seating-only-teacher-distance-contract-reset.md`
+    - this PR is the next recommended slice before any visual smart-rule UI work
   - post-review tightening already applied: shared-vs-mode-specific controls are now explicit, grouping checkpoints are the future primary grouping-history lane, `Use history` blocks when no eligible checkpoints exist, canonical assignment-hash semantics are defined, and `En smart variant till` now requires a distinct result or a short no-further-variant message
-  - `ST-27-01` is now `in_progress` and its first delivered slice is:
-    - new persisted `smart_enabled` draft flag in domain/API/repository + Alembic migration `e4b7c2d9a1f0_add_smart_enabled_to_classroom_planner_drafts.py`
-    - small `Smart` toggles rendered beside `Slumpa` in both grouping and seating workspaces
-    - old visible notes/proximity/stability drawer no longer opens from the workspace shell
+  - `ST-27-01` is now `in_progress` and its first delivered slices are:
+  - new persisted `smart_enabled` draft flag in domain/API/repository + Alembic migration `e4b7c2d9a1f0_add_smart_enabled_to_classroom_planner_drafts.py`
+  - small `Smart` toggles rendered beside `Slumpa` in both grouping and seating workspaces
+  - old visible notes/proximity/stability drawer no longer opens from the workspace shell
+  - `PR-0147` is now implemented locally as the contract-alignment reset:
+    - domain/API/frontend contract now uses `StudentSeatingPreference.near_teacher` and `seating_preferences`
+    - `smart_preferences.support_seat` is rejected at the API boundary with no compatibility shim
+    - repository history snapshots and ORM mapping now store `seating_preferences[].near_teacher`
+    - forward Alembic revision `1d3e5f7a9b2c_reset_student_smart_preferences_to_.py` replaces `classroom_planner_student_smart_preferences` with `classroom_planner_student_seating_preferences`
+    - the notes-only SPA now preserves hidden `seating_preferences` and `relationship_rules` during load/autosave instead of dropping them
+  - local frontend compatibility-only prune for the contract reset is now in place:
+    - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts` now treats student planning metadata as notes-only and carries `seating_preferences` / `relationship_rules` in the workspace contract
+    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerMetadataDrawer.vue` now exposes only teacher notes; legacy slider controls are deleted
+    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` once again opens the notes drawer from the seating workspace while grouping stays drawer-free
+    - no global smart-settings surface is planned in this slice; future smart inputs should ship as local editors first, with any draft-level toggle surface deferred until multiple stable cross-cutting controls exist
   - remaining `ST-27-01` scope still to implement:
-    - full visible control reset to `Support seat`, `Keep apart`, `Keep near`, `Use history`
-    - hard deletion of old student-planning semantics from runtime/persistence
-    - normalized persistence + UI flows for smart relation controls
+    - class-wide visual smart-rule authoring in the seating workspace
+    - toolbar-based `Håll isär`, `Håll nära`, and seating-only `Närmare läraren`
+    - explicit teacher-distance fairness/history behavior on top of export-backed checkpoints
+- 2026-03-27 smart-rule interaction model is now locked in docs:
+  - one active smart tool at a time in the workspace
+  - `Närmare läraren` is unary click-to-toggle
+  - `Håll isär` / `Håll nära` are 2+ student cluster rules authored through multi-select plus explicit commit
+  - overlapping visible relationship clusters are blocked in V1
+  - `Use history` remains background behavior only for now
+  - next implementation task is `docs/backlog/prs/pr-0149-klassrumskartan-seating-smart-rule-toolbar-and-non-overlapping-cluster-authoring-v1.md`
 
 ## Verification
 
@@ -103,48 +103,43 @@ Keep this file updated so the next session can pick up work quickly.
   - frontend/backend tests, migration-head guard, and host proof passed; artifacts remain under `.artifacts/epic26-pr0139-host-check/`
 - 2026-03-26 PR-0140 grouping XLSX workbook + delivery:
   - renderer/job/API tests and host workbook proofs passed; artifacts remain under `.artifacts/epic26-pr0140-registry-check/` and `.artifacts/epic26-pr0140-spacing-check/`
-- 2026-03-26 PR-0141 grouping PDF + boundary diagnosis:
-  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_seating_export_job_support.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_poster_renderer.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_grouping_pdf_renderer.py`
-  - `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_support.py src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/poster_renderer.py src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/pdf_branding.py tests/unit/application/apps/classroom_planner/test_seating_export_job_support.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_poster_renderer.py`
+- 2026-03-26 PR-0141 / PR-0146 local PDF boundary:
+  - grouping + seating PDFs now render locally in Skriptoteket via WeasyPrint, and the seating-specific Sir Convert callback lane is deleted
+  - host proofs/artifacts remain under `.artifacts/epic26-pr0141-host-check/`, `.artifacts/epic26-root-cause-seating/`, and `.artifacts/epic26-pr0141-seating-branding-check/`
+- 2026-03-26 ST-27-01 frontend compatibility-only prune:
+  - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+  - `pdm run fe-type-check`
+  - live proof against the dev SPA:
+    - `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
+    - artifact: `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
+    - the smoke script was updated to keep the seating proof on current zoom/drawer behavior instead of failing early on a stale drag/drop seat-assignment assumption
+- 2026-03-26 ST-27-01 docs-as-code correction before further smart-rule implementation:
+  - updated `ADR-0074`, `EPIC-27`, `REV-EPIC-27`, `ST-27-01`, `ST-27-03`, `ST-27-04`, and the smart-assignment decision memo to lock class-wide visual rule authoring, seating-only `Närmare läraren`, and the drawer demotion
   - `pdm run docs-validate`
-  - host proof on `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via temporary repo Playwright script:
-    - grouping `PDF (A4 stående)` downloads successfully and shows the Skriptoteket logo letterhead
-    - artifact: `.artifacts/epic26-pr0141-host-check/grouping-a4-page-1.png`
-  - direct seating renderer isolation:
-    - `poster_renderer.py` emits logo-bearing HTML and local WeasyPrint renders it correctly
-    - artifacts: `.artifacts/epic26-root-cause-seating/index.html`, `.artifacts/epic26-root-cause-seating/local-weasy-inline-page-1.png`
-  - sibling `sir-convert-a-lot` repo inspection on 2026-03-26:
-    - `scripts/sir_convert_a_lot/infrastructure/weasyprint_html_to_pdf.py` blocks `data:` resources in the restricted fetcher
-    - `scripts/sir_convert_a_lot/domain/specs_v2.py` defaults `conversion.input_trust_mode` to `UNTRUSTED_UPLOAD`
-    - this confirmed the service-boundary seam was the wrong architectural fit for Klassrumskartan-owned PDFs
-- 2026-03-26 PR-0146 seating PDF local cutover + route root cause:
-  - backend cutover:
-    - seating `pdf` jobs now render locally in `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/seating_pdf_renderer.py`
-    - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py` now completes seating PDF jobs locally and no longer submits seating artifacts to Sir Convert
-    - deleted seating-only callback/webhook/reconciliation files:
-      - `src/skriptoteket/web/api/v1/internal_sir_convert_callbacks.py`
-      - `src/skriptoteket/cli/commands/reconcile_seating_export_webhooks.py`
-      - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_webhook_reconciliation.py`
-      - `src/skriptoteket/application/curated_apps/classroom_planner/exports/webhook_contract.py`
-      - `src/skriptoteket/application/curated_apps/classroom_planner/exports/webhook_bindings.py`
-      - `src/skriptoteket/infrastructure/repositories/classroom_planner_export_webhook_bindings.py`
-  - root-cause diagnosis for the stock Playwright/login helper failure:
-    - login was healthy; the real blocker was `/api/v1/apps/classroom.group-seating-studio/drafts/resumable` returning `500`
-    - the live local DB schema was behind the active planner ORM
-    - new Alembic revisions in the worktree remediate active smart-assignment-v1 persistence drift:
-      - `migrations/versions/7b8a6f1d2c3e_add_missing_planner_draft_flags.py`
-      - `migrations/versions/8c4d2e1f7a9b_add_missing_planner_smart_rule_tables.py`
-  - verification:
-    - `pdm run db-upgrade`
-    - `pdm run pytest tests/unit/application/apps/classroom_planner/test_seating_export_jobs.py tests/unit/web/apps/classroom_planner/test_seating_export_job_api.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_poster_renderer.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_seating_pdf_renderer.py`
-    - `pdm run pytest -o addopts='' 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[7b8a6f1d2c3e]' 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[8c4d2e1f7a9b]'`
-    - `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_support.py src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/seating_pdf_renderer.py src/skriptoteket/infrastructure/repositories/classroom_planner.py src/skriptoteket/protocols/classroom_planner_exports.py src/skriptoteket/di/curated_apps.py src/skriptoteket/cli/commands/smoke_seating_export_readiness.py src/skriptoteket/web/router.py src/skriptoteket/cli/main.py tests/unit/application/apps/classroom_planner/test_seating_export_jobs.py tests/unit/web/apps/classroom_planner/test_seating_export_job_api.py tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_seating_pdf_renderer.py tests/integration/migration_schema_assertions.py migrations/versions/7b8a6f1d2c3e_add_missing_planner_draft_flags.py migrations/versions/8c4d2e1f7a9b_add_missing_planner_smart_rule_tables.py`
-    - `pdm run mypy src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/seating_pdf_renderer.py src/skriptoteket/infrastructure/repositories/classroom_planner.py`
-    - `pdm run python -m scripts.playwright_pr_0141_seating_pdf_branding_check --base-url http://127.0.0.1:5173`
-    - fresh live artifacts:
-      - `.artifacts/epic26-pr0141-seating-branding-check/seating-export-a3.pdf`
-      - `.artifacts/epic26-pr0141-seating-branding-check/seating-export-a3-page-1.png`
-      - `.artifacts/epic26-pr0141-seating-branding-check/seating-export-status.png`
+- 2026-03-26 ST-27-01 next PR slice planning:
+  - added `PR-0147` as the contract-alignment slice for replacing `support_seat` with a seating-only teacher-distance concept across domain/API/persistence/frontend contract sync
+  - `pdm run docs-validate`
+- 2026-03-26 Conversion Hub boundary planning refresh:
+  - updated `ADR-0066`, `EPIC-21`, `ST-21-01`, `REV-EPIC-21`, and added `PR-0148` to lock the local job-ledger/auth boundary plus same-host Unix-socket transport shape
+  - `pdm run docs-validate`
+- 2026-03-26 PR-0147 seating-only teacher-distance contract reset:
+  - `pdm run pytest tests/unit/web/apps/classroom_planner/test_api.py -q`
+  - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_review_fixes.py -q`
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py -q`
+  - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run pytest tests/integration/test_migration_revision_coverage_idempotent.py -m docker -q -k 1d3e5f7a9b2c`
+  - `pdm run docs-validate`
+  - `pdm run db-upgrade`
+  - live proof against `http://127.0.0.1:5173`:
+    - `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
+    - artifact: `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
+  - runtime note:
+    - the observed planner `500` on `5173` was local DB schema drift during the live check; upgrading the local DB to head fixed it and the reused planner smoke then passed
+- 2026-03-27 smart-rule interaction docs/task clarification:
+  - updated `ADR-0074`, the smart-assignment decision memo, `ST-27-01`, `ST-27-03`, `ST-27-04`, `EPIC-27`, and `docs/index.md`
+  - added `PR-0149` as the next implementation slice for seating smart-rule toolbar authoring with non-overlapping visible relationship clusters
+  - `pdm run docs-validate`
 
 ## How to Run
 
@@ -170,16 +165,20 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
   - the latest resumable-draft blocker was schema drift against active smart-assignment-v1 persistence, and the local worktree now carries the missing Alembic revisions plus passing idempotency checks
 - `pdm.lock` still has local, uncommitted follow-up changes after the `pdfplumber` runtime fix; do not lose or silently overwrite that diff.
 - `ST-26-02` and `EPIC-26` docs are still marked `ready` / unchecked even though `PR-0137` shipped; decide whether to mark them done after the lockfile follow-up and any final review closure.
-- `ST-27-01` has only its first vertical slice in place; the deeper contract reset is still unfinished even though the review/ADR lane is approved.
-- Current follow-up gap after `PR-0146` closeout:
-  - Sir Convert cleanup stays gated behind the approved downstream cutover docs/review path and should not start until the downstream local-cutover proof is treated as the formal prerequisite
+- `ST-27-01` now has the contract reset implemented locally, but the class-wide visual smart-rule authoring UI is still unfinished even though the review/ADR lane is approved.
+- Conversion Hub remains on the thin `PR-0064` passthrough contract:
+  - no local job ledger yet
+  - status/download still conceptually depend on upstream job ids
+  - the next docs-first slice is `PR-0148`, which defines the local-ledger/auth boundary and same-host Unix-socket transport shape before implementation
 
 ## Next Steps
 
-- Keep Sir Convert cleanup blocked until the approved downstream-cutover gate is acknowledged:
-  - one live seating export proof now exists on `http://127.0.0.1:5173`
-  - only after that formal gate is accepted should the Sir Convert cleanup task remove the curated-app trusted-bundle path
+- Put the Conversion Hub docs package in front of architect review:
+  - assess `ADR-0066`, `EPIC-21`, `ST-21-01`, `REV-EPIC-21`, and `PR-0148`
+  - confirm the local-ledger + proxy-download + Unix-socket direction before implementation
 - Continue `ST-27-01` from the delivered smart-toggle slice:
-  - remove old student-planning runtime/persistence semantics fully
-  - add new smart control persistence/contracts for `Support seat`, `Keep apart`, and `Keep near`
+  - execute `PR-0149` as the next implementation slice for seating
+  - build toolbar-based `Keep apart`, `Keep near`, and seating-only `Närmare läraren` flows instead of drawer-first student metadata editing
+  - keep relation rules as non-overlapping visible clusters in V1
+  - keep draft-level smart controls near the workspace/top-panel surfaces; do not add a global smart-settings drawer unless multiple stable cross-cutting toggles justify it
   - keep `Use history` as a contract-only placeholder until `ST-27-02` export checkpoints land

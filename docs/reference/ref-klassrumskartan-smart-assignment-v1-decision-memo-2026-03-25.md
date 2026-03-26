@@ -24,15 +24,29 @@ explicit, and the current class-first workflow intact.
   the planner surface entirely.
 - Delete the old smart-adjacent visible semantics and related persistence without migration or
   compatibility work because there are no real users yet.
-- Keep the visible smart model intentionally small:
-  - `Support seat`
+- Keep the primary smart authoring flow class-wide and visual rather than per-student:
   - `Keep apart`
   - `Keep near`
   - `Use history`
+- Add one seating-only rule:
+  - `Närmare läraren`
+- Lock the first interaction model:
+  - one active smart tool at a time
+  - `Närmare läraren` is a unary click-to-toggle rule
+  - `Keep apart` / `Keep near` are 2+ student cluster rules authored through multi-select plus an
+    explicit commit action
+  - incomplete selections are cleared by `Esc`, `Rensa markering`, or tool changes
+  - completed rule creation clears the temporary selection but keeps the tool active
+- Block overlapping relationship clusters in V1:
+  - one student may belong to at most one `Keep apart` or `Keep near` cluster at a time
+  - `Närmare läraren` may coexist because it is not a relationship cluster
 - Allow one grouping-only mode-specific toggle for seat-distance input, such as
   `Ska hur nära de sitter räknas?`; it is not a fifth shared control.
 - Use export-backed checkpoints only. Autosave, undo/redo, abandoned drafts, and raw draft
   history never count as algorithmic history input.
+- When `Use history` is enabled for seating, smart seating should also try to balance
+  teacher-distance more fairly over time for students who do not have an explicit
+  `Närmare läraren` rule.
 - Deduplicate checkpoint creation by assignment hash so repeated identical exports do not create
   extra checkpoint records.
 - Ship smart behavior in both `Sittplatser` and `Grupper` from day one, but keep the mode toggles
@@ -40,8 +54,16 @@ explicit, and the current class-first workflow intact.
 - Let smart grouping use seating distance only through an explicit teacher-facing toggle such as
   `Ska hur nära de sitter räknas?`, which is easier to reason about than a generic
   "classroom-aware" label.
-- Let `Support seat` influence grouping only when the seating-distance signal is enabled and usable
-  seating context exists.
+- Keep `Närmare läraren` as a seating-only rule; grouping must not pretend teacher-distance is a
+  shared cross-mode input.
+- Treat relation rules as strong best-effort objectives rather than brittle hard requirements:
+  - `Keep apart` in seating means no direct orthogonal adjacency when possible
+  - `Keep near` in seating means same local vicinity rather than exact seat pairing
+  - `Keep apart` in grouping should spread cluster members across different groups whenever possible
+- Compute teacher-distance from room-owned teaching cues:
+  - recommend that the teacher places `Whiteboard` or `Kateder`
+  - if no stronger cue exists, assume the teaching position is the top-middle of the room
+  - if those cues are on another wall, that wall becomes the teaching/front edge
 - Keep explanations short, teacher-facing, and trust-building. Do not expose score panels, weight
   tuning, or solver jargon.
 
@@ -52,6 +74,8 @@ explicit, and the current class-first workflow intact.
   second checkpoint.
 - The canonical seating assignment hash should be based on normalized placed student-to-seat
   assignments plus unplaced students, excluding export presentation details.
+- Those same seating checkpoints are also the only eligible source for teacher-distance fairness
+  over time.
 - Grouping remains mode-specific when grouping exports exist later, and grouping checkpoints then
   become the primary grouping-history source. Smart grouping may also consume seating checkpoints
   as a secondary source for:
@@ -65,8 +89,8 @@ explicit, and the current class-first workflow intact.
 
 - The current `ST-24-06` contract says seating `Slumpa` is fully random. Smart behavior therefore
   needs a new approved story package rather than an informal behavior change.
-- The current planner metadata drawer is intentionally anchored in notes/observations. That surface
-  should not be extended into a mixed smart-planning panel.
+- The current planner metadata drawer may remain for advanced notes/history, but it should not be
+  extended into the primary smart-rule editing surface.
 - `PR-0084` correctly removed the old solver-first contract; smart assignment now needs a clean
   re-entry through a new ADR, epic, and stories rather than reusing superseded concepts.
 

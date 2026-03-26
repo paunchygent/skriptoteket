@@ -27,11 +27,24 @@ canonical: Sir Convert-a-Lot v2.
 
 - Skriptoteket will implement a **first-class curated app** that provides a complete conversion
   UI and routes conversion execution to **Sir Convert-a-Lot v2**.
+- Conversion Hub owns a **local job ledger** in Skriptoteket:
+  - users submit conversion work to Skriptoteket,
+  - Skriptoteket creates a local conversion-job record and maps it to the upstream Sir Convert job,
+  - and status/download access is authorized through the local job identity rather than exposing
+    raw upstream job ids as the primary product contract.
 - Batch conversion is supported via the curated app UI (multiple inputs; per-file results).
 - Preview is a UX concept only: a "preview" is implemented as a **normal v2 conversion job** that
   produces a normal PDF artifact (no separate preview engine/tool).
+- Conversion Hub artifact delivery remains **proxied through Skriptoteket** after local
+  authorization; it does not mint redirect/download URLs that expose Sir Convert as the primary
+  artifact boundary.
 - The legacy `html-to-pdf-preview` tool script is removed from the production strategy and will be
   retired from prod seeding (and later deleted when no longer needed by tests).
+- Same-host transport between Skriptoteket and Sir Convert uses a **Unix domain socket when
+  configured**, with `127.0.0.1` HTTP as the fallback for local development and non-socket
+  deployments.
+- Internal HTTPS between co-located Skriptoteket and Sir Convert services is not the preferred
+  Conversion Hub transport shape.
 - This ADR governs **Conversion Hub** and other general conversion surfaces. It does not require
   curated app-owned export artifacts such as Klassrumskartan PDFs to route through Sir Convert;
   that boundary is locked separately in `ADR-0075`.
@@ -42,7 +55,10 @@ canonical: Sir Convert-a-Lot v2.
   without abusing the dynamic tool-script lane.
 - Conversion security and sandboxing become the responsibility of Sir Convert-a-Lot v2 (as the
   conversion engine) rather than ad hoc script code.
-- Skriptoteket must own a small, typed client + job orchestration layer (submit/poll/download) and
-  operational config (base URL, auth, timeouts) for Sir Convert-a-Lot v2.
+- Skriptoteket must own a typed client + local job orchestration layer and the persistence required
+  to enforce ownership, status, and artifact access without treating raw upstream job ids as the
+  user-facing boundary.
+- Same-host operational config must support a Unix-socket transport shape cleanly, with loopback
+  HTTP remaining as the fallback transport rather than the primary trusted-network contract.
 - Existing E2E and unit tests that depend on `/tools/html-to-pdf-preview/run` must migrate to the
   curated app surface.

@@ -84,6 +84,8 @@ function createWorkspaceResponse(
     group_assignments: [],
     seat_assignments: [],
     student_planning_meta: [],
+    seating_preferences: [],
+    relationship_rules: [],
     history_status: historyStatus,
   };
 }
@@ -337,10 +339,6 @@ describe("useClassroomState", () => {
     state.studentPlanningMetaByStudentId = {
       s1: {
         student_id: "s1",
-        teacher_proximity: 0,
-        stability_preference: 0,
-        preferred_zone: null,
-        avoid_zone: null,
         notes: "Behåll anteckningen",
       },
     };
@@ -369,10 +367,6 @@ describe("useClassroomState", () => {
     state.studentPlanningMetaByStudentId = {
       s2: {
         student_id: "s2",
-        teacher_proximity: 0,
-        stability_preference: 0,
-        preferred_zone: "front",
-        avoid_zone: null,
         notes: "Behåll anteckningen",
       },
     };
@@ -385,7 +379,7 @@ describe("useClassroomState", () => {
       s2: null,
       s3: null,
     });
-    expect(state.studentPlanningMetaByStudentId["s2"]?.preferred_zone).toBe("front");
+    expect(state.studentPlanningMetaByStudentId["s2"]?.notes).toBe("Behåll anteckningen");
     expect(state.hasPendingAutosave).toBe(true);
   });
 
@@ -404,11 +398,9 @@ describe("useClassroomState", () => {
     const state = seedWorkspace();
 
     state.setStudentPlanningMeta("s1", {
-      preferred_zone: "front",
       notes: "Behöver lugn plats",
     });
 
-    expect(state.studentPlanningMetaByStudentId["s1"]?.preferred_zone).toBe("front");
     expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Behöver lugn plats");
   });
 
@@ -769,9 +761,26 @@ describe("useClassroomState", () => {
 
   it("autosaves only the fundamentals payload", async () => {
     vi.useFakeTimers();
-    const state = seedWorkspace();
-    state.draft = createDraft();
-    clientMocks.apiPatch.mockResolvedValue(createWorkspaceResponse());
+    const state = useClassroomState();
+    clientMocks.apiGet.mockResolvedValue({
+      ...createWorkspaceResponse(),
+      seating_preferences: [
+        {
+          student_id: "s2",
+          near_teacher: true,
+        },
+      ],
+    });
+    clientMocks.apiPatch.mockResolvedValue({
+      ...createWorkspaceResponse(),
+      seating_preferences: [
+        {
+          student_id: "s2",
+          near_teacher: true,
+        },
+      ],
+    });
+    await state.loadWorkspace("draft-1");
     clientMocks.apiPatch.mockClear();
 
     state.setStudentPlanningMeta("s1", { notes: "Fokusera nära fönstret" });
@@ -788,6 +797,12 @@ describe("useClassroomState", () => {
         expect.objectContaining({
           student_id: "s1",
           notes: "Fokusera nära fönstret",
+        }),
+      ],
+      seating_preferences: [
+        expect.objectContaining({
+          student_id: "s2",
+          near_teacher: true,
         }),
       ],
     });

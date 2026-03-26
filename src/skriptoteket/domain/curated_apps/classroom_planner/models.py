@@ -132,13 +132,13 @@ class StudentPlanningMeta(BaseModel):
     notes: str | None = None
 
 
-class StudentSmartPreference(BaseModel):
-    """Represent per-student smart assignment inputs."""
+class StudentSeatingPreference(BaseModel):
+    """Represent per-student seating-only preference inputs."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
     student_id: str
-    support_seat: bool = False
+    near_teacher: bool = False
 
 
 class RelationshipKind(StrEnum):
@@ -210,7 +210,7 @@ class DraftWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
-    smart_preferences: list[StudentSmartPreference] = Field(default_factory=list)
+    seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
     relationship_rules: list[RelationshipRule] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
@@ -229,7 +229,7 @@ class ClassroomPlannerWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
-    smart_preferences: list[StudentSmartPreference] = Field(default_factory=list)
+    seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
     relationship_rules: list[RelationshipRule] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)

@@ -47,7 +47,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    StudentSmartPreference,
+    StudentSeatingPreference,
 )
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner as api
@@ -553,7 +553,7 @@ async def test_update_draft_calls_handler():
         group_assignments=[api.GroupAssignmentDto(student_id="s1", group_id="g2")],
         seat_assignments=[api.SeatAssignmentDto(student_id="s1", seat_id="seat1")],
         student_planning_meta=[api.StudentPlanningMetaDto(student_id="s1", notes="Needs support")],
-        smart_preferences=[api.StudentSmartPreferenceDto(student_id="s1", support_seat=True)],
+        seating_preferences=[api.StudentSeatingPreferenceDto(student_id="s1", near_teacher=True)],
         relationship_rules=[
             api.RelationshipRuleDto(
                 id="rule-1",
@@ -601,7 +601,7 @@ async def test_update_draft_calls_handler():
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="Needs support")],
-        smart_preferences=[StudentSmartPreference(student_id="s1", support_seat=True)],
+        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=True)],
         relationship_rules=[
             RelationshipRule(
                 id="rule-1",
@@ -624,8 +624,8 @@ async def test_update_draft_calls_handler():
     assert result.draft.use_history is True
     assert result.draft.grouping_seating_distance_enabled is True
     assert result.history_status.can_undo is True
-    assert result.smart_preferences == [
-        api.StudentSmartPreferenceDto(student_id="s1", support_seat=True)
+    assert result.seating_preferences == [
+        api.StudentSeatingPreferenceDto(student_id="s1", near_teacher=True)
     ]
     assert result.relationship_rules == [
         api.RelationshipRuleDto(
@@ -645,7 +645,7 @@ async def test_update_draft_calls_handler():
         group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="Needs support")],
-        smart_preferences=[StudentSmartPreference(student_id="s1", support_seat=True)],
+        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=True)],
         relationship_rules=[
             RelationshipRule(
                 id="rule-1",
@@ -654,6 +654,21 @@ async def test_update_draft_calls_handler():
             )
         ],
     )
+
+
+@pytest.mark.unit
+def test_update_plan_draft_request_rejects_legacy_smart_preference_payload() -> None:
+    with pytest.raises(ValidationError):
+        api.UpdatePlanDraftRequest.model_validate(
+            {
+                "smart_preferences": [
+                    {
+                        "student_id": "s1",
+                        "support_seat": True,
+                    }
+                ]
+            }
+        )
 
 
 @pytest.mark.unit

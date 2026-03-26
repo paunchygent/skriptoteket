@@ -5,7 +5,7 @@ title: "Review: Klassrumskartan smart assignment v1"
 status: pending
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-26
 reviewer: "lead-developer"
 epic: EPIC-27
 adrs:
@@ -22,17 +22,18 @@ stories:
 
 EPIC-27 proposes the first approved smart-assignment lane for Klassrumskartan after fundamentals
 and explicit seating exports. The package keeps the visible teacher model intentionally small,
-reuses `Slumpa` as the main action with a small per-mode `Smart` toggle, defines export-backed
-checkpoints as the only smart-history source, and reintroduces smart grouping/seating through a
-clean backend-owned contract rather than by reviving the older solver-first shell.
+reuses `Slumpa` as the main action with a small per-mode `Smart` toggle, moves primary smart-rule
+authoring into a class-wide visual workspace surface, defines export-backed checkpoints as the only
+smart-history source, and reintroduces smart grouping/seating through a clean backend-owned
+contract rather than by reviving the older solver-first shell.
 
 ## Problem Statement
 
 Klassrumskartan now has the right fundamentals and the first explicit seating export artifacts, but
 it still lacks the later smart-assignment lane that the product direction reserved. The current
 codebase also contains the opposite risk: the old solver-era contract was already removed, so
-smart behavior cannot safely return through ad hoc tweaks to the existing randomizer or the old
-planner-note surface.
+smart behavior cannot safely return through ad hoc tweaks to the existing randomizer, the old
+planner-note surface, or a drawer-first per-student editing model.
 
 ## Proposed Solution
 
@@ -46,8 +47,8 @@ Create a new smart-assignment package with:
 - a final explanation/alternate-option polish story
 
 The package keeps the smart model intentionally small, deletes the older visible planner metadata
-semantics instead of mapping them forward, and treats successful changed exports as the only
-eligible history checkpoints.
+semantics instead of mapping them forward, treats successful changed exports as the only eligible
+history checkpoints, and keeps the student metadata drawer secondary to the main smart workflow.
 
 ## Artifacts to Review
 
@@ -69,6 +70,7 @@ eligible history checkpoints.
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
 | Keep `Slumpa` as the main action and add a small per-mode `Smart` toggle | Preserves a low-button surface while keeping smart behavior explicit | [ ] |
+| Use a class-wide visual rule-authoring surface instead of drawer-first per-student editing | Matches the teacher's whole-class mental model and keeps smart rules visible | [ ] |
 | Use export-backed checkpoints only, with assignment-hash dedupe | Aligns history input with current PRD/ADR direction and avoids raw-draft ambiguity | [ ] |
 | Delete old visible planner metadata semantics without migration | Cleaner reset than mixing incompatible teacher models; no real users exist yet | [ ] |
 | Keep smart grouping and smart seating in the same epic, but with separate mode toggles | Matches the shared hidden relation model while preserving separate teacher tasks | [ ] |
@@ -80,6 +82,7 @@ eligible history checkpoints.
 
 - [ ] ADR defines a clear contract reset
 - [ ] EPIC scope is appropriate and does not reopen the solver-first shell
+- [ ] Primary smart-rule authoring is class-wide and not drawer-first
 - [ ] Stories have testable acceptance criteria
 - [ ] Implementation direction aligns with the repo's current class-first planner architecture
 - [ ] Risks and deletion posture are explicit
@@ -102,6 +105,7 @@ eligible history checkpoints.
 ### Decision Approvals
 
 - [x] Keep `Slumpa` as the main action and add a small per-mode `Smart` toggle
+- [x] Use a class-wide visual rule-authoring surface instead of drawer-first per-student editing
 - [x] Use export-backed checkpoints only, with assignment-hash dedupe
 - [x] Delete old visible planner metadata semantics without migration
 - [x] Keep smart grouping and smart seating in the same epic
@@ -109,6 +113,11 @@ eligible history checkpoints.
 
 ## Post-Approval Refinements
 
+- 2026-03-25 reviewer findings were resolved before approval:
+- 2026-03-26 product-direction correction before further implementation:
+  - the primary smart editing flow is now explicitly class-wide and visual
+  - `Support seat` is replaced with seating-only `Närmare läraren`
+  - the student metadata drawer is now secondary notes/history only
 - 2026-03-25 reviewer findings were resolved before approval:
   - common smart controls are now explicitly separate from the grouping-only
     seat-distance toggle

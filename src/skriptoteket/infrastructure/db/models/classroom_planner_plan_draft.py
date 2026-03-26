@@ -125,8 +125,8 @@ class PlanDraftModel(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    smart_preferences: Mapped[list[StudentSmartPreferenceModel]] = relationship(
-        "StudentSmartPreferenceModel",
+    seating_preferences: Mapped[list[StudentSeatingPreferenceModel]] = relationship(
+        "StudentSeatingPreferenceModel",
         back_populates="draft",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -238,11 +238,13 @@ class StudentPlanningMetaModel(Base):
     )
 
 
-class StudentSmartPreferenceModel(Base):
-    """Persist per-student smart assignment preferences for a draft."""
+class StudentSeatingPreferenceModel(Base):
+    """Persist per-student seating-only preferences for a draft."""
 
-    __tablename__ = "classroom_planner_student_smart_preferences"
-    __table_args__ = (UniqueConstraint("draft_id", "student_id", name="uq_cp_student_smart_pref"),)
+    __tablename__ = "classroom_planner_student_seating_preferences"
+    __table_args__ = (
+        UniqueConstraint("draft_id", "student_id", name="uq_cp_student_seating_pref"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     draft_id: Mapped[UUID] = mapped_column(
@@ -252,10 +254,10 @@ class StudentSmartPreferenceModel(Base):
         nullable=False,
     )
     student_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    support_seat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    near_teacher: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     draft: Mapped[PlanDraftModel] = relationship(
-        "PlanDraftModel", back_populates="smart_preferences"
+        "PlanDraftModel", back_populates="seating_preferences"
     )
 
 

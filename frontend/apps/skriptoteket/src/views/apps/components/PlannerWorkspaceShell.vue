@@ -176,7 +176,7 @@ const currentViewHint = computed(() => {
 
 function selectStudent(studentId: string): void {
   selectedStudentId.value = studentId;
-  isMetadataDrawerOpen.value = false;
+  isMetadataDrawerOpen.value = currentView.value === "seats";
 }
 
 async function reloadAfterConflict(): Promise<void> {

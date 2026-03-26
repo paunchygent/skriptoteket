@@ -25,7 +25,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Roster,
     SeatAssignment,
     StudentPlanningMeta,
-    StudentSmartPreference,
+    StudentSeatingPreference,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
@@ -66,7 +66,7 @@ def _validate_workspace_structure(
     group_ids = [group.id for group in workspace.groups]
     group_sort_orders = [str(group.sort_order) for group in workspace.groups]
     meta_student_ids = [meta.student_id for meta in workspace.student_planning_meta]
-    smart_pref_student_ids = [pref.student_id for pref in workspace.smart_preferences]
+    seating_pref_student_ids = [pref.student_id for pref in workspace.seating_preferences]
     rule_ids = [rule.id for rule in workspace.relationship_rules]
     group_assignment_student_ids = [
         assignment.student_id for assignment in workspace.group_assignments
@@ -81,7 +81,7 @@ def _validate_workspace_structure(
     _ensure_unique(group_ids, label="Group IDs")
     _ensure_unique(group_sort_orders, label="Group sort orders")
     _ensure_unique(meta_student_ids, label="Student notes rows")
-    _ensure_unique(smart_pref_student_ids, label="Smart preference rows")
+    _ensure_unique(seating_pref_student_ids, label="Seating preference rows")
     _ensure_unique(rule_ids, label="Relationship rule IDs")
     _ensure_unique(group_assignment_student_ids, label="Group assignment students")
     _ensure_unique(seat_assignment_student_ids, label="Seat assignment students")
@@ -109,9 +109,9 @@ def _validate_workspace_structure(
         if meta.student_id not in valid_student_ids:
             raise validation_error("Student notes must reference roster students.")
 
-    for pref in workspace.smart_preferences:
+    for pref in workspace.seating_preferences:
         if pref.student_id not in valid_student_ids:
-            raise validation_error("Smart preferences must reference roster students.")
+            raise validation_error("Seating preferences must reference roster students.")
 
     for rule in workspace.relationship_rules:
         for student_id in rule.student_ids:
@@ -364,7 +364,7 @@ class GetDraftWorkspaceHandler:
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
-            smart_preferences=workspace.smart_preferences,
+            seating_preferences=workspace.seating_preferences,
             relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
@@ -419,7 +419,7 @@ class PatchDraftHandler:
         group_assignments: list[GroupAssignment] | None = None,
         seat_assignments: list[SeatAssignment] | None = None,
         student_planning_meta: list[StudentPlanningMeta] | None = None,
-        smart_preferences: list[StudentSmartPreference] | None = None,
+        seating_preferences: list[StudentSeatingPreference] | None = None,
         relationship_rules: list[RelationshipRule] | None = None,
     ) -> ClassroomPlannerWorkspace:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
@@ -467,8 +467,10 @@ class PatchDraftHandler:
                 if student_planning_meta is not None
                 else workspace.student_planning_meta
             ),
-            smart_preferences=(
-                smart_preferences if smart_preferences is not None else workspace.smart_preferences
+            seating_preferences=(
+                seating_preferences
+                if seating_preferences is not None
+                else workspace.seating_preferences
             ),
             relationship_rules=(
                 relationship_rules
@@ -510,7 +512,7 @@ class PatchDraftHandler:
             group_assignments=persisted_workspace.group_assignments,
             seat_assignments=persisted_workspace.seat_assignments,
             student_planning_meta=persisted_workspace.student_planning_meta,
-            smart_preferences=persisted_workspace.smart_preferences,
+            seating_preferences=persisted_workspace.seating_preferences,
             relationship_rules=persisted_workspace.relationship_rules,
             history_status=persisted_workspace.history_status,
         )

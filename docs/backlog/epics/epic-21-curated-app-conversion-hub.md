@@ -13,10 +13,13 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
 - Add a **Conversion Hub** curated app (bespoke-required) that exposes a complete UI for the set of
   conversions supported by Sir Convert-a-Lot v2.
 - Support batch conversions (multiple files) and a single-PDF preview UX that still uses the normal
-  v2 job lifecycle (submit/poll/download).
+  v2 job lifecycle, but through a Skriptoteket-owned local job ledger and download boundary rather
+  than raw upstream job ids.
 - Surface v2 PDF layout presets (for example A5/A4/A3 and portrait/landscape) in the UI for relevant
   outputs.
 - Migrate tests and remove production reliance on `html-to-pdf-preview`.
+- Define the same-host Sir Convert transport shape explicitly: Unix socket preferred, `127.0.0.1`
+  HTTP fallback, no internal HTTPS default between co-located services.
 
 ## Out of scope
 
@@ -24,6 +27,8 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
   beyond what's required for tests unrelated to conversion hub).
 - No partial/legacy shims for `html-to-pdf-preview` once the curated app exists: callers/tests are
   updated to the new surface.
+- No redirect-based artifact delivery that bypasses Skriptoteket ownership checks for Conversion Hub
+  downloads.
 
 ## Stories (ordered)
 
@@ -34,6 +39,9 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
 
 - External dependency risk (Sir Convert-a-Lot availability/latency):
   mitigate with timeouts, clear UI progress, and deterministic error surfaces.
+- Ownership/auth drift if the product keeps treating upstream job ids as the visible boundary:
+  mitigate by adding the local job ledger before the bespoke SPA adopts the current passthrough
+  contract.
 - Artifact naming / vault integration drift:
   mitigate by asserting on "PDF exists and is valid" rather than hardcoded filenames in E2E.
 - Over-scoping in one PR:
@@ -44,9 +52,10 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
 - ADR-0066 (this epic's conversion strategy decision)
 - Existing curated apps platform: ADR-0022, ADR-0023, ADR-0024
 
-## Implementation Summary (as of 2026-03-01)
+## Implementation Summary (as of 2026-03-26)
 
 - PR-0063 (docs planning scaffold): done
 - PR-0064 (backend v2 client + curated app API surface): done
-- PR-0065 (SPA bespoke UI): next
+- PR-0148 (local job ledger + owned status/download boundary): next
+- PR-0065 (SPA bespoke UI): pending after the local-ledger boundary lands
 - PR-0066 (migrate tests + retire html-to-pdf-preview): pending

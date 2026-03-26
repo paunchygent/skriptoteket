@@ -71,10 +71,6 @@ export type SeatAssignment = {
 
 export type StudentPlanningMeta = {
   student_id: string;
-  teacher_proximity: number;
-  stability_preference: number;
-  preferred_zone?: string | null;
-  avoid_zone?: string | null;
   notes?: string | null;
 };
 
@@ -87,9 +83,24 @@ export type PlanDraft = {
   draft_kind: PlanDraftKind;
   template_id?: string | null;
   smart_enabled?: boolean;
+  use_history?: boolean;
+  grouping_seating_distance_enabled?: boolean;
   status: "active" | "abandoned" | "superseded";
   revision: number;
   last_opened_at: string;
+};
+
+export type StudentSeatingPreference = {
+  student_id: string;
+  near_teacher: boolean;
+};
+
+export type RelationshipRuleKind = "keep_near" | "keep_apart";
+
+export type RelationshipRule = {
+  id: string;
+  kind: RelationshipRuleKind;
+  student_ids: string[];
 };
 
 export type ResumablePlanDraft = {
@@ -137,6 +148,8 @@ export type DraftWorkspaceResponse = {
   group_assignments: GroupAssignment[];
   seat_assignments: SeatAssignment[];
   student_planning_meta: StudentPlanningMeta[];
+  seating_preferences: StudentSeatingPreference[];
+  relationship_rules: RelationshipRule[];
   history_status: {
     can_undo: boolean;
     can_redo: boolean;
@@ -149,9 +162,5 @@ export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 
 export const emptyStudentPlanningMeta = (studentId: string): StudentPlanningMeta => ({
   student_id: studentId,
-  teacher_proximity: 0,
-  stability_preference: 0,
-  preferred_zone: null,
-  avoid_zone: null,
   notes: null,
 });

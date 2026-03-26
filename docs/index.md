@@ -65,6 +65,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0145-alembic-migration-integrity-and-full-idempotency-coverage.md`
 - Seating PDF local cutover/removal follow-up:
   `docs/backlog/prs/pr-0146-klassrumskartan-seating-pdf-local-cutover-and-sir-convert-path-removal.md`
+- Smart seating-only teacher-distance contract reset:
+  `docs/backlog/prs/pr-0147-klassrumskartan-seating-only-teacher-distance-contract-reset.md`
+- Seating smart-rule toolbar + non-overlapping cluster authoring:
+  `docs/backlog/prs/pr-0149-klassrumskartan-seating-smart-rule-toolbar-and-non-overlapping-cluster-authoring-v1.md`
+- Conversion Hub local job boundary follow-up:
+  `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - Proposed Klassrumskartan export/import epic:
   `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan export/import review:
@@ -342,6 +348,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md`
 - `docs/backlog/prs/pr-0144-klassrumskartan-local-dev-export-runtime-parity-and-schema-remediation.md`
 - `docs/backlog/prs/pr-0145-alembic-migration-integrity-and-full-idempotency-coverage.md`
+- `docs/backlog/prs/pr-0146-klassrumskartan-seating-pdf-local-cutover-and-sir-convert-path-removal.md`
+- `docs/backlog/prs/pr-0147-klassrumskartan-seating-only-teacher-distance-contract-reset.md`
+- `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
 - `docs/backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md`
@@ -385,6 +394,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0064-conversion-hub-backend-sir-convert-a-lot-v2-client-and-api.md`
 - `docs/backlog/prs/pr-0065-conversion-hub-spa-ui-batch-and-preview.md`
 - `docs/backlog/prs/pr-0066-migrate-e2e-tests-disable-html-to-pdf-preview-seeding.md`
+- `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0079-klassrumskartan-landing-page-ui-and-start-contract.md`
 - `docs/backlog/prs/pr-0080-klassrumskartan-draft-resolve-and-explicit-resume-cta.md`
 - `docs/backlog/prs/pr-0081-klassrumskartan-safe-asset-delete-and-landing-page-error-hardening.md`

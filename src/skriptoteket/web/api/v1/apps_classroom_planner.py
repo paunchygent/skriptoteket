@@ -54,7 +54,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    StudentSmartPreference,
+    StudentSeatingPreference,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner import (
@@ -216,13 +216,13 @@ class StudentPlanningMetaDto(BaseModel):
     notes: str | None = None
 
 
-class StudentSmartPreferenceDto(BaseModel):
-    """Serialize per-student smart assignment preferences."""
+class StudentSeatingPreferenceDto(BaseModel):
+    """Serialize per-student seating-only preferences."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
 
     student_id: str
-    support_seat: bool = False
+    near_teacher: bool = False
 
 
 class RelationshipRuleDto(BaseModel):
@@ -266,7 +266,7 @@ class DraftWorkspaceResponse(BaseModel):
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
     student_planning_meta: list[StudentPlanningMetaDto]
-    smart_preferences: list[StudentSmartPreferenceDto]
+    seating_preferences: list[StudentSeatingPreferenceDto]
     relationship_rules: list[RelationshipRuleDto]
     history_status: DraftHistoryStatusDto
 
@@ -292,7 +292,7 @@ class UpdatePlanDraftRequest(BaseModel):
     group_assignments: list[GroupAssignmentDto] | None = None
     seat_assignments: list[SeatAssignmentDto] | None = None
     student_planning_meta: list[StudentPlanningMetaDto] | None = None
-    smart_preferences: list[StudentSmartPreferenceDto] | None = None
+    seating_preferences: list[StudentSeatingPreferenceDto] | None = None
     relationship_rules: list[RelationshipRuleDto] | None = None
 
     @model_validator(mode="after")
@@ -303,10 +303,10 @@ class UpdatePlanDraftRequest(BaseModel):
             _assert_unique(
                 [meta.student_id for meta in self.student_planning_meta], label="Student metadata"
             )
-        if self.smart_preferences is not None:
+        if self.seating_preferences is not None:
             _assert_unique(
-                [pref.student_id for pref in self.smart_preferences],
-                label="Smart preference student",
+                [pref.student_id for pref in self.seating_preferences],
+                label="Seating preference student",
             )
         if self.relationship_rules is not None:
             _assert_unique([rule.id for rule in self.relationship_rules], label="Relationship rule")
@@ -379,8 +379,9 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
         student_planning_meta=[
             StudentPlanningMetaDto.model_validate(meta) for meta in workspace.student_planning_meta
         ],
-        smart_preferences=[
-            StudentSmartPreferenceDto.model_validate(pref) for pref in workspace.smart_preferences
+        seating_preferences=[
+            StudentSeatingPreferenceDto.model_validate(pref)
+            for pref in workspace.seating_preferences
         ],
         relationship_rules=[
             RelationshipRuleDto.model_validate(rule) for rule in workspace.relationship_rules
@@ -411,7 +412,7 @@ async def undo_draft(
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
-            smart_preferences=workspace.smart_preferences,
+            seating_preferences=workspace.seating_preferences,
             relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
@@ -440,7 +441,7 @@ async def redo_draft(
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
-            smart_preferences=workspace.smart_preferences,
+            seating_preferences=workspace.seating_preferences,
             relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
@@ -718,12 +719,12 @@ async def update_draft(
             if request.student_planning_meta is not None
             else None
         ),
-        smart_preferences=(
+        seating_preferences=(
             [
-                StudentSmartPreference.model_validate(preference.model_dump())
-                for preference in request.smart_preferences
+                StudentSeatingPreference.model_validate(preference.model_dump())
+                for preference in request.seating_preferences
             ]
-            if request.smart_preferences is not None
+            if request.seating_preferences is not None
             else None
         ),
         relationship_rules=(

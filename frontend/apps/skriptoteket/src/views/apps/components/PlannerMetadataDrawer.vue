@@ -81,35 +81,10 @@ const currentMeta = computed(() => {
             Lärarens observationer
           </h4>
 
-          <label class="block space-y-1">
-            <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Behöver sitta nära läraren
-            </span>
-            <input
-              :value="currentMeta.teacher_proximity"
-              type="range"
-              min="0"
-              max="3"
-              step="1"
-              class="w-full"
-              @input="state.setStudentPlanningMeta(selectedStudent.id, { teacher_proximity: Number(($event.target as HTMLInputElement).value) })"
-            >
-          </label>
-
-          <label class="block space-y-1">
-            <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Mår bra av stabil placering
-            </span>
-            <input
-              :value="currentMeta.stability_preference"
-              type="range"
-              min="0"
-              max="3"
-              step="1"
-              class="w-full"
-              @input="state.setStudentPlanningMeta(selectedStudent.id, { stability_preference: Number(($event.target as HTMLInputElement).value) })"
-            >
-          </label>
+          <p class="text-sm leading-relaxed text-navy/65">
+            Spara fria läraranteckningar här medan den nya smart-regelmodellen
+            byggs ut i egna kontroller.
+          </p>
 
           <label class="block space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">

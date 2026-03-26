@@ -40,6 +40,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "f6c1e2a9b3d4",
     "7b8a6f1d2c3e",
     "8c4d2e1f7a9b",
+    "1d3e5f7a9b2c",
     "4a9d7c1e2b34",
 )
 
@@ -306,6 +307,16 @@ async def _assert_8c4d_planner_smart_rule_tables(engine: AsyncEngine) -> None:
     assert "avoid_zone" not in legacy_meta_columns
 
 
+async def _assert_1d3e_seating_preferences_reset(engine: AsyncEngine) -> None:
+    tables = await _table_names(engine)
+    assert "classroom_planner_student_seating_preferences" in tables
+    assert "classroom_planner_student_smart_preferences" not in tables
+    seating_columns = await _column_map(engine, "classroom_planner_student_seating_preferences")
+    assert {"draft_id", "student_id", "near_teacher"}.issubset(seating_columns)
+    relationship_columns = await _column_map(engine, "classroom_planner_relationship_rules")
+    assert {"draft_id", "rule_id", "kind", "student_ids"}.issubset(relationship_columns)
+
+
 async def _assert_4a9d_nullable_xlsx_fields(engine: AsyncEngine) -> None:
     columns = await _column_map(engine, "classroom_planner_seating_export_jobs")
     assert columns["layout_id"]["is_nullable"] == "YES"
@@ -337,6 +348,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "f6c1e2a9b3d4": _assert_f6c1_grouping_export_jobs,
     "7b8a6f1d2c3e": _assert_7b8a_planner_draft_flags,
     "8c4d2e1f7a9b": _assert_8c4d_planner_smart_rule_tables,
+    "1d3e5f7a9b2c": _assert_1d3e_seating_preferences_reset,
     "4a9d7c1e2b34": _assert_4a9d_nullable_xlsx_fields,
 }
 
