@@ -5,7 +5,7 @@ title: "Runbook: Testing (Pytest + Vitest + Playwright)"
 status: active
 owners: "agents"
 created: 2025-12-29
-updated: 2025-12-29
+updated: 2026-03-26
 system: "skriptoteket-dev"
 ---
 
@@ -84,3 +84,4 @@ pdm run ui-runtime-smoke
 Reference:
 
 - `.agents/rules/075-browser-automation.md`
+- `docs/runbooks/runbook-agent-browser-automation.md`

@@ -1,6 +1,9 @@
 """Application handlers for the classroom planner curated app."""
 
 from .exports import (
+    GroupingExportKind,
+    GroupingExportPaperSize,
+    PreparedGroupingExportContract,
     PreparedSeatingExportContract,
     SeatingExportKind,
     SeatingExportLayoutId,
@@ -17,6 +20,14 @@ from .handlers.drafts import (
     UndoDraftHandler,
 )
 from .handlers.grouping_drafts import CreateGroupingDraftHandler
+from .handlers.grouping_export_job_completion import GroupingExportJobFinalizer
+from .handlers.grouping_export_jobs import (
+    CreateGroupingExportJobHandler,
+    DownloadGroupingExportJobHandler,
+    GetGroupingExportJobHandler,
+    GetRecoverableGroupingExportJobForDraftHandler,
+)
+from .handlers.grouping_exports import PrepareGroupingExportHandler
 from .handlers.grouping_history import (
     ActivateGroupingHistoryDraftHandler,
     DeleteHistoricGroupingDraftHandler,
@@ -60,13 +71,16 @@ __all__ = [
     "CreateRoomTemplateHandler",
     "CreateRosterHandler",
     "CreateGroupingDraftHandler",
+    "CreateGroupingExportJobHandler",
     "CreateSeatingDraftHandler",
     "CreateSeatingExportJobHandler",
     "DeleteHistoricGroupingDraftHandler",
     "DeleteHistoricSeatingDraftHandler",
     "DeleteRoomTemplateHandler",
     "DeleteRosterHandler",
+    "DownloadGroupingExportJobHandler",
     "DownloadSeatingExportJobHandler",
+    "GroupingExportJobFinalizer",
     "SeatingExportJobFinalizer",
     "GetClassWorkspaceSummaryHandler",
     "GetDraftHandler",
@@ -75,11 +89,17 @@ __all__ = [
     "GetRoomTemplateHandler",
     "GetRosterHandler",
     "GetRecoverableSeatingExportJobForDraftHandler",
+    "GetRecoverableGroupingExportJobForDraftHandler",
     "GetSeatingExportJobHandler",
+    "GetGroupingExportJobHandler",
+    "GroupingExportKind",
+    "GroupingExportPaperSize",
     "ListRoomTemplatesHandler",
     "ListRostersHandler",
     "PatchDraftHandler",
     "CompleteSeatingExportJobFromWebhookHandler",
+    "PrepareGroupingExportHandler",
+    "PreparedGroupingExportContract",
     "PrepareSeatingExportHandler",
     "PreparedSeatingExportContract",
     "RedoDraftHandler",

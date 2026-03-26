@@ -47,4 +47,39 @@ describe("PlannerExportActionGroup", () => {
     expect(wrapper.find('[data-test="seating-export-option-a3"]').exists()).toBe(false);
     expect(wrapper.emitted("export-option")).toBeUndefined();
   });
+
+  it("supports grouping-specific labels, options, and test ids", async () => {
+    const wrapper = mount(PlannerExportActionGroup, {
+      props: {
+        options: [
+          {
+            id: "xlsx",
+            label: "Excel (.xlsx)",
+            option: "xlsx",
+            isDefault: true,
+          },
+          {
+            id: "pdf",
+            label: "PDF (A4 stående)",
+            option: "pdf_a4_portrait",
+          },
+        ],
+        groupTestId: "grouping-export-group",
+        defaultButtonTestId: "grouping-export-default",
+        menuTriggerTestId: "grouping-export-menu-trigger",
+        optionTestIdPrefix: "grouping-export-option",
+      },
+    });
+
+    expect(wrapper.find('[data-test="grouping-export-group"]').exists()).toBe(true);
+
+    await wrapper.get('[data-test="grouping-export-menu-trigger"]').trigger("click");
+
+    expect(wrapper.get('[data-test="grouping-export-option-xlsx"]').text()).toContain(
+      "Standard",
+    );
+    expect(wrapper.get('[data-test="grouping-export-option-pdf"]').text()).toContain(
+      "PDF (A4 stående)",
+    );
+  });
 });

@@ -1,29 +1,66 @@
 <script setup lang="ts">
 /**
- * Compact export action cluster for seating poster exports.
+ * Compact export action cluster for planner exports.
  *
- * This component renders the export subsection inside the seating toolbar with
- * one primary default action and a one-click-away alternate-options menu. It
- * stays presentational so the route shell can own export orchestration.
+ * This component renders the export subsection inside the planner toolbars
+ * with one primary default action and a one-click-away alternate-options
+ * menu. It stays presentational so the route shell can own export
+ * orchestration for both seating and grouping.
  */
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { IconArrow } from "../../../components/icons";
-import type { SeatingExportOption } from "../classroomPlannerExportApi";
+import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 
-type ExportOption = {
+export type PlannerExportOptionValue = SeatingExportOption | GroupingExportOption;
+
+export type PlannerExportOption = {
   id: string;
   label: string;
-  option: SeatingExportOption;
+  option: PlannerExportOptionValue;
+  isDefault?: boolean;
 };
 
 const props = withDefaults(
   defineProps<{
+    options?: PlannerExportOption[];
+    defaultLabel?: string;
+    busyLabel?: string;
+    menuAriaLabel?: string;
+    groupTestId?: string;
+    defaultButtonTestId?: string;
+    menuTriggerTestId?: string;
+    optionTestIdPrefix?: string;
     disabled?: boolean;
     busy?: boolean;
   }>(),
   {
+    options: () => [
+      {
+        id: "a3",
+        label: "Affisch (A3)",
+        option: "a3_landscape",
+        isDefault: true,
+      },
+      {
+        id: "a4",
+        label: "Affisch (A4)",
+        option: "a4_landscape",
+      },
+      {
+        id: "xlsx",
+        label: "Excel (.xlsx)",
+        option: "xlsx",
+      },
+    ],
+    defaultLabel: "Exportera",
+    busyLabel: "Exporterar…",
+    menuAriaLabel: "Fler exportval",
+    groupTestId: "seating-export-group",
+    defaultButtonTestId: "seating-export-default",
+    menuTriggerTestId: "seating-export-menu-trigger",
+    optionTestIdPrefix: "seating-export-option",
     disabled: false,
     busy: false,
   },
@@ -31,28 +68,12 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: "export-default"): void;
-  (e: "export-option", option: SeatingExportOption): void;
+  (e: "export-option", option: PlannerExportOptionValue): void;
 }>();
 
 const menuRef = ref<HTMLElement | null>(null);
 const isMenuOpen = ref(false);
-const exportOptions = computed<ExportOption[]>(() => [
-  {
-    id: "a3",
-    label: "Affisch (A3)",
-    option: "a3_landscape",
-  },
-  {
-    id: "a4",
-    label: "Affisch (A4)",
-    option: "a4_landscape",
-  },
-  {
-    id: "xlsx",
-    label: "Excel (.xlsx)",
-    option: "xlsx",
-  },
-]);
+const exportOptions = computed<PlannerExportOption[]>(() => props.options);
 const isMenuDisabled = computed(() => props.disabled || props.busy);
 
 function closeMenu(): void {
@@ -83,7 +104,7 @@ function handleEscape(event: KeyboardEvent): void {
   closeMenu();
 }
 
-function selectOption(option: SeatingExportOption): void {
+function selectOption(option: PlannerExportOptionValue): void {
   emit("export-option", option);
   closeMenu();
 }
@@ -103,26 +124,26 @@ onBeforeUnmount(() => {
   <div
     ref="menuRef"
     class="relative flex items-stretch border-l border-navy/15 pl-3"
-    data-test="seating-export-group"
+    :data-test="groupTestId"
   >
     <button
       type="button"
       class="bg-navy px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:bg-navy/40"
-      data-test="seating-export-default"
+      :data-test="defaultButtonTestId"
       :disabled="disabled || busy"
       @click="emit('export-default')"
     >
-      {{ busy ? "Exporterar…" : "Exportera" }}
+      {{ busy ? busyLabel : defaultLabel }}
     </button>
 
     <button
       type="button"
       class="flex items-center border-l border-white/15 bg-navy px-2 text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:bg-navy/40"
-      aria-label="Fler exportval"
+      :aria-label="menuAriaLabel"
       aria-haspopup="menu"
       :aria-expanded="isMenuOpen"
       :disabled="isMenuDisabled"
-      data-test="seating-export-menu-trigger"
+      :data-test="menuTriggerTestId"
       @click.stop="toggleMenu"
     >
       <IconArrow
@@ -145,12 +166,12 @@ onBeforeUnmount(() => {
           type="button"
           role="menuitem"
           class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-navy transition-colors hover:bg-canvas"
-          :data-test="`seating-export-option-${option.id}`"
+          :data-test="`${optionTestIdPrefix}-${option.id}`"
           @click="selectOption(option.option)"
         >
           <span>{{ option.label }}</span>
           <span
-            v-if="option.option === 'a3_landscape'"
+            v-if="option.isDefault"
             class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/50"
           >
             Standard

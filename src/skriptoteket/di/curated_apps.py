@@ -15,6 +15,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     ActivateSeatingHistoryDraftHandler,
     CompleteSeatingExportJobFromWebhookHandler,
     CreateGroupingDraftHandler,
+    CreateGroupingExportJobHandler,
     CreateRoomTemplateHandler,
     CreateRosterHandler,
     CreateSeatingDraftHandler,
@@ -23,18 +24,23 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     DeleteHistoricSeatingDraftHandler,
     DeleteRoomTemplateHandler,
     DeleteRosterHandler,
+    DownloadGroupingExportJobHandler,
     DownloadSeatingExportJobHandler,
     GetClassWorkspaceSummaryHandler,
     GetDraftHandler,
     GetDraftWorkspaceHandler,
+    GetGroupingExportJobHandler,
+    GetRecoverableGroupingExportJobForDraftHandler,
     GetRecoverableSeatingExportJobForDraftHandler,
     GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
     GetSeatingExportJobHandler,
+    GroupingExportJobFinalizer,
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    PrepareGroupingExportHandler,
     PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
@@ -87,6 +93,9 @@ from skriptoteket.domain.curated_apps.classroom_planner.import_heuristics import
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner import (
     class_list_document_extractor as class_list_document_extractor_module,
 )
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.grouping_xlsx_renderer import (
+    GroupingXlsxRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.poster_renderer import (
     BrutalistPosterRenderer,
 )
@@ -126,12 +135,17 @@ from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs impo
 from skriptoteket.infrastructure.repositories.classroom_planner_export_webhook_bindings import (
     PostgreSQLSeatingExportWebhookBindingRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_jobs import (
+    PostgreSQLGroupingExportJobRepository,
+)
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
 from skriptoteket.protocols.classroom_planner_exports import (
+    GroupingExportJobRepositoryProtocol,
+    GroupingXlsxRendererProtocol,
     SeatingExportJobRepositoryProtocol,
     SeatingExportWebhookBindingRepositoryProtocol,
     SeatingPosterRendererProtocol,
@@ -612,6 +626,19 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def prepare_grouping_export_handler(
+        self,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+    ) -> PrepareGroupingExportHandler:
+        return PrepareGroupingExportHandler(
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def seating_export_job_handler(
         self,
         prepare: PrepareSeatingExportHandler,
@@ -643,6 +670,27 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def grouping_export_job_handler(
+        self,
+        prepare: PrepareGroupingExportHandler,
+        jobs: GroupingExportJobRepositoryProtocol,
+        xlsx_renderer: GroupingXlsxRendererProtocol,
+        finalizer: GroupingExportJobFinalizer,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateGroupingExportJobHandler:
+        return CreateGroupingExportJobHandler(
+            prepare=prepare,
+            jobs=jobs,
+            xlsx_renderer=xlsx_renderer,
+            finalizer=finalizer,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def seating_export_job_finalizer(
         self,
         jobs: SeatingExportJobRepositoryProtocol,
@@ -658,6 +706,29 @@ class CuratedAppsProvider(Provider):
         return SeatingExportJobFinalizer(
             jobs=jobs,
             client=client,
+            vault_files=vault_files,
+            vault_usage=vault_usage,
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            settings=settings,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def grouping_export_job_finalizer(
+        self,
+        jobs: GroupingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> GroupingExportJobFinalizer:
+        return GroupingExportJobFinalizer(
+            jobs=jobs,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,
@@ -685,6 +756,19 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def get_grouping_export_job_handler(
+        self,
+        jobs: GroupingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> GetGroupingExportJobHandler:
+        return GetGroupingExportJobHandler(
+            jobs=jobs,
+            vault_files=vault_files,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def get_recoverable_seating_export_job_for_draft_handler(
         self,
         jobs: SeatingExportJobRepositoryProtocol,
@@ -698,6 +782,19 @@ class CuratedAppsProvider(Provider):
             vault_files=vault_files,
             client=client,
             finalizer=finalizer,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_recoverable_grouping_export_job_for_draft_handler(
+        self,
+        jobs: GroupingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> GetRecoverableGroupingExportJobForDraftHandler:
+        return GetRecoverableGroupingExportJobForDraftHandler(
+            jobs=jobs,
+            vault_files=vault_files,
             uow=uow,
         )
 
@@ -723,6 +820,21 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
     ) -> DownloadSeatingExportJobHandler:
         return DownloadSeatingExportJobHandler(
+            jobs=jobs,
+            vault_files=vault_files,
+            vault_storage=vault_storage,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def download_grouping_export_job_handler(
+        self,
+        jobs: GroupingExportJobRepositoryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> DownloadGroupingExportJobHandler:
+        return DownloadGroupingExportJobHandler(
             jobs=jobs,
             vault_files=vault_files,
             vault_storage=vault_storage,
@@ -822,6 +934,12 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLSeatingExportJobRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def grouping_export_job_repository(
+        self, session: AsyncSession
+    ) -> GroupingExportJobRepositoryProtocol:
+        return PostgreSQLGroupingExportJobRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
     def seating_export_webhook_binding_repository(
         self,
         session: AsyncSession,
@@ -835,6 +953,10 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def seating_xlsx_renderer(self) -> SeatingXlsxRendererProtocol:
         return SeatingXlsxRenderer()
+
+    @provide(scope=Scope.APP)
+    def grouping_xlsx_renderer(self) -> GroupingXlsxRendererProtocol:
+        return GroupingXlsxRenderer()
 
     @provide(scope=Scope.APP)
     def class_list_document_extractor(

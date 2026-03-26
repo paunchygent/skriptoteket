@@ -5,7 +5,7 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-25
+updated: 2026-03-26
 outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 ---
@@ -68,23 +68,35 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "EPIC-24"]
 
 - [x] [ST-26-01: Seating PDF poster export with standalone renderer](../stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md)
 - [ ] [ST-26-02: Class-list import from file with teacher preview and confirmation](../stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md)
-- [ ] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
+- [x] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
-- [ ] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
+- [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
 - [ ] [ST-26-06: Scrollable fixed previews and student-pool scroll regions](../stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md)
 - [ ] [ST-26-07: Stable task toolbars and action zoning](../stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md)
 - [ ] [ST-26-08: Overview action hierarchy and affordance polish](../stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md)
 
-## Implementation Summary (as of 2026-03-24)
+## Implementation Summary (as of 2026-03-26)
 
 - `ST-26-01` is implemented through `PR-0118`, `PR-0119`, `PR-0120`,
   `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, and `PR-0125`.
+- `ST-26-03` is implemented through `PR-0142` and `PR-0143`.
+- `ST-26-05` is implemented through `PR-0139` and `PR-0140`.
 - Seating exports now have an explicit prepare-contract seam plus an async PDF
   export-job lane with standalone poster-scene translation, export-owned
   HTML/CSS rendering, Sir Convert-a-Lot delivery, Vault persistence, typed
   status/download routes, reload recovery, production webhook reconciliation,
   clean canonical-only webhook cutover/removal, and a shared preview/export
   scene-normalization seam.
+- Seating exports now also include a local `XLSX` lane that keeps `Affisch (A3)`
+  as the default teacher action, exposes `Excel (.xlsx)` as a secondary option,
+  and delivers a single-sheet `Sittplacering` workbook that preserves the room
+  as a spatial seat grid with explicit empty seats, aisle gaps, and unplaced
+  students.
+- Grouping exports now include a local default `XLSX` lane that presents a
+  protected `Redigera grupper` sheet with a student reassignment table, a
+  separate `Gruppregister` order table, dropdown-guided small edits, and a
+  formula-linked `Dela och exportera` sheet that stays presentation-ready in
+  `A4` portrait.
 - The `PR-0122` Hemma deploy gate is now production-proven through the on-host
   callback-capable export smoke and Vault-backed download, while `PR-0125`
   now extends that operator flow with review-fixed canonical replacement,

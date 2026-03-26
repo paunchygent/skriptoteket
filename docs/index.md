@@ -84,6 +84,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Migration roadmap (SPA): `docs/reference/reports/ref-vue-spa-migration-roadmap.md`
 - Toasts + system messages (SPA): `docs/reference/ref-toast-system-messages.md`
 - Hemma critical paths + ops inventory: `docs/reference/ref-hemma-critical-paths-2026-01-06.md`
+- Agent browser automation runbook: `docs/runbooks/runbook-agent-browser-automation.md`
 - Feedback email CLI runbook: `docs/runbooks/runbook-feedback-email-cli.md`
 - Active sprint: `docs/backlog/sprints/sprint-2026-01-05-tool-editor-vertical-slice.md`
 - Release notes: `docs/releases/`
@@ -712,6 +713,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 ### Runbooks
 
 - `docs/runbooks/runbook-editor-ai-pipeline.md`
+- `docs/runbooks/runbook-agent-browser-automation.md`
 - `docs/runbooks/runbook-feedback-email-cli.md`
 - `docs/runbooks/runbook-gpu-ai-workloads.md`
 - `docs/runbooks/runbook-home-server.md`

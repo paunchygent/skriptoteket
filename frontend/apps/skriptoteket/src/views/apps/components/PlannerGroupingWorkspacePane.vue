@@ -7,28 +7,41 @@
  * planner shell while still delegating route-level orchestration to the shell.
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
-import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo } from "../../../components/icons";
+import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } from "../../../components/icons";
+import type { GroupingExportOption } from "../classroomPlannerExportApi";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import GroupBoard from "./GroupBoard.vue";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
+import PlannerExportActionGroup, {
+  type PlannerExportOption,
+  type PlannerExportOptionValue,
+} from "./PlannerExportActionGroup.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
 import { useClassroomState } from "../useClassroomState";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     selectedStudentId?: string | null;
     availableTemplates?: RoomTemplate[];
     selectedTemplateId?: string | null;
+    exportBusy?: boolean;
+    exportStatusLabel?: string | null;
+    exportErrorMessage?: string | null;
+    canDownloadLatestExport?: boolean;
   }>(),
   {
     selectedStudentId: null,
     availableTemplates: () => [],
     selectedTemplateId: null,
+    exportBusy: false,
+    exportStatusLabel: null,
+    exportErrorMessage: null,
+    canDownloadLatestExport: false,
   },
 );
 
@@ -38,11 +51,28 @@ const emit = defineEmits<{
   (e: "open-history"): void;
   (e: "change-grouping-template", templateId: string | null): void;
   (e: "edit-roster"): void;
+  (e: "export-default"): void;
+  (e: "export-option", option: GroupingExportOption): void;
+  (e: "download-latest-export"): void;
 }>();
 
 const state = useClassroomState();
 const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
 const isResetGroupingDialogOpen = ref(false);
+const isExportStatusDismissed = ref(false);
+const exportOptions = computed<PlannerExportOption[]>(() => [
+  {
+    id: "xlsx",
+    label: "Excel (.xlsx)",
+    option: "xlsx",
+    isDefault: true,
+  },
+  {
+    id: "pdf",
+    label: "PDF (A4 stående)",
+    option: "pdf_a4_portrait",
+  },
+]);
 const secondaryActionItems = computed(() => [
   {
     id: "history",
@@ -124,6 +154,17 @@ function updateSmartEnabled(event: Event): void {
   }
   state.setDraftSmartEnabled(target.checked);
 }
+
+function handleExportOption(option: PlannerExportOptionValue): void {
+  emit("export-option", option as GroupingExportOption);
+}
+
+watch(
+  () => [props.exportStatusLabel, props.exportErrorMessage, props.canDownloadLatestExport] as const,
+  () => {
+    isExportStatusDismissed.value = false;
+  },
+);
 </script>
 
 <template>
@@ -246,12 +287,61 @@ function updateSmartEnabled(event: Event): void {
       >
         Lägg till grupp
       </button>
+      <PlannerExportActionGroup
+        :busy="exportBusy"
+        :options="exportOptions"
+        group-test-id="grouping-export-group"
+        default-button-test-id="grouping-export-default"
+        menu-trigger-test-id="grouping-export-menu-trigger"
+        option-test-id-prefix="grouping-export-option"
+        @export-default="emit('export-default')"
+        @export-option="handleExportOption"
+      />
       <PlannerToolbarOverflowMenu
         label="Fler gruppåtgärder"
         :items="secondaryActionItems"
         test-id="grouping-actions-menu"
       />
     </PlannerWorkspaceActionBar>
+
+    <div
+      v-if="!isExportStatusDismissed && (exportStatusLabel || exportErrorMessage || canDownloadLatestExport)"
+      class="flex flex-wrap items-center gap-x-4 gap-y-1 border border-navy/30 bg-white px-3 py-2 text-xs"
+      data-test="grouping-export-status-bar"
+    >
+      <p
+        v-if="exportStatusLabel"
+        class="text-navy"
+        data-test="grouping-export-status"
+      >
+        {{ exportStatusLabel }}
+      </p>
+      <p
+        v-if="exportErrorMessage"
+        class="font-semibold text-burgundy"
+        data-test="grouping-export-error"
+      >
+        {{ exportErrorMessage }}
+      </p>
+      <button
+        v-if="canDownloadLatestExport"
+        type="button"
+        class="font-semibold text-navy underline underline-offset-2 transition-colors hover:text-burgundy"
+        data-test="grouping-export-download-latest"
+        @click="emit('download-latest-export')"
+      >
+        Ladda ned igen
+      </button>
+      <button
+        type="button"
+        class="ml-auto text-navy/50 transition-colors hover:text-navy"
+        aria-label="Stäng exportstatus"
+        data-test="grouping-export-status-dismiss"
+        @click="isExportStatusDismissed = true"
+      >
+        <IconX :size="14" />
+      </button>
+    </div>
 
     <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-stretch">
       <PlannerStudentPool

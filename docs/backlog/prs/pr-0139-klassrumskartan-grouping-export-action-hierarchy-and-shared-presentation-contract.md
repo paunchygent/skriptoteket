@@ -2,10 +2,10 @@
 type: pr
 id: PR-0139
 title: "Klassrumskartan: grouping export action hierarchy and shared presentation contract"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-26
 stories:
   - "ST-26-05"
   - "ST-26-04"

@@ -1,5 +1,8 @@
 """SQLAlchemy model exports for metadata discovery and Alembic imports."""
 
+from skriptoteket.infrastructure.db.models.classroom_planner_grouping_export_job import (
+    GroupingExportJobModel,
+)
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     DraftGroupModel,
     GroupAssignmentModel,
@@ -26,6 +29,7 @@ from skriptoteket.infrastructure.db.models.user_favorite import (
 
 __all__ = [
     "DraftGroupModel",
+    "GroupingExportJobModel",
     "GroupAssignmentModel",
     "PlanDraftModel",
     "RoomTemplateModel",

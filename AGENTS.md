@@ -96,7 +96,7 @@ Switch to run bash on hemma via heredocs to avoid nested quoting issues.
   - `skriptoteket-local-devops` for local development, DB/migrations, and dev-runtime troubleshooting
   - `skriptoteket-frontend-specialist` for SPA and curated-app frontend work
   - `playwright-testing` before planning, writing, running, or reviewing Playwright automation
-  - the relevant observability skill when debugging Grafana/Prometheus/Loki/Jaeger/structured logging
+  - the relevant observability skill when debugging Grafana/Prometheus/Loki/Jaeger/structured logging. Live baseline is always on <http://127.0.0.1:5173> for dev.
 
 ## Tool Execution (Local Dev Only)
 
@@ -125,6 +125,7 @@ Playwright is the default for browser automation. Follow `.agents/rules/075-brow
 `playwright-testing` skill for operational details, script structure, and credential handling.
 
 Repo-specific reminders:
+
 - Reuse the bootstrap superuser from `.env` for local UI checks; do not create ad hoc dev accounts.
 - Seed required Playwright tool fixtures through `src/skriptoteket/script_bank/` instead of creating demo tools in the DB.
 

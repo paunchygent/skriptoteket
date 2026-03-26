@@ -40,6 +40,10 @@ const {
   isDeletingOverviewTemplate,
   isSeatingLifecycleBusy,
   busySeatingHistoryDraftId,
+  isGroupingExportBusy,
+  groupingExportStatusLabel,
+  groupingExportErrorMessage,
+  canDownloadLatestGroupingExport,
   isSeatingExportBusy,
   seatingExportStatusLabel,
   seatingExportErrorMessage,
@@ -69,6 +73,9 @@ const {
   deleteGroupingHistoryDraft,
   openSeatingHistoryDraft,
   deleteSeatingHistoryDraft,
+  startDefaultGroupingExport,
+  startGroupingExportOption,
+  downloadLatestGroupingExport,
   startDefaultSeatingExport,
   startSeatingExportOption,
   downloadLatestSeatingExport,
@@ -160,6 +167,10 @@ const {
       :workspace-summary="classWorkspaceSummary"
       :seating-lifecycle-busy="isSeatingLifecycleBusy"
       :seating-history-busy-draft-id="busySeatingHistoryDraftId"
+      :grouping-export-busy="isGroupingExportBusy"
+      :grouping-export-status-label="groupingExportStatusLabel"
+      :grouping-export-error-message="groupingExportErrorMessage"
+      :can-download-latest-grouping-export="canDownloadLatestGroupingExport"
       :seating-export-busy="isSeatingExportBusy"
       :seating-export-status-label="seatingExportStatusLabel"
       :seating-export-error-message="seatingExportErrorMessage"
@@ -168,6 +179,9 @@ const {
       @change-seating-template="void changeSeatingTemplate($event)"
       @new-grouping-draft="void startNewGroupingDraft($event)"
       @new-seating-draft="void startNewSeatingDraft($event)"
+      @export-grouping-default="void startDefaultGroupingExport()"
+      @export-grouping-option="void startGroupingExportOption($event)"
+      @download-latest-grouping-export="void downloadLatestGroupingExport()"
       @export-seating-default="void startDefaultSeatingExport()"
       @export-seating-option="void startSeatingExportOption($event)"
       @download-latest-seating-export="void downloadLatestSeatingExport()"

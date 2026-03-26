@@ -14,6 +14,27 @@ Relationships:
       assuming planner DOM reuse or direct PDF primitives.
 """
 
+from .grouping_jobs import (
+    GroupingExportJob,
+    GroupingExportJobResult,
+    GroupingExportJobStatus,
+    GroupingExportVaultArtifact,
+)
+from .grouping_presentation import (
+    GroupingExportKind,
+    GroupingExportPaperSize,
+    GroupingExportPresentation,
+    GroupingPresentationGroup,
+    GroupingPresentationMember,
+    PreparedGroupingExportContract,
+    build_grouping_export_presentation,
+)
+from .grouping_xlsx_view_model import (
+    GroupingXlsxEditRow,
+    GroupingXlsxRegistryRow,
+    GroupingXlsxWorkbookViewModel,
+    build_grouping_xlsx_view_model,
+)
 from .jobs import (
     SeatingExportJob,
     SeatingExportJobResult,
@@ -51,6 +72,18 @@ __all__ = [
     "PosterSceneRoom",
     "PosterSceneSeat",
     "PosterSceneWallSide",
+    "GroupingExportJob",
+    "GroupingExportJobResult",
+    "GroupingExportJobStatus",
+    "GroupingExportKind",
+    "GroupingExportPaperSize",
+    "GroupingExportPresentation",
+    "GroupingExportVaultArtifact",
+    "GroupingXlsxEditRow",
+    "GroupingXlsxRegistryRow",
+    "GroupingXlsxWorkbookViewModel",
+    "GroupingPresentationGroup",
+    "GroupingPresentationMember",
     "SeatingExportJob",
     "SeatingExportJobResult",
     "SeatingExportJobStatus",
@@ -60,6 +93,9 @@ __all__ = [
     "SeatingExportVaultArtifact",
     "SeatingPosterScene",
     "SeatingPosterRenderRequest",
+    "PreparedGroupingExportContract",
+    "build_grouping_export_presentation",
+    "build_grouping_xlsx_view_model",
     "format_student_poster_label",
     "translate_workspace_to_poster_scene",
 ]

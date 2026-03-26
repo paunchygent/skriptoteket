@@ -11,6 +11,9 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+
 from tests.integration.migration_schema_assertions import COVERED_REVISION_IDS
 
 
@@ -47,6 +50,11 @@ def _dedicated_test_revisions() -> set[str]:
     return revisions
 
 
+def _head_revisions() -> tuple[str, ...]:
+    script = ScriptDirectory.from_config(Config(str(Path("alembic.ini"))))
+    return tuple(sorted(script.get_heads()))
+
+
 def main() -> int:
     """Validate that every migration revision has explicit integration coverage."""
     migration_revisions = _migration_revisions()
@@ -64,7 +72,17 @@ def main() -> int:
             "Coverage registry references unknown migration revisions:\n- " + "\n- ".join(extra)
         )
 
-    print(f"migration-test-coverage: ok ({len(migration_revisions)} revisions covered)")
+    head_revisions = _head_revisions()
+    if len(head_revisions) != 1:
+        raise SystemExit(
+            "Alembic must have exactly one head revision. Current heads:\n- "
+            + "\n- ".join(head_revisions)
+        )
+
+    print(
+        f"migration-test-coverage: ok ({len(migration_revisions)} revisions covered, "
+        f"head={head_revisions[0]})"
+    )
     return 0
 
 

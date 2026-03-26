@@ -1,8 +1,8 @@
-"""Web DTOs for classroom-planner seating export jobs.
+"""Web DTOs for classroom-planner export jobs.
 
 Purpose:
-    Define the public request and response envelopes for the PR-0119 async
-    seating export-job lane without exposing raw Sir Convert or Vault internals.
+    Define the public request and response envelopes for seating and grouping
+    export-job lanes without exposing raw Sir Convert or Vault internals.
 
 Relationships:
     - Serializes application export-job models from
@@ -18,6 +18,10 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
+    GroupingExportJobResult,
+    GroupingExportJobStatus,
+    GroupingExportKind,
+    GroupingExportPaperSize,
     SeatingExportJobResult,
     SeatingExportJobStatus,
     SeatingExportKind,
@@ -46,8 +50,40 @@ class CreateSeatingExportJobRequest(BaseModel):
         return self
 
 
+class CreateGroupingExportJobRequest(BaseModel):
+    """Deserialize the public job-creation payload for grouping exports."""
+
+    export_kind: GroupingExportKind
+    paper_size: GroupingExportPaperSize | None = None
+
+    @model_validator(mode="after")
+    def validate_export_shape(self) -> CreateGroupingExportJobRequest:
+        """Require the locked A4 portrait contract only for grouping PDF exports."""
+
+        if self.export_kind is GroupingExportKind.PDF:
+            if self.paper_size is None:
+                raise ValueError("PDF-export kräver pappersstorlek.")
+            if self.paper_size is not GroupingExportPaperSize.A4_PORTRAIT:
+                raise ValueError("PDF-export stöder bara A4 stående i den här versionen.")
+            return self
+        if self.paper_size is not None:
+            raise ValueError("Excel-export använder inte pappersstorlek.")
+        return self
+
+
 class SeatingExportVaultArtifactDto(BaseModel):
     """Serialize the teacher-facing summary for a saved Vault export artifact."""
+
+    model_config = ConfigDict(frozen=True)
+
+    file_id: UUID
+    name: str
+    bytes: int
+    created_at: datetime
+
+
+class GroupingExportVaultArtifactDto(BaseModel):
+    """Serialize the teacher-facing summary for a saved grouping export artifact."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -74,6 +110,22 @@ class SeatingExportJobDto(BaseModel):
     error: str | None = None
 
 
+class GroupingExportJobDto(BaseModel):
+    """Serialize one classroom-planner grouping export job."""
+
+    model_config = ConfigDict(frozen=True)
+
+    job_id: UUID
+    draft_id: UUID
+    export_kind: GroupingExportKind
+    paper_size: GroupingExportPaperSize | None = None
+    status: GroupingExportJobStatus
+    created_at: datetime
+    download_url: str | None = None
+    vault_artifact: GroupingExportVaultArtifactDto | None = None
+    error: str | None = None
+
+
 def serialize_seating_export_job(job: SeatingExportJobResult) -> SeatingExportJobDto:
     """Map one application export-job result to the public API DTO."""
 
@@ -90,6 +142,30 @@ def serialize_seating_export_job(job: SeatingExportJobResult) -> SeatingExportJo
         draft_id=job.draft_id,
         export_kind=job.export_kind,
         layout_id=job.layout_id,
+        paper_size=job.paper_size,
+        status=job.status,
+        created_at=job.created_at,
+        download_url=job.download_url,
+        vault_artifact=vault_artifact,
+        error=job.error,
+    )
+
+
+def serialize_grouping_export_job(job: GroupingExportJobResult) -> GroupingExportJobDto:
+    """Map one application grouping export-job result to the public API DTO."""
+
+    vault_artifact = None
+    if job.vault_artifact is not None:
+        vault_artifact = GroupingExportVaultArtifactDto(
+            file_id=job.vault_artifact.file_id,
+            name=job.vault_artifact.name,
+            bytes=job.vault_artifact.bytes,
+            created_at=job.vault_artifact.created_at,
+        )
+    return GroupingExportJobDto(
+        job_id=job.job_id,
+        draft_id=job.draft_id,
+        export_kind=job.export_kind,
         paper_size=job.paper_size,
         status=job.status,
         created_at=job.created_at,

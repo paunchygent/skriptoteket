@@ -16,6 +16,7 @@ import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellEr
 import { createClassroomPlannerExitFlow } from "./classroomPlannerRouteShellExit";
 import { createClassroomPlannerOverviewCrudFlow } from "./classroomPlannerRouteShellOverviewCrud";
 import { createClassroomPlannerWorkspaceFlow } from "./classroomPlannerRouteShellWorkspace";
+import { useGroupingExportFlow } from "./useGroupingExportFlow";
 import { useSeatingExportFlow } from "./useSeatingExportFlow";
 import { useClassroomState } from "./useClassroomState";
 
@@ -140,6 +141,9 @@ export function useClassroomPlannerRouteShell() {
     plannerState,
     clearOverviewWorkspaceState: overviewStore.clearOverviewWorkspaceState,
   });
+  const groupingExportFlow = useGroupingExportFlow({
+    plannerState,
+  });
   const seatingExportFlow = useSeatingExportFlow({
     plannerState,
   });
@@ -187,6 +191,10 @@ export function useClassroomPlannerRouteShell() {
     isDeletingOverviewTemplate: overviewCrudFlow.isDeletingOverviewTemplate,
     isSeatingLifecycleBusy,
     busySeatingHistoryDraftId,
+    isGroupingExportBusy: groupingExportFlow.isBusy,
+    groupingExportStatusLabel: groupingExportFlow.statusLabel,
+    groupingExportErrorMessage: groupingExportFlow.errorMessage,
+    canDownloadLatestGroupingExport: groupingExportFlow.canDownloadLatest,
     isSeatingExportBusy: seatingExportFlow.isBusy,
     seatingExportStatusLabel: seatingExportFlow.statusLabel,
     seatingExportErrorMessage: seatingExportFlow.errorMessage,
@@ -216,6 +224,9 @@ export function useClassroomPlannerRouteShell() {
     deleteGroupingHistoryDraft: workspaceFlow.deleteGroupingHistoryDraft,
     openSeatingHistoryDraft: workspaceFlow.openSeatingHistoryDraft,
     deleteSeatingHistoryDraft: workspaceFlow.deleteSeatingHistoryDraft,
+    startDefaultGroupingExport: groupingExportFlow.startDefaultExport,
+    startGroupingExportOption: groupingExportFlow.startExportOption,
+    downloadLatestGroupingExport: groupingExportFlow.downloadLatest,
     startDefaultSeatingExport: seatingExportFlow.startDefaultExport,
     startSeatingExportOption: seatingExportFlow.startExportOption,
     downloadLatestSeatingExport: seatingExportFlow.downloadLatest,

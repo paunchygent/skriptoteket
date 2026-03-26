@@ -553,6 +553,33 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.emitted("edit-roster")).toEqual([[]]);
   });
 
+  it("forwards grouping export actions without changing the seating-only defaults", async () => {
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="grouping-export-default"]').trigger("click");
+    expect(wrapper.emitted("export-grouping-default")).toEqual([[]]);
+
+    await wrapper.get('[data-test="grouping-export-menu-trigger"]').trigger("click");
+    await wrapper.get('[data-test="grouping-export-option-pdf"]').trigger("click");
+
+    expect(wrapper.emitted("export-grouping-option")).toEqual([["pdf_a4_portrait"]]);
+    expect(wrapper.text()).not.toContain("Affisch (A3)");
+  });
+
   it("lets the seating toolbar edit the current classroom without exposing grouping actions", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-2",

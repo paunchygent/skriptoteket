@@ -37,6 +37,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "b18f6a0d3e2c",
     "c9c1c9270a3d",
     "e4b7c2d9a1f0",
+    "f6c1e2a9b3d4",
     "4a9d7c1e2b34",
 )
 
@@ -264,6 +265,21 @@ async def _assert_e4b7_smart_enabled(engine: AsyncEngine) -> None:
     assert "smart_enabled" in await _column_map(engine, "classroom_planner_plan_drafts")
 
 
+async def _assert_f6c1_grouping_export_jobs(engine: AsyncEngine) -> None:
+    tables = await _table_names(engine)
+    assert "classroom_planner_grouping_export_jobs" in tables
+    columns = await _column_map(engine, "classroom_planner_grouping_export_jobs")
+    assert columns["paper_size"]["is_nullable"] == "YES"
+    indexes = await _index_names(engine, "classroom_planner_grouping_export_jobs")
+    assert {
+        "ix_cp_grouping_export_jobs_owner_created",
+        "ix_classroom_planner_grouping_export_jobs_owner_user_id",
+        "ix_classroom_planner_grouping_export_jobs_draft_id",
+        "ix_classroom_planner_grouping_export_jobs_status",
+        "uq_cp_grouping_export_jobs_upstream",
+    }.issubset(indexes)
+
+
 async def _assert_4a9d_nullable_xlsx_fields(engine: AsyncEngine) -> None:
     columns = await _column_map(engine, "classroom_planner_seating_export_jobs")
     assert columns["layout_id"]["is_nullable"] == "YES"
@@ -292,6 +308,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "b18f6a0d3e2c": _assert_b18f_seating_export_jobs,
     "c9c1c9270a3d": _assert_c9c1_shared_export_binding,
     "e4b7c2d9a1f0": _assert_e4b7_smart_enabled,
+    "f6c1e2a9b3d4": _assert_f6c1_grouping_export_jobs,
     "4a9d7c1e2b34": _assert_4a9d_nullable_xlsx_fields,
 }
 

@@ -11,24 +11,18 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-25
+- Date: 2026-03-26
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0142`, `PR-0145`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`
 
 ## Status
 
-- Hemma is clean and Git-aligned after the reset/redeploy sequence:
-  - `~/apps/sir-convert-a-lot` at `52f3d81`
-  - `~/apps/skriptoteket` at `c09b17e`
-  - `sir_convert_a_lot_prod`, `skriptoteket-web`, and `skriptoteket-worker` are healthy
+- Hemma is clean and Git-aligned after the reset/redeploy sequence; `sir_convert_a_lot_prod`, `skriptoteket-web`, and `skriptoteket-worker` are healthy.
 - `PR-0137` shipped the class-list import remediation:
-  - example corpus under `data/class_list_example_inputs/` parses across `.txt` / `.csv` / `.tsv` / `.xls` / PDF-backed fixtures
-  - create/edit class-list flows expose in-modal `Importera från fil`
-  - successful imports reconcile into overview state instead of reopening a blank modal
-  - edit-mode imports no longer remap student IDs by row position
-  - roster student-list replacement is blocked while an active draft depends on the class list
+  - example corpus under `data/class_list_example_inputs/` parses across `.txt` / `.csv` / `.tsv` / `.xls` / PDF-backed fixtures and create/edit class-list flows expose in-modal `Importera från fil`
+  - successful imports reconcile into overview state, edit-mode imports no longer remap student IDs by row position, and roster student-list replacement is still blocked while an active draft depends on the class list
 - `PR-0138` shipped the Sir Convert runtime-policy cleanup:
   - this repo now uses only `SIR_CONVERT_A_LOT_V2_API_KEY`
   - local Skriptoteket defaults to the Hemma/public Sir Convert lane
@@ -38,21 +32,31 @@ Keep this file updated so the next session can pick up work quickly.
   - host `Settings()` rewrite `SIR_CONVERT_A_LOT_V2_BASE_URL=http://host.docker.internal:8085` to `http://127.0.0.1:8085` for host-run dev processes while keeping the callback URL on `host.docker.internal:8000` for the Dockerized Sir Convert callback lane
   - after local DB/bootstrap recovery plus `reconcile-seating-export-webhooks`, the host-side `smoke-seating-export-readiness` passed again and produced a Vault-backed PDF from the `127.0.0.1` lane
 - `PR-0145` is now implemented locally:
-  - `scripts/check_migration_test_coverage.py` enforces explicit integration coverage for all 49 Alembic revisions
-  - `tests/integration/test_migration_revision_coverage_idempotent.py` now covers the previously missing revisions from `0001_init` through `4a9d7c1e2b34`
-  - the deterministic migration defect was in `migrations/versions/0032_user_file_vault.py`: it reused a stale inspector after `create_table(...)`, so fresh upgrades skipped the `user_vault_files` indexes
-  - `0032_user_file_vault` now refreshes inspection state before index creation, the full uncovered-revision docker suite passes, and host `pdm run db-upgrade` reruns no-op cleanly
+  - `scripts/check_migration_test_coverage.py` now enforces explicit integration coverage for all 49 Alembic revisions
+  - `migrations/versions/0032_user_file_vault.py` now refreshes inspection state before index creation, so fresh upgrades keep the `user_vault_files` indexes and host `pdm run db-upgrade` reruns no-op cleanly
 - `PR-0142` shipped the first locked EPIC-26 export slice for seating XLSX:
   - seating export contract now supports `pdf` and `xlsx` without a compatibility shim; `layout_id` / `paper_size` are nullable only for XLSX
   - seating keeps `Affisch (A3)` as the default action and exposes `Excel (.xlsx)` as a menu option
   - XLSX generation is local `openpyxl` delivery through `SeatingXlsxRenderer`, not Sir Convert
   - seating download delivery now returns the media type from the stored artifact instead of assuming PDF
   - key files: `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_jobs.py`, `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/seating_xlsx_renderer.py`, `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportApi.ts`, `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.ts`
+- `PR-0143` is now implemented locally and `ST-26-03` is marked done:
+  - the seating workbook is now a single-sheet `Sittplacering` artifact that preserves the classroom as a spatial grid instead of flattening seats into a table
+  - empty seats and aisle gaps remain explicit, unplaced students render in a compact section below the grid, and the unplaced section is skipped entirely when everyone is seated
+  - the local workbook proof in `.artifacts/epic26-pr0143-workbook-check/` confirms the printed sheet stays clean enough to share or save as PDF without a duplicate presentation tab
+- `PR-0139` is now implemented locally and verified on the host lane:
+  - grouping now has its own export action hierarchy with `Exportera` defaulting to `Excel (.xlsx)` and a compact adjacent menu for `Excel (.xlsx)` and `PDF (A4 stående)`
+  - backend/frontend now share a dedicated `GroupingExportPresentation` contract plus grouping-specific export job routes, DTOs, persistence, and reload recovery
+  - grouping export jobs are currently deliberate placeholder scaffolding in dev: real jobs are created, stay recoverable in `submitted` / `processing`, and do not render final artifacts until `PR-0140` / `PR-0141`
+  - key files: `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_exports.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_export_jobs.py`, `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py`, `frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.ts`, `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue`
+- `PR-0140` is now implemented locally and `ST-26-05` is marked done:
+  - grouping `xlsx` now completes locally, stores a Vault-backed artifact, and downloads as the default grouping export
+  - the workbook uses a protected `Redigera grupper` sheet with a student reassignment table (`Nr i grupp`, `Elev`, `Grupp (välj)`), a separate `Gruppregister` table (`Grupp`, `Gruppordning (välj)`), concise in-sheet guidance, and locked non-editable surfaces
+  - `Dela och exportera` stays formula-linked to the editable grouping surfaces for already assigned students, keeps blank-group rows out of the presentation, and prints cleanly with fixed spacing between group sections
+  - key files: `src/skriptoteket/application/curated_apps/classroom_planner/exports/grouping_xlsx_view_model.py`, `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/grouping_xlsx_renderer.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_export_jobs.py`
 - Local 2026-03-25 delete-rule follow-up changed overview asset deletion semantics:
-  - deleting a class list now removes all dependent planner drafts for that roster instead of blocking on active-draft dependency
-  - deleting a classroom now removes all dependent planner drafts for that template instead of blocking on active-draft dependency
-  - the overview confirmation dialogs now say that dependent grouping/seating drafts will also be removed
-  - delete failures in the overview now render locally inside the confirmation dialog instead of behind the modal
+  - deleting a class list or classroom now removes dependent planner drafts instead of blocking on active-draft dependency
+  - the overview confirmation dialogs and local error rendering were updated to match the cascade behavior
 - The clean-checkout Hemma redeploy packaging regression is already fixed and deployed via `c09b17e` (`pdfplumber` runtime dependency).
 - Current local state:
   - `EPIC-26` export work is still in flight with multiple unrelated local changes
@@ -60,7 +64,10 @@ Keep this file updated so the next session can pick up work quickly.
   - do not overwrite export-lane changes while continuing smart-assignment work
 - Current planning/implementation focus is now split between EPIC-26 export follow-on and the first EPIC-27 smart-assignment slice:
   - [EPIC-26](docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md)
-  - next locked export order: [PR-0143](docs/backlog/prs/pr-0143-klassrumskartan-seating-xlsx-workbook-layout-and-artifact-delivery.md) -> [PR-0139](docs/backlog/prs/pr-0139-klassrumskartan-grouping-export-action-hierarchy-and-shared-presentation-contract.md) -> [PR-0140](docs/backlog/prs/pr-0140-klassrumskartan-grouping-xlsx-workbook-layout-and-artifact-delivery.md) -> [PR-0141](docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md)
+  - next locked export order and pacing: [PR-0141](docs/backlog/prs/pr-0141-klassrumskartan-grouping-pdf-a4-portrait-presentation-renderer-and-delivery.md)
+  - lessons learned for the export lane: keep seating PDF default behavior untouched, keep seating XLSX teacher-facing and spatial instead of duplicating a presentation tab, and verify against the host `dev-local` lane rather than trusting container logs alone
+  - `PR-0140` shipped the narrowed grouping workbook shape: linked reassignment/reordering for already assigned students, blank-group rows excluded from the presentation, and the edit sheet intentionally optimized for bounded dropdown/order tweaks rather than broad offline roster editing
+  - migration guardrail added during `PR-0139`: `scripts/check_migration_test_coverage.py` now fails if Alembic has anything other than a single head, because recent operator-error incidents created split-head local states
 - Smart-assignment planning docs are now approved and implementation has started:
   - decision memo: `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
   - ADR / epic / review: `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md` (`accepted`), `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md` (`active`), `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md` (`approved`)
@@ -76,14 +83,6 @@ Keep this file updated so the next session can pick up work quickly.
     - hard deletion of old student-planning semantics from runtime/persistence
     - normalized persistence + UI flows for smart relation controls
 
-## Previous Sessions
-
-- Older shipped detail belongs in `.agents/readme-first.md` and the linked story/PR docs.
-- Most relevant recent implementation docs:
-  - `docs/backlog/prs/pr-0137-klassrumskartan-class-list-import-remediation-example-corpus-and-overview-reconciliation.md`
-  - `docs/backlog/prs/pr-0138-seating-export-single-canonical-sir-convert-v2-key-and-runtime-wiring.md`
-  - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
-
 ## Verification
 
 - 2026-03-25 overview asset delete cascade follow-up:
@@ -93,7 +92,6 @@ Keep this file updated so the next session can pick up work quickly.
   - live proof with dev service on `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via one-off `pdm run python - <<'PY' ... PY`:
     - created temporary roster/template pairs plus active seating drafts, then verified roster deletion returned workspace-summary `404` and template deletion cleared the dependent active seating draft
     - artifacts: `.artifacts/roster-template-delete-cascade-proof/before-roster-delete.png`, `.artifacts/roster-template-delete-cascade-proof/after-roster-delete.png`, `.artifacts/roster-template-delete-cascade-proof/before-template-delete.png`, `.artifacts/roster-template-delete-cascade-proof/after-template-delete.png`
-
 - 2026-03-25 PR-0142 seating XLSX export lane:
   - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/useSeatingExportFlow.spec.ts`
   - `pdm run pytest tests/unit/application/apps/classroom_planner/test_seating_export_jobs.py tests/unit/application/apps/classroom_planner/test_seating_export_webhook_dispatch.py tests/unit/web/apps/classroom_planner/test_seating_export_job_api.py`
@@ -105,53 +103,41 @@ Keep this file updated so the next session can pick up work quickly.
     - XLSX seating export request: `{"export_kind":"xlsx","layout_id":null,"paper_size":null}`
     - grouping workspace baseline: no export action, no export status surface, no `Exportera` copy
     - artifacts: `.artifacts/epic26-pr0142/debug-route.png`, `.artifacts/epic26-pr0142/menu-dom-debug.png`, `.artifacts/epic26-pr0142/seating-default-after-click.png`, `.artifacts/epic26-pr0142/seating-xlsx-after-click.png`, `.artifacts/epic26-pr0142/grouping-workspace.png`
-
-- 2026-03-25 frontend export action cleanup:
+- 2026-03-26 PR-0143 seating XLSX workbook completion:
+  - `pdm run pytest tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_seating_xlsx_renderer.py`
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_seating_export_jobs.py tests/unit/web/apps/classroom_planner/test_seating_export_job_api.py`
+  - `pdm run docs-validate`
+  - host baseline proof against `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via temporary repo Playwright script:
+    - seating still defaulted to `Affisch (A3)`
+    - `Excel (.xlsx)` was present as a seating menu option
+    - grouping still had no export surface before `PR-0139`
+    - artifacts: `.artifacts/epic26-pr0143-host-baseline/`
+  - local workbook render proof:
+    - generated `.artifacts/epic26-pr0143-workbook-check/klass-7a-sittplacering.xlsx`
+    - rendered it with `soffice --headless --convert-to pdf` and `pdftoppm -png`
+    - inspected `.artifacts/epic26-pr0143-workbook-check/klass-7a-sittplacering-1.png`
+- 2026-03-26 PR-0139 grouping export hierarchy + shared contract:
+  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/useGroupingExportFlow.spec.ts src/views/apps/useSeatingExportFlow.spec.ts`
   - `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/useSeatingExportFlow.spec.ts`
-- 2026-03-25 local import remediation proof:
-  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_class_list_import_examples.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_client_v2.py tests/unit/web/test_apps_classroom_planner_imports.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/web/apps/classroom_planner/test_api.py tests/unit/cli/test_smoke_seating_export_readiness.py`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/PlannerRosterOverviewPanel.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/components/CreateRosterModal.vue src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/PlannerRosterOverviewPanel.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/useClassListImportFlow.ts`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
-  - `pdm run ruff check src/skriptoteket/config.py src/skriptoteket/di/curated_apps.py src/skriptoteket/protocols/classroom_planner_imports.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/imports.py src/skriptoteket/application/curated_apps/classroom_planner/handlers/rosters.py src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/class_list_document_extractor.py src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/sir_convert_client_v2.py src/skriptoteket/cli/commands/smoke_seating_export_readiness.py tests/unit/application/apps/classroom_planner/test_class_list_import_examples.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_client_v2.py tests/unit/web/test_apps_classroom_planner_imports.py tests/unit/web/apps/classroom_planner/test_api.py tests/unit/cli/test_smoke_seating_export_readiness.py scripts/playwright_pr_0137_class_list_import_check.py`
-  - `pdm run python -m scripts.playwright_pr_0137_class_list_import_check --base-url http://127.0.0.1:5173`
-- 2026-03-25 local export runtime parity slice:
-  - `pdm run pytest tests/unit/test_config.py`
-  - `pdm run ruff check src/skriptoteket/config.py tests/unit/test_config.py`
-  - `PYTHONPATH=src pdm run python -c "from skriptoteket.config import Settings; s=Settings(); print(s.ARTIFACTS_ROOT); print(s.VAULT_ROOT); print(s.SIR_CONVERT_A_LOT_V2_BASE_URL); print(s.SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL)"`
-  - `docker compose exec -T db pg_isready -U postgres -d skriptoteket`
-  - `docker compose exec -T db psql -U postgres -d skriptoteket -c "select column_name from information_schema.columns where table_name = 'classroom_planner_plan_drafts' and column_name = 'smart_enabled';"`
-  - `PYTHONPATH=src pdm run python -m skriptoteket.cli reconcile-seating-export-webhooks`
-  - `BOOTSTRAP_SUPERUSER_EMAIL=superuser@local.dev PYTHONPATH=src pdm run python -m skriptoteket.cli smoke-seating-export-readiness --timeout-seconds 90 --poll-interval-seconds 2`
-- 2026-03-25 PR-0145 migration integrity remediation:
-  - `pdm run ruff check migrations/versions/0032_user_file_vault.py tests/integration/migration_schema_assertions.py tests/integration/migration_idempotency_support.py tests/integration/test_migration_revision_coverage_idempotent.py scripts/check_migration_test_coverage.py`
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_grouping_exports.py tests/unit/application/apps/classroom_planner/test_grouping_export_jobs.py tests/unit/web/apps/classroom_planner/test_grouping_export_api.py tests/unit/web/apps/classroom_planner/test_grouping_export_job_api.py`
   - `pdm run python -m scripts.check_migration_test_coverage`
-  - `pdm run pytest -m docker tests/integration/test_migration_revision_coverage_idempotent.py`
+  - `pdm run pytest -m docker tests/integration/test_migration_revision_coverage_idempotent.py -k f6c1e2a9b3d4 --override-ini addopts=''`
   - `pdm run db-upgrade`
-  - `pdm run db-upgrade`
-- 2026-03-25 Git-backed Hemma redeploy:
-  - `ssh hemma /bin/bash <<'EOF' ... ./scripts/hemma_deploy_and_verify_seating_export.sh EOF`
-  - passed with `export_job_id=b5301445-411a-47e7-9d55-2ef61f804f7e` and `pdf_bytes=9717`
-  - final health snapshot:
-    - `ssh hemma 'cd ~/apps/skriptoteket && git rev-parse --short HEAD && sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "skriptoteket-web|skriptoteket-worker|sir_convert_a_lot_prod"'`
-    - `ssh hemma 'cd ~/apps/sir-convert-a-lot && git rev-parse --short HEAD && curl -fsS http://127.0.0.1:28085/readyz'`
-- 2026-03-25 packaging regression proof/fix:
-  - failing clean build symptom on Hemma before `c09b17e`: `ModuleNotFoundError: No module named 'pdfplumber'`
-  - local runtime-path proof after the repo fix:
-    - `docker run --rm skriptoteket-web:test-fixed pdm run python -c "import pdfplumber; print(pdfplumber.__version__)"`
-    - returned `0.11.9`
-- 2026-03-25 smart-assignment planning docs:
-  - `pdm run docs-validate`
-  - `pdm run docs-validate` after resolving review findings on control inventory, checkpoint semantics, missing-history behavior, and alternate-result distinctness
-- 2026-03-25 EPIC-27 approval + ST-27-01 first slice:
-  - `pdm run docs-validate`
-  - `pdm run db-upgrade`
-  - `pdm run pytest tests/unit/web/apps/classroom_planner/test_api.py tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py tests/unit/infrastructure/repositories/test_classroom_planner_review_fixes.py`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
-  - `pdm run python - <<'PY' ... PY`
-  - live proof passed with new roster/template and screenshots in `.artifacts/smart-assignment-st-27-01-proof/`
+  - live proof on `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via temporary repo Playwright script:
+    - grouping export surface is present and defaults to `Excel (.xlsx)`
+    - default grouping export creates a recoverable placeholder job
+    - reload recovery remains scoped to the active grouping draft
+    - seating still keeps `Affisch (A3)` as default and still exposes `Excel (.xlsx)`
+    - artifacts: `.artifacts/epic26-pr0139-host-check/`
+- 2026-03-26 PR-0140 grouping XLSX workbook + delivery:
+  - `pdm run pytest tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_grouping_xlsx_renderer.py tests/unit/application/apps/classroom_planner/test_grouping_export_jobs.py tests/unit/web/apps/classroom_planner/test_grouping_export_job_api.py`
+  - host proof on `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via temporary repo Playwright scripts later deleted:
+    - downloaded a real grouping `.xlsx` artifact from the host lane
+    - confirmed `Redigera grupper` is protected except for `Grupp (välj)` and `Gruppordning (välj)`
+    - confirmed changing only the student-group dropdown updates `Dela och exportera`
+    - confirmed changing only `Gruppordning (välj)` reorders the presentation groups
+    - confirmed group headings now keep a blank spacer row from the group above while staying visually attached to their own member list
+    - artifacts: `.artifacts/epic26-pr0140-registry-check/`, `.artifacts/epic26-pr0140-spacing-check/`
 
 ## How to Run
 
@@ -183,13 +169,9 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Next Steps
 
-- Start `PR-0143` next:
-  - build the teacher-facing seating workbook presentation on top of the new local XLSX job lane
-  - preserve `Affisch (A3)` as the default seating action while keeping `.xlsx` menu-only
-- After `PR-0143`, continue the locked grouping order:
-  - `PR-0139`
-  - `PR-0140`
-  - `PR-0141`
+- Start `PR-0141` next:
+  - keep the current grouping export hierarchy and shipped `xlsx` workbook shape intact
+  - replace only the grouping `pdf` placeholder path with the locked `A4` portrait presentation renderer and delivery flow
 - Continue `ST-27-01` from the delivered smart-toggle slice:
   - remove old student-planning runtime/persistence semantics fully
   - add new smart control persistence/contracts for `Support seat`, `Keep apart`, and `Keep near`

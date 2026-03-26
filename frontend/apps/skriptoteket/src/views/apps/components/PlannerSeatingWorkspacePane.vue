@@ -17,7 +17,7 @@ import { setSeatStyledStudentDragPreview } from "../roomSeatDragPreview";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
-import PlannerExportActionGroup from "./PlannerExportActionGroup.vue";
+import PlannerExportActionGroup, { type PlannerExportOptionValue } from "./PlannerExportActionGroup.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
@@ -213,6 +213,10 @@ function updateSmartEnabled(event: Event): void {
   plannerState.setDraftSmartEnabled(target.checked);
 }
 
+function handleExportOption(option: PlannerExportOptionValue): void {
+  emit("export-option", option as SeatingExportOption);
+}
+
 watch(
   () => props.selectedTemplateId,
   () => {
@@ -344,7 +348,7 @@ watch(
       <PlannerExportActionGroup
         :busy="exportBusy"
         @export-default="emit('export-default')"
-        @export-option="emit('export-option', $event)"
+        @export-option="handleExportOption"
       />
       <PlannerToolbarOverflowMenu
         label="Fler sittplatsåtgärder"

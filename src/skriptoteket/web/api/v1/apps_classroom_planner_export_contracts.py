@@ -1,9 +1,9 @@
-"""Web DTOs for Klassrumskartan seating export contracts.
+"""Web DTOs for Klassrumskartan export preparation contracts.
 
 Purpose:
-    Define the public request and response contract for seating export
-    preparation so the classroom-planner API can expose a typed artifact seam
-    without leaking application internals directly.
+    Define the public request and response contracts for seating and grouping
+    export preparation so the classroom-planner API can expose typed artifact
+    seams without leaking application internals directly.
 
 Relationships:
     - Serializes application export models from
@@ -19,9 +19,13 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
+    GroupingExportKind,
+    GroupingExportPaperSize,
+    GroupingExportPresentation,
     PosterSceneFixtureKind,
     PosterSceneFixtureVariant,
     PosterSceneWallSide,
+    PreparedGroupingExportContract,
     PreparedSeatingExportContract,
     SeatingExportKind,
     SeatingExportLayoutId,
@@ -99,6 +103,55 @@ class PreparedSeatingExportDto(BaseModel):
     poster_scene: SeatingPosterSceneDto
 
 
+class PrepareGroupingExportRequest(BaseModel):
+    """Deserialize a typed grouping export-preparation request."""
+
+    export_kind: GroupingExportKind
+    paper_size: GroupingExportPaperSize | None = None
+
+
+class GroupingPresentationMemberDto(BaseModel):
+    """Serialize one ordered member inside a grouping export contract."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    member_order: int
+    display_name: str
+
+
+class GroupingPresentationGroupDto(BaseModel):
+    """Serialize one teacher-facing group inside the shared presentation contract."""
+
+    model_config = ConfigDict(frozen=True)
+
+    group_label: str
+    group_order: int
+    members: list[GroupingPresentationMemberDto]
+
+
+class GroupingExportPresentationDto(BaseModel):
+    """Serialize the shared grouping presentation prepared for export."""
+
+    model_config = ConfigDict(frozen=True)
+
+    class_name: str
+    title: str
+    groups: list[GroupingPresentationGroupDto]
+    filename_stem: str
+
+
+class PreparedGroupingExportDto(BaseModel):
+    """Serialize the public grouping export contract."""
+
+    model_config = ConfigDict(frozen=True)
+
+    draft_id: UUID
+    draft_kind: str
+    export_kind: GroupingExportKind
+    paper_size: GroupingExportPaperSize | None = None
+    presentation: GroupingExportPresentationDto
+
+
 def serialize_prepared_seating_export(
     prepared_export: PreparedSeatingExportContract,
 ) -> PreparedSeatingExportDto:
@@ -116,6 +169,20 @@ def serialize_prepared_seating_export(
     )
 
 
+def serialize_prepared_grouping_export(
+    prepared_export: PreparedGroupingExportContract,
+) -> PreparedGroupingExportDto:
+    """Map an application grouping export contract to the public API DTO."""
+
+    return PreparedGroupingExportDto(
+        draft_id=prepared_export.grouping_draft_id,
+        draft_kind="grouping",
+        export_kind=prepared_export.export_kind,
+        paper_size=prepared_export.paper_size,
+        presentation=_serialize_grouping_presentation(prepared_export.presentation),
+    )
+
+
 def _serialize_poster_scene(scene: SeatingPosterScene) -> SeatingPosterSceneDto:
     """Serialize the prepared poster scene payload."""
 
@@ -123,4 +190,26 @@ def _serialize_poster_scene(scene: SeatingPosterScene) -> SeatingPosterSceneDto:
         room=PosterSceneRoomDto.model_validate(scene.room),
         seats=[PosterSceneSeatDto.model_validate(seat) for seat in scene.seats],
         fixtures=[PosterSceneFixtureDto.model_validate(fixture) for fixture in scene.fixtures],
+    )
+
+
+def _serialize_grouping_presentation(
+    presentation: GroupingExportPresentation,
+) -> GroupingExportPresentationDto:
+    """Serialize the shared grouping presentation payload."""
+
+    return GroupingExportPresentationDto(
+        class_name=presentation.class_name,
+        title=presentation.title,
+        groups=[
+            GroupingPresentationGroupDto(
+                group_label=group.group_label,
+                group_order=group.group_order,
+                members=[
+                    GroupingPresentationMemberDto.model_validate(member) for member in group.members
+                ],
+            )
+            for group in presentation.groups
+        ],
+        filename_stem=presentation.filename_stem,
     )

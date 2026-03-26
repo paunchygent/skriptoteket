@@ -16,7 +16,7 @@ import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
-import type { SeatingExportOption } from "../classroomPlannerExportApi";
+import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
 
 type PlannerView = "groups" | "seats";
@@ -28,6 +28,10 @@ const props = withDefaults(
     workspaceSummary?: ClassWorkspaceSummary | null;
     seatingLifecycleBusy?: boolean;
     seatingHistoryBusyDraftId?: string | null;
+    groupingExportBusy?: boolean;
+    groupingExportStatusLabel?: string | null;
+    groupingExportErrorMessage?: string | null;
+    canDownloadLatestGroupingExport?: boolean;
     seatingExportBusy?: boolean;
     seatingExportStatusLabel?: string | null;
     seatingExportErrorMessage?: string | null;
@@ -39,6 +43,10 @@ const props = withDefaults(
     workspaceSummary: null,
     seatingLifecycleBusy: false,
     seatingHistoryBusyDraftId: null,
+    groupingExportBusy: false,
+    groupingExportStatusLabel: null,
+    groupingExportErrorMessage: null,
+    canDownloadLatestGroupingExport: false,
     seatingExportBusy: false,
     seatingExportStatusLabel: null,
     seatingExportErrorMessage: null,
@@ -56,6 +64,9 @@ const emit = defineEmits<{
   (e: "delete-grouping-history-draft", draftId: string): void;
   (e: "open-seating-history-draft", draftId: string): void;
   (e: "delete-seating-history-draft", draftId: string): void;
+  (e: "export-grouping-default"): void;
+  (e: "export-grouping-option", option: GroupingExportOption): void;
+  (e: "download-latest-grouping-export"): void;
   (e: "export-seating-default"): void;
   (e: "export-seating-option", option: SeatingExportOption): void;
   (e: "download-latest-seating-export"): void;
@@ -296,11 +307,18 @@ watch(
       :selected-student-id="selectedStudentId"
       :available-templates="availableTemplates"
       :selected-template-id="pendingGroupingTemplateId"
+      :export-busy="groupingExportBusy"
+      :export-status-label="groupingExportStatusLabel"
+      :export-error-message="groupingExportErrorMessage"
+      :can-download-latest-export="canDownloadLatestGroupingExport"
       @new-grouping-draft="startNewGroupingDraft"
       @open-history="openGroupingHistoryDrawer"
       @edit-roster="emit('edit-roster')"
       @student-selected="selectStudent"
       @change-grouping-template="changeGroupingTemplate"
+      @export-default="emit('export-grouping-default')"
+      @export-option="emit('export-grouping-option', $event)"
+      @download-latest-export="emit('download-latest-grouping-export')"
     />
     <PlannerSeatingWorkspacePane
       v-if="currentView === 'seats'"
