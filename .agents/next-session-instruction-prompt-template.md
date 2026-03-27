@@ -92,7 +92,7 @@ Entry points:
 
 Start by reading:
 
-1) `.agents/readme-first.md`
+1) `AGENTS.md`
 2) `docs/index.md`
 3) `.agents/rules/000-rule-index.md`
-4) `AGENTS.md`
+4) `.agents/handoff.md`

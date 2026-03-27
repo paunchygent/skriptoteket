@@ -17,7 +17,6 @@ def _count_lines(*, path: Path) -> int:
 
 def main() -> int:
     budgets = [
-        Budget(path=Path(".agents/readme-first.md"), max_lines=300),
         Budget(path=Path(".agents/handoff.md"), max_lines=200),
     ]
 
@@ -44,7 +43,7 @@ def main() -> int:
         print(f"- {failure}")
     print(
         "\nHint: `.agents/handoff.md` should only keep last critical backend+frontend session + current/next session; "
-        "move completed stories to `.agents/readme-first.md` as links only.",
+        "move completed stories to docs/.",
     )
     return 1
 

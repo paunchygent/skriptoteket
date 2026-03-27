@@ -73,6 +73,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0151-klassrumskartan-roster-global-smart-rules-and-draft-local-arrangement-boundary-reset.md`
 - Planner session lanes + transition matrix remediation:
   `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
+- Shared planner export-flow composable cleanup:
+  `docs/backlog/prs/pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md`
 - Seating export checkpoint registry + history dedupe:
   `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - Conversion Hub local job boundary follow-up:
@@ -361,6 +363,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - `docs/backlog/prs/pr-0151-klassrumskartan-roster-global-smart-rules-and-draft-local-arrangement-boundary-reset.md`
 - `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
+- `docs/backlog/prs/pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
@@ -781,6 +784,6 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 ## Agent support
 
-- Start-here: `.agents/readme-first.md`
+- Start-here: `AGENTS.md`
 - Session handoff: `.agents/handoff.md`
 - Next-session prompt template: `.agents/next-session-instruction-prompt-template.md`
