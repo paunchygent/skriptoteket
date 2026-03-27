@@ -169,7 +169,7 @@ def build_normalized_seating_snapshot(
 def build_room_context_hash(*, room_context: SeatingRoomContextSnapshot) -> str:
     """Hash the normalized room context for checkpoint scoping."""
 
-    return _hash_payload(_room_context_payload(room_context=room_context))
+    return _hash_payload(_room_context_identity_payload(room_context=room_context))
 
 
 def build_assignment_hash(*, seating_snapshot: NormalizedSeatingSnapshot) -> str:
@@ -178,17 +178,37 @@ def build_assignment_hash(*, seating_snapshot: NormalizedSeatingSnapshot) -> str
     return _hash_payload(_seating_snapshot_payload(seating_snapshot=seating_snapshot))
 
 
-def _room_context_payload(*, room_context: SeatingRoomContextSnapshot) -> dict[str, object]:
+def _room_context_identity_payload(
+    *, room_context: SeatingRoomContextSnapshot
+) -> dict[str, object]:
     return {
         "grid_cols": room_context.grid_cols,
         "grid_rows": room_context.grid_rows,
-        "seats": [seat.model_dump(mode="json") for seat in room_context.seats],
+        "seats": [
+            {
+                "x": seat.x,
+                "y": seat.y,
+            }
+            for seat in sorted(room_context.seats, key=lambda seat: (seat.x, seat.y))
+        ],
         "fixtures": [
             {
-                **fixture.model_dump(mode="json"),
                 "type": fixture.type.value,
+                "x": fixture.x,
+                "y": fixture.y,
+                "width": fixture.width,
+                "height": fixture.height,
             }
-            for fixture in room_context.fixtures
+            for fixture in sorted(
+                room_context.fixtures,
+                key=lambda fixture: (
+                    fixture.type.value,
+                    fixture.x,
+                    fixture.y,
+                    fixture.width,
+                    fixture.height,
+                ),
+            )
         ],
     }
 

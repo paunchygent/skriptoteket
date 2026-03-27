@@ -45,7 +45,7 @@ Create a new smart-assignment package with:
 - a clean contract-reset story
 - an export-checkpoint history story
 - separate smart seating and smart grouping stories
-- a final explanation/alternate-option polish story
+- a final explanation/rerun-messaging polish story
 
 The package keeps the smart model intentionally small, deletes the older visible planner metadata
 semantics instead of mapping them forward, treats successful changed exports as the only eligible
@@ -66,7 +66,7 @@ re-coupling it through one shared save contract.
 | `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Frontend session shape and transition semantics | 6 min |
 | `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md` | Seating smart lane | 5 min |
 | `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md` | Grouping smart lane and seat-distance toggle | 5 min |
-| `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Explanation and follow-up UX | 4 min |
+| `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Explanation and rerun-messaging UX | 4 min |
 | `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Implementation-ready remediation design task | 6 min |
 
 **Total estimated time:** ~56 minutes
@@ -107,8 +107,7 @@ re-coupling it through one shared save contract.
 
 ### Suggestions (Optional)
 
-- Confirm whether `En smart variant till` should require assignment-hash distinctness only or an
-  even stronger notion of teacher-visible difference.
+- None.
 
 ### Decision Approvals
 
@@ -142,8 +141,8 @@ re-coupling it through one shared save contract.
   - history-enabled smart runs now block with a short message when no eligible
     checkpoints exist
   - checkpoint dedupe now defines canonical assignment-hash semantics
-  - `En smart variant till` now requires a distinct result or a short
-    no-further-variant message
+  - smart reruns now belong to the core `Slumpa` contract rather than to a
+    separate alternate-result control
 
 ## Suggested Approval Wording
 

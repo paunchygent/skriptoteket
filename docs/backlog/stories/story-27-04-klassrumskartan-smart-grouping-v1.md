@@ -10,6 +10,7 @@ dependencies: ["ST-27-01", "ST-27-02", "ST-27-06"]
 acceptance_criteria:
   - "Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`, then grouping remains the current random reshuffle behavior."
   - "Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then the planner requests a backend-owned smart grouping result that reuses the same relation model as smart seating."
+  - "Given the teacher reruns `Slumpa` in `Grupper` with `Smart` still `on`, when multiple good rule-respecting grouping candidates exist, then the backend prefers a materially different valid result over repeating the current assignment hash."
   - "Given the teacher authors `Keep apart` or `Keep near` in the shared class-wide smart surface, when they create one rule, then they can commit one visible cluster covering two or more students rather than being restricted to pair-only relations."
   - "Given one grouping `Keep apart` cluster exists, when smart grouping runs, then it tries to spread those students across different groups whenever possible and otherwise maximizes spread rather than failing hard."
   - "Given the teacher tries to place one student into multiple visible relationship clusters, when they attempt to commit the later grouping relation rule, then V1 blocks overlapping `Keep apart` / `Keep near` cluster membership."
@@ -33,6 +34,8 @@ understand and easier to turn off.
 - The seat-distance toggle is a mode-specific addition, not a new global planning panel.
 - The class-wide visual authoring model is shared, but seating-only teacher-distance rules must not
   be presented as grouping inputs.
+- Smart reruns should favor diversity among good candidates without becoming a teacher-facing
+  randomness setting.
 - `Keep apart` / `Keep near` are cluster rules for 2+ students in V1; overlapping visible
   relationship clusters are intentionally blocked rather than reconciled.
 - Grouping should stay understandable even when no usable seating checkpoints exist.

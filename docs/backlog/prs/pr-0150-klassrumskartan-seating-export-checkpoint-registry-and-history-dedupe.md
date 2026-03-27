@@ -2,7 +2,7 @@
 type: pr
 id: PR-0150
 title: "Klassrumskartan: seating export checkpoint registry and history dedupe"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
 updated: 2026-03-27
@@ -15,11 +15,11 @@ dependencies:
   - "PR-0146"
   - "PR-0151"
 acceptance_criteria:
-  - "Given a seating export completes successfully, when the exported seating state differs from the last eligible checkpoint for the same roster and room/template context, then one new seating checkpoint is recorded for smart-history use."
+  - "Given a seating export completes successfully, when the exported seating state differs from the last eligible checkpoint for the same roster and normalized room-context identity, then one new seating checkpoint is recorded for smart-history use."
   - "Given a teacher repeats a seating export without changing the normalized seating state, when the export succeeds again, then no duplicate checkpoint is created."
   - "Given the system computes the seating assignment hash, when students are seated or left unplaced, then the hash includes normalized placed assignments plus normalized unplaced students and excludes export presentation/layout details."
   - "Given draft autosave, undo/redo, or abandoned draft mechanics occur without a successful seating export, when history eligibility is evaluated, then those states are not recorded as seating checkpoints."
-  - "Given teacher-distance fairness later depends on room context, when checkpoint dedupe is evaluated, then the checkpoint identity includes room/template context rather than merging states from meaningfully different rooms."
+  - "Given teacher-distance fairness later depends on room context, when checkpoint dedupe is evaluated, then the checkpoint identity uses normalized room-context identity while preserving template provenance without forking identical geometry into separate history lanes because of copied template ids or non-geometric room metadata."
   - "Given roster-global smart rules already exist for the same class, when checkpoints are stored, then those checkpoints remain separate history artifacts and do not own, duplicate, or redefine the smart-rule set."
 ---
 
@@ -75,7 +75,7 @@ teacher-approved export history honestly:
    - Add a seating checkpoint model/value shape that stores:
      - roster identity
      - optional source-draft provenance only if needed for audit/debug
-     - template/room context
+     - normalized room-context identity plus template provenance
      - normalized seating snapshot
      - assignment hash
      - created/export timestamps
@@ -94,21 +94,33 @@ teacher-approved export history honestly:
 
 ## PR-sized execution checklist
 
-- [ ] Add/update unit tests for normalized seating assignment hashing
-- [ ] Add/update application tests for export-success checkpoint creation and dedupe
-- [ ] Add checkpoint domain/protocol/repository layers
-- [ ] Add ORM model + Alembic revision
-- [ ] Add migration schema assertion coverage
-- [ ] Wire seating export completion to checkpoint recording
-- [ ] Run verification and record it in `.agents/handoff.md`
+- [x] Add/update unit tests for normalized seating assignment hashing
+- [x] Add/update application tests for export-success checkpoint creation and dedupe
+- [x] Add checkpoint domain/protocol/repository layers
+- [x] Add ORM model + Alembic revision
+- [x] Add migration schema assertion coverage
+- [x] Wire seating export completion to checkpoint recording
+- [x] Run verification and record it in `.agents/handoff.md`
 
 ## Test plan
 
 - `pdm run pytest tests/unit/application/apps/classroom_planner/ -q`
 - `pdm run pytest tests/unit/infrastructure/repositories/ -q`
-- `pdm run pytest tests/integration/migration_schema_assertions.py -q`
-- `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[<new_revision_id>]' -q`
+- `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[3e8b5c1a7d4f]' -q`
 - `pdm run docs-validate`
+
+## Outcome
+
+- `main` already contained the checkpoint domain/persistence/migration/export-success hook for this
+  slice.
+- This close-out locked the intended geometry-based identity explicitly:
+  - normalized room-context identity defines the checkpoint lane
+  - template id remains stored provenance and does not split identical geometry into separate
+    history streams
+  - copied seat/fixture ids, seat zones, and fixture labels no longer fork checkpoint history when
+    the underlying room geometry/context is otherwise unchanged
+- Backend-only verification passed; no planner UI/route smoke was required because no UI behavior
+  changed in this close-out.
 
 ## Rollback plan
 

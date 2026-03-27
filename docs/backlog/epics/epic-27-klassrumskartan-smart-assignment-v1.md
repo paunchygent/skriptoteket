@@ -69,11 +69,11 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 ## Stories
 
 - [x] [ST-27-01: Smart-assignment contract reset and control model](../stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md)
-- [ ] [ST-27-02: Export checkpoints for smart history](../stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md)
+- [x] [ST-27-02: Export checkpoints for smart history](../stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md)
 - [x] [ST-27-06: Planner session lanes and transition matrix remediation](../stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md)
 - [ ] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
 - [ ] [ST-27-04: Smart grouping v1](../stories/story-27-04-klassrumskartan-smart-grouping-v1.md)
-- [ ] [ST-27-05: Smart explanations and alternate options](../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md)
+- [ ] [ST-27-05: Smart explanations and rerun messaging](../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md)
 
 ## Notes
 
@@ -105,5 +105,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
     roster smart-rule lane, one smart-rule UI bucket, and explicit transition policies
   - the route shell now uses explicit workspace/export/exit transition APIs, `clearWorkspace()`
     stays teardown-only, exit timeout returns confirm-discard, and late responses are ignored
-- ST-27-02 remains next and is tracked by PR-0150.
+- ST-27-02 is done:
+  - PR-0150 shipped the seating checkpoint registry, normalized assignment hashing, normalized
+    room-context dedupe, migration coverage, and export-success checkpoint wiring
+  - later smart seating/grouping stories still consume this checkpoint foundation rather than being
+    part of ST-27-02 itself
 - The frontend prerequisite for ST-27-03 and ST-27-04 is now satisfied by PR-0152.

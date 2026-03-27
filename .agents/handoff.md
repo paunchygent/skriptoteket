@@ -14,7 +14,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0151`, `PR-0152`, `PR-0153`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`
 
 ## Status
 
@@ -28,6 +28,9 @@ Keep this file updated so the next session can pick up work quickly.
   - upstream Sir Convert job ids stay internal
   - live proof on `http://127.0.0.1:5173` passed with the real `wait_seconds <= 20` constraint
 - Smart-assignment docs are approved and aligned across `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-06`, and `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`.
+- 2026-03-27 doc-scope refinement for the smart-assignment lane:
+  - rerun diversity now belongs to the core smart-run contract in `ADR-0074`, `ST-27-03`, `ST-27-04`, and `PR-0154`
+  - `ST-27-05` now covers explanation/rerun messaging only and no longer introduces a separate alternate-result button
 - `ST-27-01` is done:
   - `PR-0147` reset the seating smart-rule contract to `seating_preferences[].near_teacher`
   - `PR-0149` delivered the visible seating smart-rule toolbar and V1 interaction model
@@ -52,6 +55,10 @@ Keep this file updated so the next session can pick up work quickly.
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportFlow.ts` now owns the shared export state machine
   - `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.ts` is now 126 LoC
   - `frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.ts` is now 126 LoC
+- `PR-0150` is done:
+  - seating export checkpoints persist through a dedicated backend seam with normalized seating snapshots and room-context hashes
+  - unchanged exports dedupe by roster plus normalized room-context identity; template id is stored provenance, and copied seat/fixture ids, seat zones, and fixture labels do not fork identical room layouts into separate checkpoint lanes
+  - checkpoint recording remains wired only to successful seating export completion; draft handlers do not depend on the checkpoint write seam
 - Current frontend god-file hotspots after the export-flow cleanup:
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
   - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`
@@ -93,6 +100,16 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run fe-type-check`
   - `pdm run docs-validate`
   - live proof: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
+- 2026-03-27 `PR-0150` seating export checkpoints:
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/ -q`
+  - `pdm run pytest tests/unit/infrastructure/repositories/ -q`
+  - `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[3e8b5c1a7d4f]' -q`
+  - `pdm run docs-validate`
+  - note: `pdm run pytest tests/integration/migration_schema_assertions.py -q` currently collects `0` tests because that module is a schema-assertion registry used by the docker idempotency runner, not a standalone pytest file
+  - backend-only close-out; no planner UI/route smoke was required because no UI behavior changed in this session
+- 2026-03-27 smart-assignment docs scope refinement:
+  - `pdm run docs-validate`
+  - updated `ADR-0074`, `EPIC-27`, `REV-EPIC-27`, `ST-27-03`, `ST-27-04`, `ST-27-05`, `PR-0154`, and the decision memo so smart reruns prefer different good candidates on repeated `Slumpa` runs and `ST-27-05` no longer adds a separate alternate-result control
 
 ## How to Run
 ```bash
@@ -115,14 +132,13 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 - `pdm.lock` still has local, uncommitted follow-up changes after the `pdfplumber` runtime fix; do not lose or silently overwrite that diff.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
-  - `PR-0150` / `ST-27-02` remains next
-  - `ST-27-03` / `ST-27-04` should build on the shipped `PR-0152` session/lane split, not on older planner-wide save assumptions
+  - `ST-27-03` / `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry and the `PR-0152` session/lane split, not on older planner-wide save assumptions
 
 ## Next Steps
 
 - Continue the smart-assignment lane in the corrected order:
-  - execute `PR-0150` next for seating checkpoint registry + normalized assignment-hash dedupe under `ST-27-02`
-  - then continue with `ST-27-03` / `ST-27-04` on top of the shipped `PR-0152` session-controller + lane split
+  - continue with `ST-27-03` / `ST-27-04` on top of the shipped `PR-0150` checkpoint registry and `PR-0152` session-controller + lane split
+  - implement rerun diversity as part of the core smart-run contract; do not add a separate alternate-result button
   - keep relation rules as non-overlapping visible clusters in V1 and keep smart controls near workspace/top-panel surfaces; do not add a global smart-settings drawer
 - If cleanup continues before new feature work, start with:
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`

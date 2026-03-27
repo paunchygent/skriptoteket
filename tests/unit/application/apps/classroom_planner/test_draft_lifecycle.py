@@ -1,5 +1,6 @@
 """Behavior tests for classroom planner draft lifecycle handlers."""
 
+import inspect
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
@@ -81,6 +82,18 @@ def id_generator():
     mock = Mock(spec=IdGeneratorProtocol)
     mock.new_uuid.side_effect = lambda: uuid4()
     return mock
+
+
+def test_draft_handlers_do_not_depend_on_checkpoint_write_seam() -> None:
+    expected_params = {
+        UndoDraftHandler: {"uow", "drafts"},
+        RedoDraftHandler: {"uow", "drafts"},
+        AbandonDraftHandler: {"uow", "drafts", "clock"},
+        PatchDraftHandler: {"uow", "drafts", "rosters", "templates", "clock"},
+    }
+
+    for handler, expected in expected_params.items():
+        assert set(inspect.signature(handler).parameters) == expected
 
 
 @pytest.mark.asyncio

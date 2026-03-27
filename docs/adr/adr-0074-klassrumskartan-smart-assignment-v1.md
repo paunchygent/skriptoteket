@@ -169,7 +169,10 @@ separate three ownership lanes:
   - current seating/group arrangement state and bounded draft history
 - export-backed checkpoints:
   - roster-scoped seating checkpoints with assignment-hash deduplication
-  - room/template context needed for honest teacher-distance history
+  - normalized room-context identity plus stored template provenance for honest teacher-distance
+    history
+  - identical room geometry stays one checkpoint lane even when template ids differ or copied room
+    metadata changes
 
 Smart rules must not remain draft-owned as the end-state model.
 
@@ -241,16 +244,32 @@ For V1:
 These are strong objectives, but they remain best-effort when room shape, group count, or other
 teacher-authored rules make a perfect result impossible.
 
-### 9. Explanations stay short and teacher-facing
+### 9. Smart reruns prefer different good candidates when the search space allows it
+
+`Smart` assignment must not collapse into one visibly deterministic answer when several strong
+rule-respecting candidates exist.
+
+For V1:
+
+- the primary objective remains smart quality under the teacher-authored rules
+- rerun diversity is a secondary objective, not a reason to accept obviously weaker placements
+- repeated smart runs should prefer a materially different valid assignment from the current draft
+  arrangement when multiple good candidates exist
+- the backend may achieve this through randomized tie-breaking, multi-start search, or a soft
+  diversity penalty against the current assignment hash or another equivalent internal mechanism
+- this diversity policy is internal to the smart run and must not become a new teacher-facing
+  randomness control
+
+If the valid search space is genuinely narrow because the room, group count, or current rules leave
+little room for variation, the smart run may return another near-identical best result.
+
+### 10. Explanations stay short and teacher-facing
 
 The UI may show:
 
 - one concise result summary
 - a short list of teacher-language reasons
-- one low-emphasis follow-up action such as `En smart variant till`
-
-If `En smart variant till` cannot produce a materially different assignment, the UI should show a
-short no-further-variant message instead of repeating the same result as though it were new.
+- one short rerun-related message only when the valid search space is genuinely narrow
 
 The UI must not show:
 
@@ -324,6 +343,8 @@ reduced to a thin composition surface, not as another expansion of one umbrella 
 ### Tradeoffs / Risks
 
 - `Slumpa` semantics become mode + toggle dependent, so the UI copy must be especially clear.
+- Smart reruns need enough diversity pressure that teachers do not experience the smart path as
+  one frozen answer whenever several good alternatives exist.
 - The visual class-wide rule-authoring surface must stay fast and legible so toolbar state does not
   become confusing.
 - Grouping history remains partially dependent on seating checkpoints until grouping checkpoints

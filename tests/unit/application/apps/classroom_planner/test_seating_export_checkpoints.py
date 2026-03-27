@@ -183,3 +183,70 @@ def test_room_context_hash_changes_when_room_geometry_changes() -> None:
     )
 
     assert changed_hash != baseline_hash
+
+
+@pytest.mark.unit
+def test_room_context_hash_ignores_template_identity_and_non_geometry_metadata() -> None:
+    baseline = _workspace(
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-a")]
+    )
+    copied_template = _workspace(
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="copy-seat-a")],
+        seats=[
+            Seat(id="copy-seat-b", x=96, y=0, zone="back"),
+            Seat(id="copy-seat-a", x=0, y=0),
+        ],
+        fixtures=[
+            RoomFixture(
+                id="copy-board",
+                type=RoomFixtureType.WHITEBOARD,
+                x=0,
+                y=0,
+                width=3,
+                height=1,
+                label="Different label",
+            )
+        ],
+    )
+
+    baseline_hash = build_room_context_hash(
+        room_context=build_room_context_snapshot(workspace=baseline)
+    )
+    copied_template_hash = build_room_context_hash(
+        room_context=build_room_context_snapshot(workspace=copied_template)
+    )
+
+    assert baseline.template is not None
+    assert copied_template.template is not None
+    assert baseline.template.id != copied_template.template.id
+    assert copied_template_hash == baseline_hash
+
+
+@pytest.mark.unit
+def test_room_context_hash_changes_when_teaching_fixture_type_changes() -> None:
+    baseline = _workspace(
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-a")]
+    )
+    changed_fixture_type = _workspace(
+        seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-a")],
+        fixtures=[
+            RoomFixture(
+                id="board-copy",
+                type=RoomFixtureType.TEACHER_DESK,
+                x=0,
+                y=0,
+                width=3,
+                height=1,
+                label="Teacher desk",
+            )
+        ],
+    ).model_copy(update={"draft": baseline.draft, "roster": baseline.roster})
+
+    baseline_hash = build_room_context_hash(
+        room_context=build_room_context_snapshot(workspace=baseline)
+    )
+    changed_hash = build_room_context_hash(
+        room_context=build_room_context_snapshot(workspace=changed_fixture_type)
+    )
+
+    assert changed_hash != baseline_hash

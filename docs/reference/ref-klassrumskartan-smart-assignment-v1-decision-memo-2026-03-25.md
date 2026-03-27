@@ -63,6 +63,12 @@ explicit, and the current class-first workflow intact.
   "classroom-aware" label.
 - Keep `Närmare läraren` as a seating-only rule; grouping must not pretend teacher-distance is a
   shared cross-mode input.
+- Keep smart reruns on the same `Slumpa` action; do not introduce a separate alternate-result
+  button for rerunning the smart path.
+- When several strong rule-respecting candidates exist, repeated smart runs should prefer a
+  materially different valid result rather than collapsing onto the current assignment hash.
+- The backend may achieve that through randomized tie-breaking, multi-start search, or an internal
+  diversity penalty against the current assignment hash or another equivalent mechanism.
 - Treat relation rules as strong best-effort objectives rather than brittle hard requirements:
   - `Keep apart` in seating means no direct orthogonal adjacency when possible
   - `Keep near` in seating means same local vicinity rather than exact seat pairing
@@ -129,7 +135,7 @@ The approved planning package for this memo is:
 - `ST-27-02`: export checkpoints for smart history
 - `ST-27-03`: smart seating v1
 - `ST-27-04`: smart grouping v1
-- `ST-27-05`: smart explanations and alternate options
+- `ST-27-05`: smart explanations and rerun messaging
 - `ST-27-06`: planner session lanes and transition matrix remediation
 - `REV-EPIC-27`: required review package before implementation begins
 - `PR-0152`: implementation design task for the frontend session-lane remediation

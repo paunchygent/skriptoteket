@@ -240,3 +240,99 @@ async def test_complete_local_success_skips_checkpoint_when_latest_assignment_ha
     )
 
     checkpoints.create.assert_not_awaited()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_complete_local_success_keeps_geometry_based_identity_across_template_ids() -> None:
+    now = datetime(2026, 3, 27, tzinfo=timezone.utc)
+    job = _job()
+    checkpoints = AsyncMock(spec=SeatingExportCheckpointRepositoryProtocol)
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    jobs.update.side_effect = lambda *, job: job
+    vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
+    vault_file_id = uuid4()
+    vault_files.create.return_value = VaultFile(
+        id=vault_file_id,
+        user_id=job.owner_user_id,
+        name=job.output_filename,
+        bytes=4,
+        source_kind=VaultFileSourceKind.APP_EXPORT,
+        source_run_id=None,
+        source_artifact_id="classroom.group-seating-studio",
+        created_at=now,
+        deleted_at=None,
+    )
+    vault_usage = AsyncMock(spec=VaultUsageRepositoryProtocol)
+    vault_usage.get_for_update.return_value = VaultUsage(
+        user_id=job.owner_user_id,
+        bytes_total=0,
+        updated_at=now,
+    )
+    vault_storage = AsyncMock(spec=VaultStorageProtocol)
+    checkpoint = _checkpoint(
+        roster_id=job.roster_id,
+        template_id=job.template_id,
+        draft_id=job.draft_id,
+        export_job_id=job.id,
+        assignment_hash="hash-1",
+    )
+    checkpoints.get_latest_for_roster_and_room_context.return_value = checkpoint.model_copy(
+        update={
+            "template_id": uuid4(),
+            "source_export_job_id": uuid4(),
+        }
+    )
+
+    finalizer = SeatingExportJobFinalizer(
+        jobs=jobs,
+        checkpoints=checkpoints,
+        vault_files=vault_files,
+        vault_usage=vault_usage,
+        vault_storage=vault_storage,
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+        id_generator=_FixedIdGenerator(vault_file_id),
+        settings=_settings(),
+    )
+
+    await finalizer.complete_local_success(
+        job=job,
+        content=b"data",
+        checkpoint=checkpoint,
+        correlation_id="corr-3",
+    )
+
+    checkpoints.create.assert_not_awaited()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_mark_failed_does_not_create_checkpoint() -> None:
+    now = datetime(2026, 3, 27, tzinfo=timezone.utc)
+    job = _job()
+    checkpoints = AsyncMock(spec=SeatingExportCheckpointRepositoryProtocol)
+    jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
+    jobs.update.side_effect = lambda *, job: job
+
+    finalizer = SeatingExportJobFinalizer(
+        jobs=jobs,
+        checkpoints=checkpoints,
+        vault_files=AsyncMock(spec=VaultFileRepositoryProtocol),
+        vault_usage=AsyncMock(spec=VaultUsageRepositoryProtocol),
+        vault_storage=AsyncMock(spec=VaultStorageProtocol),
+        uow=_DummyUow(),
+        clock=_FixedClock(now),
+        id_generator=_FixedIdGenerator(uuid4()),
+        settings=_settings(),
+    )
+
+    result = await finalizer.mark_failed(
+        job=job,
+        error_message="kunde inte exportera",
+        correlation_id="corr-4",
+    )
+
+    assert result.status is SeatingExportJobStatus.FAILED
+    checkpoints.get_latest_for_roster_and_room_context.assert_not_awaited()
+    checkpoints.create.assert_not_awaited()
