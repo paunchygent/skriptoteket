@@ -26,14 +26,14 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     PlanDraftKind,
 )
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import validation_error
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
 
-from .workspace_builders import ensure_active_draft
+from .planner_context import load_hydrated_workspace_for_owner
 
 
 class PrepareSeatingExportHandler:
@@ -64,6 +64,21 @@ class PrepareSeatingExportHandler:
             draft_id=draft_id,
             owner_user_id=owner_user_id,
         )
+        return self.build_prepared_contract(
+            workspace=workspace,
+            export_kind=export_kind,
+            layout_id=layout_id,
+        )
+
+    def build_prepared_contract(
+        self,
+        *,
+        workspace: ClassroomPlannerWorkspace,
+        export_kind: SeatingExportKind,
+        layout_id: SeatingExportLayoutId,
+    ) -> PreparedSeatingExportContract:
+        """Build the typed seating export contract from a hydrated workspace."""
+
         if workspace.template is None:
             raise validation_error("Välj klassrum innan du exporterar sittschemat.")
 
@@ -84,31 +99,12 @@ class PrepareSeatingExportHandler:
         draft_id: UUID,
         owner_user_id: UUID,
     ) -> ClassroomPlannerWorkspace:
-        workspace = await self._drafts.get_workspace(draft_id=draft_id)
-        if workspace is None or workspace.draft.owner_user_id != owner_user_id:
-            raise not_found("PlanDraft", str(draft_id))
-        if workspace.draft.draft_kind != PlanDraftKind.SEATING:
-            raise validation_error("Endast sittscheman kan exporteras från den här exportvägen.")
-
-        ensure_active_draft(draft=workspace.draft)
-
-        roster = await self._rosters.get_by_id(roster_id=workspace.draft.roster_id)
-        if roster is None or roster.owner_user_id != owner_user_id:
-            raise not_found("Roster", str(workspace.draft.roster_id))
-
-        template = None
-        if workspace.draft.template_id is not None:
-            template = await self._templates.get_by_id(template_id=workspace.draft.template_id)
-            if template is None or template.owner_user_id != owner_user_id:
-                raise not_found("RoomTemplate", str(workspace.draft.template_id))
-
-        return ClassroomPlannerWorkspace(
-            draft=workspace.draft,
-            roster=roster,
-            template=template,
-            groups=workspace.groups,
-            group_assignments=workspace.group_assignments,
-            seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
-            history_status=workspace.history_status,
+        return await load_hydrated_workspace_for_owner(
+            drafts=self._drafts,
+            rosters=self._rosters,
+            templates=self._templates,
+            owner_user_id=owner_user_id,
+            draft_id=draft_id,
+            expected_draft_kind=PlanDraftKind.SEATING,
+            wrong_kind_message="Endast sittscheman kan exporteras från den här exportvägen.",
         )

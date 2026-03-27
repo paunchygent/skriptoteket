@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from pathlib import Path
 
-import httpx
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,11 +33,13 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetResumableDraftHandler,
     GetRoomTemplateHandler,
     GetRosterHandler,
+    GetRosterSmartRulesHandler,
     GetSeatingExportJobHandler,
     GroupingExportJobFinalizer,
     ListRoomTemplatesHandler,
     ListRostersHandler,
     PatchDraftHandler,
+    PatchRosterSmartRulesHandler,
     PrepareGroupingExportHandler,
     PrepareSeatingExportHandler,
     RedoDraftHandler,
@@ -53,6 +54,11 @@ from skriptoteket.application.curated_apps.classroom_planner.handlers.imports im
 )
 from skriptoteket.application.curated_apps.flunk_out_frenzy import (
     GetFlunkOutFrenzyBootstrapHandler,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
+    CreateConversionHubJobsHandler,
+    DownloadConversionHubArtifactHandler,
+    GetConversionHubJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_defaults import (
     ReagentPrepChefGetDefaultsHandler,
@@ -110,6 +116,7 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xls
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
+    build_sir_convert_async_http_client,
 )
 from skriptoteket.infrastructure.curated_apps.apps.reagent_prep_chef import (
     hazards_store as reagent_prep_chef_hazards_store,
@@ -140,10 +147,21 @@ from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs impo
 from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_jobs import (
     PostgreSQLGroupingExportJobRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_seating_export_checkpoints import (
+    PostgreSQLSeatingExportCheckpointRepository,
+)
+from skriptoteket.infrastructure.repositories.classroom_planner_smart_rules import (
+    PostgreSQLRosterSmartRuleRepository,
+)
+from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
+    PostgreSQLConversionHubJobRepository,
+)
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
+    RosterSmartRuleRepositoryProtocol,
+    SeatingExportCheckpointRepositoryProtocol,
 )
 from skriptoteket.protocols.classroom_planner_exports import (
     GroupingExportJobRepositoryProtocol,
@@ -159,6 +177,7 @@ from skriptoteket.protocols.classroom_planner_imports import (
     DocumentTextExtractorProtocol,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -204,6 +223,7 @@ class CuratedAppsProvider(Provider):
             base_url=settings.SIR_CONVERT_A_LOT_V2_BASE_URL,
             api_key=settings.SIR_CONVERT_A_LOT_V2_API_KEY,
             timeout_seconds=settings.SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS,
+            unix_socket_path=settings.SIR_CONVERT_A_LOT_V2_UNIX_SOCKET_PATH or None,
             class_list_import_pdf_backend_strategy=(
                 settings.SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY
             ),
@@ -219,10 +239,7 @@ class CuratedAppsProvider(Provider):
         # Do not expose a bare `httpx.AsyncClient` in DI here: the app has other
         # async clients (for example OpenAI) and collisions would break relative
         # URL requests to Sir Convert-a-Lot v2.
-        http_client = httpx.AsyncClient(
-            base_url=settings.base_url,
-            timeout=settings.timeout_seconds,
-        )
+        http_client = build_sir_convert_async_http_client(settings=settings)
         try:
             yield SirConvertALotClientV2(settings=settings, client=http_client)
         finally:
@@ -695,6 +712,7 @@ class CuratedAppsProvider(Provider):
     def seating_export_job_finalizer(
         self,
         jobs: SeatingExportJobRepositoryProtocol,
+        checkpoints: SeatingExportCheckpointRepositoryProtocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -705,6 +723,7 @@ class CuratedAppsProvider(Provider):
     ) -> SeatingExportJobFinalizer:
         return SeatingExportJobFinalizer(
             jobs=jobs,
+            checkpoints=checkpoints,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,
@@ -877,6 +896,14 @@ class CuratedAppsProvider(Provider):
         return GetDraftWorkspaceHandler(drafts=drafts, rosters=rosters, templates=templates)
 
     @provide(scope=Scope.REQUEST)
+    def get_roster_smart_rules_handler(
+        self,
+        rosters: RosterRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
+    ) -> GetRosterSmartRulesHandler:
+        return GetRosterSmartRulesHandler(rosters=rosters, smart_rules=smart_rules)
+
+    @provide(scope=Scope.REQUEST)
     def patch_draft_handler(
         self,
         uow: UnitOfWorkProtocol,
@@ -894,12 +921,31 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def patch_roster_smart_rules_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        rosters: RosterRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
+    ) -> PatchRosterSmartRulesHandler:
+        return PatchRosterSmartRulesHandler(
+            uow=uow,
+            rosters=rosters,
+            smart_rules=smart_rules,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def plan_draft_repository(self, session: AsyncSession) -> PlanDraftRepositoryProtocol:
         return PostgreSQLPlanDraftRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
     def roster_repository(self, session: AsyncSession) -> RosterRepositoryProtocol:
         return PostgreSQLRosterRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def roster_smart_rule_repository(
+        self, session: AsyncSession
+    ) -> RosterSmartRuleRepositoryProtocol:
+        return PostgreSQLRosterSmartRuleRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
     def room_template_repository(self, session: AsyncSession) -> RoomTemplateRepositoryProtocol:
@@ -912,10 +958,22 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLSeatingExportJobRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def seating_export_checkpoint_repository(
+        self, session: AsyncSession
+    ) -> SeatingExportCheckpointRepositoryProtocol:
+        return PostgreSQLSeatingExportCheckpointRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
     def grouping_export_job_repository(
         self, session: AsyncSession
     ) -> GroupingExportJobRepositoryProtocol:
         return PostgreSQLGroupingExportJobRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def conversion_hub_job_repository(
+        self, session: AsyncSession
+    ) -> ConversionHubJobRepositoryProtocol:
+        return PostgreSQLConversionHubJobRepository(session=session)
 
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
@@ -957,3 +1015,50 @@ class CuratedAppsProvider(Provider):
         parser: ClassListHeuristicParserProtocol,
     ) -> CreateClassListImportPreviewHandler:
         return CreateClassListImportPreviewHandler(extractor=extractor, parser=parser)
+
+    @provide(scope=Scope.REQUEST)
+    def create_conversion_hub_jobs_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateConversionHubJobsHandler:
+        return CreateConversionHubJobsHandler(
+            jobs=jobs,
+            client=client,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_conversion_hub_job_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> GetConversionHubJobHandler:
+        return GetConversionHubJobHandler(
+            jobs=jobs,
+            client=client,
+            uow=uow,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def download_conversion_hub_artifact_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        client: SirConvertALotClientV2Protocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> DownloadConversionHubArtifactHandler:
+        return DownloadConversionHubArtifactHandler(
+            jobs=jobs,
+            client=client,
+            uow=uow,
+            clock=clock,
+        )

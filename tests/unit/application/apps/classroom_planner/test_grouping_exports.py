@@ -22,6 +22,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
+    RoomTemplate,
     Roster,
     Student,
 )
@@ -48,14 +49,14 @@ def templates():
     return AsyncMock(spec=RoomTemplateRepositoryProtocol)
 
 
-def _build_active_grouping_draft(*, owner_user_id, roster_id) -> PlanDraft:
+def _build_active_grouping_draft(*, owner_user_id, roster_id, template_id=None) -> PlanDraft:
     now = datetime.now(timezone.utc)
     return PlanDraft(
         id=uuid4(),
         owner_user_id=owner_user_id,
         roster_id=roster_id,
         draft_kind=PlanDraftKind.GROUPING,
-        template_id=None,
+        template_id=template_id,
         status=PlanDraftStatus.ACTIVE,
         revision=2,
         last_opened_at=now,
@@ -75,6 +76,21 @@ def _build_roster(*, owner_user_id, roster_id) -> Roster:
             Student(id="student-1", display_name="Ada Lovelace"),
             Student(id="student-3", display_name="Linus Torvalds"),
         ],
+        created_at=now,
+        updated_at=now,
+    )
+
+
+def _build_template(*, owner_user_id, template_id) -> RoomTemplate:
+    now = datetime.now(timezone.utc)
+    return RoomTemplate(
+        id=template_id,
+        owner_user_id=owner_user_id,
+        name="Sal A",
+        grid_cols=10,
+        grid_rows=8,
+        seats=[],
+        fixtures=[],
         created_at=now,
         updated_at=now,
     )
@@ -118,6 +134,40 @@ async def test_prepare_grouping_export_returns_ordered_presentation(drafts, rost
     assert [member.display_name for member in result.presentation.groups[1].members] == [
         "Ada Lovelace"
     ]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_prepare_grouping_export_hydrates_template_from_draft_context(
+    drafts,
+    rosters,
+    templates,
+):
+    owner_user_id = uuid4()
+    roster_id = uuid4()
+    template_id = uuid4()
+    draft = _build_active_grouping_draft(
+        owner_user_id=owner_user_id,
+        roster_id=roster_id,
+        template_id=template_id,
+    )
+    drafts.get_workspace.return_value = DraftWorkspace(draft=draft)
+    rosters.get_by_id.return_value = _build_roster(owner_user_id=owner_user_id, roster_id=roster_id)
+    templates.get_by_id.return_value = _build_template(
+        owner_user_id=owner_user_id,
+        template_id=template_id,
+    )
+    handler = PrepareGroupingExportHandler(drafts=drafts, rosters=rosters, templates=templates)
+
+    result = await handler.handle(
+        draft_id=draft.id,
+        owner_user_id=owner_user_id,
+        export_kind=GroupingExportKind.XLSX,
+        paper_size=None,
+    )
+
+    assert result.grouping_draft_id == draft.id
+    templates.get_by_id.assert_awaited_once_with(template_id=template_id)
 
 
 @pytest.mark.unit

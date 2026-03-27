@@ -183,7 +183,19 @@ async def test_create_seating_pdf_job_renders_locally_and_completes_successfully
     now = datetime(2026, 3, 26, tzinfo=timezone.utc)
     job_id = uuid4()
     prepare = AsyncMock(spec=PrepareSeatingExportHandler)
-    prepare.handle.return_value = _prepared_contract()
+    workspace = _workspace(owner_user_id=actor.id)
+    prepare.load_workspace.return_value = workspace
+    assert workspace.template is not None
+    template = workspace.template
+    prepare.build_prepared_contract.return_value = _prepared_contract().model_copy(
+        update={
+            "seating_draft_id": workspace.draft.id,
+            "roster_id": workspace.roster.id,
+            "template_id": template.id,
+            "template_name": template.name,
+            "roster_name": workspace.roster.name,
+        }
+    )
     jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
     jobs.create.side_effect = lambda *, job: job
     pdf_renderer = MagicMock(spec=SeatingPdfRendererProtocol)
@@ -200,7 +212,7 @@ async def test_create_seating_pdf_job_renders_locally_and_completes_successfully
     xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
     finalizer.complete_local_success.side_effect = (
-        lambda *, job, content, filename, correlation_id: job.model_copy(
+        lambda *, job, content, checkpoint, filename, correlation_id: job.model_copy(
             update={
                 "status": SeatingExportJobStatus.SUCCEEDED,
                 "vault_file_id": uuid4(),
@@ -239,6 +251,9 @@ async def test_create_seating_pdf_job_renders_locally_and_completes_successfully
     pdf_renderer.render.assert_called_once()
     xlsx_renderer.render.assert_not_called()
     finalizer.complete_local_success.assert_awaited_once()
+    checkpoint = finalizer.complete_local_success.await_args.kwargs["checkpoint"]
+    assert checkpoint.roster_id == workspace.roster.id
+    assert checkpoint.template_id == template.id
     assert result.download_url is None
 
 
@@ -248,7 +263,19 @@ async def test_create_seating_pdf_job_marks_job_failed_when_local_rendering_cras
     actor = make_user()
     now = datetime(2026, 3, 26, tzinfo=timezone.utc)
     prepare = AsyncMock(spec=PrepareSeatingExportHandler)
-    prepare.handle.return_value = _prepared_contract()
+    workspace = _workspace(owner_user_id=actor.id)
+    prepare.load_workspace.return_value = workspace
+    assert workspace.template is not None
+    template = workspace.template
+    prepare.build_prepared_contract.return_value = _prepared_contract().model_copy(
+        update={
+            "seating_draft_id": workspace.draft.id,
+            "roster_id": workspace.roster.id,
+            "template_id": template.id,
+            "template_name": template.name,
+            "roster_name": workspace.roster.name,
+        }
+    )
     jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
     jobs.create.side_effect = lambda *, job: job
     pdf_renderer = MagicMock(spec=SeatingPdfRendererProtocol)
@@ -298,20 +325,26 @@ async def test_create_seating_xlsx_job_keeps_local_export_flow():
     actor = make_user()
     now = datetime(2026, 3, 26, tzinfo=timezone.utc)
     prepare = AsyncMock(spec=PrepareSeatingExportHandler)
-    prepare.load_workspace.return_value = _workspace(owner_user_id=actor.id)
+    workspace = _workspace(owner_user_id=actor.id)
+    prepare.load_workspace.return_value = workspace
+    assert workspace.template is not None
+    template = workspace.template
     jobs = AsyncMock(spec=SeatingExportJobRepositoryProtocol)
     jobs.create.side_effect = lambda *, job: job
     xlsx_renderer = MagicMock(spec=SeatingXlsxRendererProtocol)
     xlsx_renderer.render.return_value = b"PK\x03\x04"
     finalizer = AsyncMock(spec=SeatingExportJobFinalizer)
-    finalizer.complete_local_success.side_effect = lambda *, job, content, correlation_id: (
-        job.model_copy(
+
+    def _complete_local_success(*, job, content, checkpoint, correlation_id):
+        del content, checkpoint, correlation_id
+        return job.model_copy(
             update={
                 "status": SeatingExportJobStatus.SUCCEEDED,
                 "vault_file_id": uuid4(),
             }
         )
-    )
+
+    finalizer.complete_local_success.side_effect = _complete_local_success
     vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
     vault_files.get_by_id.return_value = VaultFile(
         id=uuid4(),
@@ -350,6 +383,10 @@ async def test_create_seating_xlsx_job_keeps_local_export_flow():
     assert result.export_kind is SeatingExportKind.XLSX
     xlsx_renderer.render.assert_called_once()
     finalizer.complete_local_success.assert_awaited_once()
+    checkpoint = finalizer.complete_local_success.await_args.kwargs["checkpoint"]
+    assert checkpoint.assignment_hash
+    assert checkpoint.roster_id == workspace.roster.id
+    assert checkpoint.template_id == template.id
 
 
 @pytest.mark.unit

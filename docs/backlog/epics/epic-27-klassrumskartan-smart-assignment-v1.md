@@ -5,6 +5,7 @@ title: "Klassrumskartan smart assignment v1"
 status: active
 owners: "agents"
 created: 2026-03-25
+updated: 2026-03-27
 outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a class-wide workspace surface, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
@@ -64,7 +65,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 
 ## Stories
 
-- [ ] [ST-27-01: Smart-assignment contract reset and control model](../stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md)
+- [x] [ST-27-01: Smart-assignment contract reset and control model](../stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md)
 - [ ] [ST-27-02: Export checkpoints for smart history](../stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md)
 - [ ] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
 - [ ] [ST-27-04: Smart grouping v1](../stories/story-27-04-klassrumskartan-smart-grouping-v1.md)
@@ -85,3 +86,11 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - The first grouping-history source may be seating checkpoints before grouping export checkpoints
   exist later under the export lane.
 - A review doc must approve this package before implementation begins.
+
+## Implementation Summary (as of 2026-03-27)
+
+- ST-27-01 is done:
+  - PR-0147 reset the seating-only smart-rule contract
+  - PR-0149 delivered the seating smart-rule authoring surface and visible V1 interaction model
+  - PR-0151 completed the roster-owned smart-rule boundary, concurrency/autosave/hydration hardening, forward repair migration, Docker dev auto-upgrade path, and approved implementation review
+- ST-27-02 remains next and is tracked by PR-0150.

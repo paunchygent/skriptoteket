@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
 import { useClassroomState } from "./useClassroomState";
+import type { RosterSmartRulesResponse } from "./classroomPlannerTypes";
 
 const clientMocks = vi.hoisted(() => ({
   apiDelete: vi.fn(),
@@ -84,10 +85,33 @@ function createWorkspaceResponse(
     group_assignments: [],
     seat_assignments: [],
     student_planning_meta: [],
-    seating_preferences: [],
-    relationship_rules: [],
     history_status: historyStatus,
   };
+}
+
+function createSmartRulesResponse(): RosterSmartRulesResponse {
+  return {
+    roster_id: "roster-1",
+    revision: 0,
+    seating_preferences: [],
+    relationship_rules: [],
+  };
+}
+
+function createDeferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((innerResolve) => {
+    resolve = innerResolve;
+  });
+  return { promise, resolve };
+}
+
+function mockWorkspaceLoad(
+  workspace = createWorkspaceResponse(),
+  smartRules = createSmartRulesResponse(),
+): void {
+  clientMocks.apiGet.mockResolvedValueOnce(workspace);
+  clientMocks.apiGet.mockResolvedValueOnce(smartRules);
 }
 
 function seedWorkspace() {
@@ -117,6 +141,8 @@ function seedWorkspace() {
   state.groupAssignmentsByStudentId = {};
   state.seatAssignmentsByStudentId = {};
   state.studentPlanningMetaByStudentId = {};
+  state.smartRulesRevision = 0;
+  state.smartRulesHydrated = true;
   return state;
 }
 
@@ -404,10 +430,301 @@ describe("useClassroomState", () => {
     expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Behöver lugn plats");
   });
 
+  it("tracks the active seating smart tool and clears pending relation selections on tool change", () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+    };
+
+    state.setActiveSeatingSmartTool("keep_apart");
+    state.handleSeatingSmartToolStudentSelection("s1");
+    state.handleSeatingSmartToolStudentSelection("s2");
+
+    expect(state.activeSeatingSmartTool).toBe("keep_apart");
+    expect(state.pendingRelationshipStudentIds).toEqual(["s1", "s2"]);
+
+    state.setActiveSeatingSmartTool("keep_near");
+
+    expect(state.activeSeatingSmartTool).toBe("keep_near");
+    expect(state.pendingRelationshipStudentIds).toEqual([]);
+  });
+
+  it("toggles near-teacher seating preferences immediately from the active smart tool", () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+    };
+
+    state.setActiveSeatingSmartTool("near_teacher");
+
+    expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
+    expect(state.seatingPreferences).toEqual([
+      {
+        student_id: "s1",
+        near_teacher: true,
+      },
+    ]);
+    expect(state.hasPendingAutosave).toBe(true);
+
+    state.cancelPendingSave();
+    expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
+    expect(state.seatingPreferences).toEqual([]);
+  });
+
+  it("creates one visible relation cluster from a temporary smart-rule selection", () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+    };
+
+    state.setActiveSeatingSmartTool("keep_apart");
+    state.handleSeatingSmartToolStudentSelection("s1");
+    state.handleSeatingSmartToolStudentSelection("s2");
+    state.handleSeatingSmartToolStudentSelection("s3");
+
+    expect(state.canCommitPendingRelationshipRule).toBe(true);
+    expect(state.commitPendingRelationshipRule()).toBe(true);
+
+    expect(state.activeSeatingSmartTool).toBe("keep_apart");
+    expect(state.pendingRelationshipStudentIds).toEqual([]);
+    expect(state.relationshipRules).toEqual([
+      expect.objectContaining({
+        kind: "keep_apart",
+        student_ids: ["s1", "s2", "s3"],
+      }),
+    ]);
+    expect(state.hasPendingAutosave).toBe(true);
+  });
+
+  it("blocks overlapping relation clusters with a teacher-facing explanation", () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+    };
+    state.relationshipRules = [
+      {
+        id: "rule-1",
+        kind: "keep_apart",
+        student_ids: ["s1", "s2"],
+      },
+    ];
+
+    state.setActiveSeatingSmartTool("keep_near");
+    state.handleSeatingSmartToolStudentSelection("s1");
+    state.handleSeatingSmartToolStudentSelection("s3");
+
+    expect(state.commitPendingRelationshipRule()).toBe(false);
+    expect(state.relationshipRules).toHaveLength(1);
+    expect(state.smartRuleFeedbackMessage).toBe(
+      "En elev kan bara ingå i en relationsregel åt gången.",
+    );
+  });
+
+  it("keeps the active smart tool selected after autosave reconciliation", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+    };
+    clientMocks.apiPatch.mockResolvedValue({
+      ...createSmartRulesResponse(),
+      relationship_rules: [
+        {
+          id: "rule-1",
+          kind: "keep_apart",
+          student_ids: ["s1", "s2"],
+        },
+      ],
+    });
+
+    state.setActiveSeatingSmartTool("keep_apart");
+    state.handleSeatingSmartToolStudentSelection("s1");
+    state.handleSeatingSmartToolStudentSelection("s2");
+    expect(state.commitPendingRelationshipRule()).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
+    expect(clientMocks.apiPatch).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+      {
+        expected_revision: 0,
+        seating_preferences: [],
+        relationship_rules: [
+          expect.objectContaining({
+            kind: "keep_apart",
+            student_ids: ["s1", "s2"],
+          }),
+        ],
+      },
+    );
+    expect(state.activeSeatingSmartTool).toBe("keep_apart");
+  });
+
+  it("does not delete a relationship rule while the workspace is busy", async () => {
+    const state = seedWorkspace();
+    state.relationshipRules = [
+      {
+        id: "rule-1",
+        kind: "keep_apart",
+        student_ids: ["s1", "s2"],
+      },
+    ];
+    let resolveWorkspace!: (value: ReturnType<typeof createWorkspaceResponse>) => void;
+    clientMocks.apiGet.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveWorkspace = resolve;
+        }),
+    );
+    clientMocks.apiGet.mockResolvedValueOnce(createSmartRulesResponse());
+
+    const loadPromise = state.loadWorkspace("draft-1");
+
+    expect(state.isWorkspaceBusy).toBe(true);
+    state.deleteRelationshipRule("rule-1");
+
+    expect(state.relationshipRules).toEqual([
+      {
+        id: "rule-1",
+        kind: "keep_apart",
+        student_ids: ["s1", "s2"],
+      },
+    ]);
+
+    resolveWorkspace(createWorkspaceResponse("template-1", "seating"));
+    await loadPromise;
+  });
+
+  it("loads roster smart rules separately from the draft workspace contract", async () => {
+    const state = useClassroomState();
+    mockWorkspaceLoad(
+      createWorkspaceResponse(),
+      {
+        ...createSmartRulesResponse(),
+        seating_preferences: [{ student_id: "s2", near_teacher: true }],
+        relationship_rules: [
+          {
+            id: "rule-1",
+            kind: "keep_near",
+            student_ids: ["s1", "s3"],
+          },
+        ],
+      },
+    );
+
+    await state.loadWorkspace("draft-1");
+
+    expect(clientMocks.apiGet).toHaveBeenNthCalledWith(
+      1,
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1/workspace",
+    );
+    expect(clientMocks.apiGet).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+    );
+    expect(state.seatingPreferences).toEqual([{ student_id: "s2", near_teacher: true }]);
+    expect(state.relationshipRules).toEqual([
+      {
+        id: "rule-1",
+        kind: "keep_near",
+        student_ids: ["s1", "s3"],
+      },
+    ]);
+    expect(state.smartRulesRevision).toBe(0);
+    expect(state.smartRulesHydrated).toBe(true);
+  });
+
+  it("clears stale smart rules and disables authoring when the follow-up smart-rule load fails", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    state.seatingPreferences = [{ student_id: "s1", near_teacher: true }];
+    state.relationshipRules = [{ id: "rule-old", kind: "keep_apart", student_ids: ["s1", "s2"] }];
+    state.smartRulesRevision = 5;
+    const workspace = createWorkspaceResponse();
+    workspace.roster = {
+      id: "roster-2",
+      name: "Klass 9B",
+      students: workspace.roster.students,
+    };
+    clientMocks.apiGet.mockResolvedValueOnce(workspace);
+    clientMocks.apiGet.mockRejectedValueOnce(new Error("Kunde inte ladda smarta regler."));
+
+    await state.loadWorkspace("draft-2");
+
+    expect(clientMocks.apiGet).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-2/smart-rules",
+    );
+    expect(state.roster?.id).toBe("roster-2");
+    expect(state.seatingPreferences).toEqual([]);
+    expect(state.relationshipRules).toEqual([]);
+    expect(state.smartRulesRevision).toBe(0);
+    expect(state.smartRulesHydrated).toBe(false);
+    expect(state.canEditSeatingSmartRules).toBe(false);
+    expect(state.saveStatus).toBe("error");
+  });
+
+  it("ignores a late workspace load after the workspace has been cleared", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    const workspaceDeferred = createDeferred<ReturnType<typeof createWorkspaceResponse>>();
+    clientMocks.apiGet.mockReturnValueOnce(workspaceDeferred.promise);
+
+    const loadPromise = state.loadWorkspace("draft-2");
+
+    state.clearWorkspace();
+    workspaceDeferred.resolve(createWorkspaceResponse());
+    await loadPromise;
+
+    expect(state.draft).toBeNull();
+    expect(state.roster).toBeNull();
+    expect(state.template).toBeNull();
+    expect(clientMocks.apiGet).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets teachers author smart rules even when draft-level smart mode is off", () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+      smart_enabled: false,
+    };
+
+    state.setActiveSeatingSmartTool("near_teacher");
+
+    expect(state.activeSeatingSmartTool).toBe("near_teacher");
+    expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
+    expect(state.seatingPreferences).toEqual([{ student_id: "s1", near_teacher: true }]);
+  });
+
+  it("does not let a late autosave response repopulate cleared workspace state", async () => {
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    const draftPatchDeferred = createDeferred<ReturnType<typeof createWorkspaceResponse>>();
+    clientMocks.apiPatch.mockReturnValueOnce(draftPatchDeferred.promise);
+    vi.useFakeTimers();
+
+    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "Needs support" });
+    await vi.advanceTimersByTimeAsync(900);
+    await Promise.resolve();
+    state.clearWorkspace();
+
+    draftPatchDeferred.resolve(createWorkspaceResponse());
+    await Promise.resolve();
+    await vi.runAllTimersAsync();
+    await Promise.resolve();
+
+    expect(state.draft).toBeNull();
+    expect(state.roster).toBeNull();
+    expect(state.template).toBeNull();
+    expect(state.saveStatus).toBe("idle");
+    expect(state.saveMessage).toBeNull();
+  });
+
   it("resolves drafts without legacy lesson-mode payload fields", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft());
-    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse());
+    mockWorkspaceLoad(createWorkspaceResponse());
 
     await state.resolveDraft("roster-1", "template-1");
 
@@ -425,7 +742,7 @@ describe("useClassroomState", () => {
   it("keeps seating workspaces alive even before a classroom has been selected", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft(null));
-    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse(null));
+    mockWorkspaceLoad(createWorkspaceResponse(null));
 
     await state.resolveDraft("roster-1", null);
 
@@ -444,7 +761,7 @@ describe("useClassroomState", () => {
   it("starts a brand-new blank grouping draft through the dedicated lifecycle endpoint", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "grouping"));
-    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "grouping"));
+    mockWorkspaceLoad(createWorkspaceResponse("template-1", "grouping"));
 
     await state.startNewGroupingDraft("roster-1", "template-1");
 
@@ -462,7 +779,7 @@ describe("useClassroomState", () => {
   it("starts a brand-new seating draft through the dedicated lifecycle endpoint", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "seating"));
-    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "seating"));
+    mockWorkspaceLoad(createWorkspaceResponse("template-1", "seating"));
 
     await state.startNewSeatingDraft("roster-1", "template-1");
 
@@ -480,7 +797,7 @@ describe("useClassroomState", () => {
   it("activates a historical grouping draft through the dedicated lifecycle endpoint", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "grouping"));
-    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "grouping"));
+    mockWorkspaceLoad(createWorkspaceResponse("template-1", "grouping"));
 
     await state.activateGroupingHistoryDraft("draft-history-1");
 
@@ -508,7 +825,7 @@ describe("useClassroomState", () => {
   it("activates a historical seating draft through the dedicated lifecycle endpoint", async () => {
     const state = useClassroomState();
     clientMocks.apiPost.mockResolvedValue(createDraft("template-1", "seating"));
-    clientMocks.apiGet.mockResolvedValue(createWorkspaceResponse("template-1", "seating"));
+    mockWorkspaceLoad(createWorkspaceResponse("template-1", "seating"));
 
     await state.activateSeatingHistoryDraft("draft-history-2");
 
@@ -535,7 +852,7 @@ describe("useClassroomState", () => {
 
   it("hydrates undo and redo availability from the backend workspace contract", async () => {
     const state = useClassroomState();
-    clientMocks.apiGet.mockResolvedValue(
+    mockWorkspaceLoad(
       createWorkspaceResponse("template-1", "grouping", {
         can_undo: true,
         can_redo: false,
@@ -723,6 +1040,7 @@ describe("useClassroomState", () => {
     state.renameGroup("group-a", "Handledargrupp");
     const undoPromise = state.undoGroupingDraft();
 
+    await Promise.resolve();
     expect(resolvePatch).toBeTypeOf("function");
     resolvePatch({
       ...createWorkspaceResponse("template-1", "grouping", {
@@ -762,24 +1080,19 @@ describe("useClassroomState", () => {
   it("autosaves only the fundamentals payload", async () => {
     vi.useFakeTimers();
     const state = useClassroomState();
-    clientMocks.apiGet.mockResolvedValue({
-      ...createWorkspaceResponse(),
-      seating_preferences: [
-        {
-          student_id: "s2",
-          near_teacher: true,
-        },
-      ],
-    });
-    clientMocks.apiPatch.mockResolvedValue({
-      ...createWorkspaceResponse(),
-      seating_preferences: [
-        {
-          student_id: "s2",
-          near_teacher: true,
-        },
-      ],
-    });
+    mockWorkspaceLoad(
+      createWorkspaceResponse(),
+      {
+        ...createSmartRulesResponse(),
+        seating_preferences: [
+          {
+            student_id: "s2",
+            near_teacher: true,
+          },
+        ],
+      },
+    );
+    clientMocks.apiPatch.mockResolvedValue(createWorkspaceResponse());
     await state.loadWorkspace("draft-1");
     clientMocks.apiPatch.mockClear();
 
@@ -799,14 +1112,64 @@ describe("useClassroomState", () => {
           notes: "Fokusera nära fönstret",
         }),
       ],
-      seating_preferences: [
-        expect.objectContaining({
-          student_id: "s2",
-          near_teacher: true,
-        }),
-      ],
     });
+    expect(payload).not.toHaveProperty("seating_preferences");
+    expect(payload).not.toHaveProperty("relationship_rules");
     expect(payload).not.toHaveProperty("pair_constraints");
     expect(payload).not.toHaveProperty("planning_profile");
+  });
+
+  it("keeps draft autosave dirty when smart-rule autosave fails and retries that lane on flush", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    state.smartRulesRevision = 4;
+    clientMocks.apiPatch
+      .mockRejectedValueOnce(new Error("smart rules unavailable"))
+      .mockResolvedValueOnce(
+        createWorkspaceResponse("template-1", "seating", {
+          can_undo: false,
+          can_redo: false,
+        }),
+      )
+      .mockResolvedValueOnce({
+        ...createSmartRulesResponse(),
+        roster_id: "roster-1",
+        revision: 5,
+        seating_preferences: [{ student_id: "s1", near_teacher: true }],
+        relationship_rules: [],
+      });
+
+    state.setStudentPlanningMeta("s1", { notes: "Behåll längst fram" });
+    state.setActiveSeatingSmartTool("near_teacher");
+    state.handleSeatingSmartToolStudentSelection("s1");
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(2);
+    expect(clientMocks.apiPatch.mock.calls[0]?.[0]).toBe(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+    );
+    expect(clientMocks.apiPatch.mock.calls[1]?.[0]).toBe(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1",
+    );
+    expect(state.hasPendingAutosave).toBe(true);
+    expect(state.saveStatus).toBe("error");
+
+    const flushSucceeded = await state.flushPendingSave();
+
+    expect(flushSucceeded).toBe(true);
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(3);
+    expect(clientMocks.apiPatch.mock.calls[2]?.[0]).toBe(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+    );
+    expect(clientMocks.apiPatch.mock.calls[2]?.[1]).toMatchObject({
+      expected_revision: 4,
+      seating_preferences: [{ student_id: "s1", near_teacher: true }],
+      relationship_rules: [],
+    });
+    expect(state.hasPendingAutosave).toBe(false);
+    expect(state.smartRulesRevision).toBe(5);
+    expect(state.saveStatus).toBe("saved");
   });
 });

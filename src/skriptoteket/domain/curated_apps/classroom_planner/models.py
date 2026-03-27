@@ -2,9 +2,9 @@
 
 This module defines the active classroom-planner aggregates shared by the
 domain, application handlers, repositories, and bespoke SPA API contract. The
-current fundamentals contract keeps reusable roster and room assets separate
-from mutable draft state for groups, seat assignments, and smart-planning
-preferences.
+current fundamentals contract separates roster-owned smart rules from
+draft-local arrangement state so seating/grouping workspaces can reuse one
+class rule set across multiple drafts.
 """
 
 from __future__ import annotations
@@ -158,6 +158,17 @@ class RelationshipRule(BaseModel):
     student_ids: list[str] = Field(min_length=2)
 
 
+class RosterSmartRules(BaseModel):
+    """Represent roster-owned smart rules shared across drafts for one class."""
+
+    model_config = ConfigDict(frozen=True)
+
+    roster_id: UUID
+    revision: int = 0
+    seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
+    relationship_rules: list[RelationshipRule] = Field(default_factory=list)
+
+
 class PlanDraftStatus(StrEnum):
     """Enumerate mutable draft lifecycle states."""
 
@@ -210,8 +221,6 @@ class DraftWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
-    seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
-    relationship_rules: list[RelationshipRule] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
     )
@@ -229,8 +238,6 @@ class ClassroomPlannerWorkspace(BaseModel):
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
     student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
-    seating_preferences: list[StudentSeatingPreference] = Field(default_factory=list)
-    relationship_rules: list[RelationshipRule] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
     )

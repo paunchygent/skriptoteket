@@ -53,6 +53,9 @@ The primary teacher-facing smart authoring surface for V1 is a class-wide visual
 active workspace, not a per-student metadata drawer. Teachers select one rule tool from the active
 toolbar and click student tiles in the shared class layout to author or remove rules.
 
+These visible smart rules are class-global and roster-owned even when they are authored from one
+active seating or grouping workspace. They are not owned by one draft.
+
 The common teacher-facing smart controls for V1 are exactly:
 
 - `Keep apart`
@@ -135,6 +138,9 @@ V1 history sources are explicit export-backed checkpoints only.
   must not silently degrade to no-history behavior; it blocks the history-enabled run with a short
   teacher-facing message.
 
+Checkpoints are history artifacts only. They may keep source-draft provenance if useful, but they
+must not become the authoritative home for class-global smart rules.
+
 When `Use history` is enabled for seating, those same eligible seating checkpoints should also
 power a soft fairness objective for teacher-distance over time:
 
@@ -151,14 +157,21 @@ This is a balancing goal, not a one-run guarantee.
 
 The smart-assignment persistence model uses dedicated relational persistence rather than ad hoc
 JSON blobs. The exact table names may vary during implementation, but the normalized shape should
-cover:
+separate three ownership lanes:
 
-- seating-only near-teacher preferences
-- `keep_near` pairs
-- `keep_apart` sets and set membership
-- export-backed checkpoints with assignment-hash deduplication
-- per-draft smart toggle state
-- grouping seating-distance toggle state
+- roster-global smart rules:
+  - seating-only near-teacher preferences
+  - `keep_near` sets and set membership
+  - `keep_apart` sets and set membership
+- draft-local workspace state:
+  - per-draft smart toggle state
+  - grouping seating-distance toggle state
+  - current seating/group arrangement state and bounded draft history
+- export-backed checkpoints:
+  - roster-scoped seating checkpoints with assignment-hash deduplication
+  - room/template context needed for honest teacher-distance history
+
+Smart rules must not remain draft-owned as the end-state model.
 
 Grouping should use its own later mode-specific assignment hash once grouping export checkpoints
 exist, rather than sharing the seating hash shape.
@@ -172,7 +185,7 @@ authoring model.
 The authoritative smart-assignment logic lives server-side in Python.
 
 - Domain layer owns pure scoring and search logic.
-- Application layer loads drafts, checkpoints, room context, and smart rules.
+- Application layer loads drafts, checkpoints, room context, and roster-scoped smart rules.
 - Web/API exposes bespoke smart-assignment endpoints.
 - Frontend renders results, toggle state, and short explanations.
 
@@ -254,6 +267,7 @@ The UI must not show:
 - The teacher-facing model stays small and understandable.
 - The primary editing flow matches the teacher's class-wide mental model instead of hiding smart
   rules in individual student drawers.
+- Class-global teacher intentions stay stable across drafts instead of being reauthored per draft.
 - Export-backed checkpoints align with the current PRD and ADR direction.
 - The repo avoids a spaghetti-style bridge between old visible metadata and the new smart model.
 - Grouping can benefit from seating context through an explicit, understandable toggle instead of a

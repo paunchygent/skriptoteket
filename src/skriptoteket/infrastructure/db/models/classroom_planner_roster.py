@@ -1,3 +1,10 @@
+"""SQLAlchemy models for classroom planner rosters.
+
+This module persists the reusable class list aggregate. Roster-owned smart
+rules now live in sibling models so the roster itself stays focused on class
+identity and student membership.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime

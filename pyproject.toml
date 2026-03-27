@@ -370,6 +370,7 @@ lock-multi = "pdm lock --platform macos_14_0_arm64 --platform manylinux_2_40_x86
 
 # Database
 db-upgrade = "alembic upgrade head"
+dev-db-upgrade = "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade"
 
 # Admin bootstrap
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
@@ -383,21 +384,35 @@ seed-script-bank = { cmd = "python -m skriptoteket.cli seed-script-bank", env = 
 run-execution-worker = { cmd = "python -m skriptoteket.cli run-execution-worker", env = { PYTHONPATH = "src" } }
 
 # Docker dev workflow (compose base + dev overrides)
-dev-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d"
+dev-start = { composite = [
+    "docker compose -f compose.yaml -f compose.dev.yaml up -d",
+    "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade",
+] }
 dev-stop = "docker compose -f compose.yaml -f compose.dev.yaml down"
 dev-restart = "docker compose -f compose.yaml -f compose.dev.yaml restart"
-dev-recreate = "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate"
-dev-build-start = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build"
-dev-rebuild = "docker compose -f compose.yaml -f compose.dev.yaml up -d --build --force-recreate"
+dev-recreate = { composite = [
+    "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate",
+    "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade",
+] }
+dev-build-start = { composite = [
+    "docker compose -f compose.yaml -f compose.dev.yaml up -d --build",
+    "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade",
+] }
+dev-rebuild = { composite = [
+    "docker compose -f compose.yaml -f compose.dev.yaml up -d --build --force-recreate",
+    "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade",
+] }
 dev-containers-logs = "docker compose -f compose.yaml -f compose.dev.yaml logs -f web worker frontend"
 dev-build-start-clean = { composite = [
     "docker compose -f compose.yaml -f compose.dev.yaml build --no-cache",
     "docker compose -f compose.yaml -f compose.dev.yaml up -d --force-recreate",
+    "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade",
 ] }
 
 dev-db-reset = { composite = [
     "docker compose -f compose.yaml -f compose.dev.yaml down --volumes --remove-orphans",
     "docker compose -f compose.yaml -f compose.dev.yaml up -d",
+    "docker compose -f compose.yaml -f compose.dev.yaml run --rm web pdm run db-upgrade",
 ] }
 
 # Observability stack (Prometheus, Grafana, Jaeger, Loki)

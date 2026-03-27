@@ -83,6 +83,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
 from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs import (
     PostgreSQLSeatingExportJobRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_seating_export_checkpoints import (
+    PostgreSQLSeatingExportCheckpointRepository,
+)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -378,6 +381,7 @@ async def _create_export_job(
         vault_storage = LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT))
         finalizer = seating_export_job_completion_handlers.SeatingExportJobFinalizer(
             jobs=PostgreSQLSeatingExportJobRepository(session),
+            checkpoints=PostgreSQLSeatingExportCheckpointRepository(session),
             vault_files=vault_files,
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=vault_storage,

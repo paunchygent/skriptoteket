@@ -235,6 +235,7 @@ async def test_prepare_seating_export_returns_prepared_contract(drafts, rosters,
     assert [seat.seat_id for seat in result.poster_scene.seats] == ["seat-a", "seat-b"]
     assert result.poster_scene.seats[0].label == "Alice A."
     assert result.poster_scene.seats[1].label == "Bo B."
+    templates.get_by_id.assert_awaited_once_with(template_id=template_id)
 
 
 @pytest.mark.unit

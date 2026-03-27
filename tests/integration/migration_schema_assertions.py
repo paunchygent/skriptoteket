@@ -41,7 +41,12 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "7b8a6f1d2c3e",
     "8c4d2e1f7a9b",
     "1d3e5f7a9b2c",
+    "5f2c7d1a9b8e",
     "4a9d7c1e2b34",
+    "2b6c4d8e1f9a",
+    "6a1e9d3c4b7f",
+    "7d4c1a2b9e6f",
+    "3e8b5c1a7d4f",
 )
 
 
@@ -81,6 +86,31 @@ async def _index_names(engine: AsyncEngine, table_name: str) -> set[str]:
             {"table_name": table_name},
         )
         return {row[0] for row in result.fetchall()}
+
+
+async def _foreign_key_targets(engine: AsyncEngine, table_name: str) -> dict[str, str]:
+    async with engine.connect() as conn:
+        result = await conn.execute(
+            text(
+                """
+                SELECT
+                    kcu.column_name,
+                    ccu.table_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                 AND tc.table_schema = kcu.table_schema
+                JOIN information_schema.constraint_column_usage ccu
+                  ON ccu.constraint_name = tc.constraint_name
+                 AND ccu.table_schema = tc.table_schema
+                WHERE tc.constraint_type = 'FOREIGN KEY'
+                  AND tc.table_schema = 'public'
+                  AND tc.table_name = :table_name
+                """
+            ),
+            {"table_name": table_name},
+        )
+        return {row[0]: row[1] for row in result.fetchall()}
 
 
 async def _check_constraint_names(engine: AsyncEngine, table_name: str) -> set[str]:
@@ -323,6 +353,87 @@ async def _assert_4a9d_nullable_xlsx_fields(engine: AsyncEngine) -> None:
     assert columns["paper_size"]["is_nullable"] == "YES"
 
 
+async def _assert_5f2c_roster_owned_smart_rules(engine: AsyncEngine) -> None:
+    tables = await _table_names(engine)
+    assert "classroom_planner_roster_smart_rule_sets" in tables
+    assert "classroom_planner_roster_seating_preferences" in tables
+    assert "classroom_planner_roster_relationship_rules" in tables
+    assert "classroom_planner_student_seating_preferences" not in tables
+    assert "classroom_planner_relationship_rules" not in tables
+    root_columns = await _column_map(engine, "classroom_planner_roster_smart_rule_sets")
+    assert {"roster_id", "revision", "updated_at"}.issubset(root_columns)
+    seating_columns = await _column_map(engine, "classroom_planner_roster_seating_preferences")
+    assert {"roster_id", "student_id", "near_teacher"}.issubset(seating_columns)
+    relationship_columns = await _column_map(engine, "classroom_planner_roster_relationship_rules")
+    assert {"roster_id", "rule_id", "kind", "student_ids"}.issubset(relationship_columns)
+    seating_foreign_keys = await _foreign_key_targets(
+        engine, "classroom_planner_roster_seating_preferences"
+    )
+    assert seating_foreign_keys["roster_id"] == "classroom_planner_roster_smart_rule_sets"
+    relationship_foreign_keys = await _foreign_key_targets(
+        engine, "classroom_planner_roster_relationship_rules"
+    )
+    assert relationship_foreign_keys["roster_id"] == "classroom_planner_roster_smart_rule_sets"
+
+
+async def _assert_2b6c_conversion_hub_jobs(engine: AsyncEngine) -> None:
+    tables = await _table_names(engine)
+    assert "conversion_hub_jobs" in tables
+    columns = await _column_map(engine, "conversion_hub_jobs")
+    assert {"owner_user_id", "input_filename", "source_format", "output_format"}.issubset(columns)
+    assert columns["pdf_paper_size"]["is_nullable"] == "YES"
+    assert columns["upstream_job_id"]["is_nullable"] == "YES"
+    indexes = await _index_names(engine, "conversion_hub_jobs")
+    assert {
+        "ix_conversion_hub_jobs_owner_user_id",
+        "ix_conversion_hub_jobs_status",
+        "ix_conversion_hub_jobs_owner_created",
+        "uq_conversion_hub_jobs_upstream",
+    }.issubset(indexes)
+
+
+async def _assert_6a1e_merged_heads(engine: AsyncEngine) -> None:
+    await _assert_5f2c_roster_owned_smart_rules(engine)
+    await _assert_2b6c_conversion_hub_jobs(engine)
+
+
+async def _assert_7d4c_roster_smart_rule_repair(engine: AsyncEngine) -> None:
+    await _assert_6a1e_merged_heads(engine)
+
+
+async def _assert_3e8b_seating_export_checkpoints(engine: AsyncEngine) -> None:
+    await _assert_7d4c_roster_smart_rule_repair(engine)
+    tables = await _table_names(engine)
+    assert "classroom_planner_seating_export_checkpoints" in tables
+    columns = await _column_map(engine, "classroom_planner_seating_export_checkpoints")
+    assert {
+        "roster_id",
+        "template_id",
+        "source_draft_id",
+        "source_export_job_id",
+        "room_context_hash",
+        "assignment_hash",
+        "room_context",
+        "seating_snapshot",
+    }.issubset(columns)
+    indexes = await _index_names(engine, "classroom_planner_seating_export_checkpoints")
+    assert {
+        "ix_classroom_planner_seating_export_checkpoints_roster_id",
+        "ix_classroom_planner_seating_export_checkpoints_source_draft_id",
+        "ix_classroom_planner_seating_export_checkpoints_template_id",
+        "ix_cp_seating_export_checkpoints_roster_room_created",
+        "uq_cp_seating_export_checkpoints_source_job",
+    }.issubset(indexes)
+    foreign_keys = await _foreign_key_targets(
+        engine,
+        "classroom_planner_seating_export_checkpoints",
+    )
+    assert foreign_keys["roster_id"] == "classroom_planner_rosters"
+    assert foreign_keys["template_id"] == "classroom_planner_room_templates"
+    assert foreign_keys["source_draft_id"] == "classroom_planner_plan_drafts"
+    assert foreign_keys["source_export_job_id"] == "classroom_planner_seating_export_jobs"
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -349,7 +460,12 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "7b8a6f1d2c3e": _assert_7b8a_planner_draft_flags,
     "8c4d2e1f7a9b": _assert_8c4d_planner_smart_rule_tables,
     "1d3e5f7a9b2c": _assert_1d3e_seating_preferences_reset,
+    "5f2c7d1a9b8e": _assert_5f2c_roster_owned_smart_rules,
     "4a9d7c1e2b34": _assert_4a9d_nullable_xlsx_fields,
+    "2b6c4d8e1f9a": _assert_2b6c_conversion_hub_jobs,
+    "6a1e9d3c4b7f": _assert_6a1e_merged_heads,
+    "7d4c1a2b9e6f": _assert_7d4c_roster_smart_rule_repair,
+    "3e8b5c1a7d4f": _assert_3e8b_seating_export_checkpoints,
 }
 
 

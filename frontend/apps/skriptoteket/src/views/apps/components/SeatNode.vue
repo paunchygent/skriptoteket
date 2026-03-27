@@ -16,6 +16,7 @@ const props = defineProps<{
   seat: Seat;
   student: Student | null;
   selected?: boolean;
+  markers?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -86,6 +87,20 @@ function onDragStart(event: DragEvent): void {
     @drop="onDrop"
     @dragstart="onDragStart"
   >
+    <div
+      v-if="(markers ?? []).length > 0"
+      class="pointer-events-none absolute -top-5 left-1/2 z-10 flex -translate-x-1/2 flex-wrap justify-center gap-1"
+      :data-test="`seat-markers-${seat.id}`"
+    >
+      <span
+        v-for="marker in markers"
+        :key="marker"
+        class="border border-navy/20 bg-canvas px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+      >
+        {{ marker }}
+      </span>
+    </div>
+
     <button
       v-if="student"
       type="button"

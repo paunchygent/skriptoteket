@@ -108,6 +108,7 @@ class Settings(BaseSettings):
     # Sir Convert-a-Lot v2 (external conversion engine; EPIC-21 / ADR-0066)
     SIR_CONVERT_A_LOT_V2_BASE_URL: str = "http://127.0.0.1:9010"
     SIR_CONVERT_A_LOT_V2_API_KEY: str = ""
+    SIR_CONVERT_A_LOT_V2_UNIX_SOCKET_PATH: str = ""
     SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: float = 60.0
     SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: str = ""
     SIR_CONVERT_A_LOT_V2_CLASS_LIST_IMPORT_PDF_BACKEND_STRATEGY: Literal["auto", "pymupdf"] = (

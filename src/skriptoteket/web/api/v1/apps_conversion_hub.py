@@ -1,15 +1,17 @@
 """Conversion Hub curated app API routes (Skriptoteket).
 
 Purpose:
-  Expose a bespoke conversion UI surface under `/api/v1/apps/<app_id>/...` which
-  orchestrates multi-format conversions by delegating execution to Sir Convert-a-Lot v2.
+  Expose a bespoke Conversion Hub API surface under `/api/v1/apps/<app_id>/...`
+  while keeping Skriptoteket as the owner of job identity, authorization, and
+  artifact downloads.
 
 Relationships:
   - App registry entry: `src/skriptoteket/infrastructure/curated_apps/registry.py`
-  - V2 conversion engine (external): Sir Convert-a-Lot `/v2/convert/jobs/*`
+  - Application handlers: `application.curated_apps.handlers.conversion_hub_jobs`
+  - Upstream conversion engine: Sir Convert-a-Lot v2
 """
 
-from uuid import uuid4
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import Response
@@ -22,21 +24,23 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubRouteV2,
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
-    ConversionHubSubmittedJob,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
+    ConversionHubUpload,
+    CreateConversionHubJobsHandler,
+    DownloadConversionHubArtifactHandler,
+    GetConversionHubJobHandler,
 )
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.protocols.sir_convert_a_lot_v2 import (
-    SirConvertALotClientV2Protocol,
-    SirConvertSubmitRequestV2,
-)
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
 from skriptoteket.web.dishka_compat import FromDishka, inject
 from skriptoteket.web.request_metadata import get_correlation_id
 
 APP_ID = "documents.conversion_hub"
+_MAX_WAIT_SECONDS = 20
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 
@@ -164,7 +168,7 @@ async def list_routes(
 async def submit_jobs(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    client: FromDishka[SirConvertALotClientV2Protocol],
+    handler: FromDishka[CreateConversionHubJobsHandler],
     job_spec_json: str = Form(..., min_length=2),
     files: list[UploadFile] = File(...),
     wait_seconds: int = Form(0),
@@ -173,8 +177,8 @@ async def submit_jobs(
 ) -> ConversionHubSubmitResult:
     _require_app_access(registry=registry, user=user)
 
-    if wait_seconds < 0 or wait_seconds > 30:
-        raise validation_error("wait_seconds must be between 0 and 30.")
+    if wait_seconds < 0 or wait_seconds > _MAX_WAIT_SECONDS:
+        raise validation_error(f"wait_seconds must be between 0 and {_MAX_WAIT_SECONDS}.")
 
     try:
         spec = ConversionHubJobSpecV2.model_validate_json(job_spec_json)
@@ -188,77 +192,67 @@ async def submit_jobs(
 
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
-
-    jobs: list[ConversionHubSubmittedJob] = []
+    uploads: list[ConversionHubUpload] = []
     for upload in files:
         if upload.filename is None or not upload.filename:
             raise validation_error("Uploaded file is missing a filename.")
 
+        _build_v2_job_spec(spec=spec, filename=upload.filename)
         await upload.seek(0)
-        content_type = upload.content_type or "application/octet-stream"
-        v2_spec = _build_v2_job_spec(spec=spec, filename=upload.filename)
-        submitted = await client.submit_job(
-            request=SirConvertSubmitRequestV2(
+        uploads.append(
+            ConversionHubUpload(
                 filename=upload.filename,
-                content_type=content_type,
+                content_type=upload.content_type or "application/octet-stream",
                 file_bytes=await upload.read(),
-                job_spec=v2_spec,
-                idempotency_key=str(uuid4()),
-                wait_seconds=wait_seconds,
-                correlation_id=correlation_id,
             )
         )
-        jobs.append(
-            ConversionHubSubmittedJob(
-                input_filename=upload.filename,
-                job_id=submitted.job_id,
-                status=submitted.status,
-                idempotent_replay=submitted.idempotent_replay,
-            )
-        )
-
-    return ConversionHubSubmitResult(jobs=jobs)
+    return await handler.handle(
+        actor=user,
+        spec=spec,
+        uploads=uploads,
+        wait_seconds=wait_seconds,
+        correlation_id=correlation_id,
+        build_job_spec=_build_v2_job_spec,
+    )
 
 
 @router.get("/jobs/{job_id}", response_model=ConversionHubJobStatusResult)
 @inject
 async def get_job_status(
-    job_id: str,
+    job_id: UUID,
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    client: FromDishka[SirConvertALotClientV2Protocol],
+    handler: FromDishka[GetConversionHubJobHandler],
     user: User = Depends(require_user_api),
 ) -> ConversionHubJobStatusResult:
     _require_app_access(registry=registry, user=user)
-    if not job_id:
-        raise validation_error("job_id is required.")
-
-    # We intentionally do not proxy the full upstream job record here.
-    # The SPA polls status via this surface.
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
-    current = await client.get_job(job_id, correlation_id=correlation_id)
-    return ConversionHubJobStatusResult(job_id=current.job_id, status=current.status)
+    return await handler.handle(actor=user, job_id=job_id, correlation_id=correlation_id)
 
 
 @router.get("/jobs/{job_id}/artifact")
 @inject
 async def download_artifact(
-    job_id: str,
+    job_id: UUID,
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    client: FromDishka[SirConvertALotClientV2Protocol],
+    handler: FromDishka[DownloadConversionHubArtifactHandler],
     user: User = Depends(require_user_api),
 ) -> Response:
     _require_app_access(registry=registry, user=user)
-    if not job_id:
-        raise validation_error("job_id is required.")
-
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
-    outcome = await client.download_artifact(job_id, correlation_id=correlation_id)
+    filename, content_type, content = await handler.handle(
+        actor=user,
+        job_id=job_id,
+        correlation_id=correlation_id,
+    )
     return Response(
-        content=outcome.artifact.content,
-        media_type=outcome.artifact.content_type,
-        headers={"Content-Disposition": f'attachment; filename="{outcome.artifact.filename}"'},
+        content=content,
+        media_type=content_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
     )

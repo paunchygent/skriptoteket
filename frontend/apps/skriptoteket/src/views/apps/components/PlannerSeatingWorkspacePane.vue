@@ -18,6 +18,7 @@ import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerExportActionGroup, { type PlannerExportOptionValue } from "./PlannerExportActionGroup.vue";
+import PlannerSeatingSmartRuleSurface from "./PlannerSeatingSmartRuleSurface.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
@@ -80,6 +81,22 @@ const {
   resetSource: computed(() => props.selectedTemplateId ?? plannerState.template?.id ?? null),
 });
 const canEditCurrentTemplate = computed(() => plannerState.template !== null);
+const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
+  const markers: Record<string, string[]> = {};
+
+  for (const preference of plannerState.seatingPreferences) {
+    markers[preference.student_id] = [...(markers[preference.student_id] ?? []), "Lärare"];
+  }
+
+  plannerState.relationshipRules.forEach((rule, index) => {
+    const marker = `${rule.kind === "keep_apart" ? "Isär" : "Nära"} ${String.fromCharCode(65 + index)}`;
+    for (const studentId of rule.student_ids) {
+      markers[studentId] = [...(markers[studentId] ?? []), marker];
+    }
+  });
+
+  return markers;
+});
 const canRandomizeSeating = computed(() => {
   return (
     plannerState.template !== null
@@ -396,11 +413,15 @@ watch(
       </button>
     </div>
 
+    <PlannerSeatingSmartRuleSurface />
+
     <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-stretch">
       <PlannerStudentPool
         title="Ej placerade"
         :students="plannerState.unseatedStudents"
         :selected-student-id="selectedStudentId"
+        :selected-student-ids="plannerState.pendingRelationshipStudentIds"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
         empty-label="Alla elever har fått plats"
         root-test-id="seating-student-pool"
         @student-selected="emit('student-selected', $event)"
@@ -416,6 +437,8 @@ watch(
           :scale-percent="seatingCanvasScalePercent"
           :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
           :selected-student-id="selectedStudentId"
+          :selected-student-ids="plannerState.pendingRelationshipStudentIds"
+          :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           :surface-scale="seatingCanvasScale"
           @student-selected="emit('student-selected', $event)"
           @viewport-size="setSeatingCanvasViewportSize"

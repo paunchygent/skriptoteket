@@ -2,9 +2,10 @@
 type: story
 id: ST-27-01
 title: "Klassrumskartan — Smart-assignment contract reset and control model"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-25
+updated: 2026-03-27
 epic: "EPIC-27"
 dependencies: ["EPIC-24"]
 acceptance_criteria:
@@ -12,11 +13,12 @@ acceptance_criteria:
   - "Given the teacher is in `Sittplatser`, when seating-specific smart controls are shown, then `Närmare läraren` appears as a seating-only rule on the class-wide visual rule surface rather than as hidden student metadata."
   - "Given the teacher authors relationship rules from the class-wide smart surface, when they create `Keep apart` or `Keep near`, then those rules are created from a temporary multi-student selection plus explicit commit, while `Närmare läraren` remains a unary click-to-toggle rule."
   - "Given the teacher tries to place one student into multiple visible relationship clusters, when they attempt to commit the later rule, then V1 blocks overlapping `Keep apart` / `Keep near` cluster membership rather than trying to resolve competing relation graphs in the UI."
+  - "Given the teacher authors smart rules for one class and later opens another seating or grouping draft for that same class, when the planner loads, then the same `Keep apart`, `Keep near`, and `Närmare läraren` rules remain available because they are owned by the class list / roster rather than by one draft."
   - "Given the teacher uses smart grouping, when a grouping-specific room-informed option is shown, then it appears as one explicit mode-specific toggle such as `Ska hur nära de sitter räknas?` rather than as a fifth shared global smart control."
   - "Given the teacher is in `Grupper` or `Sittplatser`, when the main action row renders, then each mode shows one small `Smart` toggle beside `Slumpa`, and new drafts default that toggle to `off`."
   - "Given the teacher turns `Smart` on or off for one active draft, when the draft reloads later, then that mode's toggle state is restored for that draft rather than reset or shared globally."
   - "Given the repo has no real users yet, when this story replaces the older visible metadata model, then the old planner-note / proximity / stability semantics are deleted from the active contract without migration or compatibility shims."
-  - "Given `Keep apart` sets, `Keep near` relations, and seating-only `Närmare läraren` preferences are persisted, when the backend stores them, then the persistence shape is normalized relational storage rather than an anonymous JSON blob."
+  - "Given `Keep apart` sets, `Keep near` relations, and seating-only `Närmare läraren` preferences are persisted, when the backend stores them, then the persistence shape is normalized relational storage owned by the class list / roster rather than the active seating or grouping draft."
 ui_impact: "Yes (smart toggles + control-model reset)"
 data_impact: "Yes (new smart-assignment persistence and contract cleanup)"
 ---
@@ -33,6 +35,10 @@ contract need a reset that matches the newly approved product decisions.
 - Delete the older visible planner-note / teacher-proximity / stability controls rather than
   trying to blend or translate them.
 - The small visible model is a product decision, not a temporary UI compromise.
+- Separate ownership deliberately:
+  - class-global smart rules belong to the roster/class list
+  - draft-local toggles, arrangement state, and undo/redo belong to one draft
+  - export-backed checkpoints belong to smart-history, not to rule ownership
 - Demote the student metadata drawer to an advanced notes/history surface rather than using it as
   the main smart-rule editor.
 - The first visual rule-authoring model is intentionally simple:
@@ -43,3 +49,9 @@ contract need a reset that matches the newly approved product decisions.
 - The relational persistence shape should remain compatible with compiling `keep apart` sets into
   internal pairwise repel edges at solve time.
 - This story defines the contract reset; it does not itself deliver the full smart solver.
+
+## Implementation Summary (as of 2026-03-27)
+
+- PR-0147 reset the seating-only teacher-distance contract onto `near_teacher`.
+- PR-0149 delivered the seating smart-rule authoring surface and current visual interaction model.
+- PR-0151 moved smart rules to roster ownership, added optimistic concurrency and autosave/hydration hardening, repaired Docker drift forward, and closed with passing smart-assignment review plus live planner smoke on `http://127.0.0.1:5173`.

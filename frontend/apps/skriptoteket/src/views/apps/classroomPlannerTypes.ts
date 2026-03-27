@@ -2,8 +2,9 @@
  * Classroom planner frontend types.
  *
  * This module mirrors the active Klassrumskartan frontend contract used by the
- * SPA. It keeps reusable roster/room entities separate from the draft-scoped
- * fundamentals that power the current grouping and seating workflow.
+ * SPA. It keeps reusable roster/room entities and roster-global smart rules
+ * separate from the draft-scoped fundamentals that power the current grouping
+ * and seating workflow.
  */
 
 export type Student = {
@@ -95,6 +96,8 @@ export type StudentSeatingPreference = {
   near_teacher: boolean;
 };
 
+export type SeatingSmartTool = "near_teacher" | "keep_near" | "keep_apart";
+
 export type RelationshipRuleKind = "keep_near" | "keep_apart";
 
 export type RelationshipRule = {
@@ -148,12 +151,17 @@ export type DraftWorkspaceResponse = {
   group_assignments: GroupAssignment[];
   seat_assignments: SeatAssignment[];
   student_planning_meta: StudentPlanningMeta[];
-  seating_preferences: StudentSeatingPreference[];
-  relationship_rules: RelationshipRule[];
   history_status: {
     can_undo: boolean;
     can_redo: boolean;
   };
+};
+
+export type RosterSmartRulesResponse = {
+  roster_id: string;
+  revision: number;
+  seating_preferences: StudentSeatingPreference[];
+  relationship_rules: RelationshipRule[];
 };
 
 export type DraftHistoryStatus = DraftWorkspaceResponse["history_status"];

@@ -21,11 +21,19 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingExportJobStatus,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
+    SeatingExportCheckpoint,
+)
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
-from skriptoteket.protocols.classroom_planner_exports import SeatingExportJobRepositoryProtocol
+from skriptoteket.protocols.classroom_planner import (
+    SeatingExportCheckpointRepositoryProtocol,
+)
+from skriptoteket.protocols.classroom_planner_exports import (
+    SeatingExportJobRepositoryProtocol,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -43,6 +51,7 @@ class SeatingExportJobFinalizer:
         self,
         *,
         jobs: SeatingExportJobRepositoryProtocol,
+        checkpoints: SeatingExportCheckpointRepositoryProtocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -52,6 +61,7 @@ class SeatingExportJobFinalizer:
         settings: Settings,
     ) -> None:
         self._jobs = jobs
+        self._checkpoints = checkpoints
         self._vault_files = vault_files
         self._vault_usage = vault_usage
         self._vault_storage = vault_storage
@@ -65,6 +75,7 @@ class SeatingExportJobFinalizer:
         *,
         job: SeatingExportJob,
         content: bytes,
+        checkpoint: SeatingExportCheckpoint | None = None,
         filename: str | None = None,
         correlation_id: str | None,
     ) -> SeatingExportJob:
@@ -80,6 +91,7 @@ class SeatingExportJobFinalizer:
             status=SeatingExportJobStatus.SUCCEEDED,
             vault_file_id=vault_file.id,
             error_message=None,
+            checkpoint=checkpoint,
             correlation_id=correlation_id,
         )
 
@@ -97,6 +109,7 @@ class SeatingExportJobFinalizer:
             status=SeatingExportJobStatus.FAILED,
             vault_file_id=job.vault_file_id,
             error_message=error_message,
+            checkpoint=None,
             correlation_id=correlation_id,
         )
 
@@ -107,6 +120,7 @@ class SeatingExportJobFinalizer:
         status: SeatingExportJobStatus,
         vault_file_id: UUID | None,
         error_message: str | None,
+        checkpoint: SeatingExportCheckpoint | None,
         correlation_id: str | None,
     ) -> SeatingExportJob:
         del correlation_id
@@ -121,7 +135,17 @@ class SeatingExportJobFinalizer:
             }
         )
         async with self._uow:
-            return await self._jobs.update(job=updated)
+            persisted_job = await self._jobs.update(job=updated)
+            if checkpoint is not None and status is SeatingExportJobStatus.SUCCEEDED:
+                latest_checkpoint = await self._checkpoints.get_latest_for_roster_and_room_context(
+                    roster_id=checkpoint.roster_id,
+                    room_context_hash=checkpoint.room_context_hash,
+                )
+                if latest_checkpoint is None or (
+                    latest_checkpoint.assignment_hash != checkpoint.assignment_hash
+                ):
+                    await self._checkpoints.create(checkpoint=checkpoint)
+            return persisted_job
 
     async def _save_to_vault(
         self,

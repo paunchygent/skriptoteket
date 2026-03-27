@@ -15,6 +15,8 @@ withDefaults(
     title: string;
     students: Student[];
     selectedStudentId?: string | null;
+    selectedStudentIds?: string[];
+    smartRuleMarkersByStudentId?: Record<string, string[]>;
     emptyLabel: string;
     disabled?: boolean;
     rootTestId?: string;
@@ -23,6 +25,8 @@ withDefaults(
   {
     eyebrow: "Studentpool",
     selectedStudentId: null,
+    selectedStudentIds: () => [],
+    smartRuleMarkersByStudentId: () => ({}),
     disabled: false,
     rootTestId: undefined,
     emptyTestId: undefined,
@@ -64,7 +68,7 @@ const emit = defineEmits<{
         :key="student.id"
         type="button"
         class="flex items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
-        :class="selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
+        :class="selectedStudentId === student.id || selectedStudentIds.includes(student.id) ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
         :disabled="disabled"
         :draggable="!disabled"
         @click="emit('student-selected', student.id)"
@@ -74,6 +78,19 @@ const emit = defineEmits<{
           <div class="truncate text-sm font-semibold">
             {{ student.display_name }}
           </div>
+        </div>
+        <div
+          v-if="(smartRuleMarkersByStudentId[student.id] ?? []).length > 0"
+          class="flex flex-wrap justify-end gap-1"
+          :data-test="`student-pool-markers-${student.id}`"
+        >
+          <span
+            v-for="marker in smartRuleMarkersByStudentId[student.id]"
+            :key="marker"
+            class="border border-navy/20 bg-canvas px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+          >
+            {{ marker }}
+          </span>
         </div>
       </button>
 

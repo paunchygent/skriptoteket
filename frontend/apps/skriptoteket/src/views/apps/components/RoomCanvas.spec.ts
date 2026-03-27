@@ -2,7 +2,7 @@ import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RoomFixture } from "../classroomPlannerTypes";
+import type { RoomFixture, Student } from "../classroomPlannerTypes";
 import RoomCanvas from "./RoomCanvas.vue";
 
 class ResizeObserverMock {
@@ -27,7 +27,7 @@ const stateMocks = vi.hoisted(() => ({
     template: { id: "template-1", name: "Sal 101", grid_cols: 14, grid_rows: 9, seats: [], fixtures: [] },
     seats: [{ id: "seat-1", x: 0, y: 0 }],
     fixtures: [] as RoomFixture[],
-    studentBySeatId: { "seat-1": null },
+    studentBySeatId: { "seat-1": null } as Record<string, Student | null>,
     assignStudentToSeat: vi.fn(),
     clearSeatAssignment: vi.fn(),
     swapSeatAssignments: vi.fn(),
@@ -52,6 +52,7 @@ describe("RoomCanvas", () => {
     stateMocks.plannerState.clearSeatAssignment.mockReset();
     stateMocks.plannerState.swapSeatAssignments.mockReset();
     stateMocks.plannerState.fixtures = [];
+    stateMocks.plannerState.studentBySeatId = { "seat-1": null };
   });
 
   it("keeps the seating surface free from grouping labels", () => {
@@ -140,6 +141,27 @@ describe("RoomCanvas", () => {
     });
 
     expect(wrapper.html()).toContain("rounded-full");
+  });
+
+  it("renders tile markers for visible smart rules on occupied seats", () => {
+    stateMocks.plannerState.studentBySeatId = {
+      "seat-1": { id: "student-1", display_name: "Ada" },
+    };
+
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        selectedStudentIds: ["student-1"],
+        smartRuleMarkersByStudentId: {
+          "student-1": ["Lärare", "Isär A"],
+        },
+        surfaceScale: 1,
+      },
+    });
+
+    expect(wrapper.get('[data-test="seat-markers-seat-1"]').text()).toContain("Lärare");
+    expect(wrapper.get('[data-test="seat-markers-seat-1"]').text()).toContain("Isär A");
   });
 
   it("renders seating zoom controls and forwards the viewport actions", async () => {

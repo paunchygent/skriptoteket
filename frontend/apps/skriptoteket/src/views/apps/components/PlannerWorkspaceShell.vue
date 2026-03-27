@@ -175,6 +175,16 @@ const currentViewHint = computed(() => {
 });
 
 function selectStudent(studentId: string): void {
+  if (
+    currentView.value === "seats"
+    && plannerState.activeSeatingSmartTool
+    && plannerState.handleSeatingSmartToolStudentSelection(studentId)
+  ) {
+    selectedStudentId.value = null;
+    isMetadataDrawerOpen.value = false;
+    return;
+  }
+
   selectedStudentId.value = studentId;
   isMetadataDrawerOpen.value = currentView.value === "seats";
 }

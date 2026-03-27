@@ -1,8 +1,8 @@
 """Protocols for classroom planner persistence seams.
 
 These protocols let application handlers depend on typed planner aggregates
-without coupling to SQLAlchemy. They cover teacher-owned reusable assets and
-mutable draft workspaces for the active grouping, seating, and note workflow.
+without coupling to SQLAlchemy. They separate roster-owned smart-rule storage
+from the mutable draft workspaces used for grouping, seating, and notes.
 """
 
 from __future__ import annotations
@@ -11,6 +11,9 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
+    SeatingExportCheckpoint,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassWorkspaceDraftSummary,
     DraftWorkspace,
@@ -20,6 +23,7 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ResumablePlanDraft,
     RoomTemplate,
     Roster,
+    RosterSmartRules,
 )
 
 
@@ -137,6 +141,44 @@ class RosterRepositoryProtocol(Protocol):
 
     async def delete(self, *, roster_id: UUID) -> None:
         """Delete a roster."""
+        ...
+
+
+class RosterSmartRuleRepositoryProtocol(Protocol):
+    """Persist roster-owned smart rules shared across drafts."""
+
+    async def get_by_roster_id(self, *, roster_id: UUID) -> RosterSmartRules:
+        """Load the current roster-owned smart rules or an empty ruleset."""
+        ...
+
+    async def save(
+        self,
+        *,
+        rules: RosterSmartRules,
+        expected_revision: int,
+    ) -> RosterSmartRules:
+        """Save or update the roster-owned smart rules with optimistic concurrency."""
+        ...
+
+
+class SeatingExportCheckpointRepositoryProtocol(Protocol):
+    """Persist export-backed seating checkpoints for smart-history."""
+
+    async def get_latest_for_roster_and_room_context(
+        self,
+        *,
+        roster_id: UUID,
+        room_context_hash: str,
+    ) -> SeatingExportCheckpoint | None:
+        """Load the latest checkpoint for one roster and normalized room context."""
+        ...
+
+    async def create(
+        self,
+        *,
+        checkpoint: SeatingExportCheckpoint,
+    ) -> SeatingExportCheckpoint:
+        """Persist one newly created export-backed seating checkpoint."""
         ...
 
 

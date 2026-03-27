@@ -2,7 +2,8 @@
 
 This module maps SQLAlchemy models to the active classroom-planner domain
 models. It persists reusable teacher assets plus the mutable draft workspace
-for grouping, seating, and draft-scoped smart-planning fundamentals.
+for grouping, seating, and draft-scoped notes/history, while roster-owned
+smart rules live behind a separate repository seam.
 """
 
 from __future__ import annotations
@@ -25,8 +26,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraftKind,
     PlanDraftStatus,
     PlanDraftSummary,
-    RelationshipKind,
-    RelationshipRule,
     ResumablePlanDraft,
     RoomFixture,
     RoomFixtureType,
@@ -36,16 +35,13 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    StudentSeatingPreference,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     DraftGroupModel,
     GroupAssignmentModel,
     PlanDraftModel,
-    RelationshipRuleModel,
     SeatAssignmentModel,
     StudentPlanningMetaModel,
-    StudentSeatingPreferenceModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -136,21 +132,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 )
                 for meta in model.student_planning_meta
             ],
-            seating_preferences=[
-                StudentSeatingPreference(
-                    student_id=pref.student_id,
-                    near_teacher=pref.near_teacher,
-                )
-                for pref in model.seating_preferences
-            ],
-            relationship_rules=[
-                RelationshipRule(
-                    id=rule.rule_id,
-                    kind=RelationshipKind(rule.kind),
-                    student_ids=rule.student_ids,
-                )
-                for rule in model.relationship_rules
-            ],
             history_status=history_status,
         )
 
@@ -185,8 +166,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.seating_preferences),
-                selectinload(PlanDraftModel.relationship_rules),
             )
             .where(PlanDraftModel.id == draft_id)
         )
@@ -436,15 +415,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             workspace.student_planning_meta,
             key=lambda meta: meta.student_id,
         )
-        ordered_seating_preferences = sorted(
-            workspace.seating_preferences,
-            key=lambda pref: pref.student_id,
-        )
-        ordered_relationship_rules = sorted(
-            workspace.relationship_rules,
-            key=lambda rule: rule.id,
-        )
-
         snapshot = {
             "smart_enabled": workspace.draft.smart_enabled,
             "use_history": workspace.draft.use_history,
@@ -473,21 +443,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 }
                 for meta in ordered_student_planning_meta
             ],
-            "seating_preferences": [
-                {
-                    "student_id": pref.student_id,
-                    "near_teacher": pref.near_teacher,
-                }
-                for pref in ordered_seating_preferences
-            ],
-            "relationship_rules": [
-                {
-                    "rule_id": rule.id,
-                    "kind": rule.kind.value,
-                    "student_ids": rule.student_ids,
-                }
-                for rule in ordered_relationship_rules
-            ],
         }
         if workspace.draft.draft_kind == PlanDraftKind.GROUPING:
             snapshot["template_id"] = (
@@ -505,8 +460,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.seating_preferences),
-                selectinload(PlanDraftModel.relationship_rules),
             ),
         )
 
@@ -588,30 +541,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 for meta in workspace.student_planning_meta
             ],
         )
-        await self._replace_related_collection(
-            model=model,
-            attribute_name="seating_preferences",
-            new_items=[
-                StudentSeatingPreferenceModel(
-                    student_id=pref.student_id,
-                    near_teacher=pref.near_teacher,
-                )
-                for pref in workspace.seating_preferences
-            ],
-        )
-        await self._replace_related_collection(
-            model=model,
-            attribute_name="relationship_rules",
-            new_items=[
-                RelationshipRuleModel(
-                    rule_id=rule.id,
-                    kind=rule.kind.value,
-                    student_ids=rule.student_ids,
-                )
-                for rule in workspace.relationship_rules
-            ],
-        )
-
         if reset_history_for_seating_context:
             model.history_stack = []
             model.undo_index = 0
@@ -649,8 +578,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.seating_preferences),
-                selectinload(PlanDraftModel.relationship_rules),
             ),
         )
         if model is None or not model.history_stack or model.undo_index <= 0:
@@ -675,8 +602,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
                 selectinload(PlanDraftModel.student_planning_meta),
-                selectinload(PlanDraftModel.seating_preferences),
-                selectinload(PlanDraftModel.relationship_rules),
             ),
         )
         if (
@@ -752,32 +677,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                     for meta in snapshot["student_planning_meta"]
                 ],
             )
-        if "seating_preferences" in snapshot:
-            await self._replace_related_collection(
-                model=model,
-                attribute_name="seating_preferences",
-                new_items=[
-                    StudentSeatingPreferenceModel(
-                        student_id=pref["student_id"],
-                        near_teacher=pref.get("near_teacher", False),
-                    )
-                    for pref in snapshot["seating_preferences"]
-                ],
-            )
-        if "relationship_rules" in snapshot:
-            await self._replace_related_collection(
-                model=model,
-                attribute_name="relationship_rules",
-                new_items=[
-                    RelationshipRuleModel(
-                        rule_id=rule["rule_id"],
-                        kind=rule["kind"],
-                        student_ids=rule["student_ids"],
-                    )
-                    for rule in snapshot["relationship_rules"]
-                ],
-            )
-
         if model.revision is None:
             model.revision = 1
         else:

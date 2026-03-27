@@ -27,6 +27,16 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     SeatingPosterRenderRequest,
     seating_xlsx_view_model,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
+    SeatingExportCheckpoint,
+    build_assignment_hash,
+    build_normalized_seating_snapshot,
+    build_room_context_hash,
+    build_room_context_snapshot,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    ClassroomPlannerWorkspace,
+)
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner_exports import (
@@ -109,9 +119,12 @@ class CreateSeatingExportJobHandler:
         if layout_id is None or paper_size is None:
             raise validation_error("PDF-export kräver layout och pappersstorlek.")
 
-        prepared = await self._prepare.handle(
+        workspace = await self._prepare.load_workspace(
             draft_id=draft_id,
             owner_user_id=actor.id,
+        )
+        prepared = self._prepare.build_prepared_contract(
+            workspace=workspace,
             export_kind=SeatingExportKind.PDF,
             layout_id=layout_id,
         )
@@ -138,6 +151,12 @@ class CreateSeatingExportJobHandler:
             completed_job = await self._finalizer.complete_local_success(
                 job=job,
                 content=artifact_bytes,
+                checkpoint=_build_export_checkpoint_candidate(
+                    workspace=workspace,
+                    export_job_id=job.id,
+                    exported_at=job.created_at,
+                    checkpoint_id=self._id_generator.new_uuid(),
+                ),
                 filename=rendered.output_filename,
                 correlation_id=correlation_id,
             )
@@ -176,6 +195,12 @@ class CreateSeatingExportJobHandler:
         completed_job = await self._finalizer.complete_local_success(
             job=job,
             content=artifact_bytes,
+            checkpoint=_build_export_checkpoint_candidate(
+                workspace=workspace,
+                export_job_id=job.id,
+                exported_at=job.created_at,
+                checkpoint_id=self._id_generator.new_uuid(),
+            ),
             correlation_id=correlation_id,
         )
         return await build_job_result(job=completed_job, vault_files=self._vault_files)
@@ -312,3 +337,32 @@ def _stamp_output_filename(*, filename: str, stamp_source: UUID) -> str:
     stem = parsed.stem or "klassrumskarta"
     stamp = str(stamp_source).split("-", maxsplit=1)[0]
     return f"{stem}-{stamp}{suffix}"
+
+
+def _build_export_checkpoint_candidate(
+    *,
+    workspace: ClassroomPlannerWorkspace,
+    export_job_id: UUID,
+    exported_at,
+    checkpoint_id: UUID,
+) -> SeatingExportCheckpoint:
+    """Build the checkpoint candidate recorded for a successful seating export."""
+
+    template = workspace.template
+    if template is None:
+        raise ValueError("Seating export checkpoints require a room template.")
+
+    room_context = build_room_context_snapshot(workspace=workspace)
+    seating_snapshot = build_normalized_seating_snapshot(workspace=workspace)
+    return SeatingExportCheckpoint(
+        id=checkpoint_id,
+        roster_id=workspace.roster.id,
+        template_id=template.id,
+        source_draft_id=workspace.draft.id,
+        source_export_job_id=export_job_id,
+        room_context_hash=build_room_context_hash(room_context=room_context),
+        assignment_hash=build_assignment_hash(seating_snapshot=seating_snapshot),
+        room_context=room_context,
+        seating_snapshot=seating_snapshot,
+        created_at=exported_at,
+    )

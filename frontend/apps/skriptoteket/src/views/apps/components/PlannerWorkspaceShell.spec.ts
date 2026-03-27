@@ -23,11 +23,24 @@ type PlannerStateMock = {
   groupAssignments: Array<{ student_id: string; group_id: string }>;
   seats: RoomTemplate["seats"];
   seatAssignments: Array<{ student_id: string; seat_id: string }>;
+  seatingPreferences: Array<{ student_id: string; near_teacher: boolean }>;
+  relationshipRules: Array<{ id: string; kind: "keep_near" | "keep_apart"; student_ids: string[] }>;
+  pendingRelationshipStudentIds: string[];
+  smartRuleFeedbackMessage: string | null;
+  canCommitPendingRelationshipRule: boolean;
   saveStatus: string;
   saveMessage: string | null;
   isWorkspaceBusy: boolean;
+  canEditSeatingSmartRules: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
+  setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
+  clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
+  handleSeatingSmartToolStudentSelection: ReturnType<typeof vi.fn>;
+  commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
+  deleteRelationshipRule: ReturnType<typeof vi.fn>;
+  setDraftSmartEnabled: ReturnType<typeof vi.fn>;
   reloadActiveWorkspace: ReturnType<typeof vi.fn>;
   undoGroupingDraft: ReturnType<typeof vi.fn>;
   redoGroupingDraft: ReturnType<typeof vi.fn>;
@@ -70,11 +83,24 @@ const stateMocks = vi.hoisted(() => ({
       { id: "seat-2", x: 120, y: 0, zone: null },
     ],
     seatAssignments: [{ student_id: "student-1", seat_id: "seat-1" }],
+    seatingPreferences: [],
+    relationshipRules: [],
+    pendingRelationshipStudentIds: [],
+    smartRuleFeedbackMessage: null,
+    canCommitPendingRelationshipRule: false,
     saveStatus: "saved",
     saveMessage: null,
     isWorkspaceBusy: false,
+    canEditSeatingSmartRules: true,
     canUndo: false,
     canRedo: false,
+    activeSeatingSmartTool: null,
+    setActiveSeatingSmartTool: vi.fn(),
+    clearPendingRelationshipSelection: vi.fn(),
+    handleSeatingSmartToolStudentSelection: vi.fn(() => false),
+    commitPendingRelationshipRule: vi.fn(() => true),
+    deleteRelationshipRule: vi.fn(),
+    setDraftSmartEnabled: vi.fn(),
     reloadActiveWorkspace: vi.fn(),
     undoGroupingDraft: vi.fn(),
     redoGroupingDraft: vi.fn(),
@@ -188,9 +214,24 @@ describe("PlannerWorkspaceShell", () => {
       { id: "seat-2", x: 120, y: 0, zone: null },
     ];
     stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
+    stateMocks.plannerState.seatingPreferences = [];
+    stateMocks.plannerState.relationshipRules = [];
+    stateMocks.plannerState.pendingRelationshipStudentIds = [];
+    stateMocks.plannerState.smartRuleFeedbackMessage = null;
+    stateMocks.plannerState.canCommitPendingRelationshipRule = false;
     stateMocks.plannerState.isWorkspaceBusy = false;
+    stateMocks.plannerState.canEditSeatingSmartRules = true;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
+    stateMocks.plannerState.activeSeatingSmartTool = null;
+    stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
+    stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
+    stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReset();
+    stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReturnValue(false);
+    stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
+    stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
+    stateMocks.plannerState.deleteRelationshipRule.mockReset();
+    stateMocks.plannerState.setDraftSmartEnabled.mockReset();
     stateMocks.plannerState.draft = {
       id: "draft-1",
       draft_kind: "grouping",
@@ -276,6 +317,41 @@ describe("PlannerWorkspaceShell", () => {
     await wrapper.get("[data-test='seating-student-pool'] button").trigger("click");
 
     expect(wrapper.get("[data-test='drawer']").text()).toBe("open");
+  });
+
+  it("routes seating clicks through the active smart tool instead of opening the drawer", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.activeSeatingSmartTool = "near_teacher";
+    stateMocks.plannerState.handleSeatingSmartToolStudentSelection.mockReturnValue(true);
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get("[data-test='seating-student-pool'] button").trigger("click");
+
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith(
+      "student-1",
+    );
+    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
   it("keeps classroom-aware grouping as an optional in-workspace picker", async () => {

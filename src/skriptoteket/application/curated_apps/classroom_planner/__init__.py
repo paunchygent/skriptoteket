@@ -54,6 +54,10 @@ from .handlers.seating_history import (
     ActivateSeatingHistoryDraftHandler,
     DeleteHistoricSeatingDraftHandler,
 )
+from .handlers.smart_rules import (
+    GetRosterSmartRulesHandler,
+    PatchRosterSmartRulesHandler,
+)
 from .handlers.templates import (
     CreateRoomTemplateHandler,
     DeleteRoomTemplateHandler,
@@ -89,6 +93,7 @@ __all__ = [
     "GetRosterHandler",
     "GetRecoverableSeatingExportJobForDraftHandler",
     "GetRecoverableGroupingExportJobForDraftHandler",
+    "GetRosterSmartRulesHandler",
     "GetSeatingExportJobHandler",
     "GetGroupingExportJobHandler",
     "GroupingExportKind",
@@ -96,6 +101,7 @@ __all__ = [
     "ListRoomTemplatesHandler",
     "ListRostersHandler",
     "PatchDraftHandler",
+    "PatchRosterSmartRulesHandler",
     "PrepareGroupingExportHandler",
     "PreparedGroupingExportContract",
     "PrepareSeatingExportHandler",

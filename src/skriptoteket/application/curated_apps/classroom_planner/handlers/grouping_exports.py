@@ -26,14 +26,14 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassroomPlannerWorkspace,
     PlanDraftKind,
 )
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import validation_error
 from skriptoteket.protocols.classroom_planner import (
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
 )
 
-from .workspace_builders import ensure_active_draft
+from .planner_context import load_hydrated_workspace_for_owner
 
 
 class PrepareGroupingExportHandler:
@@ -80,31 +80,12 @@ class PrepareGroupingExportHandler:
         draft_id: UUID,
         owner_user_id: UUID,
     ) -> ClassroomPlannerWorkspace:
-        workspace = await self._drafts.get_workspace(draft_id=draft_id)
-        if workspace is None or workspace.draft.owner_user_id != owner_user_id:
-            raise not_found("PlanDraft", str(draft_id))
-        if workspace.draft.draft_kind != PlanDraftKind.GROUPING:
-            raise validation_error("Endast grupputkast kan exporteras från den här exportvägen.")
-
-        ensure_active_draft(draft=workspace.draft)
-
-        roster = await self._rosters.get_by_id(roster_id=workspace.draft.roster_id)
-        if roster is None or roster.owner_user_id != owner_user_id:
-            raise not_found("Roster", str(workspace.draft.roster_id))
-
-        template = None
-        if workspace.draft.template_id is not None:
-            template = await self._templates.get_by_id(template_id=workspace.draft.template_id)
-            if template is None or template.owner_user_id != owner_user_id:
-                raise not_found("RoomTemplate", str(workspace.draft.template_id))
-
-        return ClassroomPlannerWorkspace(
-            draft=workspace.draft,
-            roster=roster,
-            template=template,
-            groups=workspace.groups,
-            group_assignments=workspace.group_assignments,
-            seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
-            history_status=workspace.history_status,
+        return await load_hydrated_workspace_for_owner(
+            drafts=self._drafts,
+            rosters=self._rosters,
+            templates=self._templates,
+            owner_user_id=owner_user_id,
+            draft_id=draft_id,
+            expected_draft_kind=PlanDraftKind.GROUPING,
+            wrong_kind_message="Endast grupputkast kan exporteras från den här exportvägen.",
         )

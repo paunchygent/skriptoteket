@@ -1,3 +1,15 @@
+"""FastAPI application factory for Skriptoteket.
+
+Purpose:
+    Compose middleware, routes, DI, static assets, and startup checks for the
+    production and development web process.
+
+Relationships:
+    - Loads environment settings from `skriptoteket.config`.
+    - Registers startup checks from `skriptoteket.web.startup_checks`.
+    - Mounts the shared application router and observability endpoints.
+"""
+
 from pathlib import Path
 
 import structlog
@@ -16,6 +28,7 @@ from skriptoteket.web.middleware.metrics import metrics_middleware
 from skriptoteket.web.middleware.tracing import tracing_middleware
 from skriptoteket.web.router import router as web_router
 from skriptoteket.web.routes.observability import router as observability_router
+from skriptoteket.web.startup_checks import ensure_database_revision_is_current
 
 logger = structlog.get_logger(__name__)
 
@@ -61,6 +74,9 @@ def create_app() -> FastAPI:
     # Application routes
     app.include_router(web_router)
 
+    async def database_revision_startup_check() -> None:
+        await ensure_database_revision_is_current(settings)
+
     async def smtp_startup_check() -> None:
         status, error = await check_smtp(settings)
         if status == "healthy":
@@ -73,6 +89,7 @@ def create_app() -> FastAPI:
             smtp_port=settings.EMAIL_SMTP_PORT,
         )
 
+    app.add_event_handler("startup", database_revision_startup_check)
     app.add_event_handler("startup", smtp_startup_check)
 
     return app

@@ -16,12 +16,21 @@ from skriptoteket.infrastructure.db.models.classroom_planner_room_template impor
 from skriptoteket.infrastructure.db.models.classroom_planner_roster import (
     RosterModel,
 )
+from skriptoteket.infrastructure.db.models.classroom_planner_roster_smart_rule import (
+    RosterRelationshipRuleModel,
+    RosterSeatingPreferenceModel,
+    RosterSmartRuleSetModel,
+)
+from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_checkpoint import (
+    SeatingExportCheckpointModel,
+)
 from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_job import (
     SeatingExportJobModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_seating_export_webhook_binding import (
     SeatingExportWebhookBindingModel,
 )
+from skriptoteket.infrastructure.db.models.conversion_hub_job import ConversionHubJobModel
 from skriptoteket.infrastructure.db.models.user_favorite import (
     UserFavoriteAppModel,
     UserFavoriteToolModel,
@@ -29,12 +38,17 @@ from skriptoteket.infrastructure.db.models.user_favorite import (
 
 __all__ = [
     "DraftGroupModel",
+    "ConversionHubJobModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",
     "PlanDraftModel",
+    "RosterRelationshipRuleModel",
     "RoomTemplateModel",
     "RosterModel",
+    "RosterSeatingPreferenceModel",
+    "RosterSmartRuleSetModel",
     "SeatAssignmentModel",
+    "SeatingExportCheckpointModel",
     "SeatingExportJobModel",
     "SeatingExportWebhookBindingModel",
     "StudentPlanningMetaModel",

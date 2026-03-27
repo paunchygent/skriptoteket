@@ -13,11 +13,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
-    RelationshipKind,
-    RelationshipRule,
     SeatAssignment,
     StudentPlanningMeta,
-    StudentSeatingPreference,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
 from skriptoteket.infrastructure.repositories.classroom_planner import (
@@ -99,8 +96,6 @@ def _make_draft_model(
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[],
-        seating_preferences=[],
-        relationship_rules=[],
     )
 
 
@@ -193,14 +188,6 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
         group_assignments=[],
         seat_assignments=[],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="test")],
-        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=True)],
-        relationship_rules=[
-            RelationshipRule(
-                id="rule-1",
-                kind=RelationshipKind.KEEP_NEAR,
-                student_ids=["s1", "s2"],
-            )
-        ],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -216,14 +203,6 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
         {
             "student_id": "s1",
             "notes": "test",
-        }
-    ]
-    assert snapshot["seating_preferences"] == [{"student_id": "s1", "near_teacher": True}]
-    assert snapshot["relationship_rules"] == [
-        {
-            "rule_id": "rule-1",
-            "kind": RelationshipKind.KEEP_NEAR.value,
-            "student_ids": ["s1", "s2"],
         }
     ]
 
@@ -377,14 +356,6 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-2")],
         student_planning_meta=[StudentPlanningMeta(student_id="student-1", notes="front row")],
-        seating_preferences=[StudentSeatingPreference(student_id="student-1", near_teacher=True)],
-        relationship_rules=[
-            RelationshipRule(
-                id="rule-1",
-                kind=RelationshipKind.KEEP_APART,
-                student_ids=["student-1", "student-2"],
-            )
-        ],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -400,14 +371,6 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
         {
             "student_id": "student-1",
             "notes": "front row",
-        }
-    ]
-    assert history[0]["seating_preferences"] == [{"student_id": "student-1", "near_teacher": True}]
-    assert history[0]["relationship_rules"] == [
-        {
-            "rule_id": "rule-1",
-            "kind": RelationshipKind.KEEP_APART.value,
-            "student_ids": ["student-1", "student-2"],
         }
     ]
     assert model.undo_index == 0

@@ -69,6 +69,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0147-klassrumskartan-seating-only-teacher-distance-contract-reset.md`
 - Seating smart-rule toolbar + non-overlapping cluster authoring:
   `docs/backlog/prs/pr-0149-klassrumskartan-seating-smart-rule-toolbar-and-non-overlapping-cluster-authoring-v1.md`
+- Roster-global smart-rule ownership boundary reset:
+  `docs/backlog/prs/pr-0151-klassrumskartan-roster-global-smart-rules-and-draft-local-arrangement-boundary-reset.md`
+- Seating export checkpoint registry + history dedupe:
+  `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - Conversion Hub local job boundary follow-up:
   `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - Proposed Klassrumskartan export/import epic:
@@ -350,6 +354,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0145-alembic-migration-integrity-and-full-idempotency-coverage.md`
 - `docs/backlog/prs/pr-0146-klassrumskartan-seating-pdf-local-cutover-and-sir-convert-path-removal.md`
 - `docs/backlog/prs/pr-0147-klassrumskartan-seating-only-teacher-distance-contract-reset.md`
+- `docs/backlog/prs/pr-0149-klassrumskartan-seating-smart-rule-toolbar-and-non-overlapping-cluster-authoring-v1.md`
+- `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
+- `docs/backlog/prs/pr-0151-klassrumskartan-roster-global-smart-rules-and-draft-local-arrangement-boundary-reset.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

@@ -38,6 +38,7 @@ class SirConvertClientSettingsV2:
     base_url: str
     api_key: str
     timeout_seconds: float
+    unix_socket_path: str | None = None
     class_list_import_pdf_backend_strategy: str = "pymupdf"
     class_list_import_acceleration_policy: str = "cpu_only"
 
@@ -149,6 +150,25 @@ def _build_pdf_text_extraction_job_spec(
         },
         "retention": {"pin": False},
     }
+
+
+def build_sir_convert_async_http_client(
+    *,
+    settings: SirConvertClientSettingsV2,
+) -> httpx.AsyncClient:
+    """Build the Sir Convert HTTP client with optional same-host Unix-socket transport."""
+
+    if settings.unix_socket_path:
+        transport = httpx.AsyncHTTPTransport(uds=settings.unix_socket_path)
+        return httpx.AsyncClient(
+            base_url=settings.base_url,
+            timeout=settings.timeout_seconds,
+            transport=transport,
+        )
+    return httpx.AsyncClient(
+        base_url=settings.base_url,
+        timeout=settings.timeout_seconds,
+    )
 
 
 class SirConvertALotClientV2:

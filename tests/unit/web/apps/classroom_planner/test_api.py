@@ -38,8 +38,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
-    RelationshipKind,
-    RelationshipRule,
     ResumablePlanDraft,
     RoomTemplate,
     Roster,
@@ -47,7 +45,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    StudentSeatingPreference,
 )
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner as api
@@ -553,14 +550,6 @@ async def test_update_draft_calls_handler():
         group_assignments=[api.GroupAssignmentDto(student_id="s1", group_id="g2")],
         seat_assignments=[api.SeatAssignmentDto(student_id="s1", seat_id="seat1")],
         student_planning_meta=[api.StudentPlanningMetaDto(student_id="s1", notes="Needs support")],
-        seating_preferences=[api.StudentSeatingPreferenceDto(student_id="s1", near_teacher=True)],
-        relationship_rules=[
-            api.RelationshipRuleDto(
-                id="rule-1",
-                kind=RelationshipKind.KEEP_NEAR.value,
-                student_ids=["s1", "s2"],
-            )
-        ],
     )
     now = datetime.now(timezone.utc)
     draft = PlanDraft(
@@ -601,14 +590,6 @@ async def test_update_draft_calls_handler():
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="Needs support")],
-        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=True)],
-        relationship_rules=[
-            RelationshipRule(
-                id="rule-1",
-                kind=RelationshipKind.KEEP_NEAR,
-                student_ids=["s1", "s2"],
-            )
-        ],
         history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
     handler.handle.return_value = workspace
@@ -624,16 +605,6 @@ async def test_update_draft_calls_handler():
     assert result.draft.use_history is True
     assert result.draft.grouping_seating_distance_enabled is True
     assert result.history_status.can_undo is True
-    assert result.seating_preferences == [
-        api.StudentSeatingPreferenceDto(student_id="s1", near_teacher=True)
-    ]
-    assert result.relationship_rules == [
-        api.RelationshipRuleDto(
-            id="rule-1",
-            kind=RelationshipKind.KEEP_NEAR.value,
-            student_ids=["s1", "s2"],
-        )
-    ]
     handler.handle.assert_awaited_once_with(
         draft_id=draft_id,
         owner_user_id=user.id,
@@ -645,14 +616,6 @@ async def test_update_draft_calls_handler():
         group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
         student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="Needs support")],
-        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=True)],
-        relationship_rules=[
-            RelationshipRule(
-                id="rule-1",
-                kind=RelationshipKind.KEEP_NEAR,
-                student_ids=["s1", "s2"],
-            )
-        ],
     )
 
 

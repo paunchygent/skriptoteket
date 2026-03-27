@@ -37,7 +37,7 @@ a first-class product surface.
 
 - [x] 1. PR-0063: ADR + EPIC/Story scaffolding (docs-as-code; review-ready)
 - [x] 2. PR-0064: Backend Sir Convert-a-Lot v2 client + curated app API surface (submit/poll/download)
-- [ ] 3. PR-0148: Conversion Hub local job ledger and owned status/download boundary
+- [x] 3. PR-0148: Conversion Hub local job ledger and owned status/download boundary
 - [ ] 4. PR-0065: SPA Conversion Hub bespoke UI (batch + preview + pdf_layout controls)
 
 ## Notes

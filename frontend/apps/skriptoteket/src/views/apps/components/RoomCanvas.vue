@@ -22,12 +22,18 @@ import {
 import { isWallFixtureType, normalizeRoomGrid } from "../roomFixtureLayout";
 import { useClassroomState } from "../useClassroomState";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   selectedStudentId?: string | null;
+  selectedStudentIds?: string[];
+  smartRuleMarkersByStudentId?: Record<string, string[]>;
   scalePercent: number;
   scaledSurfaceStyle: Record<string, string>;
   surfaceScale: number;
-}>();
+}>(), {
+  selectedStudentId: null,
+  selectedStudentIds: () => [],
+  smartRuleMarkersByStudentId: () => ({}),
+});
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
@@ -202,7 +208,8 @@ onBeforeUnmount(() => {
                 :key="seat.id"
                 :seat="seat"
                 :student="state.studentBySeatId[seat.id]"
-                :selected="props.selectedStudentId === state.studentBySeatId[seat.id]?.id"
+                :markers="props.smartRuleMarkersByStudentId[state.studentBySeatId[seat.id]?.id ?? ''] ?? []"
+                :selected="props.selectedStudentId === state.studentBySeatId[seat.id]?.id || props.selectedStudentIds.includes(state.studentBySeatId[seat.id]?.id ?? '')"
                 @student-dropped="state.assignStudentToSeat"
                 @student-removed="state.clearSeatAssignment"
                 @swap-requested="state.swapSeatAssignments"

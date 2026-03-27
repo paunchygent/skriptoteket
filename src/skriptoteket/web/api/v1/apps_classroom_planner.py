@@ -3,7 +3,7 @@
 This router exposes the bespoke classroom-planner contract used by the SPA. It
 keeps reusable roster and room assets separate from draft-scoped workspace
 state and only publishes the current fundamentals workflow for grouping,
-seating, and student planning notes.
+seating, student planning notes, and draft-local run controls.
 """
 
 from uuid import UUID
@@ -45,7 +45,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     DraftGroup,
     GroupAssignment,
     PlanDraftKind,
-    RelationshipRule,
     ResumablePlanDraft,
     RoomFixture,
     RoomTemplate,
@@ -54,7 +53,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     SeatAssignment,
     Student,
     StudentPlanningMeta,
-    StudentSeatingPreference,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner import (
@@ -266,8 +264,6 @@ class DraftWorkspaceResponse(BaseModel):
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
     student_planning_meta: list[StudentPlanningMetaDto]
-    seating_preferences: list[StudentSeatingPreferenceDto]
-    relationship_rules: list[RelationshipRuleDto]
     history_status: DraftHistoryStatusDto
 
 
@@ -292,8 +288,6 @@ class UpdatePlanDraftRequest(BaseModel):
     group_assignments: list[GroupAssignmentDto] | None = None
     seat_assignments: list[SeatAssignmentDto] | None = None
     student_planning_meta: list[StudentPlanningMetaDto] | None = None
-    seating_preferences: list[StudentSeatingPreferenceDto] | None = None
-    relationship_rules: list[RelationshipRuleDto] | None = None
 
     @model_validator(mode="after")
     def validate_unique_collections(self) -> "UpdatePlanDraftRequest":
@@ -303,13 +297,6 @@ class UpdatePlanDraftRequest(BaseModel):
             _assert_unique(
                 [meta.student_id for meta in self.student_planning_meta], label="Student metadata"
             )
-        if self.seating_preferences is not None:
-            _assert_unique(
-                [pref.student_id for pref in self.seating_preferences],
-                label="Seating preference student",
-            )
-        if self.relationship_rules is not None:
-            _assert_unique([rule.id for rule in self.relationship_rules], label="Relationship rule")
         if self.group_assignments is not None:
             _assert_unique(
                 [assignment.student_id for assignment in self.group_assignments],
@@ -379,13 +366,6 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
         student_planning_meta=[
             StudentPlanningMetaDto.model_validate(meta) for meta in workspace.student_planning_meta
         ],
-        seating_preferences=[
-            StudentSeatingPreferenceDto.model_validate(pref)
-            for pref in workspace.seating_preferences
-        ],
-        relationship_rules=[
-            RelationshipRuleDto.model_validate(rule) for rule in workspace.relationship_rules
-        ],
         history_status=DraftHistoryStatusDto.model_validate(workspace.history_status),
     )
 
@@ -412,8 +392,6 @@ async def undo_draft(
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
-            seating_preferences=workspace.seating_preferences,
-            relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
     )
@@ -441,8 +419,6 @@ async def redo_draft(
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
             student_planning_meta=workspace.student_planning_meta,
-            seating_preferences=workspace.seating_preferences,
-            relationship_rules=workspace.relationship_rules,
             history_status=workspace.history_status,
         )
     )
@@ -717,22 +693,6 @@ async def update_draft(
                 for meta in request.student_planning_meta
             ]
             if request.student_planning_meta is not None
-            else None
-        ),
-        seating_preferences=(
-            [
-                StudentSeatingPreference.model_validate(preference.model_dump())
-                for preference in request.seating_preferences
-            ]
-            if request.seating_preferences is not None
-            else None
-        ),
-        relationship_rules=(
-            [
-                RelationshipRule.model_validate(rule.model_dump())
-                for rule in request.relationship_rules
-            ]
-            if request.relationship_rules is not None
             else None
         ),
     )

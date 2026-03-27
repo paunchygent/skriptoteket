@@ -5,7 +5,7 @@ title: "Klassrumskartan: seating-only teacher-distance contract reset"
 status: done
 owners: "agents"
 created: 2026-03-26
-updated: 2026-03-26
+updated: 2026-03-27
 stories:
   - "ST-27-01"
 tags: ["backend", "frontend-contract", "api", "migrations", "klassrumskartan", "smart-assignment"]
@@ -44,6 +44,12 @@ reset to a seating-only teacher-distance concept.
 Replace the old `support_seat` concept with a seating-only teacher-distance contract across domain,
 API, persistence, migration coverage, and the thin frontend contract layer, so the later visual
 rule-authoring UI can build on an honest backend shape.
+
+## Post-implementation note
+
+`PR-0147` corrected terminology only. It did not settle the final ownership boundary for smart
+rules, and the implemented contract still kept those renamed rules draft-scoped. The later
+ownership reset to roster-global smart rules is tracked separately in `PR-0151`.
 
 ## Non-goals
 

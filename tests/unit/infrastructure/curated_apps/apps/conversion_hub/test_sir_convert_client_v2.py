@@ -5,6 +5,11 @@ These tests validate request shaping + error mapping for the Conversion Hub inte
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
+from pathlib import Path
+from uuid import uuid4
+
 import httpx
 import pytest
 
@@ -15,6 +20,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
     SirConvertClientSettingsV2,
+    build_sir_convert_async_http_client,
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertSubmitRequestV2
 
@@ -305,3 +311,52 @@ async def test_list_webhook_subscriptions_returns_subscription_summaries() -> No
 
     assert len(subscriptions) == 1
     assert subscriptions[0].subscription_id == "whsub-1"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_build_sir_convert_async_http_client_supports_unix_socket_transport() -> None:
+    socket_path = Path("/tmp") / f"scal-{uuid4().hex[:8]}.sock"
+    seen_request_lines: list[str] = []
+
+    async def _handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        raw = await reader.readuntil(b"\r\n\r\n")
+        seen_request_lines.append(raw.decode("utf-8", errors="replace").splitlines()[0])
+        body = b'{"job":{"job_id":"job-uds","status":"queued"}}'
+        writer.write(
+            b"HTTP/1.1 200 OK\r\n"
+            b"Content-Type: application/json\r\n"
+            + f"Content-Length: {len(body)}\r\n".encode("utf-8")
+            + b"Connection: close\r\n\r\n"
+            + body
+        )
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+
+    with contextlib.suppress(FileNotFoundError):
+        socket_path.unlink()
+    server = await asyncio.start_unix_server(_handle, path=str(socket_path))
+    serve_task = asyncio.create_task(server.serve_forever())
+    try:
+        settings = SirConvertClientSettingsV2(
+            base_url="http://sir-convert.local",
+            api_key="test-key",
+            timeout_seconds=10.0,
+            unix_socket_path=str(socket_path),
+        )
+        async with build_sir_convert_async_http_client(settings=settings) as client:
+            svc = SirConvertALotClientV2(settings=settings, client=client)
+            job = await svc.get_job("job-uds", correlation_id="corr-uds")
+    finally:
+        server.close()
+        await server.wait_closed()
+        serve_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await serve_task
+        with contextlib.suppress(FileNotFoundError):
+            socket_path.unlink()
+
+    assert seen_request_lines == ["GET /v2/convert/jobs/job-uds HTTP/1.1"]
+    assert job.job_id == "job-uds"
+    assert job.status == "queued"

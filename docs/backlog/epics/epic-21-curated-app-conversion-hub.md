@@ -5,6 +5,7 @@ title: "Curated app: Conversion Hub (Sir Convert-a-Lot v2)"
 status: active
 owners: "agents"
 created: 2026-03-01
+updated: 2026-03-27
 outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview) that routes all supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script."
 ---
 
@@ -56,6 +57,6 @@ outcome: "Skriptoteket provides a first-class conversion hub UI (batch + preview
 
 - PR-0063 (docs planning scaffold): done
 - PR-0064 (backend v2 client + curated app API surface): done
-- PR-0148 (local job ledger + owned status/download boundary): next
+- PR-0148 (local job ledger + owned status/download boundary): done
 - PR-0065 (SPA bespoke UI): pending after the local-ledger boundary lands
 - PR-0066 (migrate tests + retire html-to-pdf-preview): pending

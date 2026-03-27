@@ -2,7 +2,8 @@
 
 This module persists the mutable classroom-planner workspace used by the
 active fundamentals flow. Draft child tables capture group structure, seating
-assignments, and teacher-owned planning state scoped to one plan draft.
+assignments, and teacher notes scoped to one plan draft, while roster-global
+smart rules live in separate roster-owned tables.
 """
 
 from __future__ import annotations
@@ -125,19 +126,6 @@ class PlanDraftModel(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    seating_preferences: Mapped[list[StudentSeatingPreferenceModel]] = relationship(
-        "StudentSeatingPreferenceModel",
-        back_populates="draft",
-        cascade="all, delete-orphan",
-        lazy="selectin",
-    )
-    relationship_rules: Mapped[list[RelationshipRuleModel]] = relationship(
-        "RelationshipRuleModel",
-        back_populates="draft",
-        cascade="all, delete-orphan",
-        lazy="selectin",
-    )
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -235,49 +223,4 @@ class StudentPlanningMetaModel(Base):
 
     draft: Mapped[PlanDraftModel] = relationship(
         "PlanDraftModel", back_populates="student_planning_meta"
-    )
-
-
-class StudentSeatingPreferenceModel(Base):
-    """Persist per-student seating-only preferences for a draft."""
-
-    __tablename__ = "classroom_planner_student_seating_preferences"
-    __table_args__ = (
-        UniqueConstraint("draft_id", "student_id", name="uq_cp_student_seating_pref"),
-    )
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    draft_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("classroom_planner_plan_drafts.id", ondelete="CASCADE"),
-        index=True,
-        nullable=False,
-    )
-    student_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    near_teacher: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-
-    draft: Mapped[PlanDraftModel] = relationship(
-        "PlanDraftModel", back_populates="seating_preferences"
-    )
-
-
-class RelationshipRuleModel(Base):
-    """Persist relationship constraints for a draft."""
-
-    __tablename__ = "classroom_planner_relationship_rules"
-    __table_args__ = (UniqueConstraint("draft_id", "rule_id", name="uq_cp_relationship_rule"),)
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    draft_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("classroom_planner_plan_drafts.id", ondelete="CASCADE"),
-        index=True,
-        nullable=False,
-    )
-    rule_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    kind: Mapped[str] = mapped_column(String(32), nullable=False)
-    student_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
-
-    draft: Mapped[PlanDraftModel] = relationship(
-        "PlanDraftModel", back_populates="relationship_rules"
     )

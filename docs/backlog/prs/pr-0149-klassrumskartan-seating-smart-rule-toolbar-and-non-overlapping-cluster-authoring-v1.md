@@ -13,6 +13,7 @@ dependencies:
   - "ADR-0074"
   - "EPIC-27"
   - "PR-0147"
+  - "PR-0151"
 acceptance_criteria:
   - "Given the teacher is in `Sittplatser` and opens the smart-rule surface, when they choose one smart tool, then exactly one tool is active at a time and incomplete selections are cleared by tool changes, `Esc`, or `Rensa markering`."
   - "Given the teacher chooses `Närmare läraren`, when they click one student tile, then that student's unary seating rule toggles on or off immediately without requiring a separate commit form."
@@ -39,6 +40,17 @@ Implement the first class-wide smart-rule authoring surface in `Sittplatser` wit
 - non-overlapping visible relationship clusters
 - visible rule summary from the main seating workspace
 
+This slice defines the seating authoring UX, but the authored rules themselves are class-global and
+roster-owned rather than draft-owned.
+
+## Landing note
+
+The current local implementation for this slice is intentionally not merge-ready on its own after
+the ownership correction. It still needs the `PR-0151` boundary reset so the existing UI stops:
+
+- persisting smart rules through draft PATCH/autosave
+- treating draft-local `Smart` as the authoring gate for roster-global rules
+
 ## Non-goals
 
 - Shipping grouping smart-rule authoring in this PR.
@@ -46,6 +58,7 @@ Implement the first class-wide smart-rule authoring surface in `Sittplatser` wit
 - Solving overlapping relationship clusters.
 - Adding line-drawing / graph visuals between students.
 - Delivering the full backend smart solver or explanation lane.
+- Cementing draft-owned smart-rule persistence as a long-term model.
 
 ## Implementation plan
 
@@ -53,6 +66,8 @@ Implement the first class-wide smart-rule authoring surface in `Sittplatser` wit
    - Add one active smart-tool state plus temporary relation selection state in the seating store.
    - Keep `Närmare läraren` separate from relationship-cluster membership.
    - Enforce one visible relationship-cluster membership per student in the client state model.
+   - Keep the client/store boundary compatible with roster-global smart-rule loading rather than
+     assuming draft PATCH is the authoritative persistence path.
 
 2. Add seating-toolbar rule authoring.
    - Add or extend a seating smart-toolbar surface with:
@@ -90,7 +105,7 @@ Implement the first class-wide smart-rule authoring surface in `Sittplatser` wit
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
   - any new seating smart-rule toolbar/summary component files created for this slice
-- [ ] Keep API/store serialization aligned with the `PR-0147` contract
+- [ ] Retarget API/store serialization through `PR-0151` so this UI no longer depends on draft-owned rule persistence
 - [ ] Run frontend verification plus live Playwright proof
 - [ ] Record verification in `.agents/handoff.md`
 

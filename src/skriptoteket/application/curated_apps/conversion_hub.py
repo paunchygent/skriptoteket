@@ -1,19 +1,26 @@
-"""Conversion Hub curated app contract models (Skriptoteket).
+"""Conversion Hub curated app models and local job contracts.
 
 Purpose:
-  Provide a typed, stable API contract for Skriptoteket's "Conversion Hub" curated app.
+  Define the stable product-facing request/response models for the Conversion Hub
+  curated app plus the local job-ledger state tracked by Skriptoteket.
 
 Relationships:
-  - Used by `src/skriptoteket/web/api/v1/apps_conversion_hub.py` as response/request models.
-  - Intended to mirror the Sir Convert-a-Lot v2 job-spec surface sufficiently for a clean
-    submit/poll/download orchestration flow, without embedding conversion engines in Skriptoteket.
+  - Used by `src/skriptoteket/web/api/v1/apps_conversion_hub.py` for request/response
+    serialization.
+  - Used by `application.curated_apps.handlers.conversion_hub_jobs` to normalize
+    upstream Sir Convert state into locally owned Conversion Hub jobs.
+  - Persisted via `protocols.conversion_hub.ConversionHubJobRepositoryProtocol`.
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 from enum import StrEnum
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from skriptoteket.domain.errors import DomainError, ErrorCode
 
 
 class ConversionHubSourceFormatV2(StrEnum):
@@ -88,13 +95,58 @@ class ConversionHubJobSpecV2(BaseModel):
     pdf_layout: ConversionHubPdfLayoutV2 | None = None
 
 
+class ConversionHubJobStatus(StrEnum):
+    """Normalize the locally owned Conversion Hub job lifecycle."""
+
+    SUBMITTED = "submitted"
+    QUEUED = "queued"
+    PROCESSING = "processing"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"
+
+    @classmethod
+    def from_upstream(cls, status: str) -> "ConversionHubJobStatus":
+        """Map Sir Convert status strings onto the local Conversion Hub contract."""
+        normalized = status.strip().lower()
+        if normalized == "cancelled":
+            normalized = "canceled"
+        try:
+            return cls(normalized)
+        except ValueError as exc:
+            raise DomainError(
+                code=ErrorCode.SERVICE_UNAVAILABLE,
+                message=f"Unsupported Conversion Hub upstream status: {status}",
+                details={"status": status},
+            ) from exc
+
+
+class ConversionHubJob(BaseModel):
+    """Persist one locally owned Conversion Hub conversion job."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    owner_user_id: UUID
+    input_filename: str = Field(min_length=1)
+    source_format: ConversionHubSourceFormatV2
+    output_format: ConversionHubOutputFormatV2
+    pdf_layout: ConversionHubPdfLayoutV2 | None = None
+    upstream_job_id: str | None = None
+    status: ConversionHubJobStatus
+    correlation_id: str | None = None
+    error_message: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
 class ConversionHubSubmittedJob(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     input_filename: str = Field(min_length=1)
-    job_id: str = Field(min_length=1)
-    status: str = Field(min_length=1)
-    idempotent_replay: bool = False
+    job_id: UUID
+    status: ConversionHubJobStatus
+    error: str | None = None
 
 
 class ConversionHubSubmitResult(BaseModel):
@@ -106,5 +158,6 @@ class ConversionHubSubmitResult(BaseModel):
 class ConversionHubJobStatusResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    job_id: str = Field(min_length=1)
-    status: str = Field(min_length=1)
+    job_id: UUID
+    status: ConversionHubJobStatus
+    error: str | None = None
