@@ -19,14 +19,15 @@ import {
   type GroupingExportJob,
   type GroupingExportOption,
 } from "./classroomPlannerExportApi";
-import {
-  flushPlannerRouteShellSave,
-  type PlannerRouteShellSaveController,
-} from "./classroomPlannerRouteShellSaveGuards";
 import type { PlanDraft } from "./classroomPlannerTypes";
+import type { PlannerTransitionResult } from "./plannerTransitionPolicies";
 
-type GroupingExportPlannerState = PlannerRouteShellSaveController & {
+type GroupingExportPlannerState = {
   draft: PlanDraft | null;
+  prepareForExport: (messages: {
+    conflictMessage: string;
+    fallbackMessage: string;
+  }) => Promise<PlannerTransitionResult>;
 };
 
 type UseGroupingExportFlowOptions = {
@@ -378,7 +379,7 @@ export function useGroupingExportFlow(options: UseGroupingExportFlowOptions) {
     statusLabel.value = initialStatusLabelForOption(option);
     isStarting.value = true;
 
-    const saveOutcome = await flushPlannerRouteShellSave(options.plannerState, {
+    const saveOutcome = await options.plannerState.prepareForExport({
       conflictMessage: "Lös sparkonflikten innan du exporterar.",
       fallbackMessage: "Kunde inte spara ändringarna innan export.",
     });

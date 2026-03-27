@@ -28,8 +28,10 @@ type PlannerStateMock = {
   pendingRelationshipStudentIds: string[];
   smartRuleFeedbackMessage: string | null;
   canCommitPendingRelationshipRule: boolean;
-  saveStatus: string;
-  saveMessage: string | null;
+  plannerStatusLabel: string;
+  plannerStatusMessage: string | null;
+  plannerStatusTone: "neutral" | "success" | "warning" | "danger";
+  plannerConflictMessage: string | null;
   isWorkspaceBusy: boolean;
   canEditSeatingSmartRules: boolean;
   canUndo: boolean;
@@ -88,8 +90,10 @@ const stateMocks = vi.hoisted(() => ({
     pendingRelationshipStudentIds: [],
     smartRuleFeedbackMessage: null,
     canCommitPendingRelationshipRule: false,
-    saveStatus: "saved",
-    saveMessage: null,
+    plannerStatusLabel: "Sparad",
+    plannerStatusMessage: null,
+    plannerStatusTone: "success",
+    plannerConflictMessage: null,
     isWorkspaceBusy: false,
     canEditSeatingSmartRules: true,
     canUndo: false,

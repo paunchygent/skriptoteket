@@ -70,7 +70,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 
 - [x] [ST-27-01: Smart-assignment contract reset and control model](../stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md)
 - [ ] [ST-27-02: Export checkpoints for smart history](../stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md)
-- [ ] [ST-27-06: Planner session lanes and transition matrix remediation](../stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md)
+- [x] [ST-27-06: Planner session lanes and transition matrix remediation](../stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md)
 - [ ] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
 - [ ] [ST-27-04: Smart grouping v1](../stories/story-27-04-klassrumskartan-smart-grouping-v1.md)
 - [ ] [ST-27-05: Smart explanations and alternate options](../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md)
@@ -100,6 +100,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   - PR-0147 reset the seating-only smart-rule contract
   - PR-0149 delivered the seating smart-rule authoring surface and visible V1 interaction model
   - PR-0151 completed the roster-owned smart-rule boundary, concurrency/autosave/hydration hardening, forward repair migration, Docker dev auto-upgrade path, and approved implementation review
+- ST-27-06 is done:
+  - PR-0152 split the planner into one session controller, one draft persistence lane, one
+    roster smart-rule lane, one smart-rule UI bucket, and explicit transition policies
+  - the route shell now uses explicit workspace/export/exit transition APIs, `clearWorkspace()`
+    stays teardown-only, exit timeout returns confirm-discard, and late responses are ignored
 - ST-27-02 remains next and is tracked by PR-0150.
-- ST-27-06 is now docs-approved and tracked by PR-0152 as the required frontend session-lane
-  remediation before ST-27-03 and ST-27-04 proceed.
+- The frontend prerequisite for ST-27-03 and ST-27-04 is now satisfied by PR-0152.

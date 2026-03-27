@@ -1,18 +1,18 @@
 /**
  * Classroom planner route-shell save guards.
  *
- * These helpers normalize the repeated "flush pending save, inspect the save
- * state, then continue or block" workflow used when Klassrumskartan switches
- * between overview, grouping, seating, and exit flows.
+ * These helpers keep the route shell aligned with the explicit planner
+ * transition matrix. They ask the store for transition-specific preparation
+ * rather than inspecting planner-global save truth.
  */
 
-import type { PlanDraft, SaveStatus } from "./classroomPlannerTypes";
+import type { PlanDraft } from "./classroomPlannerTypes";
+import type { PlannerExitResult, PlannerTransitionResult } from "./plannerTransitionPolicies";
 
 export type PlannerRouteShellSaveController = {
   draft: PlanDraft | null;
-  saveMessage: string | null;
-  saveStatus: SaveStatus;
-  flushPendingSave: () => Promise<boolean>;
+  prepareForPlannerExit: () => Promise<PlannerExitResult>;
+  prepareForWorkspaceSwitch: (messages: PlannerRouteShellBlockedSaveMessages) => Promise<PlannerTransitionResult>;
 };
 
 export type PlannerRouteShellBlockedSaveMessages = {
@@ -24,40 +24,33 @@ export type PlannerRouteShellSaveOutcome =
   | { status: "saved"; message: null }
   | { status: "blocked"; message: string };
 
-function isBlockedSaveStatus(saveStatus: SaveStatus): boolean {
-  return saveStatus === "conflict" || saveStatus === "error";
-}
-
 export async function flushPlannerRouteShellSave(
   plannerState: PlannerRouteShellSaveController,
   messages: PlannerRouteShellBlockedSaveMessages,
 ): Promise<PlannerRouteShellSaveOutcome> {
-  await plannerState.flushPendingSave();
-  if (!isBlockedSaveStatus(plannerState.saveStatus)) {
+  const result = await plannerState.prepareForWorkspaceSwitch(messages);
+  if (result.status === "saved") {
     return { status: "saved", message: null };
   }
-
   return {
     status: "blocked",
-    message:
-      plannerState.saveStatus === "conflict"
-        ? messages.conflictMessage
-        : plannerState.saveMessage ?? messages.fallbackMessage,
+    message: result.message,
   };
 }
 
 export async function flushPlannerRouteShellSaveForExit(
   plannerState: PlannerRouteShellSaveController,
-  timeoutMs: number,
 ): Promise<"saved" | "blocked" | "timed-out"> {
   if (!plannerState.draft) {
     return "saved";
   }
 
-  return await Promise.race<"saved" | "blocked" | "timed-out">([
-    plannerState.flushPendingSave().then((flushSucceeded) => (flushSucceeded ? "saved" : "blocked")),
-    new Promise<"timed-out">((resolve) => {
-      window.setTimeout(() => resolve("timed-out"), timeoutMs);
-    }),
-  ]);
+  const result = await plannerState.prepareForPlannerExit();
+  if (result.status === "saved") {
+    return "saved";
+  }
+  if (result.status === "confirm-discard") {
+    return "timed-out";
+  }
+  return "blocked";
 }

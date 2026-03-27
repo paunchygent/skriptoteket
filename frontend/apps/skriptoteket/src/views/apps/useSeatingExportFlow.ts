@@ -19,14 +19,15 @@ import {
   type SeatingExportJob,
   type SeatingExportOption,
 } from "./classroomPlannerExportApi";
-import {
-  flushPlannerRouteShellSave,
-  type PlannerRouteShellSaveController,
-} from "./classroomPlannerRouteShellSaveGuards";
 import type { PlanDraft } from "./classroomPlannerTypes";
+import type { PlannerTransitionResult } from "./plannerTransitionPolicies";
 
-type SeatingExportPlannerState = PlannerRouteShellSaveController & {
+type SeatingExportPlannerState = {
   draft: PlanDraft | null;
+  prepareForExport: (messages: {
+    conflictMessage: string;
+    fallbackMessage: string;
+  }) => Promise<PlannerTransitionResult>;
 };
 
 type UseSeatingExportFlowOptions = {
@@ -384,7 +385,7 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
     statusLabel.value = initialStatusLabelForOption(option);
     isStarting.value = true;
 
-    const saveOutcome = await flushPlannerRouteShellSave(options.plannerState, {
+    const saveOutcome = await options.plannerState.prepareForExport({
       conflictMessage: "Lös sparkonflikten innan du exporterar.",
       fallbackMessage: "Kunde inte spara ändringarna innan export.",
     });

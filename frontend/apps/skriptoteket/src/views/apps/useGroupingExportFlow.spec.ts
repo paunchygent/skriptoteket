@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useGroupingExportFlow } from "./useGroupingExportFlow";
 import type { GroupingExportJob } from "./classroomPlannerExportApi";
-import type { PlanDraft, SaveStatus } from "./classroomPlannerTypes";
+import type { PlanDraft } from "./classroomPlannerTypes";
 
 const exportApiMocks = vi.hoisted(() => ({
   createGroupingExportJob: vi.fn(),
@@ -37,9 +37,7 @@ vi.mock("../../composables/useToast", () => ({
 
 type PlannerStateMock = {
   draft: PlanDraft | null;
-  saveMessage: string | null;
-  saveStatus: SaveStatus;
-  flushPendingSave: () => Promise<boolean>;
+  prepareForExport: () => Promise<{ status: "saved"; message: null } | { status: "blocked"; reason: "conflict" | "error"; message: string }>;
 };
 
 function createDraft(): PlanDraft {
@@ -57,9 +55,7 @@ function createDraft(): PlanDraft {
 function createPlannerState(overrides?: Partial<PlannerStateMock>): PlannerStateMock {
   return {
     draft: createDraft(),
-    saveMessage: null,
-    saveStatus: "saved",
-    flushPendingSave: vi.fn().mockResolvedValue(true),
+    prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
     ...overrides,
   };
 }
@@ -127,7 +123,7 @@ describe("useGroupingExportFlow", () => {
 
     await flow.startDefaultExport();
 
-    expect(plannerState.flushPendingSave).toHaveBeenCalledTimes(1);
+    expect(plannerState.prepareForExport).toHaveBeenCalledTimes(1);
     expect(exportApiMocks.createGroupingExportJob).toHaveBeenCalledWith("draft-1", "xlsx");
     expect(exportApiMocks.downloadGroupingExportJob).toHaveBeenCalledWith("job-1");
     expect(flow.statusLabel.value).toBe("Excel-filen hämtad och sparad i Mina filer.");
@@ -193,9 +189,9 @@ describe("useGroupingExportFlow", () => {
   });
 
   it("blocks duplicate export starts while the create-job request is pending", async () => {
-    const flushDeferred = createDeferred<boolean>();
+    const flushDeferred = createDeferred<{ status: "saved"; message: null }>();
     const plannerState = createPlannerState({
-      flushPendingSave: vi.fn().mockReturnValue(flushDeferred.promise),
+      prepareForExport: vi.fn().mockReturnValue(flushDeferred.promise),
     });
     const createJobDeferred = createDeferred<GroupingExportJob>();
     exportApiMocks.createGroupingExportJob.mockReturnValue(createJobDeferred.promise);
@@ -224,7 +220,7 @@ describe("useGroupingExportFlow", () => {
     expect(flow.isBusy.value).toBe(true);
     expect(exportApiMocks.createGroupingExportJob).not.toHaveBeenCalled();
 
-    flushDeferred.resolve(true);
+    flushDeferred.resolve({ status: "saved", message: null });
     await Promise.resolve();
     createJobDeferred.resolve(createJob());
 
@@ -235,7 +231,11 @@ describe("useGroupingExportFlow", () => {
 
   it("blocks export when the pending save ends in a conflict", async () => {
     const plannerState = createPlannerState({
-      saveStatus: "conflict",
+      prepareForExport: vi.fn().mockResolvedValue({
+        status: "blocked",
+        reason: "conflict",
+        message: "Lös sparkonflikten innan du exporterar.",
+      }),
     });
     const flow = useGroupingExportFlow({
       plannerState,

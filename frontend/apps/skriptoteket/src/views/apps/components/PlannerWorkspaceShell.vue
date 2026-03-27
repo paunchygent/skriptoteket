@@ -101,36 +101,6 @@ const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && plannerState.template === null;
 });
 const workspaceContextLabel = computed(() => plannerState.template?.name ?? "Utan klassrum");
-const saveStatusLabel = computed(() => {
-  switch (plannerState.saveStatus) {
-    case "saving":
-      return "Sparar";
-    case "saved":
-      return "Sparad";
-    case "error":
-      return "Inte sparad";
-    case "conflict":
-      return "Konflikt";
-    default:
-      return "Ingen ändring";
-  }
-});
-const saveStatusTone = computed<"neutral" | "success" | "warning" | "danger">(() => {
-  switch (plannerState.saveStatus) {
-    case "saved":
-      return "success";
-    case "saving":
-      return "warning";
-    case "error":
-    case "conflict":
-      return "danger";
-    default:
-      return "neutral";
-  }
-});
-const hasSaveMessage = computed(() => {
-  return typeof plannerState.saveMessage === "string" && plannerState.saveMessage.length > 0;
-});
 const activeGroupingSummary = computed(() => props.workspaceSummary?.active_grouping_draft ?? null);
 const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping_history ?? []);
 const activeSeatingSummary = computed(() => props.workspaceSummary?.active_seating_draft ?? null);
@@ -285,11 +255,11 @@ watch(
 <template>
   <section class="space-y-6">
     <div
-      v-if="plannerState.saveStatus === 'conflict'"
+      v-if="plannerState.plannerConflictMessage"
       class="system-message system-message-warning"
     >
       <div class="system-message-content">
-        {{ plannerState.saveMessage }}
+        {{ plannerState.plannerConflictMessage }}
       </div>
       <button
         type="button"
@@ -305,9 +275,9 @@ watch(
       :context-label="isSeatWorkspaceWithoutTemplate ? 'Välj klassrum i sittschemat' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`"
       :mode-value="workspaceModeValue"
       :supporting-text="currentViewHint"
-      :status-label="saveStatusLabel"
-      :status-message="hasSaveMessage ? plannerState.saveMessage : null"
-      :status-tone="saveStatusTone"
+      :status-label="plannerState.plannerStatusLabel"
+      :status-message="plannerState.plannerStatusMessage"
+      :status-tone="plannerState.plannerStatusTone"
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('exit-app')"
     />

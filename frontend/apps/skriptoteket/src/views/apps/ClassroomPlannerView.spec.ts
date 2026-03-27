@@ -23,9 +23,10 @@ type PlannerStateMock = {
   template: RoomTemplate | null;
   draft: PlanDraft | null;
   abandonDraft: ReturnType<typeof vi.fn>;
-  cancelPendingSave: ReturnType<typeof vi.fn>;
+  discardPendingSessionWork: ReturnType<typeof vi.fn>;
   clearWorkspace: ReturnType<typeof vi.fn>;
-  flushPendingSave: ReturnType<typeof vi.fn>;
+  prepareForPlannerExit: ReturnType<typeof vi.fn>;
+  prepareForWorkspaceSwitch: ReturnType<typeof vi.fn>;
   getClassWorkspaceSummary: ReturnType<typeof vi.fn>;
   resolveDraft: ReturnType<typeof vi.fn>;
   startNewGroupingDraft: ReturnType<typeof vi.fn>;
@@ -49,9 +50,10 @@ const stateMocks = vi.hoisted(() => ({
     deleteGroupingHistoryDraft: vi.fn(),
     deleteSeatingHistoryDraft: vi.fn(),
     abandonDraft: vi.fn(),
-    cancelPendingSave: vi.fn(),
+    discardPendingSessionWork: vi.fn(),
     clearWorkspace: vi.fn(),
-    flushPendingSave: vi.fn(),
+    prepareForPlannerExit: vi.fn(),
+    prepareForWorkspaceSwitch: vi.fn(),
     getClassWorkspaceSummary: vi.fn(),
     resolveDraft: vi.fn(),
     startNewGroupingDraft: vi.fn(),
@@ -112,11 +114,12 @@ describe("ClassroomPlannerView", () => {
     stateMocks.plannerState.abandonDraft.mockReset();
     stateMocks.plannerState.activateGroupingHistoryDraft.mockReset();
     stateMocks.plannerState.activateSeatingHistoryDraft.mockReset();
-    stateMocks.plannerState.cancelPendingSave.mockReset();
+    stateMocks.plannerState.discardPendingSessionWork.mockReset();
     stateMocks.plannerState.clearWorkspace.mockReset();
     stateMocks.plannerState.deleteGroupingHistoryDraft.mockReset();
     stateMocks.plannerState.deleteSeatingHistoryDraft.mockReset();
-    stateMocks.plannerState.flushPendingSave.mockReset();
+    stateMocks.plannerState.prepareForPlannerExit.mockReset();
+    stateMocks.plannerState.prepareForWorkspaceSwitch.mockReset();
     stateMocks.plannerState.getClassWorkspaceSummary.mockReset();
     stateMocks.plannerState.loadWorkspace.mockReset();
     stateMocks.plannerState.resolveDraft.mockReset();
@@ -126,7 +129,11 @@ describe("ClassroomPlannerView", () => {
     stateMocks.plannerState.roster = null;
     stateMocks.plannerState.template = null;
     stateMocks.plannerState.draft = null;
-    stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
+    stateMocks.plannerState.prepareForPlannerExit.mockResolvedValue({ status: "saved" });
+    stateMocks.plannerState.prepareForWorkspaceSwitch.mockResolvedValue({
+      status: "saved",
+      message: null,
+    });
     localStorage.clear();
     vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([]);
     window.history.replaceState(null, "");
@@ -970,7 +977,6 @@ describe("ClassroomPlannerView", () => {
         last_opened_at: "2026-03-21T10:00:00Z",
       };
     });
-    stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
     stateMocks.plannerState.getClassWorkspaceSummary.mockResolvedValue(workspaceSummary);
 
     const wrapper = mount(ClassroomPlannerView, {
@@ -997,7 +1003,7 @@ describe("ClassroomPlannerView", () => {
     await wrapper.get("[data-test='return-to-workspace']").trigger("click");
     await flushPromises();
 
-    expect(stateMocks.plannerState.flushPendingSave).toHaveBeenCalled();
+    expect(stateMocks.plannerState.prepareForWorkspaceSwitch).toHaveBeenCalled();
     expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
     expect(stateMocks.plannerState.clearWorkspace).toHaveBeenCalled();
     expect(stateMocks.plannerState.getClassWorkspaceSummary).toHaveBeenCalledWith("roster-1");
@@ -1193,8 +1199,6 @@ describe("ClassroomPlannerView", () => {
         last_opened_at: "2026-03-21T10:00:00Z",
       };
     });
-    stateMocks.plannerState.flushPendingSave.mockResolvedValue(true);
-
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         stubs: {
@@ -1219,7 +1223,7 @@ describe("ClassroomPlannerView", () => {
     await wrapper.get("[data-test='exit-app']").trigger("click");
     await flushPromises();
 
-    expect(stateMocks.plannerState.flushPendingSave).toHaveBeenCalled();
+    expect(stateMocks.plannerState.prepareForPlannerExit).toHaveBeenCalled();
     expect(stateMocks.plannerState.abandonDraft).not.toHaveBeenCalled();
     expect(stateMocks.plannerState.clearWorkspace).toHaveBeenCalled();
     expect(routerMocks.router.replace).toHaveBeenCalledWith({ name: "home" });
@@ -1257,10 +1261,10 @@ describe("ClassroomPlannerView", () => {
         last_opened_at: "2026-03-21T10:00:00Z",
       };
     });
-    const flushPendingSaveDeferred = createDeferred<boolean>();
-    stateMocks.plannerState.flushPendingSave.mockReturnValue(flushPendingSaveDeferred.promise);
+    stateMocks.plannerState.prepareForPlannerExit.mockResolvedValue({
+      status: "confirm-discard",
+    });
     vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([]);
-    vi.useFakeTimers();
 
     const wrapper = mount(ClassroomPlannerView, {
       global: {
@@ -1284,7 +1288,6 @@ describe("ClassroomPlannerView", () => {
     await wrapper.get("[data-test='open-seating']").trigger("click");
     await flushPromises();
     await wrapper.get("[data-test='exit-app']").trigger("click");
-    await vi.advanceTimersByTimeAsync(1600);
     await flushPromises();
 
     expect(wrapper.text()).toContain("Lämna Klassrumskartan?");
@@ -1293,9 +1296,8 @@ describe("ClassroomPlannerView", () => {
     await wrapper.get("[data-test='confirm-dialog-confirm']").trigger("click");
     await flushPromises();
 
-    expect(stateMocks.plannerState.cancelPendingSave).toHaveBeenCalled();
+    expect(stateMocks.plannerState.discardPendingSessionWork).toHaveBeenCalled();
     expect(routerMocks.router.replace).toHaveBeenCalledWith({ name: "home" });
-    vi.useRealTimers();
 
     wrapper.unmount();
   });

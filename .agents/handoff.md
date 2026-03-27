@@ -14,7 +14,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0151`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0151`, `PR-0152`
 
 ## Status
 
@@ -40,7 +40,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Migration guardrail added during `PR-0139`: `scripts/check_migration_test_coverage.py` now fails if Alembic has anything other than a single head, because recent operator-error incidents created split-head local states.
 - Smart-assignment docs are approved and aligned across `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-06`, and `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`.
   - locked product/ownership shape: per-mode `Smart` beside `Slumpa`, class-wide visual authoring, seating-only `Närmare läraren`, roster-global smart rules, draft-local toggles/arrangements, export-only checkpoints, and no legacy metadata compatibility
-  - locked frontend remediation before more smart seating/grouping work: one session controller, one draft lane, one smart-rule lane, one separate UI bucket, one timer per lane, and an explicit transition matrix with draft-first fail-safe load
+  - `PR-0152` is now implemented locally: the planner uses one session controller, one draft lane, one smart-rule lane, one separate UI bucket, one timer per lane, and an explicit transition matrix with draft-first fail-safe load
 - `ST-27-01` is now `done` and its delivered slices are:
   - new persisted `smart_enabled` draft flag in domain/API/repository + Alembic migration `e4b7c2d9a1f0_add_smart_enabled_to_classroom_planner_drafts.py`
   - small `Smart` toggles rendered beside `Slumpa` in both grouping and seating workspaces
@@ -73,6 +73,10 @@ Keep this file updated so the next session can pick up work quickly.
   - forward repair migration `7d4c1a2b9e6f_repair_roster_smart_rule_root_contract.py` now heals the impossible local/Docker drift state where Alembic was at head but `classroom_planner_roster_smart_rule_sets` was missing and child FKs still pointed at `classroom_planner_rosters`
   - Docker dev commands now auto-run the in-container `pdm run db-upgrade` path via `pdm run dev-db-upgrade`, and `.agents/rules/054-alembic-migrations.md` now explicitly treats applied migrations as immutable
   - the latest frontend reviewer follow-ups are also fixed locally: `clearWorkspace()` now invalidates stale in-flight workspace loads, and late autosave responses are ignored after clear/exit so they cannot repopulate planner state
+- `PR-0152` is now done locally:
+  - `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts` is now a thin composition adapter over dedicated session-controller, draft-lane, roster smart-rule lane, smart-rule UI, and transition-policy modules
+  - route-shell workspace/export/exit flows now use explicit transition APIs, `abandonDraft` is smart-lane-first with explicit discard wording, and `clearWorkspace()` stays teardown-only with late-response ignore semantics
+  - planner-wide `flushPendingSave()`, shared autosave timing, and planner-global persistence truth via `saveStatus` / `saveMessage` are gone, while smart-rule hydration failure now stays lane-local with retry UI
 - `PR-0148` is now done as the Conversion Hub ownership/auth boundary cutover:
   - new local `conversion_hub_jobs` ledger maps owner, local job id, upstream job id, formats, status, correlation, and optional PDF layout metadata
   - Conversion Hub submit/status/download now use local UUID job ids at the product boundary; upstream Sir Convert ids stay internal
@@ -81,22 +85,6 @@ Keep this file updated so the next session can pick up work quickly.
   - unknown upstream statuses now surface as controlled service errors, and the live route proof on `http://127.0.0.1:5173` still passes with the tightened `wait_seconds <= 20` contract
 
 ## Verification
-- 2026-03-25 overview asset delete cascade follow-up:
-  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_asset_delete_guards.py tests/unit/application/apps/classroom_planner/test_services.py tests/unit/web/apps/classroom_planner/test_api.py`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vitest run src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/CreateRosterModal.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts`
-  - `pnpm -C frontend --filter @skriptoteket/spa exec vue-tsc --noEmit`
-  - live proof with dev service on `http://127.0.0.1:5173/apps/classroom.group-seating-studio` via one-off `pdm run python - <<'PY' ... PY`:
-    - created temporary roster/template pairs plus active seating drafts, then verified roster deletion returned workspace-summary `404` and template deletion cleared the dependent active seating draft
-    - artifacts: `.artifacts/roster-template-delete-cascade-proof/before-roster-delete.png`, `.artifacts/roster-template-delete-cascade-proof/after-roster-delete.png`, `.artifacts/roster-template-delete-cascade-proof/before-template-delete.png`, `.artifacts/roster-template-delete-cascade-proof/after-template-delete.png`
-- 2026-03-26 PR-0143 seating XLSX workbook completion:
-  - tests/docs passed; workbook proof artifacts remain under `.artifacts/epic26-pr0143-workbook-check/`
-- 2026-03-26 PR-0139 grouping export hierarchy + shared contract:
-  - frontend/backend tests, migration-head guard, and host proof passed; artifacts remain under `.artifacts/epic26-pr0139-host-check/`
-- 2026-03-26 PR-0140 grouping XLSX workbook + delivery:
-  - renderer/job/API tests and host workbook proofs passed; artifacts remain under `.artifacts/epic26-pr0140-registry-check/` and `.artifacts/epic26-pr0140-spacing-check/`
-- 2026-03-26 PR-0141 / PR-0146 local PDF boundary:
-  - grouping + seating PDFs now render locally in Skriptoteket via WeasyPrint, and the seating-specific Sir Convert callback lane is deleted
-  - host proofs/artifacts remain under `.artifacts/epic26-pr0141-host-check/`, `.artifacts/epic26-root-cause-seating/`, and `.artifacts/epic26-pr0141-seating-branding-check/`
 - 2026-03-26 ST-27-01 frontend compatibility-only prune:
   - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
   - `pdm run fe-type-check`
@@ -167,6 +155,17 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run typecheck` and `pdm run fe-type-check`
   - `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_rules.py src/skriptoteket/infrastructure/repositories/classroom_planner_smart_rules.py tests/unit/application/apps/classroom_planner/test_smart_rules.py tests/unit/infrastructure/repositories/test_classroom_planner_smart_rules.py` and `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.vue src/views/apps/components/PlannerSeatingSmartRuleSurface.vue src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
   - live proof: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` with artifact `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
+- 2026-03-27 PR-0152 planner session lanes and transition matrix remediation:
+  - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/classroomPlannerRouteShellSaveGuards.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/usePlannerSessionController.spec.ts src/views/apps/useDraftPersistenceLane.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/useSmartRuleUiState.spec.ts src/views/apps/plannerTransitionPolicies.spec.ts`
+  - `pdm run fe-test -- --run src/views/apps/classroomPlannerRouteShellSaveGuards.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run docs-validate`
+  - live proof against `http://127.0.0.1:5173`:
+    - `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local`
+    - `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
+    - artifact directory: `.artifacts/classroom-planner-smoke`
 ## How to Run
 ```bash
 # Local dev
@@ -184,14 +183,11 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
   - seating and grouping PDFs both render locally in Skriptoteket on the host `dev-local` lane
   - the latest resumable-draft blocker was schema drift against active smart-assignment-v1 persistence, and the local worktree now carries the missing Alembic revisions plus passing idempotency checks
 - `pdm.lock` still has local, uncommitted follow-up changes after the `pdfplumber` runtime fix; do not lose or silently overwrite that diff.
-- `ST-26-02` and `EPIC-26` docs are still marked `ready` / unchecked even though `PR-0137` shipped; decide whether to mark them done after the lockfile follow-up and any final review closure.
-- `PR-0151` fixed the backend ownership boundary, but the next required blocker is now docs-approved `ST-27-06` / `PR-0152`: the remaining issue is the shared frontend planner flush/status/timer contract before `ST-27-03` / `ST-27-04`.
 - `PR-0151` review remediation, Docker drift repair, and the related export/runtime hardening are now implemented locally and have a passing live planner smoke on `5173`; keep the new `7d4c1a2b9e6f` repair migration in mind if another long-lived dev DB reports Alembic head but misses the roster smart-rule root contract.
   - the revision-0 false-conflict follow-up is now fixed locally: repaired/backfilled smart-rule roots at revision `0` can advance to revision `1` on the first edit instead of raising `Expected 0, got 0`
-- Conversion Hub now has a local job ledger and closed docs for `PR-0148`; the route enforces Sir Convert's real `wait_seconds <= 20` limit, so keep that contract in sync if the upstream service changes.
 ## Next Steps
 
 - Continue the smart-assignment lane in the corrected order:
   - execute `PR-0150` next for seating checkpoint registry + normalized assignment-hash dedupe under `ST-27-02`
-  - then execute `PR-0152` to cut over to one session controller, one draft lane, one smart-rule lane, one smart-rule UI bucket, and explicit transition policies before `ST-27-03` / `ST-27-04`
+  - then continue with `ST-27-03` / `ST-27-04` on top of the shipped `PR-0152` session-controller + lane split
   - keep relation rules as non-overlapping visible clusters in V1 and keep smart controls near workspace/top-panel surfaces; do not add a global smart-settings drawer

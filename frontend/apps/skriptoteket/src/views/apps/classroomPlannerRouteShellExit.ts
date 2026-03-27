@@ -17,17 +17,18 @@ import {
 } from "./classroomPlannerNavigation";
 import type { PlannerScreen } from "./classroomPlannerOverviewStore";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
-import { flushPlannerRouteShellSaveForExit } from "./classroomPlannerRouteShellSaveGuards";
-import type { PlannerRouteShellSaveController } from "./classroomPlannerRouteShellSaveGuards";
-
-const EXIT_AUTOSAVE_TIMEOUT_MS = 1500;
 
 type ClassroomPlannerExitFlowOptions = {
   plannerActionError: Ref<string | null>;
   currentScreen: Ref<PlannerScreen>;
   router: Pick<Router, "replace">;
-  plannerState: PlannerRouteShellSaveController & {
-    cancelPendingSave: () => void;
+  plannerState: {
+    prepareForPlannerExit: () => Promise<
+      | { status: "saved" }
+      | { status: "blocked"; reason: "conflict" | "error"; message: string }
+      | { status: "confirm-discard" }
+    >;
+    discardPendingSessionWork: () => void;
     clearWorkspace: () => void;
   };
   clearOverviewWorkspaceState: () => void;
@@ -71,7 +72,7 @@ export function createClassroomPlannerExitFlow(options: ClassroomPlannerExitFlow
     isExitingWithoutSave.value = true;
     options.plannerActionError.value = null;
     try {
-      options.plannerState.cancelPendingSave();
+      options.plannerState.discardPendingSessionWork();
       await finishExitToEntryOrigin();
     } catch (error: unknown) {
       options.plannerActionError.value = normalizeClassroomPlannerUiError(
@@ -87,19 +88,13 @@ export function createClassroomPlannerExitFlow(options: ClassroomPlannerExitFlow
   async function exitPlannerApp(): Promise<void> {
     options.plannerActionError.value = null;
     try {
-      const exitSaveResult = await flushPlannerRouteShellSaveForExit(
-        options.plannerState,
-        EXIT_AUTOSAVE_TIMEOUT_MS,
-      );
-      if (exitSaveResult === "blocked") {
-        options.plannerActionError.value =
-          options.plannerState.saveStatus === "conflict"
-            ? "Lös sparkonflikten innan du avslutar Klassrumskartan."
-            : options.plannerState.saveMessage ?? "Kunde inte avsluta Klassrumskartan just nu.";
+      const exitSaveResult = await options.plannerState.prepareForPlannerExit();
+      if (exitSaveResult.status === "blocked") {
+        options.plannerActionError.value = exitSaveResult.message;
         return;
       }
 
-      if (exitSaveResult === "timed-out") {
+      if (exitSaveResult.status === "confirm-discard") {
         isExitConfirmationOpen.value = true;
         return;
       }

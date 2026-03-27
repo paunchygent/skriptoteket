@@ -2,7 +2,7 @@
 type: pr
 id: PR-0152
 title: "Klassrumskartan: planner session lanes and transition matrix remediation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
 updated: 2026-03-27
@@ -134,18 +134,30 @@ Replace the shared planner persistence contract with an explicit, ownership-hone
 
 ## PR-sized execution checklist
 
-- [ ] Add regressions for smart-rule hydration failure staying lane-local
-- [ ] Add regressions for smart-rule dirtiness not affecting undo/redo
-- [ ] Add regressions for explicit abandon discard semantics across both lanes
-- [ ] Add regressions for exit timeout, confirm-discard, and teardown-only clear semantics
-- [ ] Split the planner into dedicated session-controller, draft-lane, smart-rule-lane,
+- [x] Add regressions for smart-rule hydration failure staying lane-local
+- [x] Add regressions for smart-rule dirtiness not affecting undo/redo
+- [x] Add regressions for explicit abandon discard semantics across both lanes
+- [x] Add regressions for exit timeout, confirm-discard, and teardown-only clear semantics
+- [x] Split the planner into dedicated session-controller, draft-lane, smart-rule-lane,
   smart-rule-UI, and transition-policy modules
-- [ ] Reduce `useClassroomState.ts` to a thin composition/adapter surface
-- [ ] Remove the shared planner-wide flush/save-status contract
-- [ ] Implement one timer per lane
-- [ ] Move route-shell transitions onto explicit lane policies
-- [ ] Add dedicated specs for the new controller/lane/UI modules
-- [ ] Re-run verification and record it in `.agents/handoff.md`
+- [x] Reduce `useClassroomState.ts` to a thin composition/adapter surface
+- [x] Remove the shared planner-wide flush/save-status contract
+- [x] Implement one timer per lane
+- [x] Move route-shell transitions onto explicit lane policies
+- [x] Add dedicated specs for the new controller/lane/UI modules
+- [x] Re-run verification and record it in `.agents/handoff.md`
+
+## Implementation Summary
+
+- `useClassroomState.ts` is now a thin adapter over dedicated session-controller, draft-lane,
+  roster smart-rule lane, smart-rule UI, and transition-policy modules.
+- Planner-wide `flushPendingSave()`, shared autosave timing, and planner-global persistence truth
+  via `saveStatus` / `saveMessage` are removed from the planner contract.
+- Route-shell exit/workspace/export flows now call explicit transition APIs, `abandonDraft`
+  flushes the smart lane first, and `clearWorkspace()` remains teardown-only with late-response
+  ignore semantics.
+- Smart-rule hydration failure now stays lane-local with retry UI, while persistence
+  acknowledgements no longer reset active smart tools or pending selections.
 
 ## Test plan
 

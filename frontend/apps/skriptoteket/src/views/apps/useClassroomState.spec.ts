@@ -175,7 +175,7 @@ function seedWorkspace() {
   state.seatAssignmentsByStudentId = {};
   state.studentPlanningMetaByStudentId = {};
   state.smartRulesRevision = 0;
-  state.smartRulesHydrated = true;
+  state.smartRuleHydrationStatus = "ready";
   return state;
 }
 
@@ -339,7 +339,7 @@ describe("useClassroomState", () => {
     state.renameGroup("group-a", "Grupp 1");
 
     expect(state.hasPendingAutosave).toBe(false);
-    expect(state.saveStatus).toBe("idle");
+    expect(state.draftPersistenceStatus).toBe("idle");
   });
 
   it("randomizes groups without changing group count or names", () => {
@@ -450,7 +450,7 @@ describe("useClassroomState", () => {
     state.clearSeatingAssignments();
 
     expect(state.hasPendingAutosave).toBe(false);
-    expect(state.saveStatus).toBe("idle");
+    expect(state.draftPersistenceStatus).toBe("idle");
   });
 
   it("stores student planning metadata", () => {
@@ -499,7 +499,7 @@ describe("useClassroomState", () => {
     ]);
     expect(state.hasPendingAutosave).toBe(true);
 
-    state.cancelPendingSave();
+    state.discardPendingSessionWork();
     expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
     expect(state.seatingPreferences).toEqual([]);
   });
@@ -695,7 +695,7 @@ describe("useClassroomState", () => {
     expect(state.smartRulesRevision).toBe(0);
     expect(state.smartRulesHydrated).toBe(false);
     expect(state.canEditSeatingSmartRules).toBe(false);
-    expect(state.saveStatus).toBe("error");
+    expect(state.smartRuleHydrationStatus).toBe("error");
   });
 
   it("ignores a late workspace load after the workspace has been cleared", async () => {
@@ -750,8 +750,8 @@ describe("useClassroomState", () => {
     expect(state.draft).toBeNull();
     expect(state.roster).toBeNull();
     expect(state.template).toBeNull();
-    expect(state.saveStatus).toBe("idle");
-    expect(state.saveMessage).toBeNull();
+    expect(state.draftPersistenceStatus).toBe("idle");
+    expect(state.plannerStatusMessage).toBeNull();
   });
 
   it("ignores a late draft autosave response after switching to another workspace", async () => {
@@ -1016,7 +1016,6 @@ describe("useClassroomState", () => {
     expect(clientMocks.apiDelete).toHaveBeenCalledWith(
       "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/draft-history-1",
     );
-    expect(state.saveStatus).toBe("saved");
   });
 
   it("activates a historical seating draft through the dedicated lifecycle endpoint", async () => {
@@ -1044,7 +1043,6 @@ describe("useClassroomState", () => {
     expect(clientMocks.apiDelete).toHaveBeenCalledWith(
       "/api/v1/apps/classroom.group-seating-studio/drafts/seating/draft-history-2",
     );
-    expect(state.saveStatus).toBe("saved");
   });
 
   it("hydrates undo and redo availability from the backend workspace contract", async () => {
@@ -1116,7 +1114,7 @@ describe("useClassroomState", () => {
     await vi.advanceTimersByTimeAsync(900);
 
     expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
-    expect(state.saveStatus).toBe("saved");
+    expect(state.draftPersistenceStatus).toBe("saved");
     expect(state.hasPendingAutosave).toBe(false);
     expect(state.historyStatus).toEqual({
       can_undo: true,
@@ -1321,21 +1319,29 @@ describe("useClassroomState", () => {
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "seating");
     state.smartRulesRevision = 4;
-    clientMocks.apiPatch
-      .mockRejectedValueOnce(new Error("smart rules unavailable"))
-      .mockResolvedValueOnce(
-        createWorkspaceResponse("template-1", "seating", {
+    let smartRuleSaveAttempts = 0;
+    clientMocks.apiPatch.mockImplementation(async (url: string) => {
+      if (url.endsWith("/smart-rules")) {
+        smartRuleSaveAttempts += 1;
+        if (smartRuleSaveAttempts === 1) {
+          throw new Error("smart rules unavailable");
+        }
+        return {
+          ...createSmartRulesResponse(),
+          roster_id: "roster-1",
+          revision: 5,
+          seating_preferences: [{ student_id: "s1", near_teacher: true }],
+          relationship_rules: [],
+        };
+      }
+      if (url.endsWith("/drafts/draft-1")) {
+        return createWorkspaceResponse("template-1", "seating", {
           can_undo: false,
           can_redo: false,
-        }),
-      )
-      .mockResolvedValueOnce({
-        ...createSmartRulesResponse(),
-        roster_id: "roster-1",
-        revision: 5,
-        seating_preferences: [{ student_id: "s1", near_teacher: true }],
-        relationship_rules: [],
-      });
+        });
+      }
+      throw new Error(`Unexpected patch url: ${url}`);
+    });
 
     state.setStudentPlanningMeta("s1", { notes: "Behåll längst fram" });
     state.setActiveSeatingSmartTool("near_teacher");
@@ -1344,18 +1350,22 @@ describe("useClassroomState", () => {
     await vi.advanceTimersByTimeAsync(900);
 
     expect(clientMocks.apiPatch).toHaveBeenCalledTimes(2);
-    expect(clientMocks.apiPatch.mock.calls[0]?.[0]).toBe(
-      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
-    );
-    expect(clientMocks.apiPatch.mock.calls[1]?.[0]).toBe(
-      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1",
+    expect(clientMocks.apiPatch.mock.calls.map((call) => call[0])).toEqual(
+      expect.arrayContaining([
+        "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+        "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1",
+      ]),
     );
     expect(state.hasPendingAutosave).toBe(true);
-    expect(state.saveStatus).toBe("error");
+    expect(state.smartRulePersistenceStatus).toBe("error");
+    expect(state.draftPersistenceStatus).toBe("saved");
 
-    const flushSucceeded = await state.flushPendingSave();
+    const flushResult = await state.prepareForWorkspaceSwitch({
+      conflictMessage: "unused",
+      fallbackMessage: "unused",
+    });
 
-    expect(flushSucceeded).toBe(true);
+    expect(flushResult).toEqual({ status: "saved", message: null });
     expect(clientMocks.apiPatch).toHaveBeenCalledTimes(3);
     expect(clientMocks.apiPatch.mock.calls[2]?.[0]).toBe(
       "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
@@ -1367,6 +1377,6 @@ describe("useClassroomState", () => {
     });
     expect(state.hasPendingAutosave).toBe(false);
     expect(state.smartRulesRevision).toBe(5);
-    expect(state.saveStatus).toBe("saved");
+    expect(state.smartRulePersistenceStatus).toBe("saved");
   });
 });

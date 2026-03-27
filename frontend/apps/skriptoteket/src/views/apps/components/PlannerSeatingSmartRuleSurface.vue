@@ -75,6 +75,25 @@ function toggleTool(tool: SeatingSmartTool): void {
     </div>
 
     <div class="mt-4 flex flex-wrap items-center gap-2">
+      <div
+        v-if="plannerState.smartRuleHydrationStatus === 'error'"
+        class="w-full border border-amber-300/80 bg-amber-50 px-3 py-3 text-sm text-amber-900"
+        data-test="seating-smart-hydration-error"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p>
+            {{ plannerState.smartRuleHydrationMessage }}
+          </p>
+          <button
+            type="button"
+            class="btn-ghost border-amber-400/70 bg-white px-3 py-1.5 text-amber-900 shadow-none"
+            data-test="seating-smart-retry-hydration"
+            @click="void plannerState.retrySmartRuleHydration()"
+          >
+            Försök igen
+          </button>
+        </div>
+      </div>
       <button
         type="button"
         class="btn-ghost border-navy/30 bg-white shadow-none"

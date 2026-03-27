@@ -19,9 +19,8 @@ function createPlannerState(
       revision: 1,
       last_opened_at: "2026-03-24T10:00:00Z",
     },
-    saveMessage: null,
-    saveStatus: "idle",
-    flushPendingSave: vi.fn().mockResolvedValue(true),
+    prepareForPlannerExit: vi.fn().mockResolvedValue({ status: "saved" }),
+    prepareForWorkspaceSwitch: vi.fn().mockResolvedValue({ status: "saved", message: null }),
     ...overrides,
   };
 }
@@ -33,7 +32,11 @@ describe("classroomPlannerRouteShellSaveGuards", () => {
 
   it("returns a blocked conflict message when the flush ends in a save conflict", async () => {
     const plannerState = createPlannerState({
-      saveStatus: "conflict",
+      prepareForWorkspaceSwitch: vi.fn().mockResolvedValue({
+        status: "blocked",
+        reason: "conflict",
+        message: "Lös sparkonflikten innan du fortsätter.",
+      }),
     });
 
     await expect(
@@ -49,8 +52,11 @@ describe("classroomPlannerRouteShellSaveGuards", () => {
 
   it("returns the backend save message for non-conflict blocked saves", async () => {
     const plannerState = createPlannerState({
-      saveStatus: "error",
-      saveMessage: "Sparningen stoppades av servern.",
+      prepareForWorkspaceSwitch: vi.fn().mockResolvedValue({
+        status: "blocked",
+        reason: "error",
+        message: "Sparningen stoppades av servern.",
+      }),
     });
 
     await expect(
@@ -65,15 +71,11 @@ describe("classroomPlannerRouteShellSaveGuards", () => {
   });
 
   it("times out exit autosave when the flush promise does not resolve in time", async () => {
-    vi.useFakeTimers();
     const plannerState = createPlannerState({
-      flushPendingSave: vi.fn(() => new Promise<boolean>(() => undefined)),
+      prepareForPlannerExit: vi.fn().mockResolvedValue({ status: "confirm-discard" }),
     });
 
-    const resultPromise = flushPlannerRouteShellSaveForExit(plannerState, 1500);
-    await vi.advanceTimersByTimeAsync(1500);
-
-    await expect(resultPromise).resolves.toBe("timed-out");
+    await expect(flushPlannerRouteShellSaveForExit(plannerState)).resolves.toBe("timed-out");
   });
 
   it("skips the exit flush when there is no active draft", async () => {
@@ -81,7 +83,7 @@ describe("classroomPlannerRouteShellSaveGuards", () => {
       draft: null,
     });
 
-    await expect(flushPlannerRouteShellSaveForExit(plannerState, 1500)).resolves.toBe("saved");
-    expect(plannerState.flushPendingSave).not.toHaveBeenCalled();
+    await expect(flushPlannerRouteShellSaveForExit(plannerState)).resolves.toBe("saved");
+    expect(plannerState.prepareForPlannerExit).not.toHaveBeenCalled();
   });
 });

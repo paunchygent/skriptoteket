@@ -2,7 +2,7 @@
 type: story
 id: ST-27-06
 title: "Klassrumskartan — Planner session lanes and transition matrix remediation"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
 epic: "EPIC-27"
@@ -48,3 +48,17 @@ exit.
   by keeping one large `useClassroomState.ts` and adding more conditional branches.
 - `ST-27-06` must land before `ST-27-03` and `ST-27-04`; later smart seating/grouping work must
   not build on the current shared planner persistence shape.
+
+## Implementation Summary (as of 2026-03-27)
+
+- `PR-0152` is implemented.
+- `useClassroomState.ts` now acts as a thin composition adapter over:
+  - `usePlannerSessionController.ts`
+  - `useDraftPersistenceLane.ts`
+  - `useRosterSmartRuleLane.ts`
+  - `useSmartRuleUiState.ts`
+  - `plannerTransitionPolicies.ts`
+- Route-shell, export, abandon, undo/redo, and exit flows now use explicit transition policies
+  instead of planner-wide flush/status/timer behavior.
+- `clearWorkspace()` is teardown-only, smart-rule hydration failure stays lane-local with retry UI,
+  and exit timeout now returns confirm-discard with explicit discard semantics.
