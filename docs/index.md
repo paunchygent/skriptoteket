@@ -71,6 +71,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0149-klassrumskartan-seating-smart-rule-toolbar-and-non-overlapping-cluster-authoring-v1.md`
 - Roster-global smart-rule ownership boundary reset:
   `docs/backlog/prs/pr-0151-klassrumskartan-roster-global-smart-rules-and-draft-local-arrangement-boundary-reset.md`
+- Planner session lanes + transition matrix remediation:
+  `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
 - Seating export checkpoint registry + history dedupe:
   `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - Conversion Hub local job boundary follow-up:
@@ -79,13 +81,13 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - Proposed Klassrumskartan export/import review:
   `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
-- Proposed Klassrumskartan smart assignment ADR:
+- Accepted Klassrumskartan smart assignment ADR:
   `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
 - Proposed Klassrumskartan local-export boundary ADR:
   `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
-- Proposed Klassrumskartan smart assignment epic:
+- Active Klassrumskartan smart assignment epic:
   `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
-- Proposed Klassrumskartan smart assignment review:
+- Approved Klassrumskartan smart assignment review:
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
@@ -267,6 +269,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md`
 - `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`
 - `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md`
+- `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
 
 ### Backlog Reviews
 
@@ -357,6 +360,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0149-klassrumskartan-seating-smart-rule-toolbar-and-non-overlapping-cluster-authoring-v1.md`
 - `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - `docs/backlog/prs/pr-0151-klassrumskartan-roster-global-smart-rules-and-draft-local-arrangement-boundary-reset.md`
+- `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

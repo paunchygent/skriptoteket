@@ -178,3 +178,38 @@ async def test_patch_roster_smart_rules_rejects_negative_revision() -> None:
             seating_preferences=[],
             relationship_rules=[],
         )
+
+
+@pytest.mark.asyncio
+async def test_patch_roster_smart_rules_strips_false_near_teacher_preferences() -> None:
+    roster_id = uuid4()
+    owner_user_id = uuid4()
+    rosters = AsyncMock()
+    smart_rules = AsyncMock()
+    uow = AsyncMock()
+    rosters.get_by_id.return_value = _build_roster(roster_id=roster_id, owner_user_id=owner_user_id)
+    smart_rules.save.return_value = RosterSmartRules(
+        roster_id=roster_id,
+        revision=1,
+        seating_preferences=[],
+        relationship_rules=[],
+    )
+    handler = PatchRosterSmartRulesHandler(uow=uow, rosters=rosters, smart_rules=smart_rules)
+
+    await handler.handle(
+        roster_id=roster_id,
+        owner_user_id=owner_user_id,
+        expected_revision=0,
+        seating_preferences=[StudentSeatingPreference(student_id="s1", near_teacher=False)],
+        relationship_rules=[],
+    )
+
+    smart_rules.save.assert_awaited_once_with(
+        rules=RosterSmartRules(
+            roster_id=roster_id,
+            revision=0,
+            seating_preferences=[],
+            relationship_rules=[],
+        ),
+        expected_revision=0,
+    )

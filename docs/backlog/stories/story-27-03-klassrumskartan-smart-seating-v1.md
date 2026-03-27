@@ -6,7 +6,7 @@ status: ready
 owners: "agents"
 created: 2026-03-25
 epic: "EPIC-27"
-dependencies: ["ST-27-01", "ST-27-02"]
+dependencies: ["ST-27-01", "ST-27-02", "ST-27-06"]
 acceptance_criteria:
   - "Given the teacher is in `Sittplatser` and `Smart` is `off`, when they use `Slumpa`, then seating remains the current random reshuffle behavior."
   - "Given the teacher is in `Sittplatser` and `Smart` is `on`, when they use `Slumpa`, then the planner requests a backend-owned smart seating result instead of a frontend-only random shuffle."
@@ -47,6 +47,8 @@ lane on top of that foundation.
   seating has an explicit teaching edge instead of relying only on the default top-middle
   assumption.
 - The solver is authoritative on the backend; the frontend should not duplicate the full logic.
+- This story depends on `ST-27-06`; do not build smart seating behavior on the old planner-wide
+  flush/save-status/shared-timer contract.
 - This story is about smart seating behavior, not score-panel explainability or debug surfaces.
 - Follow-up UX polish such as alternate smart results and explanation-copy tightening is handled
   separately.

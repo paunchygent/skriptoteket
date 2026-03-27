@@ -6,7 +6,7 @@ status: active
 owners: "agents"
 created: 2026-03-25
 topic: "smart-assignment"
-links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06"]
 ---
 
 ## Summary
@@ -24,6 +24,13 @@ explicit, and the current class-first workflow intact.
   the planner surface entirely.
 - Delete the old smart-adjacent visible semantics and related persistence without migration or
   compatibility work because there are no real users yet.
+- Mirror the backend ownership split in the frontend session shape:
+  - one session controller owns the active session token plus active draft/roster identity
+  - one draft lane owns draft-local persistence and history preparation
+  - one smart-rule lane owns roster-global smart-rule hydration/persistence
+  - one separate UI bucket owns active tool, temporary selection, and local smart-rule feedback
+- Keep one debounce timer per persistence lane; do not keep one planner-wide timer, flush
+  contract, or persistence-truth status.
 - Keep the primary smart authoring flow class-wide and visual rather than per-student:
   - `Keep apart`
   - `Keep near`
@@ -66,6 +73,24 @@ explicit, and the current class-first workflow intact.
   - if those cues are on another wall, that wall becomes the teaching/front edge
 - Keep explanations short, teacher-facing, and trust-building. Do not expose score panels, weight
   tuning, or solver jargon.
+- Make workspace loading draft-first and fail-safe:
+  - clear old smart rules immediately on session change
+  - keep the draft usable if smart-rule hydration fails
+  - disable smart-rule authoring and offer retry until the current roster rules are ready
+- Make `undo` / `redo` draft-lane-only transitions; dirty/conflicted smart rules must neither
+  persist nor block those history actions.
+- Make `abandonDraft` flush the smart-rule lane first, discard pending draft-local edits
+  explicitly, and use explicit teacher wording if continuing would also discard unsaved class-wide
+  smart-rule edits.
+- Make exit/teardown semantics explicit:
+  - `exitPlanner` timeout returns confirm-discard
+  - `confirmExitWithoutWaiting` discards both lanes and ignores late responses
+  - `clearWorkspace` remains teardown-only and ignores late responses
+- Reset smart-rule UI state when the planner screen is left successfully; save/load
+  acknowledgements must not decide tool/selection resets.
+- Land the frontend split as dedicated session-controller, lane, UI-state, and transition-policy
+  modules with `useClassroomState.ts` reduced to a thin composition surface rather than another
+  monolithic-store rewrite.
 
 ## Checkpoint policy
 
@@ -105,4 +130,6 @@ The approved planning package for this memo is:
 - `ST-27-03`: smart seating v1
 - `ST-27-04`: smart grouping v1
 - `ST-27-05`: smart explanations and alternate options
+- `ST-27-06`: planner session lanes and transition matrix remediation
 - `REV-EPIC-27`: required review package before implementation begins
+- `PR-0152`: implementation design task for the frontend session-lane remediation

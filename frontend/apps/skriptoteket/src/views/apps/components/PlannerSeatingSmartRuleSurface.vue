@@ -25,6 +25,7 @@ const pendingRelationToolActive = computed(() => {
 const pendingStudentCount = computed(() => plannerState.pendingRelationshipStudentIds.length);
 const nearTeacherStudents = computed<Student[]>(() => {
   return plannerState.seatingPreferences
+    .filter((preference) => preference.near_teacher === true)
     .map((preference) => plannerState.studentsById[preference.student_id] ?? null)
     .filter((student): student is Student => student !== null);
 });

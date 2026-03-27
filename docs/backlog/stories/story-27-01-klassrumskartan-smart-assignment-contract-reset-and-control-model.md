@@ -55,3 +55,6 @@ contract need a reset that matches the newly approved product decisions.
 - PR-0147 reset the seating-only teacher-distance contract onto `near_teacher`.
 - PR-0149 delivered the seating smart-rule authoring surface and current visual interaction model.
 - PR-0151 moved smart rules to roster ownership, added optimistic concurrency and autosave/hydration hardening, repaired Docker drift forward, and closed with passing smart-assignment review plus live planner smoke on `http://127.0.0.1:5173`.
+- The remaining frontend session-shape cut-over is now tracked separately under `ST-27-06` /
+  `PR-0152` so later smart seating/grouping work does not reuse the shared planner
+  flush/status/timer contract.

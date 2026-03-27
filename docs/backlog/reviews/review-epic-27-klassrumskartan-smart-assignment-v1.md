@@ -2,10 +2,10 @@
 type: review
 id: REV-EPIC-27
 title: "Review: Klassrumskartan smart assignment v1"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-26
+updated: 2026-03-27
 reviewer: "lead-developer"
 epic: EPIC-27
 adrs:
@@ -13,6 +13,7 @@ adrs:
 stories:
   - ST-27-01
   - ST-27-02
+  - ST-27-06
   - ST-27-03
   - ST-27-04
   - ST-27-05
@@ -49,6 +50,9 @@ Create a new smart-assignment package with:
 The package keeps the smart model intentionally small, deletes the older visible planner metadata
 semantics instead of mapping them forward, treats successful changed exports as the only eligible
 history checkpoints, and keeps the student metadata drawer secondary to the main smart workflow.
+After `PR-0151` clarified the backend ownership boundary, the package also now includes one
+explicit frontend remediation slice so the planner session shape mirrors that split instead of
+re-coupling it through one shared save contract.
 
 ## Artifacts to Review
 
@@ -59,11 +63,13 @@ history checkpoints, and keeps the student metadata drawer secondary to the main
 | `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md` | Scope in/out and sequencing | 6 min |
 | `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` | Contract reset and deletion posture | 5 min |
 | `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md` | History source and dedupe policy | 5 min |
+| `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Frontend session shape and transition semantics | 6 min |
 | `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md` | Seating smart lane | 5 min |
 | `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md` | Grouping smart lane and seat-distance toggle | 5 min |
 | `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Explanation and follow-up UX | 4 min |
+| `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Implementation-ready remediation design task | 6 min |
 
-**Total estimated time:** ~44 minutes
+**Total estimated time:** ~56 minutes
 
 ## Key Decisions
 
@@ -77,6 +83,7 @@ history checkpoints, and keeps the student metadata drawer secondary to the main
 | Use one explicit grouping seat-distance toggle instead of generic classroom-awareness wording | Easier for teachers to understand and control | [ ] |
 | Block history-enabled runs when no eligible checkpoints exist | Prevents silent fallback and keeps teacher trust intact | [ ] |
 | Treat later grouping checkpoints as the primary grouping-history lane | Keeps grouping mode-specific while still allowing seating checkpoints as a secondary source | [ ] |
+| Mirror roster-global vs draft-local ownership in the frontend session shape | Prevents one shared planner save contract from reintroducing the same transition bugs under new names | [ ] |
 
 ## Review Checklist
 
@@ -85,6 +92,7 @@ history checkpoints, and keeps the student metadata drawer secondary to the main
 - [ ] Primary smart-rule authoring is class-wide and not drawer-first
 - [ ] Stories have testable acceptance criteria
 - [ ] Implementation direction aligns with the repo's current class-first planner architecture
+- [ ] Frontend transition semantics are explicit and lane-owned
 - [ ] Risks and deletion posture are explicit
 
 ## Review Feedback
@@ -110,14 +118,23 @@ history checkpoints, and keeps the student metadata drawer secondary to the main
 - [x] Delete old visible planner metadata semantics without migration
 - [x] Keep smart grouping and smart seating in the same epic
 - [x] Use one explicit grouping seat-distance toggle
+- [x] Mirror roster-global vs draft-local ownership in the frontend session shape
 
 ## Post-Approval Refinements
 
-- 2026-03-25 reviewer findings were resolved before approval:
 - 2026-03-26 product-direction correction before further implementation:
   - the primary smart editing flow is now explicitly class-wide and visual
   - `Support seat` is replaced with seating-only `Närmare läraren`
   - the student metadata drawer is now secondary notes/history only
+- 2026-03-27 post-approval frontend session remediation:
+  - review of the post-`PR-0151` shape found the backend ownership boundary mostly correct but the
+    frontend still partially behaving like one shared planner save machine
+  - added `ST-27-06` plus `PR-0152` to lock the required cut-over to one session controller, one
+    draft lane, one smart-rule lane, one separate smart-rule UI bucket, and an explicit transition
+    matrix
+  - locked draft-first fail-safe workspace loading, draft-only `undo` / `redo`, smart-lane-first
+    `abandonDraft` semantics with explicit class-wide discard wording, one timer per lane, and a
+    strict separation between smart-rule hydration failure and smart-rule persistence failure
 - 2026-03-25 reviewer findings were resolved before approval:
   - common smart controls are now explicitly separate from the grouping-only
     seat-distance toggle
@@ -149,3 +166,4 @@ to `active`, `ADR-0074` may move to `accepted`, and `ST-27-01` may move to
 | 1 | ADR-0074 | Drafted the smart-assignment contract reset around small controls, export checkpoints, and backend authority |
 | 2 | EPIC-27 | Drafted the smart-assignment epic with explicit scope, out-of-scope, and story chain |
 | 3 | ST-27-01..05 | Drafted the story package for contract reset, checkpoints, seating, grouping, and explanation UX |
+| 4 | ST-27-06, PR-0152 | Added the frontend session-remediation slice so later smart seating/grouping work inherits explicit lane-owned transition semantics |

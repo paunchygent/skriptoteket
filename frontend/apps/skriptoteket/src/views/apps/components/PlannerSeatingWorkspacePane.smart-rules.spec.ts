@@ -93,6 +93,16 @@ vi.mock("../useClassroomState", () => ({
 
 describe("PlannerSeatingWorkspacePane smart rules", () => {
   beforeEach(() => {
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "seating",
+      revision: 2,
+      smart_enabled: true,
+    };
+    stateMocks.plannerState.seatingPreferences = [{ student_id: "student-1", near_teacher: true }];
+    stateMocks.plannerState.relationshipRules = [
+      { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
+    ];
     stateMocks.plannerState.activeSeatingSmartTool = null;
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
@@ -212,5 +222,24 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
 
     await wrapper.get('[data-test="seating-smart-tool-near-teacher"]').trigger("click");
     expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("near_teacher");
+  });
+
+  it("does not render false-valued near-teacher preferences as active markers", () => {
+    stateMocks.plannerState.seatingPreferences = [{ student_id: "student-1", near_teacher: false }];
+    stateMocks.plannerState.relationshipRules = [];
+
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+      },
+      global: {
+        stubs: {
+          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Inga smarta regler ännu.");
+    expect(wrapper.text()).not.toContain("Ada Lovelace");
   });
 });

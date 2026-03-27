@@ -46,6 +46,13 @@ state, draft toggles, and export-backed checkpoints remain separate concerns.
 This slice also absorbs the current local `PR-0149` UI retargeting work so that the visual seating
 authoring flow survives, but on the correct ownership boundary.
 
+## Post-landing note
+
+`PR-0151` is the ownership-boundary reset, not the final frontend session-shape cut-over.
+`ST-27-06` / `PR-0152` now track the remaining planner remediation for explicit session
+controller + lane-owned transition semantics, including removal of the shared frontend
+flush/status/timer contract before `ST-27-03` and `ST-27-04`.
+
 ## Non-goals
 
 - Implementing checkpoint registry/dedupe; that remains `PR-0150`.
@@ -54,6 +61,8 @@ authoring flow survives, but on the correct ownership boundary.
   boundary.
 - Preserving backwards-compatible aliases for draft-owned smart-rule fields.
 - Implementing checkpoint registry/dedupe side effects; that remains `PR-0150`.
+- Deleting the remaining shared frontend planner session orchestration; that follow-up is
+  `ST-27-06` / `PR-0152`.
 
 ## Implementation plan
 
@@ -184,6 +193,9 @@ authoring flow survives, but on the correct ownership boundary.
 - [x] Make Docker dev-start/recreate paths auto-run the in-container `pdm run db-upgrade`
 - [x] Fix the false `Expected 0, got 0` smart-rule conflict path for repaired/backfilled revision-0 root rows
 - [x] Invalidate stale in-flight workspace loads and autosaves after clear/exit so late responses cannot repopulate cleared planner state
+- [x] Invalidate or reject stale autosave responses when the teacher switches from one draft/roster workspace to another
+- [x] Preserve same-lane dirty state when new draft or smart-rule edits happen during an in-flight autosave
+- [x] Normalize or reject `near_teacher: false` seating-preference entries so ghost near-teacher markers cannot render
 
 ## Test plan
 
@@ -199,6 +211,38 @@ authoring flow survives, but on the correct ownership boundary.
 - `pdm run fe-type-check`
 - `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
 - `pdm run docs-validate`
+
+## 2026-03-27 Ruthless Review Findings
+
+1. Stale autosave responses can still apply after a workspace switch.
+   - Finding:
+     - The current async invalidation only runs on `cancelPendingSave()` / `clearWorkspace()`.
+     - If draft A has an in-flight save and the teacher opens draft B, the late draft-A response can still pass the save-generation guard and reapply draft-A workspace or roster-smart-rule state into the draft-B session.
+   - Suggested solution:
+     - Invalidate the active save generation on every workspace switch/load/activate path, not just on clear/exit.
+     - Bind draft and smart-rule save responses to the draft/roster identity they were issued for and ignore mismatches even if the generation still matches.
+   - Required proof:
+     - Add a store regression where draft A starts an autosave, draft B loads before the response resolves, and the late draft-A response must not change the visible draft, roster, or smart rules.
+
+2. Same-lane edits can be lost when a save response lands after newer local edits.
+   - Finding:
+     - The store currently reapplies returned workspace/smart-rule payloads and clears the corresponding dirty flag on save success.
+     - If the teacher makes more draft edits or more smart-rule edits while that lane is already saving, the first success response can wipe the newer local edits and leave the queued rerun with nothing dirty to persist.
+   - Suggested solution:
+     - Track per-lane mutation versions or request snapshots for draft autosave and smart-rule autosave separately.
+     - Only clear a lane's dirty flag when no newer edits happened after that request started, and do not let a stale success payload overwrite newer local state.
+   - Required proof:
+     - Add one regression for draft edits made during an in-flight draft save and one for smart-rule edits made during an in-flight smart-rule save; each should prove the lane stays dirty or sends a second patch after the first response lands.
+
+3. False-valued `near_teacher` entries can create ghost rule rendering.
+   - Finding:
+     - The backend currently accepts and persists `seating_preferences` entries where `near_teacher` is `false`.
+     - The frontend summary/selection logic treats the presence of an entry as an active near-teacher rule, which can render ghost `Närmare läraren` markers from malformed or repaired data.
+   - Suggested solution:
+     - Normalize false-valued entries away or reject them at the handler boundary before persistence.
+     - Make frontend checks require `near_teacher === true` instead of treating any matching entry as active.
+   - Required proof:
+     - Add application/API coverage that false-valued entries are stripped or rejected, plus a frontend/store regression proving they do not render as active rules.
 
 ## Review Remediation Subtasks
 
@@ -220,6 +264,21 @@ authoring flow survives, but on the correct ownership boundary.
    - Keep the UI disabled/busy semantics aligned with the chosen loading strategy so teachers cannot interact with mismatched state.
    - Invalidate in-flight workspace loads when `clearWorkspace()` runs so a stale response cannot reopen a draft after exit or workspace teardown.
    - Keep late autosave responses from applying after exit-without-waiting has cleared planner state.
+
+4. Guard autosave responses across workspace switches.
+   - Invalidate the active save generation whenever the teacher loads or activates a different workspace, not only on clear/exit.
+   - Carry the draft/roster identity with each in-flight save request and ignore late responses that target an older workspace.
+   - Add a regression proving a late draft-A autosave cannot overwrite a newer draft-B session or re-show draft-A smart rules.
+
+5. Preserve same-lane edits that happen during an in-flight autosave.
+   - Track per-lane mutation versions or request snapshots separately for draft autosave and smart-rule autosave.
+   - Only clear `hasPendingDraftAutosave` or `hasPendingSmartRuleAutosave` when the response still matches the latest local edit generation for that lane.
+   - Add regressions for both lanes showing that edits made during an in-flight save either trigger a second patch or remain pending after the first response lands.
+
+6. Normalize false-valued near-teacher rules across backend and frontend.
+   - Strip or reject `near_teacher: false` seating-preference rows at the smart-rule handler boundary so persisted data stays canonical.
+   - Update store/component checks so only `near_teacher === true` counts as an active near-teacher rule.
+   - Add backend and frontend regressions proving false-valued entries do not survive persistence and do not render as active markers.
 
 ## Robust Solution Notes
 
@@ -258,6 +317,18 @@ The review-remediation solution for the smart-rule ownership reset is now:
    - Treat any migration already run against a persistent dev/staging DB as immutable; follow-up fixes belong in a new forward repair migration, not by editing the old revision in place.
    - The durable recovery for the observed Docker drift state is the repair-forward Alembic revision `7d4c1a2b9e6f`.
    - Docker dev startup/recreate/reset paths now run the in-container `pdm run db-upgrade` step so long-lived containers do not keep serving against stale schemas after migration files change.
+
+6. Autosave correctness needs both generation invalidation and per-lane edit versioning.
+   - Generation invalidation alone is not enough because it protects clear/exit flows but not workspace switches or newer edits in the same lane.
+   - The durable fix is a two-part contract:
+     - invalidate or reject responses whose workspace identity no longer matches the active draft/roster
+     - track draft-lane and smart-rule-lane edit versions so a stale success response cannot clear newer pending edits
+
+7. Near-teacher rules should persist in canonical true-only form.
+   - `near_teacher: false` should not be stored as a meaningful rule state because the UI and future solver logic interpret the existence of the preference as teacher intent.
+   - The durable boundary is therefore:
+     - reject or strip false-valued entries before persistence
+     - treat only explicit `true` values as active in frontend selectors, summaries, and render markers
 
 ## Verification Evidence
 

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
 import { useClassroomState } from "./useClassroomState";
-import type { RosterSmartRulesResponse } from "./classroomPlannerTypes";
+import type { DraftWorkspaceResponse, RosterSmartRulesResponse } from "./classroomPlannerTypes";
 
 const clientMocks = vi.hoisted(() => ({
   apiDelete: vi.fn(),
@@ -54,7 +54,7 @@ function createWorkspaceResponse(
     can_undo: false,
     can_redo: false,
   },
-) {
+): DraftWorkspaceResponse {
   return {
     draft: createDraft(templateId, draftKind),
     roster: {
@@ -95,6 +95,39 @@ function createSmartRulesResponse(): RosterSmartRulesResponse {
     revision: 0,
     seating_preferences: [],
     relationship_rules: [],
+  };
+}
+
+function createWorkspaceVariant(options: {
+  draftId?: string;
+  rosterId?: string;
+  templateId?: string | null;
+  draftKind?: "seating" | "grouping";
+  historyStatus?: { can_undo: boolean; can_redo: boolean };
+} = {}): DraftWorkspaceResponse {
+  const workspace = createWorkspaceResponse(
+    options.templateId ?? "template-1",
+    options.draftKind ?? "seating",
+    options.historyStatus,
+  );
+  const rosterId = options.rosterId ?? workspace.roster.id;
+  const draftId = options.draftId ?? workspace.draft.id;
+  return {
+    ...workspace,
+    draft: {
+      ...workspace.draft,
+      id: draftId,
+      roster_id: rosterId,
+      template_id: options.templateId ?? workspace.draft.template_id,
+    },
+    roster: {
+      ...workspace.roster,
+      id: rosterId,
+    },
+    template:
+      options.templateId === null
+        ? null
+        : workspace.template,
   };
 }
 
@@ -719,6 +752,170 @@ describe("useClassroomState", () => {
     expect(state.template).toBeNull();
     expect(state.saveStatus).toBe("idle");
     expect(state.saveMessage).toBeNull();
+  });
+
+  it("ignores a late draft autosave response after switching to another workspace", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    const draftPatchDeferred = createDeferred<ReturnType<typeof createWorkspaceVariant>>();
+    clientMocks.apiPatch.mockReturnValueOnce(draftPatchDeferred.promise);
+    clientMocks.apiGet.mockResolvedValueOnce(
+      createWorkspaceVariant({
+        draftId: "draft-2",
+        rosterId: "roster-2",
+      }),
+    );
+    clientMocks.apiGet.mockResolvedValueOnce({
+      ...createSmartRulesResponse(),
+      roster_id: "roster-2",
+      seating_preferences: [{ student_id: "s2", near_teacher: true }],
+    });
+
+    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "Old workspace edit" });
+    await vi.advanceTimersByTimeAsync(900);
+    await Promise.resolve();
+
+    const loadPromise = state.loadWorkspace("draft-2");
+    await Promise.resolve();
+
+    draftPatchDeferred.resolve(
+      createWorkspaceVariant({
+        draftId: "draft-1",
+        rosterId: "roster-1",
+      }),
+    );
+    await Promise.resolve();
+    await loadPromise;
+
+    expect(state.draft?.id).toBe("draft-2");
+    expect(state.roster?.id).toBe("roster-2");
+    expect(state.seatingPreferences).toEqual([{ student_id: "s2", near_teacher: true }]);
+    expect(state.studentPlanningMetaByStudentId).toEqual({});
+  });
+
+  it("keeps newer draft edits dirty when an older draft autosave succeeds first", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    const firstDraftSave = createDeferred<ReturnType<typeof createWorkspaceVariant>>();
+    clientMocks.apiPatch
+      .mockReturnValueOnce(firstDraftSave.promise)
+      .mockResolvedValueOnce({
+        ...createWorkspaceVariant(),
+        draft: {
+          ...createWorkspaceVariant().draft,
+          revision: 6,
+        },
+        student_planning_meta: [{ student_id: "s1", notes: "Second note" }],
+      });
+
+    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "First note" });
+    await vi.advanceTimersByTimeAsync(900);
+    await Promise.resolve();
+
+    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "Second note" });
+    firstDraftSave.resolve({
+      ...createWorkspaceVariant(),
+      draft: {
+        ...createWorkspaceVariant().draft,
+        revision: 5,
+      },
+      student_planning_meta: [{ student_id: "s1", notes: "First note" }],
+    });
+    await Promise.resolve();
+
+    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Second note");
+    expect(state.hasPendingAutosave).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(2);
+    expect(clientMocks.apiPatch).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1",
+      expect.objectContaining({
+        expected_revision: 5,
+        student_planning_meta: [{ student_id: "s1", notes: "Second note" }],
+      }),
+    );
+    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Second note");
+    expect(state.draft?.revision).toBe(6);
+    expect(state.hasPendingAutosave).toBe(false);
+  });
+
+  it("keeps newer smart-rule edits dirty when an older smart-rule autosave succeeds first", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    const firstSmartRuleSave = createDeferred<RosterSmartRulesResponse>();
+    clientMocks.apiPatch
+      .mockReturnValueOnce(firstSmartRuleSave.promise)
+      .mockResolvedValueOnce({
+        ...createSmartRulesResponse(),
+        revision: 2,
+        seating_preferences: [
+          { student_id: "s1", near_teacher: true },
+          { student_id: "s2", near_teacher: true },
+        ],
+      });
+
+    state.setActiveSeatingSmartTool("near_teacher");
+    state.handleSeatingSmartToolStudentSelection("s1");
+    await vi.advanceTimersByTimeAsync(900);
+    await Promise.resolve();
+
+    state.handleSeatingSmartToolStudentSelection("s2");
+    firstSmartRuleSave.resolve({
+      ...createSmartRulesResponse(),
+      revision: 1,
+      seating_preferences: [{ student_id: "s1", near_teacher: true }],
+    });
+    await Promise.resolve();
+
+    expect(state.seatingPreferences).toEqual([
+      { student_id: "s1", near_teacher: true },
+      { student_id: "s2", near_teacher: true },
+    ]);
+    expect(state.hasPendingAutosave).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(2);
+    expect(clientMocks.apiPatch).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+      {
+        expected_revision: 1,
+        seating_preferences: [
+          { student_id: "s1", near_teacher: true },
+          { student_id: "s2", near_teacher: true },
+        ],
+        relationship_rules: [],
+      },
+    );
+    expect(state.smartRulesRevision).toBe(2);
+    expect(state.seatingPreferences).toEqual([
+      { student_id: "s1", near_teacher: true },
+      { student_id: "s2", near_teacher: true },
+    ]);
+    expect(state.hasPendingAutosave).toBe(false);
+  });
+
+  it("filters false-valued near-teacher entries when hydrating roster smart rules", async () => {
+    const state = useClassroomState();
+    mockWorkspaceLoad(
+      createWorkspaceResponse(),
+      {
+        ...createSmartRulesResponse(),
+        seating_preferences: [{ student_id: "s2", near_teacher: false }],
+      },
+    );
+
+    await state.loadWorkspace("draft-1");
+
+    expect(state.seatingPreferences).toEqual([]);
+    expect(state.isStudentMarkedNearTeacher("s2")).toBe(false);
   });
 
   it("resolves drafts without legacy lesson-mode payload fields", async () => {

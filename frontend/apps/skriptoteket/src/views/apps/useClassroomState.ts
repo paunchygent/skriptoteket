@@ -43,7 +43,30 @@ import {
 } from "./classroomPlannerStoreMutations";
 
 const AUTOSAVE_DELAY_MS = 900;
-type PersistLaneResult = "ok" | "conflict" | "error" | "cancelled";
+type PersistLaneResult = "ok" | "conflict" | "error" | "cancelled" | "pending";
+type DraftPatchPayload = {
+  expected_revision: number | null;
+  smart_enabled: boolean;
+  groups: DraftGroup[];
+  group_assignments: GroupAssignment[];
+  seat_assignments: SeatAssignment[];
+  student_planning_meta: StudentPlanningMeta[];
+};
+type SmartRulesPatchPayload = {
+  expected_revision: number;
+  seating_preferences: StudentSeatingPreference[];
+  relationship_rules: RelationshipRule[];
+};
+type DraftLaneSnapshot = {
+  draftId: string;
+  mutationVersion: number;
+  patch: DraftPatchPayload;
+};
+type SmartRuleLaneSnapshot = {
+  rosterId: string;
+  mutationVersion: number;
+  patch: SmartRulesPatchPayload;
+};
 
 export const useClassroomState = defineStore("classroom-state", () => {
   const draft = ref<PlanDraft | null>(null);
@@ -76,6 +99,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
   let saveQueued = false;
   let asyncStateGeneration = 0;
   let workspaceLoadRequestId = 0;
+  let draftMutationVersion = 0;
+  let smartRuleMutationVersion = 0;
 
   const isWorkspaceBusy = computed(() => {
     return historyActionInFlight.value || workspaceTransitionDepth.value > 0;
@@ -213,8 +238,18 @@ export const useClassroomState = defineStore("classroom-state", () => {
     clearPendingRelationshipSelection();
   }
 
+  function normalizeSeatingPreferencesCollection(
+    preferences: StudentSeatingPreference[],
+  ): StudentSeatingPreference[] {
+    return preferences
+      .filter((preference) => preference.near_teacher === true)
+      .map((preference) => ({ ...preference }));
+  }
+
   function isStudentMarkedNearTeacher(studentId: string): boolean {
-    return seatingPreferences.value.some((preference) => preference.student_id === studentId);
+    return seatingPreferences.value.some(
+      (preference) => preference.student_id === studentId && preference.near_teacher === true,
+    );
   }
 
   function isStudentInPendingRelationshipSelection(studentId: string): boolean {
@@ -380,6 +415,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     if (isWorkspaceBusy.value) {
       return;
     }
+    draftMutationVersion += 1;
     hasPendingDraftAutosave.value = true;
     scheduleAutosave();
   }
@@ -388,6 +424,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     if (isWorkspaceBusy.value) {
       return;
     }
+    smartRuleMutationVersion += 1;
     hasPendingSmartRuleAutosave.value = true;
     scheduleAutosave();
   }
@@ -426,29 +463,78 @@ export const useClassroomState = defineStore("classroom-state", () => {
     } else {
       clearPendingRelationshipSelection();
     }
-    seatingPreferences.value = [...rules.seating_preferences];
-    relationshipRules.value = [...rules.relationship_rules];
+    seatingPreferences.value = normalizeSeatingPreferencesCollection(rules.seating_preferences);
+    relationshipRules.value = rules.relationship_rules.map((rule) => ({
+      ...rule,
+      student_ids: [...rule.student_ids],
+    }));
     smartRulesRevision.value = rules.revision;
     smartRulesHydrated.value = true;
     hasPendingSmartRuleAutosave.value = false;
   }
 
-  function serializeDraftPatch(): Record<string, unknown> {
+  function applyDraftSaveAcknowledgement(workspace: DraftWorkspaceResponse): void {
+    if (!draft.value || draft.value.id !== workspace.draft.id) {
+      return;
+    }
+    draft.value = {
+      ...draft.value,
+      revision: workspace.draft.revision,
+      last_opened_at: workspace.draft.last_opened_at,
+    };
+    historyStatus.value = workspace.history_status;
+    historyActionInFlight.value = false;
+  }
+
+  function applySmartRuleSaveAcknowledgement(rules: RosterSmartRulesResponse): void {
+    if (!roster.value || roster.value.id !== rules.roster_id) {
+      return;
+    }
+    smartRulesRevision.value = rules.revision;
+    smartRulesHydrated.value = true;
+  }
+
+  function serializeDraftPatch(): DraftPatchPayload {
     return {
       expected_revision: draft.value?.revision ?? null,
       smart_enabled: draft.value?.smart_enabled ?? false,
-      groups: groups.value,
-      group_assignments: groupAssignments.value,
-      seat_assignments: seatAssignments.value,
-      student_planning_meta: studentPlanningMeta.value,
+      groups: groups.value.map((group) => ({ ...group })),
+      group_assignments: groupAssignments.value.map((assignment) => ({ ...assignment })),
+      seat_assignments: seatAssignments.value.map((assignment) => ({ ...assignment })),
+      student_planning_meta: studentPlanningMeta.value.map((meta) => ({ ...meta })),
     };
   }
 
-  function serializeSmartRulesPatch(): Record<string, unknown> {
+  function serializeSmartRulesPatch(): SmartRulesPatchPayload {
     return {
       expected_revision: smartRulesRevision.value,
-      seating_preferences: seatingPreferences.value,
-      relationship_rules: relationshipRules.value,
+      seating_preferences: normalizeSeatingPreferencesCollection(seatingPreferences.value),
+      relationship_rules: relationshipRules.value.map((rule) => ({
+        ...rule,
+        student_ids: [...rule.student_ids],
+      })),
+    };
+  }
+
+  function createDraftLaneSnapshot(): DraftLaneSnapshot | null {
+    if (!draft.value || !hasPendingDraftAutosave.value) {
+      return null;
+    }
+    return {
+      draftId: draft.value.id,
+      mutationVersion: draftMutationVersion,
+      patch: serializeDraftPatch(),
+    };
+  }
+
+  function createSmartRuleLaneSnapshot(): SmartRuleLaneSnapshot | null {
+    if (!roster.value || !hasPendingSmartRuleAutosave.value) {
+      return null;
+    }
+    return {
+      rosterId: roster.value.id,
+      mutationVersion: smartRuleMutationVersion,
+      patch: serializeSmartRulesPatch(),
     };
   }
 
@@ -470,22 +556,35 @@ export const useClassroomState = defineStore("classroom-state", () => {
     return "error";
   }
 
-  async function persistSmartRulesLane(saveGeneration: number): Promise<PersistLaneResult> {
-    if (!roster.value || !hasPendingSmartRuleAutosave.value) {
+  async function persistSmartRulesLane(
+    saveGeneration: number,
+    snapshot: SmartRuleLaneSnapshot | null,
+  ): Promise<PersistLaneResult> {
+    if (!snapshot) {
       return "ok";
     }
     try {
       const rules = await apiPatch<RosterSmartRulesResponse>(
-        `/api/v1/apps/classroom.group-seating-studio/rosters/${roster.value.id}/smart-rules`,
-        serializeSmartRulesPatch(),
+        `/api/v1/apps/classroom.group-seating-studio/rosters/${snapshot.rosterId}/smart-rules`,
+        snapshot.patch,
       );
-      if (saveGeneration !== asyncStateGeneration) {
+      if (
+        saveGeneration !== asyncStateGeneration
+        || roster.value?.id !== snapshot.rosterId
+      ) {
         return "cancelled";
+      }
+      if (smartRuleMutationVersion !== snapshot.mutationVersion) {
+        applySmartRuleSaveAcknowledgement(rules);
+        return "pending";
       }
       applyRosterSmartRules(rules, { preserveActiveSeatingSmartTool: true });
       return "ok";
     } catch (error: unknown) {
-      if (saveGeneration !== asyncStateGeneration) {
+      if (
+        saveGeneration !== asyncStateGeneration
+        || roster.value?.id !== snapshot.rosterId
+      ) {
         return "cancelled";
       }
       return applySaveFailureState(
@@ -495,22 +594,35 @@ export const useClassroomState = defineStore("classroom-state", () => {
     }
   }
 
-  async function persistDraftLane(saveGeneration: number): Promise<PersistLaneResult> {
-    if (!draft.value || !hasPendingDraftAutosave.value) {
+  async function persistDraftLane(
+    saveGeneration: number,
+    snapshot: DraftLaneSnapshot | null,
+  ): Promise<PersistLaneResult> {
+    if (!snapshot) {
       return "ok";
     }
     try {
       const workspace = await apiPatch<DraftWorkspaceResponse>(
-        `/api/v1/apps/classroom.group-seating-studio/drafts/${draft.value.id}`,
-        serializeDraftPatch(),
+        `/api/v1/apps/classroom.group-seating-studio/drafts/${snapshot.draftId}`,
+        snapshot.patch,
       );
-      if (saveGeneration !== asyncStateGeneration) {
+      if (
+        saveGeneration !== asyncStateGeneration
+        || draft.value?.id !== snapshot.draftId
+      ) {
         return "cancelled";
+      }
+      if (draftMutationVersion !== snapshot.mutationVersion) {
+        applyDraftSaveAcknowledgement(workspace);
+        return "pending";
       }
       applyWorkspace(workspace, { preserveActiveSeatingSmartTool: true });
       return "ok";
     } catch (error: unknown) {
-      if (saveGeneration !== asyncStateGeneration) {
+      if (
+        saveGeneration !== asyncStateGeneration
+        || draft.value?.id !== snapshot.draftId
+      ) {
         return "cancelled";
       }
       return applySaveFailureState(
@@ -541,12 +653,14 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
     saveInFlight = true;
     const saveGeneration = asyncStateGeneration;
+    const smartRuleSnapshot = createSmartRuleLaneSnapshot();
+    const draftLaneSnapshot = createDraftLaneSnapshot();
     try {
-      const smartRuleResult = await persistSmartRulesLane(saveGeneration);
+      const smartRuleResult = await persistSmartRulesLane(saveGeneration, smartRuleSnapshot);
       if (smartRuleResult === "cancelled") {
         return;
       }
-      const draftResult = await persistDraftLane(saveGeneration);
+      const draftResult = await persistDraftLane(saveGeneration, draftLaneSnapshot);
       if (draftResult === "cancelled") {
         return;
       }

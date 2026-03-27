@@ -30,6 +30,14 @@ def _ensure_unique(values: list[str], *, label: str) -> None:
         raise validation_error(f"{label} must be unique within the smart-rule set.")
 
 
+def _normalize_seating_preferences(
+    seating_preferences: list[StudentSeatingPreference],
+) -> list[StudentSeatingPreference]:
+    """Keep only active near-teacher preferences in the persisted rule set."""
+
+    return [preference for preference in seating_preferences if preference.near_teacher]
+
+
 def _validate_roster_smart_rules(
     *,
     roster: Roster,
@@ -103,6 +111,7 @@ class PatchRosterSmartRulesHandler:
         roster = await self._rosters.get_by_id(roster_id=roster_id)
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(roster_id))
+        seating_preferences = _normalize_seating_preferences(seating_preferences)
         if expected_revision < 0:
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,

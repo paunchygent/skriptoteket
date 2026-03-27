@@ -62,6 +62,7 @@ class PostgreSQLRosterSmartRuleRepository(RosterSmartRuleRepositoryProtocol):
                     near_teacher=model.near_teacher,
                 )
                 for model in seating_result.scalars().all()
+                if model.near_teacher
             ],
             relationship_rules=[
                 RelationshipRule(
@@ -147,6 +148,7 @@ class PostgreSQLRosterSmartRuleRepository(RosterSmartRuleRepositoryProtocol):
                     near_teacher=preference.near_teacher,
                 )
                 for preference in rules.seating_preferences
+                if preference.near_teacher
             ]
         )
         self._session.add_all(

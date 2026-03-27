@@ -6,7 +6,7 @@ status: ready
 owners: "agents"
 created: 2026-03-25
 epic: "EPIC-27"
-dependencies: ["ST-27-01", "ST-27-02"]
+dependencies: ["ST-27-01", "ST-27-02", "ST-27-06"]
 acceptance_criteria:
   - "Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`, then grouping remains the current random reshuffle behavior."
   - "Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then the planner requests a backend-owned smart grouping result that reuses the same relation model as smart seating."
@@ -36,6 +36,8 @@ understand and easier to turn off.
 - `Keep apart` / `Keep near` are cluster rules for 2+ students in V1; overlapping visible
   relationship clusters are intentionally blocked rather than reconciled.
 - Grouping should stay understandable even when no usable seating checkpoints exist.
+- This story depends on `ST-27-06`; do not add smart grouping behavior on top of the old
+  planner-wide flush/save-status/shared-timer contract.
 - If later grouping export checkpoints exist, they should become the primary grouping-history lane,
   while seating checkpoints remain a secondary source for relation carry-over and optional
   seating-distance signals.

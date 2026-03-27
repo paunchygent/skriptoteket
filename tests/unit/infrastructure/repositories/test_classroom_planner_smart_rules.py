@@ -77,6 +77,29 @@ async def test_get_by_roster_id_maps_stored_rows_to_domain_rules() -> None:
 
 
 @pytest.mark.asyncio
+async def test_get_by_roster_id_filters_false_near_teacher_rows_from_persisted_state() -> None:
+    session = AsyncMock()
+    root_row = Mock(revision=4)
+    seating_row = Mock(student_id="student-1", near_teacher=False)
+    session.execute.side_effect = [
+        _scalar_one_or_none_result(root_row),
+        _scalar_result([seating_row]),
+        _scalar_result([]),
+    ]
+    repo = PostgreSQLRosterSmartRuleRepository(session)
+    roster_id = uuid4()
+
+    result = await repo.get_by_roster_id(roster_id=roster_id)
+
+    assert result == RosterSmartRules(
+        roster_id=roster_id,
+        revision=4,
+        seating_preferences=[],
+        relationship_rules=[],
+    )
+
+
+@pytest.mark.asyncio
 async def test_save_inserts_initial_revision_and_replaces_rules() -> None:
     session = AsyncMock()
     session.add_all = Mock()
@@ -116,6 +139,31 @@ async def test_save_inserts_initial_revision_and_replaces_rules() -> None:
     assert relationship_models[0].kind == RelationshipKind.KEEP_NEAR.value
     assert relationship_models[0].student_ids == ["student-1", "student-2"]
     assert session.flush.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_save_does_not_persist_false_near_teacher_preferences() -> None:
+    session = AsyncMock()
+    session.add_all = Mock()
+    repo = PostgreSQLRosterSmartRuleRepository(session)
+    roster_id = uuid4()
+    rules = RosterSmartRules(
+        roster_id=roster_id,
+        revision=0,
+        seating_preferences=[StudentSeatingPreference(student_id="student-1", near_teacher=False)],
+        relationship_rules=[],
+    )
+    session.execute.side_effect = [
+        _scalar_one_or_none_result(1),
+        Mock(),
+        Mock(),
+    ]
+
+    persisted = await repo.save(rules=rules, expected_revision=0)
+
+    assert persisted.revision == 1
+    seating_models = session.add_all.call_args_list[0].args[0]
+    assert seating_models == []
 
 
 @pytest.mark.asyncio

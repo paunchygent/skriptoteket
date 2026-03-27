@@ -85,6 +85,9 @@ const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
   const markers: Record<string, string[]> = {};
 
   for (const preference of plannerState.seatingPreferences) {
+    if (preference.near_teacher !== true) {
+      continue;
+    }
     markers[preference.student_id] = [...(markers[preference.student_id] ?? []), "Lärare"];
   }
 

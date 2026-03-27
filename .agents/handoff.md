@@ -38,10 +38,9 @@ Keep this file updated so the next session can pick up work quickly.
   - `PR-0142` / `PR-0143` shipped seating XLSX with the spatial single-sheet workbook shape
   - keep using the host `dev-local` lane for real planner/export proofs; container-only logs are not enough
 - Migration guardrail added during `PR-0139`: `scripts/check_migration_test_coverage.py` now fails if Alembic has anything other than a single head, because recent operator-error incidents created split-head local states.
-- Smart-assignment docs are approved and active:
-  - canonical set: `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, and `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-05`
-  - locked shape: per-mode `Smart` beside `Slumpa`, class-wide visual authoring, seating-only `Närmare läraren`, no drawer-first editing, export-only checkpoints, no legacy metadata compatibility, and grouping-specific seating-distance toggle
-  - current ownership correction now locked in docs: smart rules are roster-global, draft toggles/arrangements stay draft-local, and checkpoints are history artifacts only
+- Smart-assignment docs are approved and aligned across `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-06`, and `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`.
+  - locked product/ownership shape: per-mode `Smart` beside `Slumpa`, class-wide visual authoring, seating-only `Närmare läraren`, roster-global smart rules, draft-local toggles/arrangements, export-only checkpoints, and no legacy metadata compatibility
+  - locked frontend remediation before more smart seating/grouping work: one session controller, one draft lane, one smart-rule lane, one separate UI bucket, one timer per lane, and an explicit transition matrix with draft-first fail-safe load
 - `ST-27-01` is now `done` and its delivered slices are:
   - new persisted `smart_enabled` draft flag in domain/API/repository + Alembic migration `e4b7c2d9a1f0_add_smart_enabled_to_classroom_planner_drafts.py`
   - small `Smart` toggles rendered beside `Slumpa` in both grouping and seating workspaces
@@ -70,6 +69,7 @@ Keep this file updated so the next session can pick up work quickly.
   - draft PATCH/workspace contracts now carry only draft-local arrangement state, notes, and run controls; roster smart rules load/save through `/rosters/{roster_id}/smart-rules`
   - the frontend store now loads roster smart rules separately, autosaves them through the roster endpoint, and no longer blocks authoring when draft-level `Smart` is off
   - review remediation now adds roster-rule optimistic concurrency, split autosave-lane retry safety, fail-safe workspace hydration, a shared owner-scoped export-workspace hydrator for grouping/seating exports, and startup schema-shape verification
+  - latest ruthless-review follow-up is also fixed locally: older draft/roster autosave responses are ignored, same-lane edits survive in-flight saves and retry with the refreshed revision, and false-valued `near_teacher` entries are stripped/ignored end-to-end so ghost teacher-distance markers cannot render
   - forward repair migration `7d4c1a2b9e6f_repair_roster_smart_rule_root_contract.py` now heals the impossible local/Docker drift state where Alembic was at head but `classroom_planner_roster_smart_rule_sets` was missing and child FKs still pointed at `classroom_planner_rosters`
   - Docker dev commands now auto-run the in-container `pdm run db-upgrade` path via `pdm run dev-db-upgrade`, and `.agents/rules/054-alembic-migrations.md` now explicitly treats applied migrations as immutable
   - the latest frontend reviewer follow-ups are also fixed locally: `clearWorkspace()` now invalidates stale in-flight workspace loads, and late autosave responses are ignored after clear/exit so they cannot repopulate planner state
@@ -129,7 +129,6 @@ Keep this file updated so the next session can pick up work quickly.
     - artifact: `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
   - runtime note:
     - the observed planner `500` on `5173` was local DB schema drift during the live check; upgrading the local DB to head fixed it and the reused planner smoke then passed
-- 2026-03-27 smart-rule docs/task clarification: updated `ADR-0074`, the smart-assignment decision memo, `ST-27-01`, `ST-27-03`, `ST-27-04`, `EPIC-27`, and `docs/index.md`; added `PR-0149` for seating smart-rule toolbar authoring with non-overlapping visible relationship clusters
 - 2026-03-27 PR-0149 seating smart-rule toolbar + non-overlapping cluster authoring:
   - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/RoomCanvas.spec.ts`
   - `pdm run fe-type-check`
@@ -138,12 +137,11 @@ Keep this file updated so the next session can pick up work quickly.
     - artifact: `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
   - ruthless review follow-up verification:
     - added red/green coverage for autosave tool stickiness and busy-state deletion gating, reran the full PR-0149 frontend target set plus `pdm run fe-type-check`, and confirmed the reused smoke on immediate rerun after one existing grouping-history cleanup assertion failure in `scripts.playwright_classroom_planner_smoke.py`
-- 2026-03-27 smart-rule ownership correction before further backend code:
-  - updated `ADR-0074`, `ST-27-01`, `ST-27-02`, `ST-27-03`, `PR-0147`, `PR-0149`, `PR-0150`, and `docs/index.md`
-  - added `PR-0151` for roster-global smart-rule ownership and draft-local arrangement boundary reset
-  - refined `PR-0150` so checkpoints are roster-scoped history artifacts that depend on `PR-0151` and do not own smart rules
-  - tightened `PR-0151` into the exact execution plan, including explicit frontend retargeting of the current local `PR-0149` toolbar/store work
-  - added a landing note to `PR-0149` so it is not mistaken for merge-ready before the ownership reset
+- 2026-03-27 smart-assignment docs remediation alignment:
+  - updated `ADR-0074`, the smart-assignment decision memo, `EPIC-27`, `REV-EPIC-27`, `ST-27-03`, `ST-27-04`, and `docs/index.md`
+  - added `ST-27-06` plus `PR-0152` to lock the frontend cut-over from the shared planner save machine to explicit session/lane ownership
+  - locked exit timeout -> confirm-discard, `confirmExitWithoutWaiting`, teardown-only `clearWorkspace`, and the dedicated controller/lane/UI module split
+  - `ST-27-06` / `PR-0152` must land before `ST-27-03` / `ST-27-04`
   - `pdm run docs-validate`
 - 2026-03-27 PR-0151 roster-global smart rules and draft-local arrangement reset:
   - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_rules.py tests/unit/web/apps/classroom_planner/test_smart_rules_api.py tests/unit/infrastructure/repositories/test_classroom_planner_smart_rules.py tests/unit/application/apps/classroom_planner/test_grouping_exports.py tests/unit/application/apps/classroom_planner/test_seating_exports.py tests/unit/web/test_startup_checks.py -q`
@@ -164,6 +162,11 @@ Keep this file updated so the next session can pick up work quickly.
     - `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
     - artifact: `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
   - `pdm run docs-validate`
+- 2026-03-27 PR-0151 ruthless-review follow-up fixes:
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_rules.py tests/unit/infrastructure/repositories/test_classroom_planner_smart_rules.py -q` and `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
+  - `pdm run typecheck` and `pdm run fe-type-check`
+  - `pdm run ruff check src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_rules.py src/skriptoteket/infrastructure/repositories/classroom_planner_smart_rules.py tests/unit/application/apps/classroom_planner/test_smart_rules.py tests/unit/infrastructure/repositories/test_classroom_planner_smart_rules.py` and `pnpm -C frontend --filter @skriptoteket/spa exec eslint src/views/apps/useClassroomState.ts src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.vue src/views/apps/components/PlannerSeatingSmartRuleSurface.vue src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
+  - live proof: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` with artifact `.artifacts/classroom-planner-smoke/classroom-planner-smoke.png`
 ## How to Run
 ```bash
 # Local dev
@@ -182,7 +185,7 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
   - the latest resumable-draft blocker was schema drift against active smart-assignment-v1 persistence, and the local worktree now carries the missing Alembic revisions plus passing idempotency checks
 - `pdm.lock` still has local, uncommitted follow-up changes after the `pdfplumber` runtime fix; do not lose or silently overwrite that diff.
 - `ST-26-02` and `EPIC-26` docs are still marked `ready` / unchecked even though `PR-0137` shipped; decide whether to mark them done after the lockfile follow-up and any final review closure.
-- `ST-27-01` now has both the seating contract reset (`PR-0147`) and the first visual seating smart-rule authoring slice (`PR-0149`) implemented locally, but the docs now also say the current draft-owned rule persistence must be corrected before more smart-assignment backend work lands.
+- `PR-0151` fixed the backend ownership boundary, but the next required blocker is now docs-approved `ST-27-06` / `PR-0152`: the remaining issue is the shared frontend planner flush/status/timer contract before `ST-27-03` / `ST-27-04`.
 - `PR-0151` review remediation, Docker drift repair, and the related export/runtime hardening are now implemented locally and have a passing live planner smoke on `5173`; keep the new `7d4c1a2b9e6f` repair migration in mind if another long-lived dev DB reports Alembic head but misses the roster smart-rule root contract.
   - the revision-0 false-conflict follow-up is now fixed locally: repaired/backfilled smart-rule roots at revision `0` can advance to revision `1` on the first edit instead of raising `Expected 0, got 0`
 - Conversion Hub now has a local job ledger and closed docs for `PR-0148`; the route enforces Sir Convert's real `wait_seconds <= 20` limit, so keep that contract in sync if the upstream service changes.
@@ -190,5 +193,5 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 - Continue the smart-assignment lane in the corrected order:
   - execute `PR-0150` next for seating checkpoint registry + normalized assignment-hash dedupe under `ST-27-02`
-  - keep relation rules as non-overlapping visible clusters in V1
-  - keep draft-level smart controls near the workspace/top-panel surfaces; do not add a global smart-settings drawer unless multiple stable cross-cutting toggles justify it
+  - then execute `PR-0152` to cut over to one session controller, one draft lane, one smart-rule lane, one smart-rule UI bucket, and explicit transition policies before `ST-27-03` / `ST-27-04`
+  - keep relation rules as non-overlapping visible clusters in V1 and keep smart controls near workspace/top-panel surfaces; do not add a global smart-settings drawer

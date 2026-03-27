@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-25
-links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25", "ST-27-06"]
 ---
 
 ## Context
@@ -259,6 +259,52 @@ The UI must not show:
 - internal weights
 - optimization jargon
 
+### 10. Frontend planner persistence must mirror the split ownership model honestly
+
+The frontend session shape must not behave like one shared save machine after the backend split to
+roster-global smart rules and draft-local arrangement state.
+
+The approved frontend model is:
+
+- one thin session controller as the only source of truth for active session token, draft ID, and
+  roster ID
+- one draft lane for draft-local arrangement state, draft-local toggles, autosave, undo/redo
+  preparation, and draft persistence conflict/error handling
+- one roster smart-rule lane for roster-global smart-rule hydration/persistence and its own
+  conflict/error handling
+- one separate smart-rule authoring UI bucket for active tool, temporary selection, and local
+  teacher feedback
+
+The lanes may not share one planner-wide timer, one generic flush operation, or one planner-global
+persistence-truth status/message.
+
+The transition semantics are also locked:
+
+- `loadWorkspace` is draft-first and fail-safe:
+  - clear old smart rules immediately
+  - hydrate the current draft lane first
+  - disable smart-rule authoring until the current roster's smart rules hydrate
+  - if smart-rule hydration fails, keep the draft usable and offer retry without turning that GET
+    failure into a planner-wide save conflict
+- `undo` / `redo` flush only the draft lane
+- `abandonDraft` flushes the smart-rule lane first, discards pending draft-local edits explicitly,
+  and any continue-anyway path must explicitly say class-wide smart-rule edits will be lost if the
+  smart-rule lane cannot save
+- `clearWorkspace` is pure teardown, must not imply save, and must ignore late responses so
+  cleared planner state cannot repopulate afterward
+- `exitPlanner` waits on the relevant lanes but returns an explicit confirm-discard state on
+  timeout instead of silently leaving or silently dropping pending work
+- `confirmExitWithoutWaiting` discards both lanes explicitly and ignores late responses after the
+  planner tears down
+- overview return and route exit use explicit lane policies rather than one generic flush path
+- leaving the planner screen successfully resets the smart-rule UI bucket
+- save/load acknowledgements must not decide smart-rule UI resets
+
+Each persistence lane keeps its own debounce timer, dirty state, save state, and conflict/error
+state. Smart-rule hydration failure remains distinct from smart-rule persistence conflict/error.
+This frontend cut-over should land as dedicated session/lane/UI modules with `useClassroomState.ts`
+reduced to a thin composition surface, not as another expansion of one umbrella store.
+
 ## Consequences
 
 ### Benefits
@@ -272,6 +318,8 @@ The UI must not show:
 - The repo avoids a spaghetti-style bridge between old visible metadata and the new smart model.
 - Grouping can benefit from seating context through an explicit, understandable toggle instead of a
   vague "classroom-aware" label.
+- Frontend transition semantics now match the backend ownership boundary instead of re-coupling the
+  lanes through one shared save contract.
 
 ### Tradeoffs / Risks
 
@@ -284,3 +332,7 @@ The UI must not show:
   values later.
 - The backend/API surface must be reintroduced carefully so it does not drift back toward the
   superseded solver-first shell.
+- The frontend cut-over is intentionally larger because the shared planner autosave contract must
+  be deleted, not patched with more conditional guards.
+- Draft-first fail-safe workspace loading creates a partially available planner state when
+  smart-rule hydration fails, so teacher-facing disablement and retry messaging must stay clear.
