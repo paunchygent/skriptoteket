@@ -44,6 +44,14 @@ function relationRuleStudents(rule: RelationshipRule): Student[] {
 function toggleTool(tool: SeatingSmartTool): void {
   plannerState.setActiveSeatingSmartTool(tool);
 }
+
+function updateUseHistory(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  plannerState.setDraftUseHistoryEnabled(target.checked);
+}
 </script>
 
 <template>
@@ -133,6 +141,19 @@ function toggleTool(tool: SeatingSmartTool): void {
       >
         Rensa markering
       </button>
+      <label
+        class="inline-flex items-center gap-2 rounded-md border border-navy/20 bg-canvas px-3 py-2 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+        data-test="seating-use-history-toggle"
+      >
+        <input
+          type="checkbox"
+          class="h-4 w-4 border-navy/40 text-navy"
+          :checked="plannerState.draft?.use_history ?? false"
+          :disabled="plannerState.isWorkspaceBusy"
+          @change="updateUseHistory"
+        >
+        <span>Använd historik</span>
+      </label>
       <div
         v-if="pendingRelationToolActive"
         class="ml-auto flex flex-wrap items-center gap-2"

@@ -106,6 +106,7 @@ const canRandomizeSeating = computed(() => {
     && plannerState.students.length > 0
     && plannerState.seats.length > 0
     && !plannerState.isWorkspaceBusy
+    && !plannerState.isRunningSmartSeating
     && !props.seatingLifecycleBusy
   );
 });
@@ -158,11 +159,11 @@ async function redoSeatingDraft(): Promise<void> {
   await plannerState.redoSeatingDraft();
 }
 
-function randomizeCurrentSeatingDraft(): void {
+async function randomizeCurrentSeatingDraft(): Promise<void> {
   if (!canRandomizeSeating.value) {
     return;
   }
-  plannerState.randomizeSeating();
+  await plannerState.runSeatingShuffle();
 }
 
 function changeSeatingTemplateFromEvent(event: Event): void {
@@ -329,7 +330,7 @@ watch(
         class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
         data-test="randomize-seating"
         :disabled="!canRandomizeSeating"
-        @click="randomizeCurrentSeatingDraft"
+        @click="void randomizeCurrentSeatingDraft()"
       >
         <IconShuffle :size="16" />
         <span>Slumpa</span>
@@ -376,6 +377,19 @@ watch(
         test-id="seating-actions-menu"
       />
     </PlannerWorkspaceActionBar>
+
+    <p
+      v-if="plannerState.smartSeatingRunMessage"
+      class="border px-3 py-2 text-sm font-semibold"
+      :class="
+        plannerState.smartSeatingRunTone === 'success'
+          ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+          : 'border-amber-300 bg-amber-50 text-amber-900'
+      "
+      data-test="seating-smart-run-message"
+    >
+      {{ plannerState.smartSeatingRunMessage }}
+    </p>
 
     <div
       v-if="!isExportStatusDismissed && (exportStatusLabel || exportErrorMessage || canDownloadLatestExport)"

@@ -44,6 +44,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    RunSmartSeatingHandler,
     SeatingExportJobFinalizer,
     UndoDraftHandler,
     UpdateRoomTemplateHandler,
@@ -931,6 +932,27 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             rosters=rosters,
             smart_rules=smart_rules,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def run_smart_seating_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
+        checkpoints: SeatingExportCheckpointRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> RunSmartSeatingHandler:
+        return RunSmartSeatingHandler(
+            uow=uow,
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            smart_rules=smart_rules,
+            checkpoints=checkpoints,
+            clock=clock,
         )
 
     @provide(scope=Scope.REQUEST)

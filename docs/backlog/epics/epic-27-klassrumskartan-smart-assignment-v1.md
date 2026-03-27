@@ -6,7 +6,7 @@ status: active
 owners: "agents"
 created: 2026-03-25
 updated: 2026-03-27
-outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a class-wide workspace surface, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
+outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a dedicated `Regler` workspace, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
 
@@ -14,8 +14,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 
 - Reintroduce smart assignment through a fresh, explicitly approved contract rather than by
   reviving the removed solver-era surface.
-- Keep the visible teacher model intentionally small and authored from a class-wide visual
-  workspace surface rather than from per-student drawer editing:
+- Keep the visible teacher model intentionally small and authored from a dedicated `Regler`
+  workspace rather than from per-student drawer editing or always-open task-pane panels:
   - `Keep apart`
   - `Keep near`
   - `Use history`
@@ -23,6 +23,16 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   - `Närmare läraren`
 - Allow one explicit grouping-only seat-distance toggle without turning it into a fifth shared
   smart control.
+- Make `Regler` the first-class home for smart-rule creation and editing:
+  - `Planeringskarta` is the default authoring map and preserves room geometry while placing
+    students alphabetically in simple seat-reading order
+  - `Sittschema` is an optional alternative that mirrors the current seating draft when one exists
+  - both map views share the same active tool and selection state
+- Keep `Sittplatser` and `Grupper` calm:
+  - retain the small `Smart` toggle in the main task toolbar
+  - allow one compact or collapsed smart summary near that toggle
+  - route rule editing through a small settings affordance near `Smart` that opens `Regler`
+  - do not keep or introduce full rule editing inside task-pane drawers or overflow affordances
 - Add one small `Smart` toggle per mode, persisted per draft and defaulting to `off` on new drafts.
 - Keep `Slumpa` as the main action in both `Grupper` and `Sittplatser`.
 - Delete the old visible planner metadata semantics and related persistence without migration or
@@ -44,6 +54,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - Preserving or mapping forward the old visible planner-note / proximity / stability model.
 - Re-exposing multi-slider planning profiles, suggestion panels, or raw score surfaces.
 - Making the student metadata drawer a primary smart-rule editing workflow.
+- Making a seating/grouping task-pane drawer or overflow menu the primary smart-rule editing
+  workflow.
 - Shipping a general teacher-facing checkpoint UX before export-backed checkpoints are trusted.
 - Treating grouping and seating as one blended visible task.
 - Long-form debugging or score-breakdown panels for teachers.
@@ -55,6 +67,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   smart behavior.
 - The toolbar-based class overview must stay comprehensible so rule selection and rule targets are
   visible without overwhelming the teacher.
+- The new `Regler` workspace must feel clearly different from `Sittplatser` and `Grupper` without
+  becoming a heavier secondary application inside the planner.
+- Tool state, cursor state, and student-selection feedback must stay strong enough that rule
+  authoring feels deliberate rather than hidden behind weak color-only affordances.
 - Smart grouping history partly depends on seating export checkpoints until grouping export
   checkpoints exist later under the export lane.
 - The package must define one explicit no-checkpoint behavior for `Use history`; teams must not
@@ -71,7 +87,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - [x] [ST-27-01: Smart-assignment contract reset and control model](../stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md)
 - [x] [ST-27-02: Export checkpoints for smart history](../stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md)
 - [x] [ST-27-06: Planner session lanes and transition matrix remediation](../stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md)
-- [ ] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
+- [x] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
+- [ ] [ST-27-07: Dedicated rules workspace and dual-map authoring](../stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)
 - [ ] [ST-27-04: Smart grouping v1](../stories/story-27-04-klassrumskartan-smart-grouping-v1.md)
 - [ ] [ST-27-05: Smart explanations and rerun messaging](../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md)
 
@@ -81,6 +98,10 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   the old slice-2 solver shell.
 - The metadata drawer may remain for advanced notes/history, but it is not the primary smart-rule
   authoring concept.
+- `Regler` is now the dedicated smart-rule authoring home:
+  - `Planeringskarta` is the default normalized map
+  - `Sittschema` is the optional exact-current-arrangement map
+  - `Sittplatser` and `Grupper` keep compact summary/settings affordances only
 - The first visible smart-rule interaction model is locked:
   - `Närmare läraren` is unary click-to-toggle
   - `Keep apart` / `Keep near` are 2+ student clusters authored through multi-select plus explicit
@@ -90,6 +111,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - The first grouping-history source may be seating checkpoints before grouping export checkpoints
   exist later under the export lane.
 - `ST-27-06` is now a required remediation slice before `ST-27-03` and `ST-27-04`.
+- `ST-27-07` is the required UI cut-over before `ST-27-04` and `ST-27-05`; it replaces the
+  seating-embedded rule editor with a shared `Regler` workspace plus compact task-pane summaries.
 - Later smart seating/grouping work must build on the explicit session-controller + lane split, not
   on planner-wide flush/save-status/shared-timer semantics.
 - A review doc must approve this package before implementation begins.
@@ -110,4 +133,15 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
     room-context dedupe, migration coverage, and export-success checkpoint wiring
   - later smart seating/grouping stories still consume this checkpoint foundation rather than being
     part of ST-27-02 itself
-- The frontend prerequisite for ST-27-03 and ST-27-04 is now satisfied by PR-0152.
+- ST-27-03 is done:
+  - PR-0154 shipped the backend-owned smart seating run, strict checkpoint-history read seam,
+    draft-local `Use history` control, `Smart`/`Slumpa` branching, teacher-edge inference, and
+    rerun diversity on the same control
+  - close-out included live proof on `http://127.0.0.1:5173`, reviewer-follow-up fixes for the
+    strict last-12 history seam plus route-level `404` / `409` / `422` HTTP coverage, and a final
+    clean `skriptoteket_reviewer` pass
+- The frontend prerequisite for ST-27-04 is now satisfied by PR-0152 plus PR-0154.
+- 2026-03-27 planning refinement:
+  - `ST-27-07` and `PR-0155` now carry the dedicated `Regler` workspace, the
+    `Planeringskarta` / `Sittschema` toggle, and the summary-link cut-over so later smart seating
+    and smart grouping UI does not grow around task-pane drawers

@@ -157,6 +157,25 @@ export type DraftWorkspaceResponse = {
   };
 };
 
+export type AppliedSmartSeatingRunResponse = {
+  status: "applied";
+  workspace: DraftWorkspaceResponse;
+  used_history: boolean;
+  message?: string | null;
+};
+
+export type BlockedSmartSeatingRunResponse = {
+  status: "blocked";
+  reason: "no_history";
+  workspace: null;
+  used_history: false;
+  message: string;
+};
+
+export type SmartSeatingRunResponse =
+  | AppliedSmartSeatingRunResponse
+  | BlockedSmartSeatingRunResponse;
+
 export type RosterSmartRulesResponse = {
   roster_id: string;
   revision: number;

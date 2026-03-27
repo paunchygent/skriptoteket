@@ -173,6 +173,15 @@ class SeatingExportCheckpointRepositoryProtocol(Protocol):
         """Load the latest checkpoint for one roster and normalized room context."""
         ...
 
+    async def list_recent_for_roster_and_room_context(
+        self,
+        *,
+        roster_id: UUID,
+        room_context_hash: str,
+    ) -> list[SeatingExportCheckpoint]:
+        """Load the fixed latest eligible smart-seating history window."""
+        ...
+
     async def create(
         self,
         *,

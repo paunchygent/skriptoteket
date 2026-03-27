@@ -2,7 +2,7 @@
 type: pr
 id: PR-0154
 title: "Klassrumskartan: smart seating v1 backend run, use-history gating, and teacher-edge placement"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
 updated: 2026-03-27
@@ -74,6 +74,8 @@ small while making smart seating real end-to-end:
 - Implementing smart grouping; that remains `ST-27-04`.
 - Adding a separate alternate-result button or a teacher-facing randomness setting; rerun diversity
   remains part of the core smart-run contract, while longer explanation polish remains `ST-27-05`.
+- Moving primary rule editing into the dedicated `Regler` workspace; that task-pane cut-over now
+  belongs to `ST-27-07` / `PR-0155`.
 - Building a generic reusable solver framework beyond this seating slice.
 - Adding a teacher-facing checkpoint browser, score panel, or debug surface.
 - Reopening rule-authoring semantics already shipped in `PR-0149`, `PR-0151`, and `PR-0152`.
@@ -181,74 +183,122 @@ small while making smart seating real end-to-end:
   - proof: `Slumpa` calls the backend smart-seating run endpoint when `Smart` is on
 - Criterion 3:
   - implemented in `PR-0154`
-  - proof: backend smart seating consumes roster-global smart rules plus draft-local `Use history`
+  - proof: repeated smart seating reruns prefer a different strong candidate when one exists
 - Criterion 4:
-  - already satisfied by `PR-0149`
-  - regression-verified in `PR-0154`
-  - proof: seating smart-rule authoring still works through the class-wide visible surface
+  - implemented in `PR-0154`
+  - proof: backend smart seating consumes roster-global smart rules plus draft-local `Use history`
 - Criterion 5:
-  - already satisfied by `PR-0149` and `PR-0151`
-  - regression-verified in `PR-0154`
-  - proof: overlapping visible relationship clusters remain blocked
-- Criterion 6:
   - already satisfied by `PR-0151` and preserved through `PR-0152`
   - regression-verified in `PR-0154`
   - proof: roster-global smart rules remain available across seating drafts for the same class
-- Criterion 7:
+- Criterion 6:
   - implemented in `PR-0154`
   - proof: smart seating scores `Keep apart` as a strong best-effort anti-adjacency objective
-- Criterion 8:
+- Criterion 7:
   - implemented in `PR-0154`
   - proof: smart seating scores `Keep near` as a local-vicinity objective
-- Criterion 9:
+- Criterion 8:
   - implemented in `PR-0154`
   - proof: eligible seating checkpoints drive teacher-distance fairness over time for students
     without `Närmare läraren`
-- Criterion 10:
+- Criterion 9:
   - implemented in `PR-0154`
   - proof: teacher-distance uses `Whiteboard` / `Kateder` cues, else top-middle fallback
-- Criterion 11:
+- Criterion 10:
   - implemented in `PR-0154`
   - proof: history comes only from explicit eligible checkpoints, never from draft autosave or
     undo/redo state
-- Criterion 12:
+- Criterion 11:
   - implemented in `PR-0154`
   - proof: history-enabled smart seating blocks honestly when no eligible checkpoints exist
-- Criterion 13:
+- Criterion 12:
   - implemented in `PR-0154`
   - proof: the best available seating plus one short teacher-facing message is returned instead of
     a hard failure
 
-## Files expected to change
+## Files changed
 
-- `src/skriptoteket/domain/curated_apps/classroom_planner/checkpoints.py`
-- `src/skriptoteket/domain/curated_apps/classroom_planner/models.py`
 - new smart-seating domain module under `src/skriptoteket/domain/curated_apps/classroom_planner/`
 - `src/skriptoteket/protocols/classroom_planner.py`
 - new handler module under `src/skriptoteket/application/curated_apps/classroom_planner/handlers/`
 - `src/skriptoteket/application/curated_apps/classroom_planner/__init__.py`
+- `src/skriptoteket/di/curated_apps.py`
 - `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`
 - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`
 - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSmartRuleActions.ts`
+- `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts`
 - `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`
-- optional small frontend orchestration module under `frontend/apps/skriptoteket/src/views/apps/`
+- `frontend/apps/skriptoteket/src/views/apps/useDraftPersistenceLane.ts`
+- new frontend orchestration module under `frontend/apps/skriptoteket/src/views/apps/`
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingSmartRuleSurface.vue`
+- new Playwright proof script under `scripts/`
 - new or updated tests under `tests/unit/` and `frontend/apps/skriptoteket/src/views/apps/`
+
+## Implementation summary (as of 2026-03-27)
+
+- The backend smart-seating run now ships through one seating-only application/API seam:
+  - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py`
+  - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_seating.py`
+  - `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`
+- The checkpoint-history seam now exposes the approved strict history window:
+  - same `roster_id`
+  - same normalized `room_context_hash`
+  - export-success only
+  - newest first
+  - last 12 checkpoints
+- `Slumpa` now branches honestly:
+  - `Smart` off keeps the existing local random reshuffle
+  - `Smart` on flushes the draft lane + smart-rule lane, then calls the backend smart-run endpoint
+- The seating UI now exposes draft-local `Use history`, persists it with the draft lane, and shows
+  one short teacher-facing success/block message inline.
+- Teacher-edge inference is backend-owned, but the shipped solver still approximates teacher
+  distance with a looser point-anchor heuristic; canonical follow-up semantics now define
+  `Närmare läraren` as nearer the teaching edge first and the teaching zone second.
+- Repeated smart reruns now prefer a different strong candidate when one exists; there is still no
+  separate alternate-result control.
+- The current seating-embedded smart summary/edit surface is now transitional:
+  - follow-up `PR-0155` will keep draft-local smart controls such as `Use history` near `Smart`
+  - rule editing itself will move to the dedicated `Regler` workspace via a small settings-link
+    affordance
+- Live proof was added in `scripts/playwright_pr_0154_smart_seating_check.py` and covers:
+  - smart off local random
+  - smart on + no history blocked
+  - smart on + eligible history applied
+  - crowded-room compromise
+  - conflicting-rule compromise
+  - rerun diversity
+
+## Canonical semantics clarification (2026-03-27)
+
+- `Keep near` is canonically defined as one immediate local cluster:
+  - direct left/right or above/below adjacency is preferred
+  - a one-step looser same-row or same-column fallback is acceptable only when needed
+  - different-row-plus-different-column placements are not acceptable when a more compact cluster
+    exists
+- `Keep apart` is canonically defined as meaningful separation:
+  - not merely "not touching" or "not in direct orthogonal adjacency"
+  - stronger layouts should prefer clearer row/column distance or different local seating blocks
+    over tiny visual separators alone
+- `Närmare läraren` is canonically defined as nearer the teaching edge first and the teaching zone
+  second, not merely nearer one arbitrary point-anchor
+- The shipped `PR-0154` solver remains a heuristic approximation of these stronger semantics:
+  - pairwise internal scoring and the current teacher-anchor logic still need follow-up alignment
+    before stress/property testing is meaningful
 
 ## PR-sized execution checklist
 
-- [ ] Add domain tests for teaching-edge inference and rule-aware seat scoring
-- [ ] Add application tests for smart-run success, no-history blocking, and checkpoint-only history
-- [ ] Extend the checkpoint protocol/repository seam for eligible history lookup
-- [ ] Add the backend smart-seating handler and thin seating API endpoint
-- [ ] Persist smart-run results back into the draft workspace with optimistic safety
-- [ ] Add the seating `Use history` UI control and persist it draft-locally
-- [ ] Wire the seating `Slumpa` action to branch between local random and backend smart run
-- [ ] Show short teacher-facing success/block messages in the seating workspace
-- [ ] Regression-verify the already-shipped smart-rule authoring surface, overlap blocking, and
+- [x] Add domain tests for teaching-edge inference and rule-aware seat scoring
+- [x] Add application tests for smart-run success, no-history blocking, and checkpoint-only history
+- [x] Extend the checkpoint protocol/repository seam for eligible history lookup
+- [x] Add the backend smart-seating handler and thin seating API endpoint
+- [x] Persist smart-run results back into the draft workspace with optimistic safety
+- [x] Add the seating `Use history` UI control and persist it draft-locally
+- [x] Wire the seating `Slumpa` action to branch between local random and backend smart run
+- [x] Show short teacher-facing success/block messages in the seating workspace
+- [x] Regression-verify the already-shipped smart-rule authoring surface, overlap blocking, and
   cross-draft roster-global rule reuse
-- [ ] Re-run verification and record manual proof steps in `.agents/handoff.md`
+- [x] Re-run verification and record manual proof steps in `.agents/handoff.md`
 
 ## Test plan
 
@@ -259,6 +309,38 @@ small while making smart seating real end-to-end:
 - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/useSmartSeatingRun.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run docs-validate`
+
+## Verification evidence
+
+- Automated:
+  - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -q`
+  - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
+  - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
+  - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
+  - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/useSmartSeatingRun.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+  - `pdm run fe-type-check`
+  - `pdm run typecheck`
+  - `pdm run docs-validate`
+- Live proof:
+  - reused the already-running hot-reload stack on `http://127.0.0.1:5173`
+  - ran `pdm run python -m scripts.playwright_pr_0154_smart_seating_check --base-url http://127.0.0.1:5173`
+  - artifacts written under `.artifacts/pr-0154-smart-seating/`
+- Review status:
+  - independent `skriptoteket_reviewer` found two actionable issues:
+    - missing route-level FastAPI HTTP contract coverage for smart-run `404` / `409` / `422`
+    - checkpoint-history seam still exposed a caller-configurable `limit`
+  - follow-up implementation fixed both issues by:
+    - adding real route-level smart-run tests for missing draft, stale revision, and malformed
+      payloads
+    - making the checkpoint-history seam a fixed newest-first last-12 window
+  - targeted post-fix verification:
+    - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
+    - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
+    - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
+  - final post-fix `skriptoteket_reviewer` rerun:
+    - no actionable findings remain
+    - residual risk: the larger-room greedy solver path is scenario-tested rather than
+      stress/property-tested
 - `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local`
 - `pdm run python -m scripts.playwright_pr_0154_smart_seating_check --base-url http://127.0.0.1:5173`
 

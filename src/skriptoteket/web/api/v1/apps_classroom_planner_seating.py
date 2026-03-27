@@ -3,10 +3,9 @@
 This router holds focused seating lifecycle endpoints so the shared classroom
 planner API module does not keep growing. It exposes seating-only transitions
 that the SPA uses once the teacher has already entered the seating workspace,
-including the explicit seating export contract for artifact preparation.
+including the explicit seating export contract, the backend-owned smart run,
+and artifact preparation.
 """
-
-from __future__ import annotations
 
 from uuid import UUID
 
@@ -23,8 +22,13 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetRecoverableSeatingExportJobForDraftHandler,
     GetSeatingExportJobHandler,
     PrepareSeatingExportHandler,
+    RunSmartSeatingHandler,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.web.api.v1.apps_classroom_planner import (
+    DraftWorkspaceResponse,
+    _serialize_workspace,
+)
 from skriptoteket.web.api.v1.apps_classroom_planner_draft_contracts import (
     PlanDraftDto,
     serialize_plan_draft,
@@ -54,6 +58,31 @@ class CreateSeatingDraftRequest(BaseModel):
 
     roster_id: UUID
     template_id: UUID
+
+
+class SmartSeatingRunRequest(BaseModel):
+    """Deserialize one backend-owned seating smart-run request."""
+
+    expected_revision: int
+
+
+class AppliedSmartSeatingRunResponse(BaseModel):
+    """Serialize one applied backend smart-seating result."""
+
+    status: str
+    workspace: DraftWorkspaceResponse
+    used_history: bool
+    message: str | None
+
+
+class BlockedSmartSeatingRunResponse(BaseModel):
+    """Serialize one blocked backend smart-seating result."""
+
+    status: str
+    reason: str
+    message: str
+    workspace: None = None
+    used_history: bool
 
 
 @router.post("/drafts/seating/new", response_model=PlanDraftDto)
@@ -93,6 +122,38 @@ async def delete_historic_seating_draft(
     _: None = Depends(require_csrf_token),
 ) -> None:
     await handler.handle(draft_id=draft_id, owner_user_id=user.id)
+
+
+@router.post(
+    "/drafts/seating/{draft_id}/smart-run",
+    response_model=AppliedSmartSeatingRunResponse | BlockedSmartSeatingRunResponse,
+)
+@inject
+async def run_smart_seating(
+    draft_id: UUID,
+    request: SmartSeatingRunRequest,
+    handler: FromDishka[RunSmartSeatingHandler],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> AppliedSmartSeatingRunResponse | BlockedSmartSeatingRunResponse:
+    result = await handler.handle(
+        draft_id=draft_id,
+        owner_user_id=user.id,
+        expected_revision=request.expected_revision,
+    )
+    if result.status == "blocked":
+        return BlockedSmartSeatingRunResponse(
+            status=result.status,
+            reason=result.reason,
+            message=result.message,
+            used_history=result.used_history,
+        )
+    return AppliedSmartSeatingRunResponse(
+        status=result.status,
+        workspace=_serialize_workspace(result.workspace),
+        used_history=result.used_history,
+        message=result.message,
+    )
 
 
 @router.post("/drafts/seating/{draft_id}/exports", response_model=PreparedSeatingExportDto)

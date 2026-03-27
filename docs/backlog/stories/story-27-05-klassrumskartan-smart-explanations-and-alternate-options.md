@@ -6,7 +6,7 @@ status: ready
 owners: "agents"
 created: 2026-03-25
 epic: "EPIC-27"
-dependencies: ["ST-27-03", "ST-27-04"]
+dependencies: ["ST-27-03", "ST-27-04", "ST-27-07"]
 acceptance_criteria:
   - "Given a teacher has run smart seating or smart grouping, when the result is shown, then the UI presents a short teacher-language explanation rather than raw scores, weights, or debug output."
   - "Given the teacher wants another smart result after a smart run, when `Smart` remains enabled and they use `Slumpa` again, then the UI keeps that same primary action instead of introducing a separate alternate-result button."
@@ -27,6 +27,9 @@ duplicate controls for behavior the teacher already understands.
 
 - Keep the main action row calm; `Slumpa` plus the small `Smart` toggle should remain the dominant
   affordance.
+- Keep explanation copy compatible with the dedicated `Regler` workspace:
+  - compact task-pane summaries may link to `Regler`
+  - do not introduce inline rule-editing copy or drawer-first editing affordances here
 - Do not add a separate alternate-result button; reruns should stay on the existing `Slumpa`
   action when `Smart` is on.
 - Missing-history messaging should teach the export-backed checkpoint rule in plain language.

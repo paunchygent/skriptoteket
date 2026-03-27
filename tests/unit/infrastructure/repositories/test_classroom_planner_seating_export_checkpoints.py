@@ -98,3 +98,48 @@ async def test_get_latest_for_roster_and_room_context_maps_model_to_domain() -> 
     assert result is not None
     assert result.assignment_hash == "assignment-hash"
     assert result.seating_snapshot.unplaced_student_ids == ["student-2"]
+
+
+@pytest.mark.asyncio
+async def test_list_recent_for_roster_and_room_context_returns_newest_first_window() -> None:
+    session = AsyncMock()
+    older = Mock(
+        id=uuid4(),
+        roster_id=uuid4(),
+        template_id=uuid4(),
+        source_draft_id=uuid4(),
+        source_export_job_id=uuid4(),
+        room_context_hash="room-hash",
+        assignment_hash="assignment-older",
+        room_context={"grid_cols": 14, "grid_rows": 9, "seats": [], "fixtures": []},
+        seating_snapshot={"placed_assignments": [], "unplaced_student_ids": []},
+        created_at=datetime(2026, 3, 26, tzinfo=timezone.utc),
+    )
+    newer = Mock(
+        id=uuid4(),
+        roster_id=older.roster_id,
+        template_id=uuid4(),
+        source_draft_id=uuid4(),
+        source_export_job_id=uuid4(),
+        room_context_hash="room-hash",
+        assignment_hash="assignment-newer",
+        room_context={"grid_cols": 14, "grid_rows": 9, "seats": [], "fixtures": []},
+        seating_snapshot={"placed_assignments": [], "unplaced_student_ids": []},
+        created_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
+    )
+    scalar_result = Mock()
+    scalar_result.scalars.return_value.all.return_value = [newer, older]
+    session.execute.return_value = scalar_result
+    repo = PostgreSQLSeatingExportCheckpointRepository(session)
+
+    result = await repo.list_recent_for_roster_and_room_context(
+        roster_id=older.roster_id,
+        room_context_hash="room-hash",
+    )
+
+    assert [checkpoint.assignment_hash for checkpoint in result] == [
+        "assignment-newer",
+        "assignment-older",
+    ]
+    statement = session.execute.call_args.args[0]
+    assert "LIMIT 12" in str(statement.compile(compile_kwargs={"literal_binds": True}))

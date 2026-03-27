@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-25
-links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25", "ST-27-06"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25", "ST-27-06", "ST-27-07"]
 ---
 
 ## Context
@@ -47,14 +47,30 @@ Each mode gains its own small `Smart` toggle beside that action.
 This preserves a low-button surface while keeping the difference between random and smart behavior
 explicit.
 
-### 2. The visible smart model stays intentionally small, class-wide, and tool-based
+### 2. The visible smart model stays intentionally small, class-wide, and centered on `Regler`
 
-The primary teacher-facing smart authoring surface for V1 is a class-wide visual overview in the
-active workspace, not a per-student metadata drawer. Teachers select one rule tool from the active
-toolbar and click student tiles in the shared class layout to author or remove rules.
+The primary teacher-facing smart authoring surface for V1 is one dedicated `Regler` workspace in
+the planner shell, not a per-student metadata drawer and not an always-open panel inside
+`Sittplatser` or `Grupper`.
+
+`Sittplatser` and `Grupper` may still show a small smart summary near the main `Smart` toggle, but
+their task panes are not the home for rule creation or rule editing.
+
+This means:
+
+- rule creation and rule editing route through `Regler`
+- a small settings affordance beside `Smart` opens `Regler`
+- a compact or collapsed task-pane drawer may summarize the current rules and mode-local smart
+  toggles such as `Use history`
+- that compact drawer must not host inline rule creation or rule editing
+- per-student metadata drawers remain secondary and must not become the primary smart-rule editor
+
+Inside `Regler`, teachers author rules from a class-wide visual overview rather than from list
+forms alone. Teachers select one rule tool from the active toolbar and click student tiles in the
+shared class layout to author or update rules.
 
 These visible smart rules are class-global and roster-owned even when they are authored from one
-active seating or grouping workspace. They are not owned by one draft.
+active class session. They are not owned by one draft.
 
 The common teacher-facing smart controls for V1 are exactly:
 
@@ -75,14 +91,38 @@ This replaces a more abstract "classroom-aware" explanation with a clearer teach
 No visible weight sliders, planning profiles, rule-engine jargon, or per-student smart metadata
 forms are exposed in the default V1 surface.
 
+The dedicated `Regler` workspace must offer two map views over the same rule-selection model:
+
+- `Planeringskarta` as the default:
+  - keep the real classroom geometry
+  - sort seats in simple reading order
+  - place students alphabetically on that geometry so the teacher gets a spatial feel without
+    inheriting the current draft arrangement
+- `Sittschema` as an optional alternative:
+  - mirror the current seating draft arrangement when one exists
+  - stay unavailable when no current seating arrangement exists yet
+
+These two views are alternative projections of the same authoring session, not separate workflows.
+
 The first interaction model is explicitly:
 
-- one active smart tool at a time in the seating/grouping workspace
+- one active smart tool at a time in `Regler`
 - switching tools clears any incomplete temporary selection
 - `Esc` or `Rensa markering` clears the current temporary selection
 - completed rule creation clears the temporary selection but keeps the tool active for repeated use
-- active rules must remain visible in a main workspace summary surface rather than being hidden in
-  a drawer
+- switching between `Planeringskarta` and `Sittschema` keeps the active tool and current temporary
+  selection intact
+- active rules must remain visible in the main `Regler` summary/inspector surface rather than
+  being hidden in a drawer
+
+The `Regler` workspace should also make tool state and selection state unmistakable:
+
+- tool identity should use clear icon-based affordances rather than text-color-only state
+- the active tool should stay obvious through button state, cursor changes, and a short status
+  line
+- student selection should show clear hover, selected, and ordered multi-select feedback before
+  the teacher commits a rule
+- existing rules must be editable from the main rule summary surface, not just removable
 
 The V1 authoring model is also intentionally asymmetric:
 
@@ -179,9 +219,13 @@ Smart rules must not remain draft-owned as the end-state model.
 Grouping should use its own later mode-specific assignment hash once grouping export checkpoints
 exist, rather than sharing the seating hash shape.
 
-Teacher-facing `keep apart` sets and `keep near` sets may still compile into weighted pairwise
-relations at solve time; the pairwise graph is an internal representation, not the visible
-authoring model.
+Teacher-facing `keep apart` and `keep near` rules are defined by visible seating geometry, not by
+pairwise graph math.
+
+An implementation may still use pairwise or other internal scoring as an optimization, but only if
+that internal representation preserves the visible semantics below. Internal scoring must not widen
+`Keep near` into broad same-side-of-room proximity or weaken `Keep apart` into merely "not
+touching."
 
 ### 6. The backend remains authoritative for smart scoring and search
 
@@ -208,17 +252,24 @@ use seating distance through the explicit seat-distance toggle when:
 
 This keeps grouping honest instead of pretending teacher-distance is a shared cross-mode rule.
 
-Teacher-distance is computed from one inferred teaching anchor in the room model.
+Teacher-distance is computed from an inferred teaching edge and teaching zone in the room model,
+not from one arbitrary point alone.
 
 For V1:
 
 - the UI should recommend placing `Whiteboard` or `Kateder` so the teaching edge is explicit
-- if no stronger cue exists, the default assumption is that the teacher stands at the top-middle
-  of the room in the standard top-down planner view
-- if the whiteboard or teaching cues are placed on another wall, that wall becomes the teaching
-  edge instead
-- if a teacher desk is offset toward one side, the inferred anchor may shift somewhat toward that
-  side while staying near the central teaching position rather than snapping to the desk tile
+- `Whiteboard` and `Kateder` together determine which wall is the teaching/front edge
+- if no stronger cue exists, the default assumption is still that the teacher stands along the top
+  edge in the standard top-down planner view
+- if a `Kateder` exists, its lateral position should define the primary teaching zone along that
+  front edge
+- if only a `Whiteboard` exists, the board span should define the default teaching zone on that
+  edge
+- `Närmare läraren` in seating means a student should prefer seats that are nearer the teaching
+  edge first and nearer the teaching zone second
+- extreme corner seats must not repeatedly win solely because they are marginally closer to one
+  point-anchor when a more central front-zone seat is equally teacher-near in normal teacher
+  practice
 
 Left/right remains meaningful in the teacher's normal top-down view of the room in the SPA.
 
@@ -232,14 +283,26 @@ For V1:
   possible
 - if there are fewer groups than students in one keep-apart cluster, the solver should maximize
   spread and minimize collisions rather than failing
-- `Keep apart` in seating means those students should not be seated in direct orthogonal adjacency:
-  - not immediately left/right in the same row
-  - not immediately above/below in the same column
-- diagonal placement with one row and one column of separation is acceptable when needed
-- greater spacing than the minimum should be preferred when the solver has room to do so
-- `Keep near` in seating means the selected students should be placed in the same local vicinity,
-  not necessarily as one exact shoulder-to-shoulder pair
-- direct adjacency is ideal for `Keep near`, but a small nearby cluster is still acceptable
+- `Keep apart` in seating means those students should be meaningfully separated, not merely "not in
+  direct orthogonal adjacency"
+- direct left/right adjacency in the same row is not acceptable when a stronger layout exists
+- direct above/below adjacency in the same column is not acceptable when a stronger layout exists
+- near-diagonal or almost-across placements that still leave students effectively close are also
+  not acceptable when the room has clear space for stronger separation
+- greater separation than the minimum should be preferred when the solver has room to do so, and
+  the solver should prefer clearer row/column distance or different local seating blocks over tiny
+  visual separators alone
+- `Keep near` in seating means the selected students should form one immediate local cluster, not
+  merely sit somewhere in the same broad area of the room
+- direct left/right adjacency in the same row or direct above/below adjacency in the same column is
+  the preferred satisfaction for a near-pair
+- a one-step looser same-row or same-column fallback is acceptable only when the room or other
+  rules prevent direct adjacency
+- for three or more students, one connected compact cluster is ideal; if that is impossible, the
+  solver should keep a connected core and minimize the cluster's diameter rather than scattering the
+  students across unrelated rows and columns
+- layouts that place near-cluster members in different rows and different columns with no direct
+  line relation are not acceptable when a stronger compact placement exists
 
 These are strong objectives, but they remain best-effort when room shape, group count, or other
 teacher-authored rules make a perfect result impossible.
@@ -278,7 +341,7 @@ The UI must not show:
 - internal weights
 - optimization jargon
 
-### 10. Frontend planner persistence must mirror the split ownership model honestly
+### 11. Frontend planner persistence must mirror the split ownership model honestly
 
 The frontend session shape must not behave like one shared save machine after the backend split to
 roster-global smart rules and draft-local arrangement state.
@@ -331,7 +394,9 @@ reduced to a thin composition surface, not as another expansion of one umbrella 
 - Smart assignment re-enters the product through a clean, explicitly approved contract.
 - The teacher-facing model stays small and understandable.
 - The primary editing flow matches the teacher's class-wide mental model instead of hiding smart
-  rules in individual student drawers.
+  rules in individual student drawers or bloating the seating/grouping task panes.
+- `Planeringskarta` gives teachers one normalized, easy-to-scan rule-authoring view while
+  `Sittschema` remains available for teachers who prefer the exact current seating mental model.
 - Class-global teacher intentions stay stable across drafts instead of being reauthored per draft.
 - Export-backed checkpoints align with the current PRD and ADR direction.
 - The repo avoids a spaghetti-style bridge between old visible metadata and the new smart model.
@@ -345,8 +410,10 @@ reduced to a thin composition surface, not as another expansion of one umbrella 
 - `Slumpa` semantics become mode + toggle dependent, so the UI copy must be especially clear.
 - Smart reruns need enough diversity pressure that teachers do not experience the smart path as
   one frozen answer whenever several good alternatives exist.
+- The `Regler` workspace adds one more top-level planner mode, so the affordance and labeling must
+  stay obvious.
 - The visual class-wide rule-authoring surface must stay fast and legible so toolbar state does not
-  become confusing.
+  become confusing and the task panes do not regress into drawer-first editing.
 - Grouping history remains partially dependent on seating checkpoints until grouping checkpoints
   exist later through explicit grouping export artifacts.
 - Hard deletion of old semantics is cleaner, but it removes any fallback path for recovering those

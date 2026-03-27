@@ -387,6 +387,72 @@ describe("useClassroomState", () => {
     randomSpy.mockRestore();
   });
 
+  it("keeps Slumpa local when smart seating is off", async () => {
+    const state = seedWorkspace();
+    const randomSpy = vi.spyOn(Math, "random");
+    randomSpy
+      .mockReturnValueOnce(0.85)
+      .mockReturnValueOnce(0.1);
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+      smart_enabled: false,
+      use_history: true,
+    };
+
+    await state.runSeatingShuffle();
+
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
+    expect(state.seatAssignmentsByStudentId).toEqual({
+      s1: "seat-2",
+      s2: "seat-1",
+      s3: null,
+    });
+    expect(state.smartSeatingRunMessage).toBeNull();
+    randomSpy.mockRestore();
+  });
+
+  it("calls the backend smart-run endpoint when smart seating is on", async () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "seating"),
+      smart_enabled: true,
+      use_history: true,
+    };
+    clientMocks.apiPost.mockResolvedValue({
+      status: "applied",
+      workspace: {
+        ...createWorkspaceResponse("template-1", "seating"),
+        draft: {
+          ...createDraft("template-1", "seating"),
+          smart_enabled: true,
+          use_history: true,
+          revision: 5,
+        },
+        seat_assignments: [
+          { student_id: "s1", seat_id: "seat-2" },
+          { student_id: "s2", seat_id: "seat-1" },
+        ],
+      },
+      used_history: true,
+      message: "Smart placering klar med stöd av tidigare exporter.",
+    });
+
+    await state.runSeatingShuffle();
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/seating/draft-1/smart-run",
+      { expected_revision: 4 },
+    );
+    expect(state.seatAssignmentsByStudentId).toEqual({
+      s1: "seat-2",
+      s2: "seat-1",
+    });
+    expect(state.smartSeatingRunMessage).toBe(
+      "Smart placering klar med stöd av tidigare exporter.",
+    );
+    expect(state.smartSeatingRunTone).toBe("success");
+  });
+
   it("clears grouping assignments in place without touching group structure or metadata", () => {
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "grouping");

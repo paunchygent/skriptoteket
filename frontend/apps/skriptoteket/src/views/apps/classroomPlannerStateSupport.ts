@@ -156,6 +156,7 @@ export function createClassroomPlannerStateSupport(
     return {
       expected_revision: options.draft.value?.revision ?? null,
       smart_enabled: options.draft.value?.smart_enabled ?? false,
+      use_history: options.draft.value?.use_history ?? false,
       groups: options.groups.value.map((group) => ({ ...group })),
       group_assignments: options.groupAssignments.value.map((assignment) => ({ ...assignment })),
       seat_assignments: options.seatAssignments.value.map((assignment) => ({ ...assignment })),

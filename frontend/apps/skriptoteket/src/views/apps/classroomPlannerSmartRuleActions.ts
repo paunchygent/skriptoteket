@@ -51,19 +51,30 @@ function createRelationshipRuleId(): string {
 export function createClassroomPlannerSmartRuleActions(
   options: CreateClassroomPlannerSmartRuleActionsOptions,
 ) {
-  function setDraftSmartEnabled(enabled: boolean): void {
+  function setDraftBooleanFlag(
+    key: "smart_enabled" | "use_history",
+    enabled: boolean,
+  ): void {
     if (!options.draft.value || options.isWorkspaceBusy.value) {
       return;
     }
-    if ((options.draft.value.smart_enabled ?? false) === enabled) {
+    if ((options.draft.value[key] ?? false) === enabled) {
       return;
     }
     options.draft.value = {
       ...options.draft.value,
-      smart_enabled: enabled,
+      [key]: enabled,
     };
     options.syncVisibleSessionBindings();
     options.draftLane.markDirty();
+  }
+
+  function setDraftSmartEnabled(enabled: boolean): void {
+    setDraftBooleanFlag("smart_enabled", enabled);
+  }
+
+  function setDraftUseHistoryEnabled(enabled: boolean): void {
+    setDraftBooleanFlag("use_history", enabled);
   }
 
   function isStudentMarkedNearTeacher(studentId: string): boolean {
@@ -182,6 +193,7 @@ export function createClassroomPlannerSmartRuleActions(
 
   return {
     setDraftSmartEnabled,
+    setDraftUseHistoryEnabled,
     isStudentMarkedNearTeacher,
     handleSeatingSmartToolStudentSelection,
     commitPendingRelationshipRule,

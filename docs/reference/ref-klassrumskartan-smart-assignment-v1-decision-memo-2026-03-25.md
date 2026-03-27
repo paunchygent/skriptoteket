@@ -6,7 +6,7 @@ status: active
 owners: "agents"
 created: 2026-03-25
 topic: "smart-assignment"
-links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06"]
+links: ["PRD-group-seating-studio-v0.3", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-27", "REV-EPIC-27", "ST-27-06", "ST-27-07"]
 ---
 
 ## Summary
@@ -35,6 +35,15 @@ explicit, and the current class-first workflow intact.
   - `Keep apart`
   - `Keep near`
   - `Use history`
+- Make `Regler` the dedicated smart-rule authoring workspace in the planner shell.
+- Keep `Sittplatser` and `Grupper` calm:
+  - they may show compact smart summaries and mode-local smart toggles
+  - rule creation/editing routes through a small settings affordance near `Smart` that opens
+    `Regler`
+  - task-pane drawers or overflow menus must not become full rule editors
+- Give `Regler` two map views over the same authoring session:
+  - `Planeringskarta` is the default and maps students alphabetically onto the classroom geometry
+  - `Sittschema` mirrors the current seating draft when it exists
 - Add one seating-only rule:
   - `Närmare läraren`
 - Lock the first interaction model:
@@ -122,6 +131,9 @@ explicit, and the current class-first workflow intact.
   needs a new approved story package rather than an informal behavior change.
 - The current planner metadata drawer may remain for advanced notes/history, but it should not be
   extended into the primary smart-rule editing surface.
+- The current seating-embedded smart-rule surface is transitional and should not be extended into
+  grouping or a drawer-first editing model; the dedicated `Regler` workspace is the approved
+  end-state.
 - `PR-0084` correctly removed the old solver-first contract; smart assignment now needs a clean
   re-entry through a new ADR, epic, and stories rather than reusing superseded concepts.
 
@@ -134,8 +146,11 @@ The approved planning package for this memo is:
 - `ST-27-01`: contract reset and control model
 - `ST-27-02`: export checkpoints for smart history
 - `ST-27-03`: smart seating v1
+- `ST-27-07`: dedicated rules workspace and dual-map authoring
 - `ST-27-04`: smart grouping v1
 - `ST-27-05`: smart explanations and rerun messaging
 - `ST-27-06`: planner session lanes and transition matrix remediation
 - `REV-EPIC-27`: required review package before implementation begins
 - `PR-0152`: implementation design task for the frontend session-lane remediation
+- `PR-0155`: implementation design task for the dedicated rules workspace and task-pane summary
+  cut-over

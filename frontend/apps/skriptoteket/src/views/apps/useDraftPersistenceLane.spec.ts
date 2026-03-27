@@ -59,6 +59,7 @@ describe("useDraftPersistenceLane", () => {
       serializePatch: () => ({
         expected_revision: 4,
         smart_enabled: false,
+        use_history: false,
         groups: [],
         group_assignments: [],
         seat_assignments: [],
@@ -97,6 +98,7 @@ describe("useDraftPersistenceLane", () => {
       serializePatch: () => ({
         expected_revision: 4,
         smart_enabled: false,
+        use_history: false,
         groups: [],
         group_assignments: [],
         seat_assignments: [],
@@ -140,6 +142,7 @@ describe("useDraftPersistenceLane", () => {
       serializePatch: () => ({
         expected_revision: 4,
         smart_enabled: false,
+        use_history: false,
         groups: [],
         group_assignments: [],
         seat_assignments: [],

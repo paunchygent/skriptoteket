@@ -77,6 +77,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md`
 - Smart seating v1 backend run + history gating:
   `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
+- Rules workspace + dual-map smart authoring follow-up:
+  `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
 - Seating export checkpoint registry + history dedupe:
   `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - Conversion Hub local job boundary follow-up:
@@ -274,6 +276,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`
 - `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md`
 - `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
+- `docs/backlog/stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md`
 
 ### Backlog Reviews
 
@@ -367,6 +370,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
 - `docs/backlog/prs/pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md`
 - `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
+- `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

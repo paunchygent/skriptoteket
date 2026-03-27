@@ -14,7 +14,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`
 
 ## Status
 
@@ -31,6 +31,14 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-27 doc-scope refinement for the smart-assignment lane:
   - rerun diversity now belongs to the core smart-run contract in `ADR-0074`, `ST-27-03`, `ST-27-04`, and `PR-0154`
   - `ST-27-05` now covers explanation/rerun messaging only and no longer introduces a separate alternate-result button
+- 2026-03-27 UI-direction refinement for the smart-assignment lane:
+  - `ADR-0074`, `EPIC-27`, the decision memo, and the review package now make `Regler` the
+    dedicated smart-rule authoring workspace
+  - added `ST-27-07` plus `PR-0155` for the `Planeringskarta` / `Sittschema` rules workspace and
+    the compact task-pane summary cut-over
+  - `Sittplatser` / `Grupper` may keep compact smart summaries and mode-local toggles, but rule
+    editing should route via a small settings affordance near `Smart`; do not keep or introduce
+    full rule-editing drawers
 - `ST-27-01` is done:
   - `PR-0147` reset the seating smart-rule contract to `seating_preferences[].near_teacher`
   - `PR-0149` delivered the visible seating smart-rule toolbar and V1 interaction model
@@ -55,6 +63,15 @@ Keep this file updated so the next session can pick up work quickly.
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportFlow.ts` now owns the shared export state machine
   - `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.ts` is now 126 LoC
   - `frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.ts` is now 126 LoC
+- `PR-0154` smart seating implementation is now in place locally and live-proofed:
+  - backend-owned smart seating ships through `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_seating.py`, and `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`
+  - the checkpoint seam now reads the strict last-12 eligible history window for the same roster plus normalized room context
+  - seating `Use history` is exposed in `PlannerSeatingSmartRuleSurface.vue`, persists draft-locally, and `Slumpa` now branches honestly between local random and backend smart run
+  - teacher-edge inference, no-history blocking, best-effort compromise messaging, and rerun diversity are all covered by unit tests plus the new live proof script `scripts/playwright_pr_0154_smart_seating_check.py`; ADR semantics are now tighter than the shipped heuristic for `Keep near`, `Keep apart`, and `Närmare läraren`
+  - independent `skriptoteket_reviewer` found and the implementation fixed two follow-up issues:
+    - route-level FastAPI contract coverage for smart-run `404` / `409` / `422`
+    - strict last-12 checkpoint-history seam with no caller-configurable limit
+  - final post-fix `skriptoteket_reviewer` rerun returned no actionable findings; residual risk is limited to the larger-room greedy solver path still being scenario-tested rather than stress/property-tested
 - `PR-0150` is done:
   - seating export checkpoints persist through a dedicated backend seam with normalized seating snapshots and room-context hashes
   - unchanged exports dedupe by roster plus normalized room-context identity; template id is stored provenance, and copied seat/fixture ids, seat zones, and fixture labels do not fork identical room layouts into separate checkpoint lanes
@@ -110,6 +127,39 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-27 smart-assignment docs scope refinement:
   - `pdm run docs-validate`
   - updated `ADR-0074`, `EPIC-27`, `REV-EPIC-27`, `ST-27-03`, `ST-27-04`, `ST-27-05`, `PR-0154`, and the decision memo so smart reruns prefer different good candidates on repeated `Slumpa` runs and `ST-27-05` no longer adds a separate alternate-result control
+- 2026-03-27 smart-assignment UI docs refinement:
+  - `pdm run docs-validate`
+  - updated `ADR-0074`, `EPIC-27`, `REV-EPIC-27`, `ST-27-03`, `ST-27-04`, `ST-27-05`, `PR-0154`, `docs/index.md`, and the decision memo
+  - added `ST-27-07` plus `PR-0155` so `Regler` is the dedicated rule-editing workspace with
+    `Planeringskarta` / `Sittschema`, while `Sittplatser` / `Grupper` keep compact summaries and a
+    settings-link affordance near `Smart`
+- 2026-03-27 `PR-0154` smart seating:
+  - baseline before edits:
+    - `pdm run docs-validate`
+    - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+  - implementation verification:
+    - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -q`
+    - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
+    - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
+    - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
+    - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/useSmartSeatingRun.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
+    - `pdm run fe-type-check`
+    - `pdm run typecheck`
+    - `pdm run docs-validate`
+  - live proof against the existing hot-reload stack on `http://127.0.0.1:5173`:
+    - `pdm run python -m scripts.playwright_pr_0154_smart_seating_check --base-url http://127.0.0.1:5173`
+    - artifacts under `.artifacts/pr-0154-smart-seating/`
+  - preserved behavior checked by automated tests and live proof:
+    - smart off keeps local `Slumpa`
+    - smart on + no history blocks honestly without changing assignments
+    - smart on + eligible history applies the backend result
+    - crowded-room compromise, conflicting-rule compromise, and rerun diversity all pass
+  - reviewer follow-up fix verification:
+    - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
+    - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
+    - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
+  - final reviewer close-out:
+    - post-fix `skriptoteket_reviewer` rerun returned no actionable findings
 
 ## How to Run
 ```bash
@@ -132,14 +182,19 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 - `pdm.lock` still has local, uncommitted follow-up changes after the `pdfplumber` runtime fix; do not lose or silently overwrite that diff.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
-  - `ST-27-03` / `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry and the `PR-0152` session/lane split, not on older planner-wide save assumptions
+  - `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions
 
 ## Next Steps
 
 - Continue the smart-assignment lane in the corrected order:
-  - continue with `ST-27-03` / `ST-27-04` on top of the shipped `PR-0150` checkpoint registry and `PR-0152` session-controller + lane split
-  - implement rerun diversity as part of the core smart-run contract; do not add a separate alternate-result button
-  - keep relation rules as non-overlapping visible clusters in V1 and keep smart controls near workspace/top-panel surfaces; do not add a global smart-settings drawer
+  - take `ST-27-07` / `PR-0155` next so the dedicated `Regler` workspace lands before later grouping/explanation UI work
+  - take a solver-alignment follow-up for `PR-0154` semantics before stress/property testing:
+    tighten `Keep near`, `Keep apart`, and `Närmare läraren` to match the newer ADR wording
+  - continue with `ST-27-04` on top of the shipped `PR-0150` checkpoint registry, `PR-0152`
+    session-controller + lane split, `PR-0154` run seam, and the new `ST-27-07` workspace
+    direction
+  - keep relation rules as non-overlapping visible clusters in V1 and keep rule editing out of
+    task-pane drawers; compact summaries are okay, full editors are not
 - If cleanup continues before new feature work, start with:
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
   - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`

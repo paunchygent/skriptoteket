@@ -58,6 +58,7 @@ from .handlers.smart_rules import (
     GetRosterSmartRulesHandler,
     PatchRosterSmartRulesHandler,
 )
+from .handlers.smart_seating import RunSmartSeatingHandler
 from .handlers.templates import (
     CreateRoomTemplateHandler,
     DeleteRoomTemplateHandler,
@@ -108,6 +109,7 @@ __all__ = [
     "PreparedSeatingExportContract",
     "RedoDraftHandler",
     "ResolveDraftHandler",
+    "RunSmartSeatingHandler",
     "SeatingExportKind",
     "SeatingExportLayoutId",
     "SeatingExportPaperSize",

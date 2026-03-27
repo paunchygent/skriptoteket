@@ -31,6 +31,7 @@ import {
   buildStudentMap,
   createPlannerMutationActions,
 } from "./classroomPlannerStoreMutations";
+import { useSmartSeatingRun } from "./useSmartSeatingRun";
 import type {
   DraftGroup,
   DraftHistoryStatus,
@@ -68,6 +69,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     can_redo: false,
   });
   const historyActionInFlight = ref(false);
+  const smartSeatingRunInFlight = ref(false);
 
   const sessionController = usePlannerSessionController();
 
@@ -76,7 +78,11 @@ export const useClassroomState = defineStore("classroom-state", () => {
   });
 
   const isWorkspaceBusy = computed(() => {
-    return historyActionInFlight.value || sessionController.transitionDepth.value > 0;
+    return (
+      historyActionInFlight.value
+      || smartSeatingRunInFlight.value
+      || sessionController.transitionDepth.value > 0
+    );
   });
 
   const students = computed(() => roster.value?.students ?? []);
@@ -263,6 +269,16 @@ export const useClassroomState = defineStore("classroom-state", () => {
     isWorkspaceBusy,
   });
 
+  const smartSeatingRun = useSmartSeatingRun({
+    draft,
+    smartRulesHydrated,
+    runningState: smartSeatingRunInFlight,
+    flushDraftLane: draftLane.flushPendingChanges,
+    flushSmartRuleLane: smartRuleLane.flushPendingChanges,
+    applyWorkspace: stateSupport.applyWorkspace,
+    normalizeErrorMessage: stateSupport.normalizeMutationError,
+  });
+
   const smartRuleActions = createClassroomPlannerSmartRuleActions({
     draft,
     seatingPreferences,
@@ -317,6 +333,18 @@ export const useClassroomState = defineStore("classroom-state", () => {
     },
   });
 
+  async function runSeatingShuffle(): Promise<void> {
+    if (!draft.value || draft.value.draft_kind !== "seating") {
+      return;
+    }
+    if ((draft.value.smart_enabled ?? false) !== true) {
+      smartSeatingRun.clearFeedback();
+      mutationActions.randomizeSeating();
+      return;
+    }
+    await smartSeatingRun.run();
+  }
+
   return {
     draft,
     roster,
@@ -329,6 +357,9 @@ export const useClassroomState = defineStore("classroom-state", () => {
     smartRulePersistenceMessage: smartRuleLane.message,
     smartRuleHydrationStatus: smartRuleLane.hydrationStatus,
     smartRuleHydrationMessage: smartRuleLane.hydrationMessage,
+    isRunningSmartSeating: smartSeatingRun.isBusy,
+    smartSeatingRunMessage: smartSeatingRun.message,
+    smartSeatingRunTone: smartSeatingRun.tone,
     plannerStatusLabel: plannerStatus.plannerStatusLabel,
     plannerStatusMessage: plannerStatus.plannerStatusMessage,
     plannerStatusTone: plannerStatus.plannerStatusTone,
@@ -388,6 +419,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     getClassWorkspaceSummary: lifecycle.getClassWorkspaceSummary,
     abandonDraft: lifecycle.abandonDraft,
     setDraftSmartEnabled: smartRuleActions.setDraftSmartEnabled,
+    setDraftUseHistoryEnabled: smartRuleActions.setDraftUseHistoryEnabled,
     setActiveSeatingSmartTool: smartRuleUiState.setActiveSeatingSmartTool,
     clearPendingRelationshipSelection: smartRuleUiState.clearPendingRelationshipSelection,
     handleSeatingSmartToolStudentSelection: smartRuleActions.handleSeatingSmartToolStudentSelection,
@@ -409,6 +441,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     removeGroup: mutationActions.removeGroup,
     randomizeGroups: mutationActions.randomizeGroups,
     randomizeSeating: mutationActions.randomizeSeating,
+    runSeatingShuffle,
     setStudentPlanningMeta: mutationActions.setStudentPlanningMeta,
     resetStudentPlanningMeta: mutationActions.resetStudentPlanningMeta,
   };

@@ -14,7 +14,10 @@ import type { PlanDraft, RelationshipRule, RoomTemplate, Roster } from "../class
 
 type PlannerStateMock = {
   template: RoomTemplate | null;
-  draft: (Pick<PlanDraft, "id" | "draft_kind" | "revision"> & { smart_enabled?: boolean }) | null;
+  draft: (
+    Pick<PlanDraft, "id" | "draft_kind" | "revision">
+    & { smart_enabled?: boolean; use_history?: boolean }
+  ) | null;
   canEditSeatingSmartRules: boolean;
   students: Roster["students"];
   studentsById: Record<string, Roster["students"][number]>;
@@ -26,8 +29,11 @@ type PlannerStateMock = {
   pendingRelationshipStudentIds: string[];
   activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
   smartRuleFeedbackMessage: string | null;
+  smartSeatingRunMessage: string | null;
+  smartSeatingRunTone: "neutral" | "success" | "warning";
   canCommitPendingRelationshipRule: boolean;
   isWorkspaceBusy: boolean;
+  isRunningSmartSeating: boolean;
   canUndo: boolean;
   canRedo: boolean;
   setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
@@ -37,9 +43,11 @@ type PlannerStateMock = {
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
   randomizeSeating: ReturnType<typeof vi.fn>;
+  runSeatingShuffle: ReturnType<typeof vi.fn>;
   clearSeatAssignment: ReturnType<typeof vi.fn>;
   clearSeatingAssignments: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
+  setDraftUseHistoryEnabled: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -70,8 +78,11 @@ const stateMocks = vi.hoisted(() => ({
     pendingRelationshipStudentIds: [],
     activeSeatingSmartTool: null,
     smartRuleFeedbackMessage: null,
+    smartSeatingRunMessage: null,
+    smartSeatingRunTone: "neutral",
     canCommitPendingRelationshipRule: false,
     isWorkspaceBusy: false,
+    isRunningSmartSeating: false,
     canUndo: false,
     canRedo: false,
     setActiveSeatingSmartTool: vi.fn(),
@@ -81,9 +92,11 @@ const stateMocks = vi.hoisted(() => ({
     undoSeatingDraft: vi.fn(),
     redoSeatingDraft: vi.fn(),
     randomizeSeating: vi.fn(),
+    runSeatingShuffle: vi.fn(),
     clearSeatAssignment: vi.fn(),
     clearSeatingAssignments: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
+    setDraftUseHistoryEnabled: vi.fn(),
   }))(),
 }));
 
@@ -106,14 +119,19 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
     stateMocks.plannerState.activeSeatingSmartTool = null;
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
+    stateMocks.plannerState.smartSeatingRunMessage = null;
+    stateMocks.plannerState.smartSeatingRunTone = "neutral";
     stateMocks.plannerState.canCommitPendingRelationshipRule = false;
     stateMocks.plannerState.canEditSeatingSmartRules = true;
+    stateMocks.plannerState.isRunningSmartSeating = false;
     stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
     stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
     stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
     stateMocks.plannerState.deleteRelationshipRule.mockReset();
     stateMocks.plannerState.setDraftSmartEnabled.mockReset();
+    stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
+    stateMocks.plannerState.runSeatingShuffle.mockReset();
   });
 
   it("renders the visible smart-rule toolbar and summary in the seating pane", () => {
@@ -241,5 +259,53 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
 
     expect(wrapper.text()).toContain("Inga smarta regler ännu.");
     expect(wrapper.text()).not.toContain("Ada Lovelace");
+  });
+
+  it("branches Slumpa through the shared seating shuffle action and exposes use-history", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "seating",
+      revision: 2,
+      smart_enabled: true,
+      use_history: true,
+    };
+
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+      },
+      global: {
+        stubs: {
+          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="randomize-seating"]').trigger("click");
+    await wrapper.get('[data-test="seating-use-history-toggle"] input').setValue(false);
+
+    expect(stateMocks.plannerState.runSeatingShuffle).toHaveBeenCalledTimes(1);
+    expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);
+  });
+
+  it("renders smart-run feedback in the seating pane", () => {
+    stateMocks.plannerState.smartSeatingRunMessage =
+      "För att använda historik behöver du först exportera ett sittschema för just det här klassrummet.";
+    stateMocks.plannerState.smartSeatingRunTone = "warning";
+
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+      },
+      global: {
+        stubs: {
+          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="seating-smart-run-message"]').text()).toContain(
+      "För att använda historik behöver du först exportera ett sittschema för just det här klassrummet.",
+    );
   });
 });

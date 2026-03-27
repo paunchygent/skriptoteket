@@ -14,7 +14,10 @@ import type { ClassWorkspaceSummary, PlanDraft, RoomTemplate, Roster } from "../
 type PlannerStateMock = {
   roster: Roster;
   template: RoomTemplate | null;
-  draft: Pick<PlanDraft, "id" | "draft_kind" | "revision">;
+  draft: Pick<PlanDraft, "id" | "draft_kind" | "revision"> & {
+    smart_enabled?: boolean;
+    use_history?: boolean;
+  };
   students: Roster["students"];
   ungroupedStudents: Roster["students"];
   unseatedStudents: Roster["students"];
@@ -27,12 +30,15 @@ type PlannerStateMock = {
   relationshipRules: Array<{ id: string; kind: "keep_near" | "keep_apart"; student_ids: string[] }>;
   pendingRelationshipStudentIds: string[];
   smartRuleFeedbackMessage: string | null;
+  smartSeatingRunMessage: string | null;
+  smartSeatingRunTone: "neutral" | "success" | "warning";
   canCommitPendingRelationshipRule: boolean;
   plannerStatusLabel: string;
   plannerStatusMessage: string | null;
   plannerStatusTone: "neutral" | "success" | "warning" | "danger";
   plannerConflictMessage: string | null;
   isWorkspaceBusy: boolean;
+  isRunningSmartSeating: boolean;
   canEditSeatingSmartRules: boolean;
   canUndo: boolean;
   canRedo: boolean;
@@ -43,6 +49,7 @@ type PlannerStateMock = {
   commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
   deleteRelationshipRule: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
+  setDraftUseHistoryEnabled: ReturnType<typeof vi.fn>;
   reloadActiveWorkspace: ReturnType<typeof vi.fn>;
   undoGroupingDraft: ReturnType<typeof vi.fn>;
   redoGroupingDraft: ReturnType<typeof vi.fn>;
@@ -57,6 +64,7 @@ type PlannerStateMock = {
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
   randomizeSeating: ReturnType<typeof vi.fn>;
+  runSeatingShuffle: ReturnType<typeof vi.fn>;
   clearSeatingAssignments: ReturnType<typeof vi.fn>;
 };
 
@@ -89,12 +97,15 @@ const stateMocks = vi.hoisted(() => ({
     relationshipRules: [],
     pendingRelationshipStudentIds: [],
     smartRuleFeedbackMessage: null,
+    smartSeatingRunMessage: null,
+    smartSeatingRunTone: "neutral",
     canCommitPendingRelationshipRule: false,
     plannerStatusLabel: "Sparad",
     plannerStatusMessage: null,
     plannerStatusTone: "success",
     plannerConflictMessage: null,
     isWorkspaceBusy: false,
+    isRunningSmartSeating: false,
     canEditSeatingSmartRules: true,
     canUndo: false,
     canRedo: false,
@@ -105,6 +116,7 @@ const stateMocks = vi.hoisted(() => ({
     commitPendingRelationshipRule: vi.fn(() => true),
     deleteRelationshipRule: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
+    setDraftUseHistoryEnabled: vi.fn(),
     reloadActiveWorkspace: vi.fn(),
     undoGroupingDraft: vi.fn(),
     redoGroupingDraft: vi.fn(),
@@ -119,6 +131,7 @@ const stateMocks = vi.hoisted(() => ({
     undoSeatingDraft: vi.fn(),
     redoSeatingDraft: vi.fn(),
     randomizeSeating: vi.fn(),
+    runSeatingShuffle: vi.fn(),
     clearSeatingAssignments: vi.fn(),
   }))(),
 }));
@@ -197,6 +210,7 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.undoSeatingDraft.mockReset();
     stateMocks.plannerState.redoSeatingDraft.mockReset();
     stateMocks.plannerState.randomizeSeating.mockReset();
+    stateMocks.plannerState.runSeatingShuffle.mockReset();
     stateMocks.plannerState.clearSeatingAssignments.mockReset();
     stateMocks.plannerState.template = {
       id: "template-1",
@@ -750,7 +764,7 @@ describe("PlannerWorkspaceShell", () => {
 
     await wrapper.get('[data-test="randomize-seating"]').trigger("click");
 
-    expect(stateMocks.plannerState.randomizeSeating).toHaveBeenCalledTimes(1);
+    expect(stateMocks.plannerState.runSeatingShuffle).toHaveBeenCalledTimes(1);
   });
 
   it("disables seating Slumpa when no classroom is selected", () => {

@@ -15,6 +15,7 @@ stories:
   - ST-27-02
   - ST-27-06
   - ST-27-03
+  - ST-27-07
   - ST-27-04
   - ST-27-05
 ---
@@ -24,7 +25,7 @@ stories:
 EPIC-27 proposes the first approved smart-assignment lane for Klassrumskartan after fundamentals
 and explicit seating exports. The package keeps the visible teacher model intentionally small,
 reuses `Slumpa` as the main action with a small per-mode `Smart` toggle, moves primary smart-rule
-authoring into a class-wide visual workspace surface, defines export-backed checkpoints as the only
+authoring into a dedicated `Regler` workspace, defines export-backed checkpoints as the only
 smart-history source, and reintroduces smart grouping/seating through a clean backend-owned
 contract rather than by reviving the older solver-first shell.
 
@@ -34,7 +35,7 @@ Klassrumskartan now has the right fundamentals and the first explicit seating ex
 it still lacks the later smart-assignment lane that the product direction reserved. The current
 codebase also contains the opposite risk: the old solver-era contract was already removed, so
 smart behavior cannot safely return through ad hoc tweaks to the existing randomizer, the old
-planner-note surface, or a drawer-first per-student editing model.
+planner-note surface, a seating-embedded rule panel, or a drawer-first per-student editing model.
 
 ## Proposed Solution
 
@@ -45,6 +46,7 @@ Create a new smart-assignment package with:
 - a clean contract-reset story
 - an export-checkpoint history story
 - separate smart seating and smart grouping stories
+- one shared rules-workspace cut-over story
 - a final explanation/rerun-messaging polish story
 
 The package keeps the smart model intentionally small, deletes the older visible planner metadata
@@ -65,18 +67,20 @@ re-coupling it through one shared save contract.
 | `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md` | History source and dedupe policy | 5 min |
 | `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Frontend session shape and transition semantics | 6 min |
 | `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md` | Seating smart lane | 5 min |
+| `docs/backlog/stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md` | Dedicated rules workspace and task-pane summary cut-over | 6 min |
 | `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md` | Grouping smart lane and seat-distance toggle | 5 min |
 | `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Explanation and rerun-messaging UX | 4 min |
 | `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Implementation-ready remediation design task | 6 min |
+| `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md` | Implementation-ready dedicated rules workspace design task | 6 min |
 
-**Total estimated time:** ~56 minutes
+**Total estimated time:** ~68 minutes
 
 ## Key Decisions
 
 | Decision | Rationale | Approve? |
 |----------|-----------|----------|
 | Keep `Slumpa` as the main action and add a small per-mode `Smart` toggle | Preserves a low-button surface while keeping smart behavior explicit | [ ] |
-| Use a class-wide visual rule-authoring surface instead of drawer-first per-student editing | Matches the teacher's whole-class mental model and keeps smart rules visible | [ ] |
+| Use a dedicated `Regler` workspace plus compact task-pane summaries instead of drawer-first per-student editing | Matches the teacher's whole-class mental model without bloating `Sittplatser`/`Grupper` | [ ] |
 | Use export-backed checkpoints only, with assignment-hash dedupe | Aligns history input with current PRD/ADR direction and avoids raw-draft ambiguity | [ ] |
 | Delete old visible planner metadata semantics without migration | Cleaner reset than mixing incompatible teacher models; no real users exist yet | [ ] |
 | Keep smart grouping and smart seating in the same epic, but with separate mode toggles | Matches the shared hidden relation model while preserving separate teacher tasks | [ ] |
@@ -89,7 +93,7 @@ re-coupling it through one shared save contract.
 
 - [ ] ADR defines a clear contract reset
 - [ ] EPIC scope is appropriate and does not reopen the solver-first shell
-- [ ] Primary smart-rule authoring is class-wide and not drawer-first
+- [ ] Primary smart-rule authoring is centered in `Regler`, not in drawers or task-pane editors
 - [ ] Stories have testable acceptance criteria
 - [ ] Implementation direction aligns with the repo's current class-first planner architecture
 - [ ] Frontend transition semantics are explicit and lane-owned
@@ -112,7 +116,7 @@ re-coupling it through one shared save contract.
 ### Decision Approvals
 
 - [x] Keep `Slumpa` as the main action and add a small per-mode `Smart` toggle
-- [x] Use a class-wide visual rule-authoring surface instead of drawer-first per-student editing
+- [x] Use a dedicated `Regler` workspace plus compact task-pane summaries instead of drawer-first per-student editing
 - [x] Use export-backed checkpoints only, with assignment-hash dedupe
 - [x] Delete old visible planner metadata semantics without migration
 - [x] Keep smart grouping and smart seating in the same epic
@@ -143,6 +147,12 @@ re-coupling it through one shared save contract.
   - checkpoint dedupe now defines canonical assignment-hash semantics
   - smart reruns now belong to the core `Slumpa` contract rather than to a
     separate alternate-result control
+- 2026-03-27 workspace refinement before later UI implementation:
+  - added `ST-27-07` plus `PR-0155` to make `Regler` the dedicated smart-rule authoring home
+  - `Planeringskarta` is now the default desktop authoring map, with `Sittschema` as an optional
+    exact-current-arrangement view
+  - `Sittplatser` and `Grupper` now keep only compact smart summaries plus a small settings-link
+    affordance near `Smart`; drawers may summarize but not edit rules
 
 ## Suggested Approval Wording
 
@@ -166,3 +176,4 @@ to `active`, `ADR-0074` may move to `accepted`, and `ST-27-01` may move to
 | 2 | EPIC-27 | Drafted the smart-assignment epic with explicit scope, out-of-scope, and story chain |
 | 3 | ST-27-01..05 | Drafted the story package for contract reset, checkpoints, seating, grouping, and explanation UX |
 | 4 | ST-27-06, PR-0152 | Added the frontend session-remediation slice so later smart seating/grouping work inherits explicit lane-owned transition semantics |
+| 5 | ST-27-07, PR-0155 | Added the dedicated rules workspace cut-over so later smart seating/grouping UI does not accrete around seating/grouping drawers |

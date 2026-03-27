@@ -25,6 +25,7 @@ const DRAFT_CONFLICT_FALLBACK_MESSAGE =
 export type DraftLanePatchPayload = {
   expected_revision: number | null;
   smart_enabled: boolean;
+  use_history: boolean;
   groups: DraftWorkspaceResponse["groups"];
   group_assignments: DraftWorkspaceResponse["group_assignments"];
   seat_assignments: DraftWorkspaceResponse["seat_assignments"];

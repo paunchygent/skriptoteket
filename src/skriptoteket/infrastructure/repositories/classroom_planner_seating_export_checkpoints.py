@@ -25,6 +25,8 @@ from skriptoteket.protocols.classroom_planner import (
     SeatingExportCheckpointRepositoryProtocol,
 )
 
+SMART_SEATING_HISTORY_WINDOW = 12
+
 
 class PostgreSQLSeatingExportCheckpointRepository(SeatingExportCheckpointRepositoryProtocol):
     """Persist export-backed seating checkpoints in PostgreSQL."""
@@ -80,6 +82,26 @@ class PostgreSQLSeatingExportCheckpointRepository(SeatingExportCheckpointReposit
         )
         model = result.scalar_one_or_none()
         return self._to_checkpoint(model) if model else None
+
+    async def list_recent_for_roster_and_room_context(
+        self,
+        *,
+        roster_id: UUID,
+        room_context_hash: str,
+    ) -> list[SeatingExportCheckpoint]:
+        result = await self._session.execute(
+            select(SeatingExportCheckpointModel)
+            .where(
+                SeatingExportCheckpointModel.roster_id == roster_id,
+                SeatingExportCheckpointModel.room_context_hash == room_context_hash,
+            )
+            .order_by(
+                SeatingExportCheckpointModel.created_at.desc(),
+                SeatingExportCheckpointModel.id.desc(),
+            )
+            .limit(SMART_SEATING_HISTORY_WINDOW)
+        )
+        return [self._to_checkpoint(model) for model in result.scalars().all()]
 
     async def create(
         self,
