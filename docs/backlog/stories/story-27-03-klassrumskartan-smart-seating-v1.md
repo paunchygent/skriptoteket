@@ -5,7 +5,7 @@ title: "Klassrumskartan — Smart seating v1"
 status: done
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-28
 epic: "EPIC-27"
 dependencies: ["ST-27-01", "ST-27-02", "ST-27-06"]
 acceptance_criteria:
@@ -44,8 +44,8 @@ lane on top of that foundation.
   - do not add new primary rule-editing affordances inside `Sittplatser`
   - do not move rule editing into a drawer; task-pane summaries may link to `Regler` only
 - `Keep apart` and `Keep near` are cluster rules for 2+ students in V1, not pair-only shortcuts.
-- Canonical seating semantics were tightened after `PR-0154` close-out and should guide follow-up
-  solver alignment:
+- Canonical seating semantics were tightened after `PR-0154` close-out and are now aligned in the
+  shipped solver:
   - `Keep near` means one immediate local cluster, with direct left/right or above/below adjacency
     preferred and only constrained fallback loosening
   - `Keep apart` means meaningful separation, not merely "not touching" or "not in direct
@@ -63,7 +63,7 @@ lane on top of that foundation.
 - Follow-up UX polish such as alternate smart results and explanation-copy tightening is handled
   separately.
 
-## Implementation Summary (as of 2026-03-27)
+## Implementation Summary (as of 2026-03-28)
 
 - `PR-0154` shipped the backend-owned smart seating run through a dedicated domain solver,
   application handler, and seating-only API endpoint.
@@ -72,9 +72,18 @@ lane on top of that foundation.
   - `Smart` on flushes the draft + smart-rule lanes and applies the backend smart-run result
 - Draft-local `Use history` is now exposed in the seating workspace, persisted through the draft
   lane, and blocks honestly when no eligible export checkpoints exist.
-- Teacher-edge inference now prefers `Whiteboard`, then `Kateder`, else top-middle fallback, while
-  repeated smart reruns prefer a different strong candidate when one exists.
-- The shipped solver still uses a looser heuristic approximation of the canonical seating
-  semantics above, so a follow-up alignment slice is required before stress/property testing.
-- Verification closed with focused unit/frontend coverage, live proof on `http://127.0.0.1:5173`,
-  and a final `skriptoteket_reviewer` pass with no actionable findings.
+- Real-room topology is now normalized into teacher-facing ranks, contiguous local zones, and
+  spread-oriented seating blocks, so `G20` and similar classrooms no longer fall back to toy-grid
+  adjacency assumptions.
+- `Närmare läraren` now rotates inside the valid teacher pool instead of pinning the same strongest
+  seats, `Keep near` rotates across compact row/column/diagonal relation modes, and `Keep apart`
+  plus rerun diversity now keep every student moving across repeated history-enabled smart runs.
+- The solver contract is now regression-covered by two classroom-scale scenario suites:
+  - `SA24D` / `G20` for mixed `Keep apart`, `Keep near`, and `Närmare läraren`
+  - `BF25` / `G104` for an overlapping-rule student who is both `Närmare läraren` and part of one
+    `Keep apart` cluster
+- Verification now closes with the real `G20` / `SA24D` scenario suite, the `BF25` / `G104`
+  overlap suite, focused backend tests, and a live semantics proof on a fresh local backend that
+  produced 120 valid reruns with 120 unique layouts, a 12-seat valid teacher pool with 11 seats
+  exercised, 10 distinct seats for each near-teacher student, and keep-near row/column/diagonal
+  mode rotation.

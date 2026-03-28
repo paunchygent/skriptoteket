@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-27
+- Date: 2026-03-28
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
@@ -67,11 +67,16 @@ Keep this file updated so the next session can pick up work quickly.
   - backend-owned smart seating ships through `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py`, `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_seating.py`, and `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`
   - the checkpoint seam now reads the strict last-12 eligible history window for the same roster plus normalized room context
   - seating `Use history` is exposed in `PlannerSeatingSmartRuleSurface.vue`, persists draft-locally, and `Slumpa` now branches honestly between local random and backend smart run
-  - teacher-edge inference, no-history blocking, best-effort compromise messaging, and rerun diversity are all covered by unit tests plus the new live proof script `scripts/playwright_pr_0154_smart_seating_check.py`; ADR semantics are now tighter than the shipped heuristic for `Keep near`, `Keep apart`, and `Närmare läraren`
+  - `src/skriptoteket/domain/curated_apps/classroom_planner/seat_topology.py` now normalizes real room geometry into teacher-facing ranks, contiguous local zones, and spread-oriented seating blocks, and `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py` now rotates `Närmare läraren` inside the valid teacher pool plus `Keep near` across compact row/column/diagonal relation modes
+  - real-room simulation coverage replaced toy solver-outcome cases:
+    - `tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py` covers `SA24D` / `G20` with `6` keep-apart, `2` keep-near, and `2` near-teacher rules
+    - `tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py` covers `BF25` / `G104`, including overlapping `Närmare läraren` + `Keep apart` membership for `Felix Persson`
+  - live semantics proof now runs through `scripts/live_st_27_03_smart_seating_semantics_check.py`; on `2026-03-28` it passed on a fresh host backend at `http://127.0.0.1:8002` with 120 history-enabled reruns, 120 unique valid layouts, min distinct seat count `6`, a 12-seat valid teacher pool with 11 occupied seats, 10 distinct seats for each near-teacher student, and keep-near row/column/diagonal mode rotation
   - independent `skriptoteket_reviewer` found and the implementation fixed two follow-up issues:
     - route-level FastAPI contract coverage for smart-run `404` / `409` / `422`
     - strict last-12 checkpoint-history seam with no caller-configurable limit
-  - final post-fix `skriptoteket_reviewer` rerun returned no actionable findings; residual risk is limited to the larger-room greedy solver path still being scenario-tested rather than stress/property-tested
+  - final post-fix `skriptoteket_reviewer` rerun returned no actionable findings; residual risk is now limited to missing stress/property testing beyond the shipped real-room scenario suites
+  - note: if the live semantics proof still reports the old tiny teacher pool or misses diagonal keep-near rotation, you are likely hitting a stale hot-reload backend on `:8000`; use a fresh host backend on `:8002` or similar for canonical semantics verification
 - `PR-0150` is done:
   - seating export checkpoints persist through a dedicated backend seam with normalized seating snapshots and room-context hashes
   - unchanged exports dedupe by roster plus normalized room-context identity; template id is stored provenance, and copied seat/fixture ids, seat zones, and fixture labels do not fork identical room layouts into separate checkpoint lanes
@@ -134,32 +139,17 @@ Keep this file updated so the next session can pick up work quickly.
     `Planeringskarta` / `Sittschema`, while `Sittplatser` / `Grupper` keep compact summaries and a
     settings-link affordance near `Smart`
 - 2026-03-27 `PR-0154` smart seating:
-  - baseline before edits:
-    - `pdm run docs-validate`
-    - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
-  - implementation verification:
-    - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -q`
+  - backend semantics alignment + overlap-case verification:
+    - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py -q`
     - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
     - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
     - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
-    - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/useSmartSeatingRun.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
-    - `pdm run fe-type-check`
     - `pdm run typecheck`
     - `pdm run docs-validate`
-  - live proof against the existing hot-reload stack on `http://127.0.0.1:5173`:
-    - `pdm run python -m scripts.playwright_pr_0154_smart_seating_check --base-url http://127.0.0.1:5173`
-    - artifacts under `.artifacts/pr-0154-smart-seating/`
-  - preserved behavior checked by automated tests and live proof:
-    - smart off keeps local `Slumpa`
-    - smart on + no history blocks honestly without changing assignments
-    - smart on + eligible history applies the backend result
-    - crowded-room compromise, conflicting-rule compromise, and rerun diversity all pass
-  - reviewer follow-up fix verification:
-    - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
-    - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
-    - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
-  - final reviewer close-out:
-    - post-fix `skriptoteket_reviewer` rerun returned no actionable findings
+  - live proof against a fresh host backend:
+    - `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002`
+    - `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
+    - artifacts under `.artifacts/st-27-03-smart-seating-semantics/summary.json`
 
 ## How to Run
 ```bash
@@ -188,13 +178,13 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 - Continue the smart-assignment lane in the corrected order:
   - take `ST-27-07` / `PR-0155` next so the dedicated `Regler` workspace lands before later grouping/explanation UI work
-  - take a solver-alignment follow-up for `PR-0154` semantics before stress/property testing:
-    tighten `Keep near`, `Keep apart`, and `Närmare läraren` to match the newer ADR wording
   - continue with `ST-27-04` on top of the shipped `PR-0150` checkpoint registry, `PR-0152`
     session-controller + lane split, `PR-0154` run seam, and the new `ST-27-07` workspace
     direction
   - keep relation rules as non-overlapping visible clusters in V1 and keep rule editing out of
     task-pane drawers; compact summaries are okay, full editors are not
+- If smart-seating hardening continues before new feature work:
+  - add stress/property testing on top of the shipped real-room scenarios instead of reopening toy-room solver checks
 - If cleanup continues before new feature work, start with:
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
   - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`

@@ -15,31 +15,36 @@ from random import Random
 
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     SeatingExportCheckpoint,
-    SeatingRoomContextSnapshot,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RelationshipKind,
     RoomFixture,
-    RoomFixtureType,
     RoomTemplate,
     Roster,
     RosterSmartRules,
     Seat,
     SeatAssignment,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
+    KeepNearRelationMode,
+    SeatPairTopology,
+    SeatTopology,
+    build_seat_topology,
+    infer_teaching_anchor,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.smart_seating_scoring import (
+    current_keep_near_modes,
+    current_keep_near_pair_seat_ids,
+    keep_near_pair_score,
+    near_teacher_history_counts,
+    near_teacher_score,
+)
 
 QUALITY_EPSILON = 1e-6
 EXACT_ASSIGNMENT_LIMIT = 7
-RANDOM_ATTEMPTS = 48
-
-
-@dataclass(frozen=True)
-class TeachingAnchor:
-    """Describe the inferred teaching/front edge for one room."""
-
-    edge: str
-    x: float
-    y: float
+RANDOM_ATTEMPTS = 96
+CURRENT_SEAT_REPEAT_PENALTY = 3.0
+LAYOUT_REPEAT_PENALTY = 2.5
 
 
 @dataclass(frozen=True)
@@ -52,17 +57,15 @@ class SmartSeatingResult:
 
 
 @dataclass(frozen=True)
-class _Bounds:
-    max_x: float
-    max_y: float
-
-
-@dataclass(frozen=True)
 class _SeatScoreContext:
-    anchor: TeachingAnchor
-    normalized_teacher_distance_by_seat: dict[str, float]
-    rank_positions_by_seat: dict[str, tuple[int, int]]
+    topology: SeatTopology
     near_teacher_student_ids: set[str]
+    near_teacher_student_count: int
+    near_teacher_pool_rank_by_seat: dict[str, int]
+    near_teacher_history_counts_by_student: dict[str, dict[str, int]]
+    current_near_teacher_pool_seat_ids: set[str]
+    current_keep_near_mode_by_pair: dict[frozenset[str], KeepNearRelationMode]
+    current_keep_near_seat_ids_by_pair: dict[frozenset[str], frozenset[str]]
     history_targets_by_student: dict[str, float]
     keep_near_clusters: list[set[str]]
     keep_apart_clusters: list[set[str]]
@@ -76,31 +79,6 @@ class _CandidateScore:
     quality: float
     diversity: float
     has_tradeoffs: bool
-
-
-def infer_teaching_anchor(
-    *,
-    template: RoomTemplate | None = None,
-    room_context: SeatingRoomContextSnapshot | None = None,
-) -> TeachingAnchor:
-    """Infer the active teaching/front edge from room cues or a safe default."""
-
-    if (template is None) == (room_context is None):
-        raise ValueError("Provide exactly one of template or room_context.")
-    seats, fixtures, bounds = _extract_room_parts(template=template, room_context=room_context)
-
-    del seats
-    whiteboards = [fixture for fixture in fixtures if fixture.type is RoomFixtureType.WHITEBOARD]
-    if whiteboards:
-        return _anchor_from_fixtures(fixtures=whiteboards, bounds=bounds, weight_to_center=0.0)
-
-    teacher_desks = [
-        fixture for fixture in fixtures if fixture.type is RoomFixtureType.TEACHER_DESK
-    ]
-    if teacher_desks:
-        return _anchor_from_fixtures(fixtures=teacher_desks, bounds=bounds, weight_to_center=0.65)
-
-    return TeachingAnchor(edge="top", x=bounds.max_x / 2, y=0.0)
 
 
 def solve_smart_seating(
@@ -129,7 +107,6 @@ def solve_smart_seating(
     ]
 
     context = _build_score_context(
-        students=students,
         seats=seats,
         template=template,
         smart_rules=smart_rules,
@@ -161,97 +138,6 @@ def solve_smart_seating(
     )
 
 
-def _extract_room_parts(
-    *,
-    template: RoomTemplate | None,
-    room_context: SeatingRoomContextSnapshot | None,
-) -> tuple[list[Seat], list[RoomFixture], _Bounds]:
-    if template is not None:
-        seats = list(template.seats)
-        fixtures = list(template.fixtures)
-        max_x = max(
-            [float(template.grid_cols)]
-            + [float(seat.x) for seat in template.seats]
-            + [float(fixture.x + fixture.width) for fixture in template.fixtures]
-        )
-        max_y = max(
-            [float(template.grid_rows)]
-            + [float(seat.y) for seat in template.seats]
-            + [float(fixture.y + fixture.height) for fixture in template.fixtures]
-        )
-        return seats, fixtures, _Bounds(max_x=max_x, max_y=max_y)
-
-    if room_context is None:
-        raise ValueError("Room context is required.")
-
-    seats = [Seat.model_validate(seat.model_dump()) for seat in room_context.seats]
-    fixtures = [
-        RoomFixture.model_validate(fixture.model_dump()) for fixture in room_context.fixtures
-    ]
-    max_x = max(
-        [float(room_context.grid_cols)]
-        + [float(seat.x) for seat in room_context.seats]
-        + [float(fixture.x + fixture.width) for fixture in room_context.fixtures]
-    )
-    max_y = max(
-        [float(room_context.grid_rows)]
-        + [float(seat.y) for seat in room_context.seats]
-        + [float(fixture.y + fixture.height) for fixture in room_context.fixtures]
-    )
-    return seats, fixtures, _Bounds(max_x=max_x, max_y=max_y)
-
-
-def _anchor_from_fixtures(
-    *,
-    fixtures: list[RoomFixture],
-    bounds: _Bounds,
-    weight_to_center: float,
-) -> TeachingAnchor:
-    wall = _best_wall(fixtures=fixtures, bounds=bounds)
-    average_center_x = sum(_fixture_center(fixture)[0] for fixture in fixtures) / len(fixtures)
-    average_center_y = sum(_fixture_center(fixture)[1] for fixture in fixtures) / len(fixtures)
-    room_center_x = bounds.max_x / 2
-    room_center_y = bounds.max_y / 2
-
-    if wall == "top":
-        anchor_x = _mix(room_center_x, average_center_x, 1 - weight_to_center)
-        return TeachingAnchor(edge=wall, x=anchor_x, y=0.0)
-    if wall == "bottom":
-        anchor_x = _mix(room_center_x, average_center_x, 1 - weight_to_center)
-        return TeachingAnchor(edge=wall, x=anchor_x, y=bounds.max_y)
-    if wall == "left":
-        anchor_y = _mix(room_center_y, average_center_y, 1 - weight_to_center)
-        return TeachingAnchor(edge=wall, x=0.0, y=anchor_y)
-
-    anchor_y = _mix(room_center_y, average_center_y, 1 - weight_to_center)
-    return TeachingAnchor(edge=wall, x=bounds.max_x, y=anchor_y)
-
-
-def _best_wall(*, fixtures: list[RoomFixture], bounds: _Bounds) -> str:
-    scores = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
-    for fixture in fixtures:
-        wall_distances = {
-            "top": float(fixture.y),
-            "bottom": float(max(bounds.max_y - (fixture.y + fixture.height), 0.0)),
-            "left": float(fixture.x),
-            "right": float(max(bounds.max_x - (fixture.x + fixture.width), 0.0)),
-        }
-        nearest_distance = min(wall_distances.values())
-        for wall, distance in wall_distances.items():
-            if abs(distance - nearest_distance) <= QUALITY_EPSILON:
-                scores[wall] += 1.0
-            scores[wall] -= distance * 0.01
-    return max(scores.items(), key=lambda item: (item[1], item[0]))[0]
-
-
-def _fixture_center(fixture: RoomFixture) -> tuple[float, float]:
-    return (fixture.x + fixture.width / 2, fixture.y + fixture.height / 2)
-
-
-def _mix(center_value: float, cue_value: float, cue_weight: float) -> float:
-    return center_value * (1 - cue_weight) + cue_value * cue_weight
-
-
 def _prioritize_students(
     *,
     roster: Roster,
@@ -280,49 +166,72 @@ def _prioritize_students(
 
 def _build_score_context(
     *,
-    students: list,
     seats: list[Seat],
     template: RoomTemplate,
     smart_rules: RosterSmartRules,
     current_seat_assignments: list[SeatAssignment],
     history_checkpoints: list[SeatingExportCheckpoint],
 ) -> _SeatScoreContext:
-    del students
-    anchor = infer_teaching_anchor(template=template)
-    rank_positions_by_seat = _seat_rank_positions(seats)
-    normalized_teacher_distance_by_seat = _teacher_distances(
+    topology = build_seat_topology(
         seats=seats,
-        anchor=anchor,
-        rank_positions_by_seat=rank_positions_by_seat,
+        anchor=infer_teaching_anchor(template=template),
+        fixtures=template.fixtures,
     )
+    near_teacher_student_ids = {
+        preference.student_id
+        for preference in smart_rules.seating_preferences
+        if preference.near_teacher
+    }
+    near_teacher_pool_seat_ids = topology.near_teacher_pool(
+        seat_count=min(len(seats), len(near_teacher_student_ids) + 1),
+    )
+    keep_near_clusters = [
+        set(rule.student_ids)
+        for rule in smart_rules.relationship_rules
+        if rule.kind is RelationshipKind.KEEP_NEAR
+    ]
+    current_assignments_by_student = {
+        assignment.student_id: assignment.seat_id for assignment in current_seat_assignments
+    }
     return _SeatScoreContext(
-        anchor=anchor,
-        normalized_teacher_distance_by_seat=normalized_teacher_distance_by_seat,
-        rank_positions_by_seat=rank_positions_by_seat,
-        near_teacher_student_ids={
-            preference.student_id
-            for preference in smart_rules.seating_preferences
-            if preference.near_teacher
+        topology=topology,
+        near_teacher_student_ids=near_teacher_student_ids,
+        near_teacher_student_count=len(near_teacher_student_ids),
+        near_teacher_pool_rank_by_seat={
+            seat_id: index for index, seat_id in enumerate(near_teacher_pool_seat_ids)
         },
+        near_teacher_history_counts_by_student=near_teacher_history_counts(
+            history_checkpoints=history_checkpoints,
+            pool_seat_ids=set(near_teacher_pool_seat_ids),
+        ),
+        current_near_teacher_pool_seat_ids={
+            current_assignments_by_student[student_id]
+            for student_id in near_teacher_student_ids
+            if student_id in current_assignments_by_student
+            and current_assignments_by_student[student_id] in set(near_teacher_pool_seat_ids)
+        },
+        current_keep_near_mode_by_pair=current_keep_near_modes(
+            keep_near_clusters=keep_near_clusters,
+            current_assignments_by_student=current_assignments_by_student,
+            topology=topology,
+        ),
+        current_keep_near_seat_ids_by_pair=current_keep_near_pair_seat_ids(
+            keep_near_clusters=keep_near_clusters,
+            current_assignments_by_student=current_assignments_by_student,
+        ),
         history_targets_by_student={
             student_id: _rebalance_target_distance(mean_distance)
             for student_id, mean_distance in _history_mean_distance_by_student(
                 history_checkpoints
             ).items()
         },
-        keep_near_clusters=[
-            set(rule.student_ids)
-            for rule in smart_rules.relationship_rules
-            if rule.kind is RelationshipKind.KEEP_NEAR
-        ],
+        keep_near_clusters=keep_near_clusters,
         keep_apart_clusters=[
             set(rule.student_ids)
             for rule in smart_rules.relationship_rules
             if rule.kind is RelationshipKind.KEEP_APART
         ],
-        current_assignments_by_student={
-            assignment.student_id: assignment.seat_id for assignment in current_seat_assignments
-        },
+        current_assignments_by_student=current_assignments_by_student,
     )
 
 
@@ -332,22 +241,21 @@ def _history_mean_distance_by_student(
     distance_samples: dict[str, list[float]] = {}
     for checkpoint in history_checkpoints:
         anchor = infer_teaching_anchor(room_context=checkpoint.room_context)
-        rank_positions = _seat_rank_positions(
-            [Seat.model_validate(seat.model_dump()) for seat in checkpoint.room_context.seats]
-        )
-        seat_lookup = {
-            seat.id: Seat.model_validate(seat.model_dump())
-            for seat in checkpoint.room_context.seats
-        }
-        distances = _teacher_distances(
-            seats=list(seat_lookup.values()),
+        checkpoint_seats = [
+            Seat.model_validate(seat.model_dump()) for seat in checkpoint.room_context.seats
+        ]
+        topology = build_seat_topology(
+            seats=checkpoint_seats,
             anchor=anchor,
-            rank_positions_by_seat=rank_positions,
+            fixtures=[
+                RoomFixture.model_validate(fixture.model_dump())
+                for fixture in checkpoint.room_context.fixtures
+            ],
         )
         for placement in checkpoint.seating_snapshot.placed_assignments:
-            normalized_distance = distances.get(placement.seat_id)
-            if normalized_distance is None:
+            if placement.seat_id not in topology.seats_by_id:
                 continue
+            normalized_distance = topology.normalized_teacher_distance(placement.seat_id)
             distance_samples.setdefault(placement.student_id, []).append(normalized_distance)
     return {
         student_id: sum(samples) / len(samples)
@@ -357,33 +265,7 @@ def _history_mean_distance_by_student(
 
 
 def _rebalance_target_distance(mean_distance: float) -> float:
-    if mean_distance <= 0.5:
-        return min(1.0, mean_distance + 0.4)
-    return max(0.0, mean_distance - 0.4)
-
-
-def _seat_rank_positions(seats: list[Seat]) -> dict[str, tuple[int, int]]:
-    unique_x = {value: index for index, value in enumerate(sorted({seat.x for seat in seats}))}
-    unique_y = {value: index for index, value in enumerate(sorted({seat.y for seat in seats}))}
-    return {seat.id: (unique_x[seat.x], unique_y[seat.y]) for seat in seats}
-
-
-def _teacher_distances(
-    *,
-    seats: list[Seat],
-    anchor: TeachingAnchor,
-    rank_positions_by_seat: dict[str, tuple[int, int]],
-) -> dict[str, float]:
-    raw_distances = {
-        seat.id: ((seat.x - anchor.x) ** 2 + (seat.y - anchor.y) ** 2) ** 0.5 for seat in seats
-    }
-    room_scale = max(
-        max(raw_distances.values(), default=0.0),
-        len({position[0] for position in rank_positions_by_seat.values()}) - 1,
-        len({position[1] for position in rank_positions_by_seat.values()}) - 1,
-        1,
-    )
-    return {seat_id: raw_distance / room_scale for seat_id, raw_distance in raw_distances.items()}
+    return max(0.0, min(1.0, 1.0 - mean_distance))
 
 
 def _solve_exact(
@@ -426,13 +308,39 @@ def _solve_greedy(
     best_mapping: dict[str, str] | None = None
     best_score: _CandidateScore | None = None
 
-    for _ in range(RANDOM_ATTEMPTS):
+    for attempt_index in range(RANDOM_ATTEMPTS):
         remaining = seat_ids.copy()
         rng.shuffle(remaining)
-        order = student_ids.copy()
-        rng.shuffle(order)
+        assignment_order = _assignment_order(
+            student_ids=student_ids,
+            context=context,
+            rng=rng,
+            attempt_index=attempt_index,
+        )
         mapping: dict[str, str] = {}
-        for student_id in order:
+        handled_student_ids: set[str] = set()
+        for student_id in assignment_order:
+            if student_id in handled_student_ids:
+                continue
+            keep_near_pair = _unassigned_keep_near_pair(
+                student_id=student_id,
+                mapping=mapping,
+                context=context,
+            )
+            if keep_near_pair is not None:
+                left_student_id, right_student_id = keep_near_pair
+                left_seat_id, right_seat_id = _best_keep_near_pair_assignment(
+                    student_ids=keep_near_pair,
+                    remaining_seat_ids=remaining,
+                    mapping=mapping,
+                    context=context,
+                )
+                mapping[left_student_id] = left_seat_id
+                mapping[right_student_id] = right_seat_id
+                remaining.remove(left_seat_id)
+                remaining.remove(right_seat_id)
+                handled_student_ids.update(keep_near_pair)
+                continue
             best_seat_id = max(
                 remaining,
                 key=lambda seat_id: _partial_seat_score(
@@ -444,6 +352,7 @@ def _solve_greedy(
             )
             mapping[student_id] = best_seat_id
             remaining.remove(best_seat_id)
+            handled_student_ids.add(student_id)
         score = _score_candidate(mapping=mapping, context=context)
         if _is_better_score(score=score, current_best=best_score):
             best_mapping = mapping
@@ -454,6 +363,98 @@ def _solve_greedy(
     return best_mapping, best_score
 
 
+def _assignment_order(
+    *,
+    student_ids: list[str],
+    context: _SeatScoreContext,
+    rng: Random,
+    attempt_index: int,
+) -> list[str]:
+    """Keep hard-to-place students early while still allowing rerun diversity."""
+
+    shuffled_ids = student_ids.copy()
+    if attempt_index > 0:
+        rng.shuffle(shuffled_ids)
+    tie_break_by_student = {student_id: index for index, student_id in enumerate(shuffled_ids)}
+    keep_near_before_teacher = bool(
+        context.current_keep_near_mode_by_pair
+    ) and attempt_index % 4 in (1, 2)
+    return sorted(
+        student_ids,
+        key=lambda student_id: (
+            -_max_cluster_size(student_id=student_id, clusters=context.keep_apart_clusters),
+            -(
+                _max_cluster_size(student_id=student_id, clusters=context.keep_near_clusters)
+                if keep_near_before_teacher
+                else (1 if student_id in context.near_teacher_student_ids else 0)
+            ),
+            -(
+                (1 if student_id in context.near_teacher_student_ids else 0)
+                if keep_near_before_teacher
+                else _max_cluster_size(student_id=student_id, clusters=context.keep_near_clusters)
+            ),
+            tie_break_by_student[student_id],
+        ),
+    )
+
+
+def _max_cluster_size(*, student_id: str, clusters: list[set[str]]) -> int:
+    """Return the largest active rule cluster that includes the student."""
+
+    return max((len(cluster) for cluster in clusters if student_id in cluster), default=0)
+
+
+def _unassigned_keep_near_pair(
+    *,
+    student_id: str,
+    mapping: dict[str, str],
+    context: _SeatScoreContext,
+) -> tuple[str, str] | None:
+    """Return a two-student keep-near pair when both seats can be chosen jointly."""
+
+    for cluster in context.keep_near_clusters:
+        if student_id not in cluster or len(cluster) != 2:
+            continue
+        left_id, right_id = sorted(cluster)
+        if left_id in mapping or right_id in mapping:
+            return None
+        return left_id, right_id
+    return None
+
+
+def _best_keep_near_pair_assignment(
+    *,
+    student_ids: tuple[str, str],
+    remaining_seat_ids: list[str],
+    mapping: dict[str, str],
+    context: _SeatScoreContext,
+) -> tuple[str, str]:
+    """Choose the best ordered seat pair for one compact keep-near pair."""
+
+    left_student_id, right_student_id = student_ids
+    best_pair: tuple[str, str] | None = None
+    best_score: float | None = None
+    for left_seat_id, right_seat_id in permutations(remaining_seat_ids, 2):
+        score = _partial_seat_score(
+            student_id=left_student_id,
+            seat_id=left_seat_id,
+            mapping=mapping,
+            context=context,
+        )
+        score += _partial_seat_score(
+            student_id=right_student_id,
+            seat_id=right_seat_id,
+            mapping={**mapping, left_student_id: left_seat_id},
+            context=context,
+        )
+        if best_score is None or score > best_score + QUALITY_EPSILON:
+            best_pair = (left_seat_id, right_seat_id)
+            best_score = score
+    if best_pair is None:
+        raise ValueError("Expected at least one seat pair for keep-near assignment.")
+    return best_pair
+
+
 def _partial_seat_score(
     *,
     student_id: str,
@@ -461,9 +462,12 @@ def _partial_seat_score(
     mapping: dict[str, str],
     context: _SeatScoreContext,
 ) -> float:
-    seat_distance = context.normalized_teacher_distance_by_seat[seat_id]
+    seat_distance = context.topology.normalized_teacher_distance(seat_id)
     score = _teacher_priority_score(
-        student_id=student_id, seat_distance=seat_distance, context=context
+        student_id=student_id,
+        seat_id=seat_id,
+        seat_distance=seat_distance,
+        context=context,
     )
     for cluster in context.keep_near_clusters:
         if student_id not in cluster:
@@ -472,8 +476,16 @@ def _partial_seat_score(
             peer_seat_id = mapping.get(peer_id)
             if peer_id == student_id or peer_seat_id is None:
                 continue
-            score += _keep_near_pair_score(
-                seat_id=seat_id, peer_seat_id=peer_seat_id, context=context
+            score += keep_near_pair_score(
+                pair=context.topology.pair(seat_id, peer_seat_id),
+                current_mode=context.current_keep_near_mode_by_pair.get(
+                    frozenset((student_id, peer_id))
+                ),
+                pair_key=frozenset((student_id, peer_id)),
+                pair_seat_ids=frozenset((seat_id, peer_seat_id)),
+                current_pair_seat_ids=context.current_keep_near_seat_ids_by_pair.get(
+                    frozenset((student_id, peer_id))
+                ),
             )
     for cluster in context.keep_apart_clusters:
         if student_id not in cluster:
@@ -483,12 +495,10 @@ def _partial_seat_score(
             if peer_id == student_id or peer_seat_id is None:
                 continue
             score += _keep_apart_pair_score(
-                seat_id=seat_id,
-                peer_seat_id=peer_seat_id,
-                context=context,
+                pair=context.topology.pair(seat_id, peer_seat_id),
             )
     if context.current_assignments_by_student.get(student_id) == seat_id:
-        score -= 0.2
+        score -= CURRENT_SEAT_REPEAT_PENALTY
     return score
 
 
@@ -501,12 +511,15 @@ def _score_candidate(
     diversity = 0.0
     has_tradeoffs = False
     for student_id, seat_id in mapping.items():
-        seat_distance = context.normalized_teacher_distance_by_seat[seat_id]
+        seat_distance = context.topology.normalized_teacher_distance(seat_id)
         quality += _teacher_priority_score(
-            student_id=student_id, seat_distance=seat_distance, context=context
+            student_id=student_id,
+            seat_id=seat_id,
+            seat_distance=seat_distance,
+            context=context,
         )
         if context.current_assignments_by_student.get(student_id) == seat_id:
-            diversity -= 1.0
+            diversity -= LAYOUT_REPEAT_PENALTY
 
     for cluster in context.keep_near_clusters:
         for left_id, right_id in combinations(sorted(cluster), 2):
@@ -515,13 +528,20 @@ def _score_candidate(
             if left_seat_id is None or right_seat_id is None:
                 has_tradeoffs = True
                 continue
-            pair_score = _keep_near_pair_score(
-                seat_id=left_seat_id,
-                peer_seat_id=right_seat_id,
-                context=context,
+            pair = context.topology.pair(left_seat_id, right_seat_id)
+            pair_score = keep_near_pair_score(
+                pair=pair,
+                current_mode=context.current_keep_near_mode_by_pair.get(
+                    frozenset((left_id, right_id))
+                ),
+                pair_key=frozenset((left_id, right_id)),
+                pair_seat_ids=frozenset((left_seat_id, right_seat_id)),
+                current_pair_seat_ids=context.current_keep_near_seat_ids_by_pair.get(
+                    frozenset((left_id, right_id))
+                ),
             )
             quality += pair_score
-            if _rank_distance(left_seat_id, right_seat_id, context=context) > 2:
+            if _keep_near_has_tradeoff(pair):
                 has_tradeoffs = True
 
     for cluster in context.keep_apart_clusters:
@@ -531,13 +551,12 @@ def _score_candidate(
             if left_seat_id is None or right_seat_id is None:
                 has_tradeoffs = True
                 continue
+            pair = context.topology.pair(left_seat_id, right_seat_id)
             pair_score = _keep_apart_pair_score(
-                seat_id=left_seat_id,
-                peer_seat_id=right_seat_id,
-                context=context,
+                pair=pair,
             )
             quality += pair_score
-            if _orthogonally_adjacent(left_seat_id, right_seat_id, context=context):
+            if _keep_apart_has_tradeoff(pair):
                 has_tradeoffs = True
 
     return _CandidateScore(quality=quality, diversity=diversity, has_tradeoffs=has_tradeoffs)
@@ -546,66 +565,59 @@ def _score_candidate(
 def _teacher_priority_score(
     *,
     student_id: str,
+    seat_id: str,
     seat_distance: float,
     context: _SeatScoreContext,
 ) -> float:
     if student_id in context.near_teacher_student_ids:
-        return (1.0 - seat_distance) * 8.0
+        return near_teacher_score(
+            student_id=student_id,
+            seat_id=seat_id,
+            topology=context.topology,
+            near_teacher_student_count=context.near_teacher_student_count,
+            pool_rank_by_seat=context.near_teacher_pool_rank_by_seat,
+            history_counts_by_student=context.near_teacher_history_counts_by_student,
+            current_pool_seat_ids=context.current_near_teacher_pool_seat_ids,
+            current_assignments_by_student=context.current_assignments_by_student,
+        )
     target_distance = context.history_targets_by_student.get(student_id)
     if target_distance is None:
         return (1.0 - abs(seat_distance - 0.5)) * 0.4
     return (1.0 - abs(seat_distance - target_distance)) * 6.0
 
 
-def _keep_near_pair_score(
-    *,
-    seat_id: str,
-    peer_seat_id: str,
-    context: _SeatScoreContext,
-) -> float:
-    rank_distance = _rank_distance(seat_id, peer_seat_id, context=context)
-    return max(0.0, 5.0 - rank_distance * 1.5)
+def _keep_apart_pair_score(*, pair: SeatPairTopology) -> float:
+    if pair.orthogonally_adjacent:
+        return -32.0
+    spread_score = pair.front_gap * 4.0 + pair.lateral_gap * 4.0
+    if not pair.same_block:
+        return spread_score + 8.0
+    if pair.diagonal_neighbor:
+        return spread_score + 1.5
+    if pair.same_row or pair.same_column:
+        return spread_score - 2.5
+    return spread_score - 1.0
 
 
-def _keep_apart_pair_score(
-    *,
-    seat_id: str,
-    peer_seat_id: str,
-    context: _SeatScoreContext,
-) -> float:
-    rank_distance = _rank_distance(seat_id, peer_seat_id, context=context)
-    if _orthogonally_adjacent(seat_id, peer_seat_id, context=context):
-        return -12.0
-    return min(rank_distance, 5) * 1.8
+def _keep_near_has_tradeoff(pair: SeatPairTopology) -> bool:
+    return pair.keep_near_relation_mode is None
 
 
-def _rank_distance(
-    seat_id: str,
-    peer_seat_id: str,
-    *,
-    context: _SeatScoreContext,
-) -> int:
-    left = context.rank_positions_by_seat[seat_id]
-    right = context.rank_positions_by_seat[peer_seat_id]
-    return abs(left[0] - right[0]) + abs(left[1] - right[1])
-
-
-def _orthogonally_adjacent(
-    seat_id: str,
-    peer_seat_id: str,
-    *,
-    context: _SeatScoreContext,
-) -> bool:
-    left = context.rank_positions_by_seat[seat_id]
-    right = context.rank_positions_by_seat[peer_seat_id]
-    same_row = left[1] == right[1] and abs(left[0] - right[0]) == 1
-    same_column = left[0] == right[0] and abs(left[1] - right[1]) == 1
-    return same_row or same_column
+def _keep_apart_has_tradeoff(pair: SeatPairTopology) -> bool:
+    if pair.orthogonally_adjacent:
+        return True
+    if not pair.same_block:
+        return False
+    return pair.front_gap + pair.lateral_gap < 2
 
 
 def _is_better_score(*, score: _CandidateScore, current_best: _CandidateScore | None) -> bool:
     if current_best is None:
         return True
+    if current_best.has_tradeoffs and not score.has_tradeoffs:
+        return True
+    if score.has_tradeoffs and not current_best.has_tradeoffs:
+        return False
     if score.quality > current_best.quality + QUALITY_EPSILON:
         return True
     if abs(score.quality - current_best.quality) <= QUALITY_EPSILON:

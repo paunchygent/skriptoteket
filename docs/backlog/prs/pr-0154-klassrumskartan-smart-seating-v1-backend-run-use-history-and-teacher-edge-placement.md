@@ -5,7 +5,7 @@ title: "Klassrumskartan: smart seating v1 backend run, use-history gating, and t
 status: done
 owners: "agents"
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-28
 stories:
   - "ST-27-03"
 tags:
@@ -235,7 +235,7 @@ small while making smart seating real end-to-end:
 - new Playwright proof script under `scripts/`
 - new or updated tests under `tests/unit/` and `frontend/apps/skriptoteket/src/views/apps/`
 
-## Implementation summary (as of 2026-03-27)
+## Implementation summary (as of 2026-03-28)
 
 - The backend smart-seating run now ships through one seating-only application/API seam:
   - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py`
@@ -252,11 +252,23 @@ small while making smart seating real end-to-end:
   - `Smart` on flushes the draft lane + smart-rule lane, then calls the backend smart-run endpoint
 - The seating UI now exposes draft-local `Use history`, persists it with the draft lane, and shows
   one short teacher-facing success/block message inline.
-- Teacher-edge inference is backend-owned, but the shipped solver still approximates teacher
-  distance with a looser point-anchor heuristic; canonical follow-up semantics now define
-  `Närmare läraren` as nearer the teaching edge first and the teaching zone second.
+- The shipped solver is now aligned to the tightened canonical room semantics:
+  - `src/skriptoteket/domain/curated_apps/classroom_planner/seat_topology.py` normalizes real room
+    geometry into teacher-facing ranks, contiguous local zones, and spread-oriented seating blocks
+  - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py` and
+    `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py` now score
+    `Närmare läraren` as a rotating valid teacher pool, `Keep near` as rotating compact local
+    row/column/diagonal relation modes, and `Keep apart` plus rerun diversity with all-student
+    seat rotation
 - Repeated smart reruns now prefer a different strong candidate when one exists; there is still no
   separate alternate-result control.
+- Toy solver-outcome tests were replaced by the real `G20` / `SA24D` scenario suite, and the live
+  semantics proof now passes on a fresh local backend with 120 history-enabled reruns, 120 unique
+  valid layouts, a 12-seat near-teacher pool with 11 occupied seats, 10 distinct seats for each
+  near-teacher student, and keep-near row/column/diagonal mode rotation.
+- A second real-room solver suite now covers `BF25` / `G104`, including one student who belongs to
+  both `Närmare läraren` and `Keep apart`, so the overlap case is regression-guarded alongside the
+  original `SA24D` / `G20` classroom.
 - The current seating-embedded smart summary/edit surface is now transitional:
   - follow-up `PR-0155` will keep draft-local smart controls such as `Use history` near `Smart`
   - rule editing itself will move to the dedicated `Regler` workspace via a small settings-link
@@ -282,9 +294,10 @@ small while making smart seating real end-to-end:
     over tiny visual separators alone
 - `Närmare läraren` is canonically defined as nearer the teaching edge first and the teaching zone
   second, not merely nearer one arbitrary point-anchor
-- The shipped `PR-0154` solver remains a heuristic approximation of these stronger semantics:
-  - pairwise internal scoring and the current teacher-anchor logic still need follow-up alignment
-    before stress/property testing is meaningful
+- The shipped `PR-0154` solver is now aligned to those semantics through real-room topology ranks,
+  contiguous local zones for `Keep near`, and spread-oriented seating blocks for `Keep apart`:
+  - remaining follow-up work is stress/property testing on top of the real-room suites rather than
+    another geometry-vocabulary reset
 
 ## PR-sized execution checklist
 
@@ -302,18 +315,19 @@ small while making smart seating real end-to-end:
 
 ## Test plan
 
-- `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -q`
+- `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py -q`
 - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
 - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
 - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
 - `pdm run fe-test -- --run src/views/apps/useClassroomState.spec.ts src/views/apps/useRosterSmartRuleLane.spec.ts src/views/apps/useSmartSeatingRun.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run docs-validate`
+- `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
 
 ## Verification evidence
 
 - Automated:
-  - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py -q`
+  - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py -q`
   - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
   - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
   - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
@@ -322,9 +336,9 @@ small while making smart seating real end-to-end:
   - `pdm run typecheck`
   - `pdm run docs-validate`
 - Live proof:
-  - reused the already-running hot-reload stack on `http://127.0.0.1:5173`
-  - ran `pdm run python -m scripts.playwright_pr_0154_smart_seating_check --base-url http://127.0.0.1:5173`
-  - artifacts written under `.artifacts/pr-0154-smart-seating/`
+  - started a fresh host backend with `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002`
+  - ran `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
+  - artifacts written under `.artifacts/st-27-03-smart-seating-semantics/summary.json`
 - Review status:
   - independent `skriptoteket_reviewer` found two actionable issues:
     - missing route-level FastAPI HTTP contract coverage for smart-run `404` / `409` / `422`
