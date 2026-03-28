@@ -44,14 +44,18 @@ Example fixtures in this repo:
 
 ## 4. Markers and default test selection
 
-By default, tests exclude `docker`, `slow`, and `financial` (see `pyproject.toml`).
+By default, tests exclude `docker`, `slow`, `financial`, and `simulation` (see `pyproject.toml`).
 
 Common commands:
 
 - Default suite: `pdm run test`
 - Parallel: `pdm run test-parallel`
+- Simulation suites: `pdm run test-simulations`
 - Docker-marked tests (override default marker filter):
   - `pytest -m docker --override-ini addopts=''`
+
+Use `simulation` for expensive statistical proof suites such as repeated classroom-layout runs.
+Keep quick geometry/unit smoke checks unmarked so they still run in the normal commit path.
 
 ## 5. Frontend tests
 

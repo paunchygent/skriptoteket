@@ -45,6 +45,8 @@ from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import (
     solve_smart_seating,
 )
 
+pytestmark = pytest.mark.simulation
+
 _NOW = datetime(2026, 3, 27, tzinfo=timezone.utc)
 _HISTORY_CHECKPOINT_COUNT = 6
 _HISTORY_RERUN_COUNT = 240

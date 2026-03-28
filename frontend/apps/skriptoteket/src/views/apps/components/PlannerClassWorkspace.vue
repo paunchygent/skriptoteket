@@ -31,6 +31,7 @@ const props = defineProps<{
   selectedRosterId: string | null;
   selectedTemplateId: string | null;
   isLoadingWorkspace: boolean;
+  transitionLabel?: string | null;
   visibleGroupingDraft: PlanDraftSummary | null;
   visibleSeatingDraft: PlanDraftSummary | null;
 }>();
@@ -47,11 +48,12 @@ const emit = defineEmits<{
   (e: "delete-current-template"): void;
   (e: "open-grouping", payload: { templateId: string | null }): void;
   (e: "open-seating", payload: { templateId: string | null }): void;
+  (e: "open-rules"): void;
   (e: "dismiss-grouping-draft"): void;
   (e: "dismiss-seating-draft"): void;
 }>();
 
-const workspaceMode = ref<"overview" | "grouping" | "seating">("overview");
+const workspaceMode = ref<"overview" | "grouping" | "seating" | "rules">("overview");
 const activeRosterSummary = computed(() => props.workspaceSummary?.roster ?? null);
 const selectedRoster = computed(() => {
   return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;
@@ -86,15 +88,15 @@ const selectedRosterPreviewNames = computed(() => {
 });
 const classPanelDescription = computed(() => {
   if (!selectedRoster.value) {
-    return "Skapa eller välj en klasslista här innan du går vidare till grupper eller sittplatser.";
+    return "Skapa eller välj en klasslista här innan du går vidare till grupper, sittplatser eller regler.";
   }
-  return "Förhandsgranska och hantera klasslistan här innan du går vidare till grupper eller sittplatser.";
+  return "Förhandsgranska och hantera klasslistan här innan du går vidare till grupper, sittplatser eller regler.";
 });
 const classroomPanelDescription = computed(() => {
   if (!selectedTemplate.value) {
-    return "Välj ett klassrum här så att sittplatserna får tydlig kontext när du går vidare.";
+    return "Välj ett klassrum här så att sittplatser och regler får tydlig kontext när du går vidare.";
   }
-  return "Förhandsgranska och hantera klassrummet här innan du går vidare till sittplatser.";
+  return "Förhandsgranska och hantera klassrummet här innan du går vidare till sittplatser eller regler.";
 });
 const workspaceContextLabel = computed(() => {
   if (!selectedTemplate.value) {
@@ -135,6 +137,11 @@ function selectWorkspaceMode(value: string): void {
 
   if (value === "seating") {
     emit("open-seating", { templateId: props.selectedTemplateId });
+    return;
+  }
+
+  if (value === "rules") {
+    emit("open-rules");
   }
 }
 
@@ -165,10 +172,10 @@ function selectWorkspaceMode(value: string): void {
     />
 
     <div
-      v-if="isLoadingWorkspace"
+      v-if="transitionLabel || isLoadingWorkspace"
       class="border border-navy bg-white px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
     >
-      Laddar klassarbetsytan...
+      {{ transitionLabel ?? "Laddar klassarbetsytan..." }}
     </div>
 
     <div

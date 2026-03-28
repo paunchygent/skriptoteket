@@ -119,6 +119,63 @@ export function createClassroomPlannerSmartRuleActions(
     updateSeatingPreference(studentId, !isStudentMarkedNearTeacher(studentId));
   }
 
+  function setStudentNearTeacherEnabled(studentId: string, enabled: boolean): boolean {
+    if (
+      !options.canEditSeatingSmartRules.value
+      || !options.studentsById.value[studentId]
+      || options.isWorkspaceBusy.value
+    ) {
+      return false;
+    }
+
+    if (isStudentMarkedNearTeacher(studentId) === enabled) {
+      return false;
+    }
+
+    updateSeatingPreference(studentId, enabled);
+    return true;
+  }
+
+  function replaceNearTeacherPreference(previousStudentId: string, nextStudentId: string): boolean {
+    if (
+      !options.canEditSeatingSmartRules.value
+      || options.isWorkspaceBusy.value
+      || !options.studentsById.value[previousStudentId]
+      || !options.studentsById.value[nextStudentId]
+    ) {
+      return false;
+    }
+
+    if (previousStudentId === nextStudentId) {
+      return false;
+    }
+
+    if (!isStudentMarkedNearTeacher(previousStudentId) || isStudentMarkedNearTeacher(nextStudentId)) {
+      return false;
+    }
+
+    let replaced = false;
+    options.seatingPreferences.value = options.seatingPreferences.value.map((preference) => {
+      if (preference.student_id !== previousStudentId) {
+        return preference;
+      }
+      replaced = true;
+      return {
+        student_id: nextStudentId,
+        near_teacher: true,
+      };
+    });
+
+    if (!replaced) {
+      return false;
+    }
+
+    options.syncVisibleSessionBindings();
+    options.smartRuleLane.markDirty();
+    options.smartRuleUiState.clearFeedback();
+    return true;
+  }
+
   function commitPendingRelationshipRule(): boolean {
     const activeTool = options.smartRuleUiState.activeSeatingSmartTool.value;
     if (activeTool !== "keep_near" && activeTool !== "keep_apart") {
@@ -131,11 +188,14 @@ export function createClassroomPlannerSmartRuleActions(
       return false;
     }
 
+    const editingRuleId = options.smartRuleUiState.editingRelationshipRuleId.value;
     const overlappingStudentIds = new Set(
       options.relationshipRules.value.flatMap((rule) =>
-        rule.student_ids.filter((studentId) =>
-          options.smartRuleUiState.pendingRelationshipStudentIds.value.includes(studentId),
-        ),
+        rule.id === editingRuleId
+          ? []
+          : rule.student_ids.filter((studentId) =>
+              options.smartRuleUiState.pendingRelationshipStudentIds.value.includes(studentId),
+            ),
       ),
     );
     if (overlappingStudentIds.size > 0) {
@@ -143,6 +203,28 @@ export function createClassroomPlannerSmartRuleActions(
         "En elev kan bara ingå i en relationsregel åt gången.",
       );
       return false;
+    }
+
+    if (editingRuleId) {
+      const editedRuleFound = options.relationshipRules.value.some((rule) => rule.id === editingRuleId);
+      if (!editedRuleFound) {
+        return false;
+      }
+
+      options.relationshipRules.value = options.relationshipRules.value.map((rule) => {
+        if (rule.id !== editingRuleId) {
+          return rule;
+        }
+        return {
+          ...rule,
+          kind: activeTool,
+          student_ids: [...options.smartRuleUiState.pendingRelationshipStudentIds.value],
+        };
+      });
+      options.smartRuleUiState.clearPendingRelationshipSelection();
+      options.syncVisibleSessionBindings();
+      options.smartRuleLane.markDirty();
+      return true;
     }
 
     options.relationshipRules.value = [
@@ -159,6 +241,17 @@ export function createClassroomPlannerSmartRuleActions(
     return true;
   }
 
+  function beginRelationshipRuleEdit(ruleId: string): void {
+    if (!options.canEditSeatingSmartRules.value) {
+      return;
+    }
+    const rule = options.relationshipRules.value.find((candidate) => candidate.id === ruleId);
+    if (!rule) {
+      return;
+    }
+    options.smartRuleUiState.beginRelationshipRuleEdit(rule.id, rule.kind, rule.student_ids);
+  }
+
   function deleteRelationshipRule(ruleId: string): void {
     if (!options.canEditSeatingSmartRules.value) {
       return;
@@ -168,7 +261,11 @@ export function createClassroomPlannerSmartRuleActions(
       return;
     }
     options.relationshipRules.value = nextRules;
-    options.smartRuleUiState.clearFeedback();
+    if (options.smartRuleUiState.editingRelationshipRuleId.value === ruleId) {
+      options.smartRuleUiState.clearPendingRelationshipSelection();
+    } else {
+      options.smartRuleUiState.clearFeedback();
+    }
     options.syncVisibleSessionBindings();
     options.smartRuleLane.markDirty();
   }
@@ -195,8 +292,11 @@ export function createClassroomPlannerSmartRuleActions(
     setDraftSmartEnabled,
     setDraftUseHistoryEnabled,
     isStudentMarkedNearTeacher,
+    setStudentNearTeacherEnabled,
+    replaceNearTeacherPreference,
     handleSeatingSmartToolStudentSelection,
     commitPendingRelationshipRule,
+    beginRelationshipRuleEdit,
     deleteRelationshipRule,
   };
 }

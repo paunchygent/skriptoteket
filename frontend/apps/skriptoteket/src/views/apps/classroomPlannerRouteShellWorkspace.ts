@@ -15,12 +15,15 @@ import type { ClassWorkspaceSummary, PlanDraftSummary } from "./classroomPlanner
 
 type PlannerRouteShellWorkspaceState = {
   selectedRosterId: Ref<string | null>;
+  selectedWorkspaceTemplateId: Ref<string | null>;
   currentScreen: Ref<PlannerScreen>;
   plannerInitialView: Ref<PlannerWorkspaceInitialView>;
   plannerActionError: Ref<string | null>;
   classWorkspaceSummary: Ref<ClassWorkspaceSummary | null>;
   isSeatingLifecycleBusy: Ref<boolean>;
   busySeatingHistoryDraftId: Ref<string | null>;
+  workspaceTransitionLabel: Ref<string | null>;
+  workspaceNotice: Ref<string | null>;
 };
 
 type PlannerRouteShellWorkspaceActions = {
@@ -33,6 +36,7 @@ type PlannerRouteShellWorkspaceActions = {
 type PlannerRouteShellWorkspacePlannerState = PlannerRouteShellSaveController & {
   roster: { id: string } | null;
   draft: { id: string } | null;
+  template: { id: string } | null;
   loadWorkspace: (draftId: string) => Promise<unknown>;
   resolveDraft: (
     rosterId: string,
@@ -67,6 +71,29 @@ function activeDraftId(
   return draft?.id ?? null;
 }
 
+function resolveRulesWorkspaceTemplateId(options: {
+  bootstrapsSeatingHost: boolean;
+  plannerTemplateId: string | null;
+  activeSeatingTemplateId: string | null;
+  selectedWorkspaceTemplateId: string | null;
+}): string | null {
+  if (options.bootstrapsSeatingHost) {
+    return (
+      options.selectedWorkspaceTemplateId
+      ?? options.plannerTemplateId
+      ?? options.activeSeatingTemplateId
+      ?? null
+    );
+  }
+
+  return (
+    options.plannerTemplateId
+    ?? options.activeSeatingTemplateId
+    ?? options.selectedWorkspaceTemplateId
+    ?? null
+  );
+}
+
 export function createClassroomPlannerWorkspaceFlow(
   state: PlannerRouteShellWorkspaceState,
   actions: PlannerRouteShellWorkspaceActions,
@@ -77,12 +104,17 @@ export function createClassroomPlannerWorkspaceFlow(
     draftKind: "grouping" | "seating",
     initialView: PlannerWorkspaceInitialView,
     fallbackMessage: string,
+    options?: {
+      transitionLabel?: string | null;
+      workspaceNotice?: string | null;
+    },
   ): Promise<void> {
     if (!state.selectedRosterId.value) {
       return;
     }
 
     state.plannerActionError.value = null;
+    state.workspaceTransitionLabel.value = options?.transitionLabel ?? null;
     try {
       const currentDraftId = activeDraftId(state.classWorkspaceSummary.value, draftKind);
       if (currentDraftId) {
@@ -93,17 +125,48 @@ export function createClassroomPlannerWorkspaceFlow(
       await actions.refreshClassWorkspaceSummaryForSelectedRoster();
       state.plannerInitialView.value = initialView;
       state.currentScreen.value = "planner";
+      state.workspaceNotice.value = options?.workspaceNotice ?? null;
     } catch (error: unknown) {
       state.plannerActionError.value = normalizeClassroomPlannerUiError(error, fallbackMessage);
+      state.workspaceNotice.value = null;
+    } finally {
+      state.workspaceTransitionLabel.value = null;
     }
   }
 
   async function openGroupingWorkspace(payload: OpenWorkspacePayload): Promise<void> {
+    state.workspaceNotice.value = null;
     await openWorkspace(payload, "grouping", "groups", "Kunde inte öppna grupparbetsytan just nu.");
   }
 
   async function openSeatingWorkspace(payload: OpenWorkspacePayload): Promise<void> {
+    state.workspaceNotice.value = null;
     await openWorkspace(payload, "seating", "seats", "Kunde inte öppna sittplatserna just nu.");
+  }
+
+  async function openRulesWorkspace(): Promise<void> {
+    const bootstrapsSeatingHost = activeDraftId(state.classWorkspaceSummary.value, "seating") === null;
+    const currentTemplateId = resolveRulesWorkspaceTemplateId({
+      bootstrapsSeatingHost,
+      plannerTemplateId: plannerState.template?.id ?? null,
+      activeSeatingTemplateId: state.classWorkspaceSummary.value?.active_seating_draft?.template_id ?? null,
+      selectedWorkspaceTemplateId: state.selectedWorkspaceTemplateId.value,
+    });
+
+    await openWorkspace(
+      { templateId: currentTemplateId },
+      "seating",
+      "rules",
+      "Kunde inte öppna reglerna just nu.",
+      {
+        transitionLabel: bootstrapsSeatingHost
+          ? "Förbereder Regler genom att starta ett sittschema i bakgrunden..."
+          : "Öppnar Regler...",
+        workspaceNotice: bootstrapsSeatingHost
+          ? "Regler använder ett sittschema i bakgrunden. Vi startade ett nytt sittschema för den här klassen."
+          : null,
+      },
+    );
   }
 
   async function returnToClassWorkspace(): Promise<void> {
@@ -326,7 +389,9 @@ export function createClassroomPlannerWorkspaceFlow(
     }
   }
 
-  async function selectPlannerWorkspaceMode(mode: "overview" | "grouping" | "seating"): Promise<void> {
+  async function selectPlannerWorkspaceMode(
+    mode: "overview" | "grouping" | "seating" | "rules",
+  ): Promise<void> {
     if (mode === "overview") {
       await returnToClassWorkspace();
       return;
@@ -349,12 +414,22 @@ export function createClassroomPlannerWorkspaceFlow(
       return;
     }
 
+    if (mode === "rules") {
+      await openRulesWorkspace();
+      return;
+    }
+
     await openSeatingWorkspace({ templateId: null });
+  }
+
+  function dismissWorkspaceNotice(): void {
+    state.workspaceNotice.value = null;
   }
 
   return {
     openGroupingWorkspace,
     openSeatingWorkspace,
+    openRulesWorkspace,
     changeGroupingTemplate,
     changeSeatingTemplate,
     startNewGroupingDraft,
@@ -364,5 +439,6 @@ export function createClassroomPlannerWorkspaceFlow(
     deleteGroupingHistoryDraft,
     deleteSeatingHistoryDraft,
     selectPlannerWorkspaceMode,
+    dismissWorkspaceNotice,
   };
 }

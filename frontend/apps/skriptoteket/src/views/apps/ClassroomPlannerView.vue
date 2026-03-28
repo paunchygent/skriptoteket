@@ -48,6 +48,8 @@ const {
   seatingExportStatusLabel,
   seatingExportErrorMessage,
   canDownloadLatestSeatingExport,
+  workspaceTransitionLabel,
+  workspaceNotice,
   isExitConfirmationOpen,
   isExitingWithoutSave,
   dismissOverviewGroupingDraft,
@@ -65,6 +67,7 @@ const {
   openSelectedTemplateDelete,
   openGroupingWorkspace,
   openSeatingWorkspace,
+  openRulesWorkspace,
   changeGroupingTemplate,
   changeSeatingTemplate,
   startNewGroupingDraft,
@@ -88,6 +91,7 @@ const {
   closeOverviewTemplateDelete,
   confirmOverviewTemplateDelete,
   confirmOverviewRosterDelete,
+  dismissWorkspaceNotice,
   closeExitConfirmation,
   confirmExitWithoutWaiting,
 } = useClassroomPlannerRouteShell();
@@ -104,7 +108,7 @@ const {
           Klassrumskartan
         </h1>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Arbeta vidare från översikten och öppna grupper eller sittplatser när du behöver dem.
+          Arbeta vidare från översikten och öppna grupper, sittplatser eller regler när du behöver dem.
         </p>
       </div>
     </header>
@@ -143,6 +147,7 @@ const {
       :selected-roster-id="selectedRosterId"
       :selected-template-id="selectedWorkspaceTemplateId"
       :is-loading-workspace="isLoadingClassWorkspace"
+      :transition-label="workspaceTransitionLabel"
       :visible-grouping-draft="visibleOverviewGroupingDraft"
       :visible-seating-draft="visibleOverviewSeatingDraft"
       @exit-app="void exitPlannerApp()"
@@ -156,6 +161,7 @@ const {
       @delete-current-template="openSelectedTemplateDelete"
       @open-grouping="void openGroupingWorkspace($event)"
       @open-seating="void openSeatingWorkspace($event)"
+      @open-rules="void openRulesWorkspace()"
       @dismiss-grouping-draft="dismissOverviewGroupingDraft"
       @dismiss-seating-draft="dismissOverviewSeatingDraft"
     />
@@ -175,6 +181,8 @@ const {
       :seating-export-status-label="seatingExportStatusLabel"
       :seating-export-error-message="seatingExportErrorMessage"
       :can-download-latest-seating-export="canDownloadLatestSeatingExport"
+      :transition-label="workspaceTransitionLabel"
+      :workspace-notice="workspaceNotice"
       @change-grouping-template="void changeGroupingTemplate($event)"
       @change-seating-template="void changeSeatingTemplate($event)"
       @new-grouping-draft="void startNewGroupingDraft($event)"
@@ -191,7 +199,9 @@ const {
       @open-seating-history-draft="void openSeatingHistoryDraft($event)"
       @delete-seating-history-draft="void deleteSeatingHistoryDraft($event)"
       @edit-current-template="openOverviewTemplateEdit"
+      @open-rules="void openRulesWorkspace()"
       @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
+      @dismiss-workspace-notice="dismissWorkspaceNotice"
       @exit-app="void exitPlannerApp()"
     />
 

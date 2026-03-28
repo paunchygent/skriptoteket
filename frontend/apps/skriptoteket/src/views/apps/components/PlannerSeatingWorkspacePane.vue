@@ -11,14 +11,15 @@ import { computed, nextTick, ref, watch } from "vue";
 
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } from "../../../components/icons";
 import type { SeatingExportOption } from "../classroomPlannerExportApi";
-import type { RoomTemplate } from "../classroomPlannerTypes";
+import type { RoomTemplate, Student } from "../classroomPlannerTypes";
+import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { setSeatStyledStudentDragPreview } from "../roomSeatDragPreview";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerExportActionGroup, { type PlannerExportOptionValue } from "./PlannerExportActionGroup.vue";
-import PlannerSeatingSmartRuleSurface from "./PlannerSeatingSmartRuleSurface.vue";
+import PlannerSmartRulesSummaryStrip from "./PlannerSmartRulesSummaryStrip.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
@@ -55,6 +56,7 @@ const emit = defineEmits<{
   (e: "new-seating-draft", templateId: string): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-history"): void;
+  (e: "open-rules"): void;
   (e: "export-default"): void;
   (e: "export-option", option: SeatingExportOption): void;
   (e: "download-latest-export"): void;
@@ -81,24 +83,17 @@ const {
   resetSource: computed(() => props.selectedTemplateId ?? plannerState.template?.id ?? null),
 });
 const canEditCurrentTemplate = computed(() => plannerState.template !== null);
+const nearTeacherStudents = computed<Student[]>(() => {
+  return plannerState.seatingPreferences
+    .filter((preference) => preference.near_teacher === true)
+    .map((preference) => plannerState.studentsById[preference.student_id] ?? null)
+    .filter((student): student is Student => student !== null);
+});
 const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
-  const markers: Record<string, string[]> = {};
-
-  for (const preference of plannerState.seatingPreferences) {
-    if (preference.near_teacher !== true) {
-      continue;
-    }
-    markers[preference.student_id] = [...(markers[preference.student_id] ?? []), "Lärare"];
-  }
-
-  plannerState.relationshipRules.forEach((rule, index) => {
-    const marker = `${rule.kind === "keep_apart" ? "Isär" : "Nära"} ${String.fromCharCode(65 + index)}`;
-    for (const studentId of rule.student_ids) {
-      markers[studentId] = [...(markers[studentId] ?? []), marker];
-    }
-  });
-
-  return markers;
+  return buildSmartRuleMarkersByStudentId(
+    plannerState.seatingPreferences,
+    plannerState.relationshipRules,
+  );
 });
 const canRandomizeSeating = computed(() => {
   return (
@@ -234,6 +229,14 @@ function updateSmartEnabled(event: Event): void {
   plannerState.setDraftSmartEnabled(target.checked);
 }
 
+function updateUseHistory(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  plannerState.setDraftUseHistoryEnabled(target.checked);
+}
+
 function handleExportOption(option: PlannerExportOptionValue): void {
   emit("export-option", option as SeatingExportOption);
 }
@@ -348,6 +351,14 @@ watch(
         >
         <span>Smart</span>
       </label>
+      <PlannerToolbarIconButton
+        label="Öppna Regler"
+        data-test="seating-open-rules"
+        :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+        @click="emit('open-rules')"
+      >
+        <IconSettings :size="18" />
+      </PlannerToolbarIconButton>
       <button
         type="button"
         class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
@@ -392,6 +403,26 @@ watch(
     </p>
 
     <div
+      v-if="plannerState.smartRuleHydrationStatus === 'error'"
+      class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
+      data-test="seating-smart-hydration-error"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p>
+          {{ plannerState.smartRuleHydrationMessage }}
+        </p>
+        <button
+          type="button"
+          class="btn-ghost border-amber-400/70 bg-white px-3 py-1.5 text-amber-900 shadow-none"
+          data-test="seating-smart-retry-hydration"
+          @click="void plannerState.retrySmartRuleHydration()"
+        >
+          Försök igen
+        </button>
+      </div>
+    </div>
+
+    <div
       v-if="!isExportStatusDismissed && (exportStatusLabel || exportErrorMessage || canDownloadLatestExport)"
       class="flex flex-wrap items-center gap-x-4 gap-y-1 border border-navy/30 bg-white px-3 py-2 text-xs"
       data-test="seating-export-status-bar"
@@ -430,7 +461,27 @@ watch(
       </button>
     </div>
 
-    <PlannerSeatingSmartRuleSurface />
+    <PlannerSmartRulesSummaryStrip
+      :near-teacher-students="nearTeacherStudents"
+      :relationship-rules="plannerState.relationshipRules"
+      :students-by-id="plannerState.studentsById"
+    >
+      <template #controls>
+        <label
+          class="inline-flex items-center gap-2 rounded-md border border-navy/20 bg-canvas px-3 py-2 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+          data-test="seating-use-history-toggle"
+        >
+          <input
+            type="checkbox"
+            class="h-4 w-4 border-navy/40 text-navy"
+            :checked="plannerState.draft?.use_history ?? false"
+            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+            @change="updateUseHistory"
+          >
+          <span>Använd historik</span>
+        </label>
+      </template>
+    </PlannerSmartRulesSummaryStrip>
 
     <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-stretch">
       <PlannerStudentPool

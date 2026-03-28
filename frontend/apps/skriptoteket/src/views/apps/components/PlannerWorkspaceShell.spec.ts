@@ -337,7 +337,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.get("[data-test='drawer']").text()).toBe("open");
   });
 
-  it("routes seating clicks through the active smart tool instead of opening the drawer", async () => {
+  it("routes Regler clicks through the active smart tool instead of opening the drawer", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-2",
       draft_kind: "seating",
@@ -349,13 +349,16 @@ describe("PlannerWorkspaceShell", () => {
     const wrapper = mount(PlannerWorkspaceShell, {
       props: {
         availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
-        initialView: "seats",
+        initialView: "rules",
         workspaceSummary: buildWorkspaceSummary(),
       },
       global: {
         stubs: {
           GroupBoard: { template: "<div data-test='group-board' />" },
           RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerRulesWorkspacePane: {
+            template: "<button data-test='rules-student' @click=\"$emit('student-selected', 'student-1')\" />",
+          },
           PlannerMetadataDrawer: {
             props: ["open"],
             template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
@@ -364,7 +367,7 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
-    await wrapper.get("[data-test='seating-student-pool'] button").trigger("click");
+    await wrapper.get("[data-test='rules-student']").trigger("click");
 
     expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith(
       "student-1",

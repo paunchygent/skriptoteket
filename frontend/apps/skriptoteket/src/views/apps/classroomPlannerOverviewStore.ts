@@ -16,7 +16,7 @@ import type {
 } from "./classroomPlannerTypes";
 
 export type PlannerScreen = "class-workspace" | "planner";
-export type PlannerWorkspaceInitialView = "groups" | "seats";
+export type PlannerWorkspaceInitialView = "groups" | "seats" | "rules";
 
 const SELECTED_ROSTER_STORAGE_KEY = "skriptoteket:classroom-planner:selected-roster-id";
 const SELECTED_TEMPLATE_STORAGE_KEY = "skriptoteket:classroom-planner:selected-template-id";

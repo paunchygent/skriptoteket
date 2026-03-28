@@ -1,9 +1,8 @@
 /**
  * Seating workspace smart-rule interaction tests.
  *
- * These tests lock the first visible smart-rule toolbar flow in the seating
- * pane so the room surface drives rule authoring instead of a drawer-first
- * interaction model.
+ * These tests lock the compact smart-summary cut-over in the seating pane so
+ * rule authoring stays inside the dedicated `Regler` workspace.
  */
 
 import { mount } from "@vue/test-utils";
@@ -29,6 +28,8 @@ type PlannerStateMock = {
   pendingRelationshipStudentIds: string[];
   activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
   smartRuleFeedbackMessage: string | null;
+  smartRuleHydrationStatus: "idle" | "hydrating" | "ready" | "error";
+  smartRuleHydrationMessage: string | null;
   smartSeatingRunMessage: string | null;
   smartSeatingRunTone: "neutral" | "success" | "warning";
   canCommitPendingRelationshipRule: boolean;
@@ -48,6 +49,7 @@ type PlannerStateMock = {
   clearSeatingAssignments: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
   setDraftUseHistoryEnabled: ReturnType<typeof vi.fn>;
+  retrySmartRuleHydration: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -78,6 +80,8 @@ const stateMocks = vi.hoisted(() => ({
     pendingRelationshipStudentIds: [],
     activeSeatingSmartTool: null,
     smartRuleFeedbackMessage: null,
+    smartRuleHydrationStatus: "ready",
+    smartRuleHydrationMessage: null,
     smartSeatingRunMessage: null,
     smartSeatingRunTone: "neutral",
     canCommitPendingRelationshipRule: false,
@@ -97,6 +101,7 @@ const stateMocks = vi.hoisted(() => ({
     clearSeatingAssignments: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
     setDraftUseHistoryEnabled: vi.fn(),
+    retrySmartRuleHydration: vi.fn(),
   }))(),
 }));
 
@@ -119,10 +124,13 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
     stateMocks.plannerState.activeSeatingSmartTool = null;
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
+    stateMocks.plannerState.smartRuleHydrationStatus = "ready";
+    stateMocks.plannerState.smartRuleHydrationMessage = null;
     stateMocks.plannerState.smartSeatingRunMessage = null;
     stateMocks.plannerState.smartSeatingRunTone = "neutral";
     stateMocks.plannerState.canCommitPendingRelationshipRule = false;
     stateMocks.plannerState.canEditSeatingSmartRules = true;
+    stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.isRunningSmartSeating = false;
     stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
@@ -132,9 +140,10 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
     stateMocks.plannerState.setDraftSmartEnabled.mockReset();
     stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
     stateMocks.plannerState.runSeatingShuffle.mockReset();
+    stateMocks.plannerState.retrySmartRuleHydration.mockReset();
   });
 
-  it("renders the visible smart-rule toolbar and summary in the seating pane", () => {
+  it("renders the compact smart summary and Regler entry point in the seating pane", () => {
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
@@ -146,19 +155,15 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    expect(wrapper.find('[data-test="seating-smart-rule-surface"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-smart-rule-surface"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Närmare läraren");
     expect(wrapper.text()).toContain("Håll isär");
-    expect(wrapper.text()).toContain("Håll nära");
-    expect(wrapper.text()).toContain("Aktiva regler");
+    expect(wrapper.text()).toContain("Smarta regler");
     expect(wrapper.text()).toContain("Ada Lovelace");
   });
 
-  it("forwards toolbar tool selection and explicit relation commits", async () => {
-    stateMocks.plannerState.activeSeatingSmartTool = "keep_apart";
-    stateMocks.plannerState.pendingRelationshipStudentIds = ["student-1", "student-2"];
-    stateMocks.plannerState.canCommitPendingRelationshipRule = true;
-
+  it("opens Regler from the small settings affordance beside Smart", async () => {
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
@@ -170,18 +175,14 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    await wrapper.get('[data-test="seating-smart-tool-near-teacher"]').trigger("click");
-    await wrapper.get('[data-test="seating-smart-commit-rule"]').trigger("click");
-    await wrapper.get('[data-test="seating-smart-clear-selection"]').trigger("click");
+    await wrapper.get('[data-test="seating-open-rules"]').trigger("click");
 
-    expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("near_teacher");
-    expect(stateMocks.plannerState.commitPendingRelationshipRule).toHaveBeenCalledTimes(1);
-    expect(stateMocks.plannerState.clearPendingRelationshipSelection).toHaveBeenCalledTimes(1);
+    expect(wrapper.emitted("open-rules")).toEqual([[]]);
   });
 
-  it("shows the overlap feedback message from the store", () => {
-    stateMocks.plannerState.smartRuleFeedbackMessage =
-      "En elev kan bara ingå i en relationsregel åt gången.";
+  it("shows smart-rule hydration errors without reintroducing inline editing", () => {
+    stateMocks.plannerState.smartRuleHydrationStatus = "error";
+    stateMocks.plannerState.smartRuleHydrationMessage = "Kunde inte ladda smarta regler.";
 
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
@@ -194,17 +195,19 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="seating-smart-feedback"]').text()).toContain(
-      "En elev kan bara ingå i en relationsregel åt gången.",
+    expect(wrapper.get('[data-test="seating-smart-hydration-error"]').text()).toContain(
+      "Kunde inte ladda smarta regler.",
     );
+    expect(wrapper.find('[data-test="seating-smart-commit-rule"]').exists()).toBe(false);
   });
 
-  it("disables relationship-rule deletion while the workspace is busy", () => {
-    stateMocks.plannerState.canEditSeatingSmartRules = false;
+  it("disables the Regler entry point while the seating lifecycle is busy", () => {
+    stateMocks.plannerState.isWorkspaceBusy = true;
 
     const wrapper = mount(PlannerSeatingWorkspacePane, {
       props: {
         selectedTemplateId: "template-1",
+        seatingLifecycleBusy: true,
       },
       global: {
         stubs: {
@@ -213,10 +216,10 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="seating-smart-delete-rule-0"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="seating-open-rules"]').attributes("disabled")).toBeDefined();
   });
 
-  it("keeps rule authoring enabled even when smart run mode is off", async () => {
+  it("keeps the Regler entry point available even when smart run mode is off", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-1",
       draft_kind: "seating",
@@ -235,11 +238,11 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Smart slumpa: Av");
-    expect(wrapper.get('[data-test="seating-smart-tool-near-teacher"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.text()).toContain("Smarta regler");
+    expect(wrapper.get('[data-test="seating-open-rules"]').attributes("disabled")).toBeUndefined();
 
-    await wrapper.get('[data-test="seating-smart-tool-near-teacher"]').trigger("click");
-    expect(stateMocks.plannerState.setActiveSeatingSmartTool).toHaveBeenCalledWith("near_teacher");
+    await wrapper.get('[data-test="seating-open-rules"]').trigger("click");
+    expect(wrapper.emitted("open-rules")).toEqual([[]]);
   });
 
   it("does not render false-valued near-teacher preferences as active markers", () => {
@@ -257,7 +260,7 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Inga smarta regler ännu.");
+    expect(wrapper.text()).toContain("Inga regler ännu. Öppna Regler för att lägga till eller ändra dem.");
     expect(wrapper.text()).not.toContain("Ada Lovelace");
   });
 

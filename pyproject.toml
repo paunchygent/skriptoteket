@@ -253,7 +253,7 @@ pythonpath = [
 python_files = "test_*.py *_test.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-s -v --durations=10 --log-cli-level=INFO --import-mode=importlib -m 'not (financial or slow or docker)'"
+addopts = "-s -v --durations=10 --log-cli-level=INFO --import-mode=importlib -m 'not (financial or slow or docker or simulation)'"
 log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(message)s"
@@ -264,6 +264,7 @@ asyncio_default_fixture_loop_scope = "module"
 markers = [
     "financial: marks tests that incur real monetary costs via external API calls",
     "slow: marks tests as slow running",
+    "simulation: marks expensive statistical scenario suites excluded from the default test run",
     "integration: marks tests requiring external services",
     "docker: marks tests that need docker compose setup",
     "e2e: marks tests as end-to-end pipeline tests",
@@ -350,6 +351,7 @@ typecheck = "mypy --config-file pyproject.toml src tests"
 test = "pytest"
 test-parallel = "pytest -n auto"
 test-sequential = "pytest -n 0"
+test-simulations = "pytest -m simulation -s -v --durations=10 --log-cli-level=INFO --import-mode=importlib --override-ini addopts=''"
 
 # Docs-as-code governance
 docs-validate = "python -m scripts.validate_docs"

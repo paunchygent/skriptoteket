@@ -24,6 +24,7 @@ type UseSmartRuleUiStateOptions = {
 export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
   const activeSeatingSmartTool = ref<SeatingSmartTool | null>(null);
   const pendingRelationshipStudentIds = ref<string[]>([]);
+  const editingRelationshipRuleId = ref<string | null>(null);
   const feedbackMessage = ref<string | null>(null);
 
   const canCommitPendingRelationshipRule = computed(() => {
@@ -40,6 +41,7 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
 
   function clearPendingRelationshipSelection(): void {
     pendingRelationshipStudentIds.value = [];
+    editingRelationshipRuleId.value = null;
     clearFeedback();
   }
 
@@ -50,6 +52,20 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
   function reset(): void {
     activeSeatingSmartTool.value = null;
     clearPendingRelationshipSelection();
+  }
+
+  function beginRelationshipRuleEdit(
+    ruleId: string,
+    tool: Extract<SeatingSmartTool, "keep_near" | "keep_apart">,
+    studentIds: readonly string[],
+  ): void {
+    if (!options.canEditSmartRules()) {
+      return;
+    }
+    activeSeatingSmartTool.value = tool;
+    pendingRelationshipStudentIds.value = [...studentIds];
+    editingRelationshipRuleId.value = ruleId;
+    clearFeedback();
   }
 
   function setActiveSeatingSmartTool(tool: SeatingSmartTool | null): void {
@@ -83,12 +99,14 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
   return {
     activeSeatingSmartTool,
     pendingRelationshipStudentIds,
+    editingRelationshipRuleId,
     feedbackMessage,
     canCommitPendingRelationshipRule,
     clearFeedback,
     clearPendingRelationshipSelection,
     setFeedbackMessage,
     reset,
+    beginRelationshipRuleEdit,
     setActiveSeatingSmartTool,
     isStudentInPendingRelationshipSelection,
     togglePendingRelationshipStudent,

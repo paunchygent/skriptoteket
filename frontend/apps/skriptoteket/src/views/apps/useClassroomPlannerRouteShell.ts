@@ -45,6 +45,8 @@ export function useClassroomPlannerRouteShell() {
 
   const isSeatingLifecycleBusy = ref(false);
   const busySeatingHistoryDraftId = ref<string | null>(null);
+  const workspaceTransitionLabel = ref<string | null>(null);
+  const workspaceNotice = ref<string | null>(null);
 
   async function fetchCatalog(): Promise<void> {
     const catalog = await fetchClassroomPlannerCatalog();
@@ -101,12 +103,15 @@ export function useClassroomPlannerRouteShell() {
   const workspaceFlow = createClassroomPlannerWorkspaceFlow(
     {
       selectedRosterId,
+      selectedWorkspaceTemplateId,
       currentScreen,
       plannerInitialView,
       plannerActionError,
       classWorkspaceSummary,
       isSeatingLifecycleBusy,
       busySeatingHistoryDraftId,
+      workspaceTransitionLabel,
+      workspaceNotice,
     },
     {
       loadClassWorkspaceSummary,
@@ -199,6 +204,8 @@ export function useClassroomPlannerRouteShell() {
     seatingExportStatusLabel: seatingExportFlow.statusLabel,
     seatingExportErrorMessage: seatingExportFlow.errorMessage,
     canDownloadLatestSeatingExport: seatingExportFlow.canDownloadLatest,
+    workspaceTransitionLabel,
+    workspaceNotice,
     isExitConfirmationOpen: exitFlow.isExitConfirmationOpen,
     isExitingWithoutSave: exitFlow.isExitingWithoutSave,
     dismissOverviewGroupingDraft: overviewStore.dismissOverviewGroupingDraft,
@@ -216,6 +223,7 @@ export function useClassroomPlannerRouteShell() {
     openSelectedTemplateDelete: overviewCrudFlow.openSelectedTemplateDelete,
     openGroupingWorkspace: workspaceFlow.openGroupingWorkspace,
     openSeatingWorkspace: workspaceFlow.openSeatingWorkspace,
+    openRulesWorkspace: workspaceFlow.openRulesWorkspace,
     changeGroupingTemplate: workspaceFlow.changeGroupingTemplate,
     changeSeatingTemplate: workspaceFlow.changeSeatingTemplate,
     startNewGroupingDraft: workspaceFlow.startNewGroupingDraft,
@@ -239,6 +247,7 @@ export function useClassroomPlannerRouteShell() {
     closeOverviewTemplateDelete: overviewCrudFlow.closeOverviewTemplateDelete,
     confirmOverviewTemplateDelete: overviewCrudFlow.confirmOverviewTemplateDelete,
     confirmOverviewRosterDelete: overviewCrudFlow.confirmOverviewRosterDelete,
+    dismissWorkspaceNotice: workspaceFlow.dismissWorkspaceNotice,
     closeExitConfirmation: exitFlow.closeExitConfirmation,
     confirmExitWithoutWaiting: exitFlow.confirmExitWithoutWaiting,
   };

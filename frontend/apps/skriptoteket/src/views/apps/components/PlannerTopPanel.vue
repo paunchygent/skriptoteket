@@ -14,7 +14,7 @@ import UiSegmentedToggle, {
   type UiSegmentedToggleOption,
 } from "../../../components/ui/UiSegmentedToggle.vue";
 
-type WorkspaceMode = "overview" | "grouping" | "seating";
+type WorkspaceMode = "overview" | "grouping" | "seating" | "rules";
 type StatusTone = "neutral" | "success" | "warning" | "danger";
 
 const props = withDefaults(
@@ -47,6 +47,7 @@ const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => [
   { value: "overview", label: "Översikt" },
   { value: "grouping", label: "Grupper" },
   { value: "seating", label: "Sittplatser" },
+  { value: "rules", label: "Regler" },
 ]);
 
 const statusToneClass = computed(() => {
@@ -76,7 +77,7 @@ const statusDotClass = computed(() => {
 });
 
 function selectWorkspaceMode(value: string): void {
-  if (value === "overview" || value === "grouping" || value === "seating") {
+  if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
     emit("update:modeValue", value);
   }
 }
@@ -114,7 +115,7 @@ function selectWorkspaceMode(value: string): void {
       :options="workspaceOptions"
       aria-label="Välj arbetsyta i planeringen"
       density="default"
-      :columns="3"
+      :columns="workspaceOptions.length"
       width="full"
       @update:model-value="selectWorkspaceMode"
     />

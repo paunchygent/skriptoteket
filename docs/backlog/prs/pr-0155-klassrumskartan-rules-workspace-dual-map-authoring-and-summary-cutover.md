@@ -2,10 +2,10 @@
 type: pr
 id: PR-0155
 title: "Klassrumskartan: rules workspace, dual-map authoring, and summary-link cutover"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-28
 stories:
   - "ST-27-07"
 tags:

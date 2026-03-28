@@ -11,13 +11,14 @@ import { computed, ref, watch } from "vue";
 
 import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } from "../../../components/icons";
 import type { GroupingExportOption } from "../classroomPlannerExportApi";
-import type { RoomTemplate } from "../classroomPlannerTypes";
+import type { RoomTemplate, Student } from "../classroomPlannerTypes";
 import GroupBoard from "./GroupBoard.vue";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerExportActionGroup, {
   type PlannerExportOption,
   type PlannerExportOptionValue,
 } from "./PlannerExportActionGroup.vue";
+import PlannerSmartRulesSummaryStrip from "./PlannerSmartRulesSummaryStrip.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
@@ -49,6 +50,7 @@ const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
   (e: "new-grouping-draft"): void;
   (e: "open-history"): void;
+  (e: "open-rules"): void;
   (e: "change-grouping-template", templateId: string | null): void;
   (e: "edit-roster"): void;
   (e: "export-default"): void;
@@ -60,6 +62,12 @@ const state = useClassroomState();
 const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
 const isResetGroupingDialogOpen = ref(false);
 const isExportStatusDismissed = ref(false);
+const nearTeacherStudents = computed<Student[]>(() => {
+  return state.seatingPreferences
+    .filter((preference) => preference.near_teacher === true)
+    .map((preference) => state.studentsById[preference.student_id] ?? null)
+    .filter((student): student is Student => student !== null);
+});
 const exportOptions = computed<PlannerExportOption[]>(() => [
   {
     id: "xlsx",
@@ -269,6 +277,14 @@ watch(
         >
         <span>Smart</span>
       </label>
+      <PlannerToolbarIconButton
+        label="Öppna Regler"
+        data-test="grouping-open-rules"
+        :disabled="state.isWorkspaceBusy"
+        @click="emit('open-rules')"
+      >
+        <IconSettings :size="18" />
+      </PlannerToolbarIconButton>
       <button
         type="button"
         class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
@@ -342,6 +358,32 @@ watch(
         <IconX :size="14" />
       </button>
     </div>
+
+    <div
+      v-if="state.smartRuleHydrationStatus === 'error'"
+      class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
+      data-test="grouping-smart-hydration-error"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p>
+          {{ state.smartRuleHydrationMessage }}
+        </p>
+        <button
+          type="button"
+          class="btn-ghost border-amber-400/70 bg-white px-3 py-1.5 text-amber-900 shadow-none"
+          data-test="grouping-smart-retry-hydration"
+          @click="void state.retrySmartRuleHydration()"
+        >
+          Försök igen
+        </button>
+      </div>
+    </div>
+
+    <PlannerSmartRulesSummaryStrip
+      :near-teacher-students="nearTeacherStudents"
+      :relationship-rules="state.relationshipRules"
+      :students-by-id="state.studentsById"
+    />
 
     <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-stretch">
       <PlannerStudentPool

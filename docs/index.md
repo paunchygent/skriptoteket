@@ -95,6 +95,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
 - Approved Klassrumskartan smart assignment review:
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
+- Proposed auth-cutover ADR:
+  `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
+- Proposed auth-cutover epic:
+  `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- Proposed auth-cutover review:
+  `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -193,6 +199,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
 - `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
 - `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
+- `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
 - `docs/reference/ref-runner-contract-v3.md`
 
 ### PRDs
@@ -240,6 +247,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`
 - `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
+- `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 
 ### Backlog Stories
 
@@ -277,6 +285,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md`
 - `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`
 - `docs/backlog/stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md`
+- `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md`
+- `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md`
+- `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`
+- `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
 
 ### Backlog Reviews
 
@@ -304,6 +316,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md`
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
+- `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 
 ### Backlog Sprints
 

@@ -14,12 +14,13 @@ import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTyp
 import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
 import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
+import PlannerRulesWorkspacePane from "./PlannerRulesWorkspacePane.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
 
-type PlannerView = "groups" | "seats";
+type PlannerView = "groups" | "seats" | "rules";
 
 const props = withDefaults(
   defineProps<{
@@ -36,6 +37,8 @@ const props = withDefaults(
     seatingExportStatusLabel?: string | null;
     seatingExportErrorMessage?: string | null;
     canDownloadLatestSeatingExport?: boolean;
+    transitionLabel?: string | null;
+    workspaceNotice?: string | null;
   }>(),
   {
     availableTemplates: () => [],
@@ -51,6 +54,8 @@ const props = withDefaults(
     seatingExportStatusLabel: null,
     seatingExportErrorMessage: null,
     canDownloadLatestSeatingExport: false,
+    transitionLabel: null,
+    workspaceNotice: null,
   },
 );
 
@@ -71,13 +76,18 @@ const emit = defineEmits<{
   (e: "export-seating-option", option: SeatingExportOption): void;
   (e: "download-latest-seating-export"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
-  (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating"): void;
+  (e: "open-rules"): void;
+  (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;
+  (e: "dismiss-workspace-notice"): void;
   (e: "exit-app"): void;
 }>();
 
 const plannerState = useClassroomState();
 
 function resolvePlannerView(requestedView: PlannerView): PlannerView {
+  if (requestedView === "rules") {
+    return "rules";
+  }
   if (plannerState.draft?.draft_kind === "grouping") {
     return "groups";
   }
@@ -94,8 +104,14 @@ const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
 const pendingGroupingTemplateId = ref(plannerState.template?.id ?? "");
 const pendingSeatingTemplateId = ref(plannerState.template?.id ?? "");
 const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
-const workspaceModeValue = computed<"overview" | "grouping" | "seating">(() => {
-  return currentView.value === "groups" ? "grouping" : "seating";
+const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules">(() => {
+  if (currentView.value === "groups") {
+    return "grouping";
+  }
+  if (currentView.value === "rules") {
+    return "rules";
+  }
+  return "seating";
 });
 const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && plannerState.template === null;
@@ -141,12 +157,15 @@ const currentViewHint = computed(() => {
   if (currentView.value === "groups") {
     return "Dra elever mellan grupperna tills grupparbetet sitter.";
   }
+  if (currentView.value === "rules") {
+    return "Arbeta med regler i planeringskartan och växla till sittschema när det finns ett aktuellt upplägg.";
+  }
   return "Dra elever till platserna och justera sittschemat direkt i klassrummet.";
 });
 
 function selectStudent(studentId: string): void {
   if (
-    currentView.value === "seats"
+    currentView.value === "rules"
     && plannerState.activeSeatingSmartTool
     && plannerState.handleSeatingSmartToolStudentSelection(studentId)
   ) {
@@ -223,7 +242,7 @@ function editCurrentTemplate(template: RoomTemplate): void {
 }
 
 function selectWorkspaceMode(value: string): void {
-  if (value === "overview" || value === "grouping" || value === "seating") {
+  if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
     emit("select-workspace-mode", value);
   }
 }
@@ -270,6 +289,31 @@ watch(
       </button>
     </div>
 
+    <div
+      v-if="transitionLabel"
+      class="border border-navy bg-white px-4 py-3 text-sm font-semibold text-navy shadow-brutal-sm"
+      data-test="planner-workspace-transition"
+    >
+      {{ transitionLabel }}
+    </div>
+
+    <div
+      v-if="workspaceNotice"
+      class="system-message system-message-info"
+      data-test="planner-workspace-notice"
+    >
+      <div class="system-message-content">
+        {{ workspaceNotice }}
+      </div>
+      <button
+        type="button"
+        class="btn-ghost border-navy/30 bg-white shadow-none"
+        @click="emit('dismiss-workspace-notice')"
+      >
+        Stäng
+      </button>
+    </div>
+
     <PlannerTopPanel
       :title="plannerTitle"
       :context-label="isSeatWorkspaceWithoutTemplate ? 'Välj klassrum i sittschemat' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`"
@@ -280,6 +324,12 @@ watch(
       :status-tone="plannerState.plannerStatusTone"
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('exit-app')"
+    />
+
+    <PlannerRulesWorkspacePane
+      v-if="currentView === 'rules'"
+      :selected-student-id="selectedStudentId"
+      @student-selected="selectStudent"
     />
 
     <PlannerGroupingWorkspacePane
@@ -293,6 +343,7 @@ watch(
       :can-download-latest-export="canDownloadLatestGroupingExport"
       @new-grouping-draft="startNewGroupingDraft"
       @open-history="openGroupingHistoryDrawer"
+      @open-rules="emit('open-rules')"
       @edit-roster="emit('edit-roster')"
       @student-selected="selectStudent"
       @change-grouping-template="changeGroupingTemplate"
@@ -317,6 +368,7 @@ watch(
       @export-option="emit('export-seating-option', $event)"
       @download-latest-export="emit('download-latest-seating-export')"
       @edit-current-template="editCurrentTemplate"
+      @open-rules="emit('open-rules')"
       @open-history="openSeatingHistoryDrawer"
     />
 

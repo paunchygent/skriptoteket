@@ -660,6 +660,131 @@ describe("useClassroomState", () => {
     expect(state.activeSeatingSmartTool).toBe("keep_apart");
   });
 
+  it("persists relationship-rule edits through the roster smart-rules lane without changing the rule id", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    state.smartRulesRevision = 4;
+    state.relationshipRules = [
+      {
+        id: "rule-1",
+        kind: "keep_apart",
+        student_ids: ["s1", "s2"],
+      },
+    ];
+    clientMocks.apiPatch.mockResolvedValue({
+      ...createSmartRulesResponse(),
+      revision: 5,
+      relationship_rules: [
+        {
+          id: "rule-1",
+          kind: "keep_apart",
+          student_ids: ["s1", "s3"],
+        },
+      ],
+    });
+
+    state.beginRelationshipRuleEdit("rule-1");
+    state.handleSeatingSmartToolStudentSelection("s2");
+    state.handleSeatingSmartToolStudentSelection("s3");
+
+    expect(state.pendingRelationshipStudentIds).toEqual(["s1", "s3"]);
+    expect(state.commitPendingRelationshipRule()).toBe(true);
+    expect(state.relationshipRules).toEqual([
+      {
+        id: "rule-1",
+        kind: "keep_apart",
+        student_ids: ["s1", "s3"],
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+      {
+        expected_revision: 4,
+        seating_preferences: [],
+        relationship_rules: [
+          {
+            id: "rule-1",
+            kind: "keep_apart",
+            student_ids: ["s1", "s3"],
+          },
+        ],
+      },
+    );
+    expect(state.smartRulesRevision).toBe(5);
+    expect(state.relationshipRules).toEqual([
+      {
+        id: "rule-1",
+        kind: "keep_apart",
+        student_ids: ["s1", "s3"],
+      },
+    ]);
+  });
+
+  it("persists near-teacher replacement edits through the roster smart-rules lane", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    state.smartRulesRevision = 1;
+    state.seatingPreferences = [{ student_id: "s1", near_teacher: true }];
+    clientMocks.apiPatch.mockResolvedValue({
+      ...createSmartRulesResponse(),
+      revision: 2,
+      seating_preferences: [{ student_id: "s2", near_teacher: true }],
+    });
+
+    expect(state.replaceNearTeacherPreference("s1", "s2")).toBe(true);
+    expect(state.seatingPreferences).toEqual([{ student_id: "s2", near_teacher: true }]);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+      {
+        expected_revision: 1,
+        seating_preferences: [{ student_id: "s2", near_teacher: true }],
+        relationship_rules: [],
+      },
+    );
+    expect(state.smartRulesRevision).toBe(2);
+    expect(state.seatingPreferences).toEqual([{ student_id: "s2", near_teacher: true }]);
+  });
+
+  it("removes near-teacher rules through the roster smart-rules lane when the inspector disables them", async () => {
+    vi.useFakeTimers();
+    const state = seedWorkspace();
+    state.draft = createDraft("template-1", "seating");
+    state.smartRulesRevision = 6;
+    state.seatingPreferences = [
+      { student_id: "s1", near_teacher: true },
+      { student_id: "s3", near_teacher: true },
+    ];
+    clientMocks.apiPatch.mockResolvedValue({
+      ...createSmartRulesResponse(),
+      revision: 7,
+      seating_preferences: [{ student_id: "s3", near_teacher: true }],
+    });
+
+    expect(state.setStudentNearTeacherEnabled("s1", false)).toBe(true);
+    expect(state.seatingPreferences).toEqual([{ student_id: "s3", near_teacher: true }]);
+
+    await vi.advanceTimersByTimeAsync(900);
+
+    expect(clientMocks.apiPatch).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1/smart-rules",
+      {
+        expected_revision: 6,
+        seating_preferences: [{ student_id: "s3", near_teacher: true }],
+        relationship_rules: [],
+      },
+    );
+    expect(state.smartRulesRevision).toBe(7);
+    expect(state.seatingPreferences).toEqual([{ student_id: "s3", near_teacher: true }]);
+  });
+
   it("does not delete a relationship rule while the workspace is busy", async () => {
     const state = seedWorkspace();
     state.relationshipRules = [

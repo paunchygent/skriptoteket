@@ -2,7 +2,7 @@
 type: story
 id: ST-27-07
 title: "Klassrumskartan — Dedicated rules workspace and dual-map authoring"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
 epic: "EPIC-27"

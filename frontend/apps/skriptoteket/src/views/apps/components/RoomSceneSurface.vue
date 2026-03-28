@@ -31,10 +31,12 @@ const props = withDefaults(defineProps<{
   normalizePresentation?: boolean;
   showBackdropGrid?: boolean;
   fixtureSurface?: "absolute" | "builder-grid" | "ghost";
+  renderSeatTokens?: boolean;
 }>(), {
   normalizePresentation: true,
   showBackdropGrid: false,
   fixtureSurface: "absolute",
+  renderSeatTokens: true,
 });
 
 const slots = useSlots();
@@ -101,7 +103,7 @@ const hasWallOverlay = computed(() => Boolean(slots["wall-overlay"]));
           </div>
 
           <div
-            v-for="seat in seats"
+            v-for="seat in props.renderSeatTokens ? seats : []"
             :key="seat.id"
             class="absolute"
             :style="getSeatFrameStyle(seat)"

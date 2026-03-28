@@ -126,8 +126,8 @@ The `Regler` workspace should also make tool state and selection state unmistaka
 
 The V1 authoring model is also intentionally asymmetric:
 
-- `Närmare läraren` is a unary seating rule authored by clicking one student tile to toggle the
-  rule on or off immediately
+- `Närmare läraren` is a unary seating rule that teachers may toggle directly from the map and
+  later edit or remove from the main `Regler` inspector like other active rules
 - `Keep apart` and `Keep near` are relationship-cluster tools authored by selecting two or more
   student tiles and committing one explicit rule from that temporary selection
 - relationship clusters must not overlap in V1; one student may belong to at most one visible
