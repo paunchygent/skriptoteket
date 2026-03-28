@@ -5,7 +5,7 @@ title: "Klassrumskartan — explicit exports and class-list import"
 status: active
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-26
+updated: 2026-03-28
 outcome: "Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 ---
@@ -39,12 +39,6 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   - grouping `XLSX` is the editable collaboration artifact
   - grouping `PDF` is the presentation/share artifact
 - Default the grouping `PDF` lane to `A4` portrait and optimize it first for Teams / Google Classroom style digital sharing rather than for wall-poster display.
-- Plan the next desktop-first UX hardening slices that support the same teacher I/O lane without
-  reopening EPIC-24:
-  - fixed-preview overflow handling in `Oversikt`
-  - task-local student-pool scroll regions in grouping and seating
-  - stable grouping/seating action bars
-  - clearer primary/secondary/destructive hierarchy across planner controls
 
 ## Out of scope
 
@@ -57,6 +51,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - Reusing live planner CSS, DOM, or screenshots as the export implementation.
 - Shipping multiple seating PDF layouts in the first export story.
 - `DOCX` export in this epic unless a later approved story explicitly adds it.
+- Executing the broader desktop-first planner redesign once that execution lane is owned by
+  `EPIC-29`.
 
 ## Risks
 
@@ -72,9 +68,6 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
 - [x] [ST-26-03: Seating XLSX export](../stories/story-26-03-klassrumskartan-seating-xlsx-export.md)
 - [ ] [ST-26-04: Grouping PDF export](../stories/story-26-04-klassrumskartan-grouping-pdf-export.md)
 - [x] [ST-26-05: Grouping XLSX export](../stories/story-26-05-klassrumskartan-grouping-xlsx-export.md)
-- [ ] [ST-26-06: Scrollable fixed previews and student-pool scroll regions](../stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md)
-- [ ] [ST-26-07: Stable task toolbars and action zoning](../stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md)
-- [ ] [ST-26-08: Overview action hierarchy and affordance polish](../stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md)
 
 ## Implementation Summary (as of 2026-03-26)
 
@@ -106,10 +99,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0075", "EPIC-24"]
   now extends that operator flow with review-fixed canonical replacement,
   fail-closed canonical-only validation, saved webhook inventories, and a
   successful rerun of the Hemma deploy/readiness gate for the revised build.
-- Follow-up desktop UX hardening docs are now planned under this same epic
-  through `ST-26-06`, `ST-26-07`, and `ST-26-08` so export/import and nearby
-  planner teacher controls can keep converging without reopening the earlier
-  foundational planner epic.
+- Adjacent desktop UI-hardening ideas that surfaced during export/import planning were later
+  consolidated into `EPIC-29`, which is now the canonical overhaul hub.
 
 ## Notes
 

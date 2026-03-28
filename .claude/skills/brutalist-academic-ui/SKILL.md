@@ -19,6 +19,8 @@ Opinionated design skill for interfaces where intellectual rigor, typographic pr
   - Messages: `.toast-*` (via `ToastHost`), `.system-message*` (via `SystemMessage`)
   - Badges: `.status-pill`
   - Page text: `.page-title`, `.page-description`
+- For Klassrumskartan and other dense workspaces, read
+  `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md` before choosing layout direction.
 - **No stacked brutal shadows**: only the outermost “panel/card” gets `shadow-brutal*`. Panels/fields nested inside a
   shadowed surface must use `shadow-none` + thicker, uniform borders (`panel-inset*`, or `border-2 border-navy/20`) to
   keep the UI calm and readable.
@@ -61,6 +63,9 @@ Activate when user:
 - Prefer opacity-only transitions (hard borders/shadows shimmer when translated).
 - Prefer **one** brutal shadow per major surface (page card / editor workspace / modal). Nested sections get borders, not
   shadows.
+- For multi-workspace tools, let the live board/map/canvas surface dominate and keep shell chrome thin.
+- Use compact status strips, rails, drawers, and icon-supported controls before adding another framed panel.
+- Design workspace-heavy tools for desktop first; smaller breakpoints should be deliberate reduced compositions, not the master layout.
 
 ### Avoid
 
@@ -68,6 +73,10 @@ Activate when user:
 - Hardcoded hex colors or ad-hoc shadows.
 - Large radii, blur/backdrop filters, or decorative gradients.
 - Motion/hover transforms that distort “hard” edges (`translate`, `scale`) unless there’s a strong UX reason.
+- Treating every workspace subsection as an equal-weight card.
+- Large helper paragraphs or repeated headings above an already clear tool surface.
+- Text-only toolbars when symbols can carry the repeated affordances faster.
+- Mobile-first card stacking for tools that are fundamentally desktop workspaces.
 
 ### Font Stack
 
@@ -96,3 +105,5 @@ Use `.btn-ghost` as a base and override size/shadow for dense controls:
 ## Core Principle
 
 The best interface is one where you notice the content, not the interface. Every element earns its place. Typography does the work. Whitespace is structure.
+
+For dense teacher workspaces, add one more constraint: whitespace is structure, but excess whitespace is friction.

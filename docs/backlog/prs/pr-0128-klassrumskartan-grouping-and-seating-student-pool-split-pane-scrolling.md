@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
 stories:
-  - "ST-26-06"
+  - "ST-29-03"
 tags: ["frontend", "ux", "klassrumskartan", "scrolling", "playwright"]
 dependencies:
   - "PR-0114"
@@ -81,7 +81,7 @@ usable local working region rather than a page-flow side column.
 
 ## References
 
-- Story parent: [ST-26-06](../stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md)
+- Story parent: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Planner shell/shared primitive baseline: [PR-0114](pr-0114-klassrumskartan-planner-shell-decomposition-and-shared-ui-primitives.md)
 - Seating zoom baseline: [PR-0117](pr-0117-klassrumskartan-seating-workspace-viewport-zoom-parity.md)
 - Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)

@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
 stories:
-  - "ST-26-07"
+  - "ST-29-03"
 tags: ["frontend", "ux", "klassrumskartan", "toolbar", "refactor"]
 dependencies:
   - "PR-0114"
@@ -70,7 +70,7 @@ Introduce a stronger shared toolbar structure and stabilize grouping around that
 
 ## References
 
-- Story parent: [ST-26-07](../stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md)
+- Story parent: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Planner shell/shared primitive baseline: [PR-0114](pr-0114-klassrumskartan-planner-shell-decomposition-and-shared-ui-primitives.md)
 - Overview/shell simplification baseline: [PR-0112](pr-0112-klassrumskartan-overview-design-simplification-and-seamless-workspace-transitions.md)
 - Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)

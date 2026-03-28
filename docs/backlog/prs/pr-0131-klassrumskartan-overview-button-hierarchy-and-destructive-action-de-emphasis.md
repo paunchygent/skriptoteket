@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
 stories:
-  - "ST-26-08"
+  - "ST-29-04"
 tags: ["frontend", "ux", "klassrumskartan", "overview", "buttons"]
 dependencies:
   - "PR-0110"
@@ -69,7 +69,7 @@ existing compact card layout.
 
 ## References
 
-- Story parent: [ST-26-08](../stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md)
+- Story parent: [ST-29-04](../stories/story-29-04-klassrumskartan-overview-hierarchy-and-class-first-dashboard-redesign.md)
 - Overview management baseline: [PR-0110](pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md)
 - Overview simplification baseline: [PR-0112](pr-0112-klassrumskartan-overview-design-simplification-and-seamless-workspace-transitions.md)
 - Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)

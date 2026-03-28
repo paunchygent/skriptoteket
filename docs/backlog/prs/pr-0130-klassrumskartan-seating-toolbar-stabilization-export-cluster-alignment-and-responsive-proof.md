@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
 stories:
-  - "ST-26-07"
+  - "ST-29-03"
 tags: ["frontend", "ux", "klassrumskartan", "toolbar", "export", "playwright"]
 dependencies:
   - "PR-0120"
@@ -78,7 +78,7 @@ and intentional.
 
 ## References
 
-- Story parent: [ST-26-07](../stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md)
+- Story parent: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Export action baseline: [PR-0120](pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md)
 - Grouping zoning baseline: [PR-0129](pr-0129-klassrumskartan-shared-planner-action-bar-zoning-and-grouping-toolbar-stabilization.md)
 - Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)

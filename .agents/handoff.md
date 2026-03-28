@@ -71,12 +71,15 @@ Keep this file updated so the next session can pick up work quickly.
   - `Regler` is a top-level workspace, bootstraps an explicit seating host from the overview-selected classroom when needed, and defaults to `Planeringskarta`
   - `Sittplatser` / `Grupper` now keep only compact smart summaries plus the small settings affordance near `Smart`; no inline rule editor remains there
   - the rules inspector can edit/remove relationship rules and `Närmare läraren`, with store-level autosave coverage for those persistence paths
+- Planner UI-doctrine alignment is now documented for the upcoming overhaul:
+  - added `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
+  - tightened `.claude/skills/skriptoteket-frontend-specialist/SKILL.md`, `.claude/skills/brutalist-academic-ui/SKILL.md`, and `.agents/rules/045-huleedu-design-system.md` so future frontend work favors canvas-first, dense multi-workspace layouts over stacked panel chrome
+  - doctrine now also states that workspace-heavy curated apps are desktop-first and that repeated operations should use a canonical symbol system before long text-button copy
+- Proposed redesign planning package is now drafted: `EPIC-29`, `REV-EPIC-29`, and `ST-29-01`..`ST-29-07`; status is planning-only (`proposed` / `pending` / `ready`)
+- Hemma kernel-lane recovery is now executed and documented in `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`: the broken `6.17.0-14` HWE lane was removed, `dpkg`/`apt` are clean again, the host is frozen on `6.14.0-37-generic`, and the AMDGPU/ROCm/DKMS lane is on hold pending a later coordinated `6.17` cutover.
 - Proposed auth-cutover planning package is now drafted:
   - `ADR-0076`, `EPIC-28`, `REV-EPIC-28`, and `ST-28-01` through `ST-28-04`; status is still planning-only (`proposed` / `ready` / `pending`)
-- Current frontend god-file hotspots after the export-flow cleanup:
-  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
-  - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`
-  - then editor/vault/profile hotspots outside the planner lane
+- Current frontend god-file hotspots after the export-flow cleanup: `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue` and `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`, then editor/vault/profile hotspots outside the planner lane.
 
 ## Verification
 
@@ -139,6 +142,14 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-28 auth-cutover planning package:
   - `pdm run docs-validate`
   - added `ADR-0076`, `EPIC-28`, `REV-EPIC-28`, `ST-28-01`..`ST-28-04`, and updated `docs/index.md`
+- 2026-03-28 planner UI-doctrine alignment:
+  - `pdm run docs-validate`
+  - updated `docs/index.md`, `.agents/rules/045-huleedu-design-system.md`, `.claude/skills/skriptoteket-frontend-specialist/SKILL.md`, and `.claude/skills/brutalist-academic-ui/SKILL.md`
+  - refined the doctrine around desktop-first workspace composition and symbol-first repeated operations
+- 2026-03-28 planner redesign planning package:
+  - `pdm run docs-validate`
+  - `REV-EPIC-29` fixes landed: `EPIC-29` is the canonical UI-overhaul hub, `PR-0127`..`PR-0132` now hang under `ST-29-03`/`ST-29-04`, the conflicting EPIC-26 story docs were removed, and `REF-shared-tool-control-language-v1` now defines the first minimal cross-app control matrix
+- 2026-03-28 Hemma kernel-lane recovery: `pdm run docs-validate`; on Hemma, purged the broken `linux-*6.17.0-14*` HWE packages with `dpkg`, restored clean `dpkg --audit`, marked the active `6.14.0-37` kernel packages manual, held the AMDGPU/ROCm/DKMS package set, and verified `dkms status`, `apt upgrade --simulate`, `rocminfo`, and `rocm-smi`.
 - 2026-03-27 `PR-0154` smart seating:
   - backend semantics alignment + overlap-case verification:
     - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py -q`

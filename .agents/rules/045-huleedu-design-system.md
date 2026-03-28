@@ -2,12 +2,13 @@
 id: "045-huleedu-design-system"
 type: "implementation"
 created: 2025-12-15
-updated: 2026-01-25
+updated: 2026-03-28
 scope: "frontend"
 references:
   - ADR-0027
   - ADR-0032
   - EPIC-11
+  - REF-shared-tool-control-language-v1
 ---
 
 # 045: HuleEdu Design System (SPA Edition)
@@ -22,6 +23,9 @@ Skriptoteket adopts a **Brutalist Academic** design system. This style prioritiz
 - **Lift on Hover**: Hovering "lifts" an object. Standard is `-2px` translation and an increased hard shadow (`shadow-brutal`).
 - **Press on Active**: Clicking "presses" into the canvas. Standard is `1px` translation and shadow removal.
 - **Rule**: Never use blurred shadows. Always use "Brutal" (hard) shadows.
+- **Dense workspace exception**: toolbars, segmented toggles, icon buttons, and inspector controls inside
+  planner-like workspaces should not all "perform" physical lift. Reserve the stronger lift/press
+  language for isolated CTAs, cards, and deliberate object interactions.
 
 ### Stationarity (Natural Reflow)
 
@@ -33,6 +37,27 @@ Skriptoteket adopts a **Brutalist Academic** design system. This style prioritiz
 
 - **Constraint**: Human eyes struggle with line lengths over 75 characters.
 - **Rule**: Content columns (text, markdown, tool titles) must be capped at `max-w-[40rem]` (`~640px`) even if the parent container grows wider.
+- **Dense workspace exception**: this rule applies to prose-heavy reading content, not to operational
+  canvases, boards, inspectors, or control rails that must stay compact and scan-friendly.
+
+### Operational Density (Instrument, Not Card Stack)
+
+- **Problem**: A multi-workspace teacher tool can become legible yet still feel slow if every section is framed like
+  its own mini page.
+- **Rule**: In dense workspaces, one live task surface must dominate the layout while shell chrome and secondary
+  context recede.
+- **Use**:
+  - one stable top shell for mode, context, compact status, and exit
+  - compact action rows instead of repeated full-width helper/status panels
+  - rails, drawers, or inspectors for secondary context
+  - icon-first or icon-supported controls for repeated actions
+- **Desktop-first rule**: for workspace-heavy curated apps, desktop/laptop composition is the canonical product.
+  Mobile layouts may be reduced ports with fewer simultaneous controls or fewer available actions.
+- **Avoid**:
+  - equal visual weight across header, toolbar, summary, student pool, and canvas
+  - multiple stacked white panels above a canvas-heavy workspace
+  - paragraph-heavy helper copy in the default operational view
+  - using mobile-first stacking as the source layout for desktop workspaces
 
 ---
 
@@ -51,6 +76,23 @@ These rules keep our docs, skills, and implementation aligned (ADR-0032):
 - **Vue `<style>` blocks**: prefer Tailwind utilities in templates. If custom CSS is unavoidable, prefer CSS variables.
   Tailwind v4 note: separately bundled CSS (Vue SFC `<style>`, CSS modules) may not see theme/custom utilities; avoid
   `@apply` unless necessary, and use `@reference` when you must apply shared utilities.
+- **Dense workspace rule**: in planner-like screens, do not add a new full-width bordered/shadowed panel unless it adds
+  meaning that cannot be expressed inside the stable shell, action row, or local side surface.
+
+### V1 freeze for tool-grade surfaces
+
+Before consulting the full worked examples in `REF-shared-tool-control-language-v1`, start with the
+frozen abstraction set:
+
+- control roles: `primary_cta`, `secondary_action`, `toolbar_action`, `destructive_action`,
+  `overflow_action`
+- interaction behaviors: `direct`, `split`, `toggle`, `menu`
+- composition rule: `toggle + configure_context child`
+- reusable surface/pattern types: `management panel`, `modal dialog`, `confirmation dialog`,
+  `resource list`, `editor surface`, `diff viewer`, `assistant panel`
+
+Rule: if a dense tool surface can already be described with this set plus the shared glossary in the
+reference doc, do not invent a new abstraction locally.
 
 ---
 
@@ -137,6 +179,26 @@ Notes:
 
 - Hover styles are gated behind `@media (hover: hover) and (pointer: fine)` to avoid sticky hover on touch devices.
 - Do **not** use amber highlight on `btn-primary` / `btn-cta`.
+- Workspace-heavy tools should maintain a canonical symbol language for repeated operations; do not
+  default to long text labels for undo/redo/history/settings/export/zoom-class controls when the
+  symbol is well-established.
+- Use `REF-shared-tool-control-language-v1` as the first source of truth for repeated tool controls.
+  If an operation already exists there, reuse its semantic role and symbol contract rather than
+  inventing a new local variant.
+- A CTA is a semantic role, not the default look for every important button. In dense tool
+  workspaces, most controls should resolve to `toolbar_action`, `secondary_action`, or
+  `overflow_action`, not `primary_cta`.
+- Dense-action controls must not inherit page-button behavior by default. If a toolbar or inspector
+  control still depends on `btn-ghost` plus local shadow/spacing overrides, the primitive contract
+  is not frozen yet.
+- Dense-action sizing belongs to the primitive, not to the parent toolbar wrapper. Parent surfaces
+  may arrange primitives, but should not set their final height, padding, or icon size through
+  descendant selectors.
+- First-pass dense control size tiers:
+  - `dense_icon = 36px`
+  - `dense_text = 28px`
+  - `compact_segment = 24px`
+- `compact_segment` is for segmented/toggle internals, not for standalone primary action buttons.
 
 ### Examples
 

@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
 stories:
-  - "ST-26-08"
+  - "ST-29-04"
 tags: ["frontend", "ux", "klassrumskartan", "affordances", "playwright"]
 dependencies:
   - "PR-0111"
@@ -70,7 +70,7 @@ overview and continuity surfaces.
 
 ## References
 
-- Story parent: [ST-26-08](../stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md)
+- Story parent: [ST-29-04](../stories/story-29-04-klassrumskartan-overview-hierarchy-and-class-first-dashboard-redesign.md)
 - Resume baseline: [PR-0111](pr-0111-klassrumskartan-overview-resumable-cta-and-workspace-entry-polish.md)
 - Overview hierarchy baseline: [PR-0131](pr-0131-klassrumskartan-overview-button-hierarchy-and-destructive-action-de-emphasis.md)
 - Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)

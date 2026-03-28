@@ -15,6 +15,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - PRD (Tool Authoring): `docs/prd/prd-tool-authoring-v0.1.md`
 - PRD (Klassrumskartan current): `docs/prd/prd-group-seating-studio-v0.3.md`
 - Product direction (Klassrumskartan): `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
+- Workspace UI doctrine (Klassrumskartan):
+  `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
+- Shared tool control language:
+  `docs/reference/ref-shared-tool-control-language-v1.md`
+- Frontend design-system codemap:
+  `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 - Smart assignment V1 decision memo:
   `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
 - Implementation map (v0.2): `docs/reference/ref-implementation-map-script-hub-v0-2.md`
@@ -79,6 +85,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
 - Rules workspace + dual-map smart authoring follow-up:
   `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
+- ST-29-01 docs/codemap foundation:
+  `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
+- ST-29-01 shared primitive implementation:
+  `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
+- ST-29-01 seating proving-ground adoption:
+  `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
+- Hemma kernel lane recovery + `6.14` freeze / `6.17` cutover task:
+  `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
 - Seating export checkpoint registry + history dedupe:
   `docs/backlog/prs/pr-0150-klassrumskartan-seating-export-checkpoint-registry-and-history-dedupe.md`
 - Conversion Hub local job boundary follow-up:
@@ -101,6 +115,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- Proposed Klassrumskartan desktop-first workspace-overhaul epic:
+  `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- Proposed Klassrumskartan desktop-first workspace-overhaul review:
+  `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -201,6 +219,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
 - `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
 - `docs/reference/ref-runner-contract-v3.md`
+- `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
+- `docs/reference/ref-shared-tool-control-language-v1.md`
+- `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 
 ### PRDs
 
@@ -248,6 +269,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 
 ### Backlog Stories
 
@@ -275,9 +297,6 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`
 - `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md`
 - `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md`
-- `docs/backlog/stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md`
-- `docs/backlog/stories/story-26-07-klassrumskartan-stable-task-toolbars-and-action-zoning.md`
-- `docs/backlog/stories/story-26-08-klassrumskartan-overview-action-hierarchy-and-affordance-polish.md`
 - `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md`
 - `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md`
 - `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md`
@@ -289,6 +308,13 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md`
 - `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`
 - `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`
+- `docs/backlog/stories/story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md`
+- `docs/backlog/stories/story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md`
+- `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md`
+- `docs/backlog/stories/story-29-04-klassrumskartan-overview-hierarchy-and-class-first-dashboard-redesign.md`
+- `docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md`
+- `docs/backlog/stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md`
+- `docs/backlog/stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md`
 
 ### Backlog Reviews
 
@@ -317,6 +343,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 
 ### Backlog Sprints
 
@@ -384,6 +411,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md`
 - `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
 - `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
+- `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
+- `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
+- `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
+- `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
@@ -712,6 +743,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/reference/ref-editor-sandbox-preview-plan.md`
 - `docs/reference/ref-frontend-test-gaps-2025-12-29.md`
 - `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
+- `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
+- `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`
 - `docs/reference/ref-home-server-architecture.md`
 - `docs/reference/ref-home-server-cleanup-timers.md`

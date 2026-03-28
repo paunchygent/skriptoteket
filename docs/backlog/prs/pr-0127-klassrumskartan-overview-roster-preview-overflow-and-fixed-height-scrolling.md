@@ -7,7 +7,7 @@ owners: "agents"
 created: 2026-03-24
 updated: 2026-03-24
 stories:
-  - "ST-26-06"
+  - "ST-29-04"
 tags: ["frontend", "ux", "klassrumskartan", "overview"]
 dependencies:
   - "PR-0110"
@@ -74,7 +74,7 @@ scrolling and removal of artificial clipping/truncation behavior.
 
 ## References
 
-- Story parent: [ST-26-06](../stories/story-26-06-klassrumskartan-scrollable-fixed-previews-and-student-pool-scroll-regions.md)
+- Story parent: [ST-29-04](../stories/story-29-04-klassrumskartan-overview-hierarchy-and-class-first-dashboard-redesign.md)
 - Overview baseline: [PR-0110](pr-0110-klassrumskartan-overview-compact-class-and-classroom-management.md)
 - Planner shell/shared primitive baseline: [PR-0114](pr-0114-klassrumskartan-planner-shell-decomposition-and-shared-ui-primitives.md)
 - Frontend skill: [skriptoteket-frontend-specialist](../../../.claude/skills/skriptoteket-frontend-specialist/SKILL.md)

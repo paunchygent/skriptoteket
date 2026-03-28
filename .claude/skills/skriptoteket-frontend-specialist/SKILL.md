@@ -13,6 +13,8 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
 - Keep integration costs low: avoid hardcoded base paths, isolate auth transport (cookie vs bearer), and prefer token-driven styling over bespoke CSS.
 - Styling is tokens-first: `tokens.css` (canonical `--huleedu-*`) + `tailwind-theme.css` (Tailwind bridge via `@theme inline`).
 - Single CSS entry point: `frontend/apps/skriptoteket/src/assets/main.css` (imports Tailwind + tokens + theme once).
+- Before significant UI work in Klassrumskartan or other dense curated apps, read
+  `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`.
 - Use SPA primitives from `frontend/apps/skriptoteket/src/assets/main.css` to avoid drift:
   - Buttons: `.btn-primary`, `.btn-cta`, `.btn-ghost`
   - Panels (nested): `.panel-inset`, `.panel-inset-canvas`
@@ -23,6 +25,13 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
   shadowed surface use `shadow-none` + thicker, uniform borders (`panel-inset*`, or `border-2 border-navy/20`).
 - No Tailwind default palette leakage in product UI: avoid `bg-slate-*`, `text-gray-*`, etc. Prefer token-mapped utilities (`bg-canvas`, `text-navy`, `shadow-brutal-sm`) or CSS variables.
 - Page/editor transitions: prefer opacity-only transitions (hard borders/shadows shimmer when translated).
+- Dense workspace doctrine:
+  - Treat multi-workspace apps as instruments, not stacked card pages.
+  - One stable shell should own title, workspace mode, compact context, status, and exit.
+  - The active board/map/canvas/inspector surface should dominate the layout.
+  - Prefer compact action rows, icon-supported controls, and drawers/menus for secondary actions.
+  - Avoid introducing new full-width helper/status panels when the workspace is already clear.
+  - Design desktop/laptop composition first for workspace-heavy curated apps; mobile is a reduced port, not the source layout.
 - Admin editor features: extract logic into `frontend/apps/skriptoteket/src/composables/editor/` and keep views UI-only.
 
 ## Repo map (Skriptoteket monolith)
@@ -48,6 +57,32 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
    - Pinia stores for shared state, views/components for UI
 3. Keep styling token-driven and HuleEdu-compatible (ADR-0032 + `@theme inline` bridge).
 4. Keep auth integration "pluggable" so HuleEdu SSO can be added without rewriting the SPA (ADR-0006/ADR-0011 + current cookie/CSRF transport).
+
+## UI doctrine for dense workspaces
+
+- The design system is a base language, not permission to wrap every section in an equal-weight panel.
+- Use prose sparingly inside planner-like workspaces; supporting copy should usually fit on one short line.
+- Repeated operational actions should be icon-first or icon-supported. Text-only buttons are for rare or high-stakes actions.
+- Define and reuse a canonical symbol set for repeated operations before adding more text buttons.
+- Keep secondary context visibly subordinate:
+  - history in drawers or menus
+  - metadata in inspectors
+  - setup context in compact strips or labeled controls
+- Avoid dead space:
+  - do not spend major vertical space on redundant titles, summaries, and helper text
+  - do not make toolbars taller than the work they control
+  - do not stack shell + action bar + status bar + summary bar before the main board/map/canvas unless each band is truly necessary
+- Preserve location memory:
+  - mode switch stays fixed
+  - exit stays fixed
+  - status stays fixed
+  - task-specific tools stay near the task surface
+- For Klassrumskartan specifically:
+  - `Översikt` should feel neutral and class-first
+  - `Grupper` should read as pool plus board
+  - `Sittplatser` should read as pool plus room canvas
+  - `Regler` should read as rail plus map plus inspector
+  - mobile should be a simplified companion layout, not the same dense workspace collapsed vertically
 
 ## Patterns
 
@@ -90,6 +125,16 @@ description: Skriptoteket frontend development (FastAPI backend + full Vue/Vite 
   - Use the editor micro-typography pattern: `text-[10px] font-semibold uppercase tracking-wide text-navy/60`.
   - Use `.btn-ghost` with size/shadow overrides for 28px controls (see `EditorWorkspaceToolbar.vue`).
 
+### Responsive strategy for curated apps
+
+- Default assumption for workspace-heavy curated apps: desktop-first.
+- Start by designing the canonical desktop layout for common laptop and desktop widths.
+- Then define smaller-screen compositions intentionally:
+  - reduce simultaneous panels
+  - collapse secondary actions into drawers/menus
+  - remove or defer non-essential operations when needed
+- Do not preserve feature parity at the cost of a cramped, card-stacked desktop UI.
+
 ### Testing (Vitest)
 
 - Config: `frontend/apps/skriptoteket/vitest.config.ts`
@@ -122,6 +167,7 @@ Use Context7 when you need exact API details or version-specific behavior:
 - SPA hosting + history fallback: `docs/adr/adr-0028-spa-hosting-and-history-fallback.md`
 - OpenAPI + TS generation: `docs/adr/adr-0030-openapi-and-frontend-types.md`
 - Tailwind v4 tokens bridge: `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
+- Workspace UI doctrine: `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - Testing runbook: `docs/runbooks/runbook-testing.md`
 - SPA design system rules: `.agents/rules/045-huleedu-design-system.md`
 - Testing standards: `.agents/rules/070-testing-standards.md`
