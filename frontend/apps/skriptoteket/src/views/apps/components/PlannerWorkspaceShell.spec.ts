@@ -11,6 +11,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import PlannerWorkspaceShell from "./PlannerWorkspaceShell.vue";
 import type { ClassWorkspaceSummary, PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
 
+const toastMocks = vi.hoisted(() => ({
+  info: vi.fn(),
+  success: vi.fn(),
+  warning: vi.fn(),
+}));
+
 type PlannerStateMock = {
   roster: Roster;
   template: RoomTemplate | null;
@@ -140,6 +146,10 @@ vi.mock("../useClassroomState", () => ({
   useClassroomState: () => stateMocks.plannerState,
 }));
 
+vi.mock("../../../composables/useToast", () => ({
+  useToast: () => toastMocks,
+}));
+
 function buildWorkspaceSummary(): ClassWorkspaceSummary {
   return {
     roster: { id: "roster-1", name: "SA24D", student_count: 28 },
@@ -196,6 +206,9 @@ function buildWorkspaceSummary(): ClassWorkspaceSummary {
 
 describe("PlannerWorkspaceShell", () => {
   beforeEach(() => {
+    toastMocks.info.mockReset();
+    toastMocks.success.mockReset();
+    toastMocks.warning.mockReset();
     stateMocks.plannerState.reloadActiveWorkspace.mockReset();
     stateMocks.plannerState.undoGroupingDraft.mockReset();
     stateMocks.plannerState.redoGroupingDraft.mockReset();
@@ -236,6 +249,8 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.relationshipRules = [];
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
+    stateMocks.plannerState.smartSeatingRunMessage = null;
+    stateMocks.plannerState.smartSeatingRunTone = "neutral";
     stateMocks.plannerState.canCommitPendingRelationshipRule = false;
     stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.canEditSeatingSmartRules = true;
@@ -250,6 +265,7 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
     stateMocks.plannerState.deleteRelationshipRule.mockReset();
     stateMocks.plannerState.setDraftSmartEnabled.mockReset();
+    stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
     stateMocks.plannerState.draft = {
       id: "draft-1",
       draft_kind: "grouping",
@@ -277,6 +293,28 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.text()).toContain(
       "Dra elever mellan grupperna tills grupparbetet sitter.",
     );
+  });
+
+  it("localizes workspace notices to a toast instead of a full-width helper band", () => {
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        workspaceSummary: buildWorkspaceSummary(),
+        workspaceNotice: "Regler använder ett sittschema i bakgrunden.",
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div />" },
+          PlannerMetadataDrawer: { props: ["open"], template: "<div>{{ open ? 'open' : 'closed' }}</div>" },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="planner-workspace-notice"]').exists()).toBe(false);
+    expect(toastMocks.info).toHaveBeenCalledWith(
+      "Regler använder ett sittschema i bakgrunden.",
+    );
+    expect(wrapper.emitted("dismiss-workspace-notice")).toEqual([[]]);
   });
 
   it("keeps grouping drafts on the grouping surface only", async () => {
@@ -498,6 +536,37 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(false);
     expect(wrapper.text()).toContain("Sal 101");
     expect(wrapper.find('[data-test="seating-actions-menu"]').exists()).toBe(true);
+  });
+
+  it("keeps stale smart-run feedback out of the seating pane after the shell cut-over", () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.smartSeatingRunMessage =
+      "För att använda historik behöver du först exportera ett sittschema för just det här klassrummet.";
+    stateMocks.plannerState.smartSeatingRunTone = "warning";
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="seating-smart-run-message"]').exists()).toBe(false);
   });
 
   it("confirms before clearing the current seating draft in place", async () => {

@@ -182,7 +182,7 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Known Issues / Risks
 
-- Hemma production web still needs a follow-up redeploy after the repo-owned compatibility fix; the failing startup pattern was `app.add_event_handler(...)` under `fastapi 0.135.2` / `starlette 1.0.0`.
+- Hemma is on `c1993966` and the seating-export deploy gate passes, but the web container is still unhealthy because `/healthz` fails inside the repo-owned Dishka/FastAPI hybrid compat path with `KeyError: '___dishka_websocket'`.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
@@ -190,8 +190,5 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Next Steps
 
-- Continue the smart-assignment lane in the corrected order:
-  - take `ST-27-04` next on top of the shipped `PR-0150` checkpoint registry, `PR-0152` session/lane split, `PR-0154` smart seating run seam, and the new `PR-0155` rules workspace
-  - keep relation rules as non-overlapping visible clusters in V1 and keep rule editing out of task-pane drawers; compact summaries are okay, full editors are not
-- Continue `PR-0157` by widening adoption cautiously from the shipped primitive layer:
-  - next likely consumers are remaining planner/editor dense buttons that still inherit `btn-ghost`, but do not mix that with `PR-0158` shell compression
+- Take `ST-07-07` next before more feature work: `PR-0162`..`PR-0164` now define the correct global fix for retiring `src/skriptoteket/web/dishka_compat.py`, moving HTTP DI onto FastAPI `Depends` + `request.state.dishka_container`, handling websockets explicitly, and re-proving Hemma health on the locked runtime.
+- After the production DI cutover is healthy again, resume the planner lanes in order: `ST-29-02` shell compression, then the remaining `ST-29-*` workspace overhaul slices, while keeping the earlier smart-assignment/rules contracts intact.

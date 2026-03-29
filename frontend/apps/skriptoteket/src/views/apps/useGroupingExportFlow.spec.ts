@@ -126,7 +126,9 @@ describe("useGroupingExportFlow", () => {
     expect(plannerState.prepareForExport).toHaveBeenCalledTimes(1);
     expect(exportApiMocks.createGroupingExportJob).toHaveBeenCalledWith("draft-1", "xlsx");
     expect(exportApiMocks.downloadGroupingExportJob).toHaveBeenCalledWith("job-1");
-    expect(flow.statusLabel.value).toBe("Excel-filen hämtad och sparad i Mina filer.");
+    expect(flow.statusLabel.value).toBe(
+      "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
+    );
     expect(flow.errorMessage.value).toBeNull();
     expect(flow.canDownloadLatest.value).toBe(true);
   });

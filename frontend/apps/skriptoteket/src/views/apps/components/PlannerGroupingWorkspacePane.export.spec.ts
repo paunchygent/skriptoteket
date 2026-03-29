@@ -1,24 +1,22 @@
 /**
- * Grouping workspace export integration tests.
+ * Grouping workspace toolbar tests.
  *
- * These tests verify that the grouping pane renders the compact export
- * cluster and teacher-facing placeholder export status without leaking
- * seating-specific wording into the grouping task.
+ * These tests lock the ST-29-02 cut-over where grouping export and helper
+ * feedback live in the detached shell toolbar instead of inside the work pane.
  */
 
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
-import type { DraftGroup, PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
+import PlannerGroupingWorkspaceToolbar from "./PlannerGroupingWorkspaceToolbar.vue";
+import type { DraftGroup, PlanDraft, RoomTemplate } from "../classroomPlannerTypes";
 
 type PlannerStateMock = {
-  template: RoomTemplate | null;
-  draft: Pick<PlanDraft, "id" | "draft_kind" | "revision">;
-  ungroupedStudents: Roster["students"];
-  groups: DraftGroup[];
+  draft: (Pick<PlanDraft, "id" | "draft_kind" | "revision"> & { smart_enabled?: boolean }) | null;
   groupAssignments: Array<{ student_id: string; group_id: string }>;
-  studentsByGroupId: Record<string, Roster["students"]>;
+  groups: DraftGroup[];
+  seatingPreferences: Array<{ student_id: string; near_teacher: boolean }>;
+  relationshipRules: Array<{ id: string; kind: "keep_near" | "keep_apart"; student_ids: string[] }>;
   isWorkspaceBusy: boolean;
   canUndo: boolean;
   canRedo: boolean;
@@ -28,23 +26,18 @@ type PlannerStateMock = {
   clearGroupingAssignments: ReturnType<typeof vi.fn>;
   addGroup: ReturnType<typeof vi.fn>;
   removeGroup: ReturnType<typeof vi.fn>;
-  removeStudentFromGroup: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
   plannerState: ((): PlannerStateMock => ({
-    template: {
-      id: "template-1",
-      name: "Sal 101",
-      seats: [],
-      fixtures: [],
-    },
-    draft: { id: "draft-1", draft_kind: "grouping", revision: 2 },
-    ungroupedStudents: [{ id: "student-1", display_name: "Ada Lovelace" }],
-    groups: [{ id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false }],
+    draft: { id: "draft-1", draft_kind: "grouping", revision: 2, smart_enabled: true },
     groupAssignments: [],
-    studentsByGroupId: { "group-1": [] },
+    groups: [{ id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false }],
+    seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+    relationshipRules: [
+      { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
+    ],
     isWorkspaceBusy: false,
     canUndo: false,
     canRedo: false,
@@ -54,7 +47,6 @@ const stateMocks = vi.hoisted(() => ({
     clearGroupingAssignments: vi.fn(),
     addGroup: vi.fn(),
     removeGroup: vi.fn(),
-    removeStudentFromGroup: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
   }))(),
 }));
@@ -63,31 +55,71 @@ vi.mock("../useClassroomState", () => ({
   useClassroomState: () => stateMocks.plannerState,
 }));
 
-describe("PlannerGroupingWorkspacePane export wiring", () => {
+function buildTemplate(): RoomTemplate {
+  return {
+    id: "template-1",
+    name: "Sal 101",
+    seats: [],
+    fixtures: [],
+  };
+}
+
+describe("PlannerGroupingWorkspaceToolbar", () => {
   beforeEach(() => {
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "grouping",
+      revision: 2,
+      smart_enabled: true,
+    };
     stateMocks.plannerState.groupAssignments = [];
+    stateMocks.plannerState.groups = [
+      { id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+    ];
+    stateMocks.plannerState.seatingPreferences = [{ student_id: "student-1", near_teacher: true }];
+    stateMocks.plannerState.relationshipRules = [
+      { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
+    ];
     stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
-    stateMocks.plannerState.groups = [{ id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false }];
+    stateMocks.plannerState.undoGroupingDraft.mockReset();
+    stateMocks.plannerState.redoGroupingDraft.mockReset();
+    stateMocks.plannerState.randomizeGroups.mockReset();
+    stateMocks.plannerState.clearGroupingAssignments.mockReset();
     stateMocks.plannerState.addGroup.mockReset();
     stateMocks.plannerState.removeGroup.mockReset();
+    stateMocks.plannerState.setDraftSmartEnabled.mockReset();
   });
 
-  it("renders the grouping export cluster and forwards export actions", async () => {
-    const wrapper = mount(PlannerGroupingWorkspacePane, {
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          GroupBoard: { template: "<div data-test='group-board-stub' />" },
-          PlannerToolbarIconButton: { template: "<button type='button'><slot /></button>" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
+  it("renders the detached selector and grouped undo-redo controls", async () => {
+    const wrapper = mount(PlannerGroupingWorkspaceToolbar, {
+      props: {
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: "template-1",
       },
     });
 
-    expect(wrapper.find('[data-test="grouping-export-group"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="grouping-template-select"]').classes()).toContain("h-[28px]");
+    expect(wrapper.find('[data-test="grouping-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="grouping-active-rule-count"]').text()).toContain("2 regler");
+
+    await wrapper.get('[data-test="grouping-template-select"]').setValue("");
+
+    expect(wrapper.emitted("change-grouping-template")).toEqual([[null]]);
+  });
+
+  it("forwards export actions and keeps feedback compact in the toolbar row", async () => {
+    const wrapper = mount(PlannerGroupingWorkspaceToolbar, {
+      props: {
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: "template-1",
+        exportErrorMessage: "PDF skapades men kunde inte laddas ned automatiskt. Hämta den i Mina filer.",
+      },
+    });
+
+    expect(wrapper.find('[data-test="grouping-export-status-bar"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="grouping-export-status-pill"]').text()).toContain("Exportproblem");
 
     await wrapper.get('[data-test="grouping-export-default"]').trigger("click");
     expect(wrapper.emitted("export-default")).toEqual([[]]);
@@ -101,71 +133,16 @@ describe("PlannerGroupingWorkspacePane export wiring", () => {
     expect(wrapper.emitted("export-option")).toEqual([["pdf_a4_portrait"]]);
   });
 
-  it("shows status state, supports retry, and allows dismissal", async () => {
-    const wrapper = mount(PlannerGroupingWorkspacePane, {
-      props: {
-        exportStatusLabel: "Exporten tar längre tid än väntat. Vi fortsätter att kontrollera den.",
-        exportErrorMessage: "PDF skapades men kunde inte laddas ned automatiskt.",
-        canDownloadLatestExport: true,
-      },
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          GroupBoard: { template: "<div data-test='group-board-stub' />" },
-          PlannerToolbarIconButton: { template: "<button type='button'><slot /></button>" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
-      },
-    });
-
-    expect(wrapper.find('[data-test="grouping-export-status-bar"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-export-status"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-export-error"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="grouping-export-download-latest"]').exists()).toBe(true);
-
-    await wrapper.get('[data-test="grouping-export-download-latest"]').trigger("click");
-    expect(wrapper.emitted("download-latest-export")).toEqual([[]]);
-
-    await wrapper.get('[data-test="grouping-export-status-dismiss"]').trigger("click");
-    expect(wrapper.find('[data-test="grouping-export-status-bar"]').exists()).toBe(false);
-  });
-
-  it("renders a dense classroom selector and grouped undo-redo controls", () => {
-    const wrapper = mount(PlannerGroupingWorkspacePane, {
-      props: {
-        availableTemplates: [
-          { id: "template-1", name: "Sal 101", seats: [], fixtures: [] },
-        ],
-      },
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          GroupBoard: { template: "<div data-test='group-board-stub' />" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
-      },
-    });
-
-    expect(wrapper.get('[data-test="grouping-template-select"]').classes()).toContain("h-[28px]");
-    expect(wrapper.find('[data-test="grouping-history-cluster"]').exists()).toBe(true);
-  });
-
-  it("uses a quiet group-count stepper instead of a CTA add-group button", async () => {
+  it("uses the quiet group-count stepper and new-draft action in the detached toolbar", async () => {
     stateMocks.plannerState.groups = [
       { id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false },
       { id: "group-2", name: "Grupp 2", sort_order: 1, name_is_custom: false },
     ];
 
-    const wrapper = mount(PlannerGroupingWorkspacePane, {
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          GroupBoard: { template: "<div data-test='group-board-stub' />" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
+    const wrapper = mount(PlannerGroupingWorkspaceToolbar, {
+      props: {
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: "template-1",
       },
     });
 
@@ -177,5 +154,8 @@ describe("PlannerGroupingWorkspacePane export wiring", () => {
 
     await wrapper.get('[data-test="decrement-group-count"]').trigger("click");
     expect(stateMocks.plannerState.removeGroup).toHaveBeenCalledWith("group-2");
+
+    await wrapper.get('[data-test="new-grouping-draft"]').trigger("click");
+    expect(wrapper.emitted("new-grouping-draft")).toEqual([[]]);
   });
 });

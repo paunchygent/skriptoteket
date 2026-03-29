@@ -128,10 +128,14 @@ describe("useSeatingExportFlow", () => {
     expect(plannerState.prepareForExport).toHaveBeenCalledTimes(1);
     expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "a3_landscape");
     expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
-    expect(flow.statusLabel.value).toBe("PDF hämtad och sparad i Mina filer.");
+    expect(flow.statusLabel.value).toBe(
+      "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
+    );
     expect(flow.errorMessage.value).toBeNull();
     expect(flow.canDownloadLatest.value).toBe(true);
-    expect(toastMocks.success).toHaveBeenCalledWith("PDF hämtad och sparad i Mina filer.");
+    expect(toastMocks.success).toHaveBeenCalledWith(
+      "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
+    );
   });
 
   it("uses the requested paper size for alternate export options", async () => {
@@ -201,8 +205,12 @@ describe("useSeatingExportFlow", () => {
 
     expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "xlsx");
     expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
-    expect(flow.statusLabel.value).toBe("Excel-filen hämtad och sparad i Mina filer.");
-    expect(toastMocks.success).toHaveBeenCalledWith("Excel-filen hämtad och sparad i Mina filer.");
+    expect(flow.statusLabel.value).toBe(
+      "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
+    );
+    expect(toastMocks.success).toHaveBeenCalledWith(
+      "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
+    );
   });
 
   it("blocks export when the pending save ends in a conflict", async () => {

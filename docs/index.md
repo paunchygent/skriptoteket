@@ -93,6 +93,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
 - ST-29-02 shell compression + sticky shared toolbar cutover:
   `docs/backlog/prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md`
+- Dishka/FastAPI public-API cutover foundation:
+  `docs/backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md`
 - Hemma kernel lane recovery + `6.14` freeze / `6.17` cutover task:
   `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
 - Seating export checkpoint registry + history dedupe:
@@ -418,6 +420,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
 - `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
 - `docs/backlog/prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md`
+- `docs/backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md`
+- `docs/backlog/prs/pr-0163-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md`
+- `docs/backlog/prs/pr-0164-st-07-07-websocket-cutover-hybrid-compat-retirement-and-production-proof.md`
 - `docs/backlog/prs/pr-0160-st-29-08-shared-custom-tooltip-primitive-and-dense-tool-adoption.md`
 - `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
@@ -576,6 +581,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-07-04-logging-redaction-and-policy.md`
 - `docs/backlog/stories/story-07-05-observability-stack-deployment.md`
 - `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md`
+- `docs/backlog/stories/story-07-07-retire-hybrid-dishka-fastapi-compatibility-layer-and-restore-supported-web-di.md`
 - `docs/backlog/stories/story-08-01-help-framework.md`
 - `docs/backlog/stories/story-08-02-login-help.md`
 - `docs/backlog/stories/story-08-02-robust-email-verification.md`

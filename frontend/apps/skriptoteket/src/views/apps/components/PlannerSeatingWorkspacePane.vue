@@ -19,16 +19,13 @@ import PlannerStudentPool from "./PlannerStudentPool.vue";
 import RoomCanvas from "./RoomCanvas.vue";
 import { useClassroomState } from "../useClassroomState";
 
-const { selectedTemplateId } = withDefaults(
-  defineProps<{
-    selectedStudentId?: string | null;
-    selectedTemplateId?: string | null;
-  }>(),
-  {
-    selectedStudentId: null,
-    selectedTemplateId: null,
-  },
-);
+const {
+  selectedStudentId = null,
+  selectedTemplateId = null,
+} = defineProps<{
+  selectedStudentId?: string | null;
+  selectedTemplateId?: string | null;
+}>();
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;

@@ -1,44 +1,37 @@
 /**
- * Seating workspace export integration tests.
+ * Seating workspace toolbar tests.
  *
- * These tests verify that the seating pane renders the compact export cluster
- * and teacher-facing export status behaviors without hard-coding presentation
- * copy into the contract.
+ * These tests lock the ST-29-02 cut-over where seating export and compact
+ * helper affordances live in the detached shell toolbar instead of the pane.
  */
 
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
+import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
 import type { PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
 
 type PlannerStateMock = {
   template: RoomTemplate | null;
-  draft: Pick<PlanDraft, "id" | "draft_kind" | "revision">;
-  canEditSeatingSmartRules: boolean;
+  draft: (Pick<PlanDraft, "id" | "draft_kind" | "revision"> & {
+    smart_enabled?: boolean;
+    use_history?: boolean;
+  }) | null;
   students: Roster["students"];
-  unseatedStudents: Roster["students"];
   seats: RoomTemplate["seats"];
   seatAssignments: Array<{ student_id: string; seat_id: string }>;
   seatingPreferences: Array<{ student_id: string; near_teacher: boolean }>;
   relationshipRules: Array<{ id: string; kind: "keep_near" | "keep_apart"; student_ids: string[] }>;
-  pendingRelationshipStudentIds: string[];
-  activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
-  smartRuleFeedbackMessage: string | null;
-  canCommitPendingRelationshipRule: boolean;
   isWorkspaceBusy: boolean;
+  isRunningSmartSeating: boolean;
   canUndo: boolean;
   canRedo: boolean;
-  setActiveSeatingSmartTool: ReturnType<typeof vi.fn>;
-  clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
-  commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
-  deleteRelationshipRule: ReturnType<typeof vi.fn>;
   undoSeatingDraft: ReturnType<typeof vi.fn>;
   redoSeatingDraft: ReturnType<typeof vi.fn>;
-  randomizeSeating: ReturnType<typeof vi.fn>;
-  clearSeatAssignment: ReturnType<typeof vi.fn>;
+  runSeatingShuffle: ReturnType<typeof vi.fn>;
   clearSeatingAssignments: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
+  setDraftUseHistoryEnabled: ReturnType<typeof vi.fn>;
 };
 
 const stateMocks = vi.hoisted(() => ({
@@ -46,36 +39,33 @@ const stateMocks = vi.hoisted(() => ({
     template: {
       id: "template-1",
       name: "Sal 101",
-      seats: [
-        { id: "seat-1", x: 0, y: 0, zone: null },
-      ],
+      seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
       fixtures: [],
     },
-    draft: { id: "draft-1", draft_kind: "seating", revision: 2 },
-    canEditSeatingSmartRules: true,
+    draft: {
+      id: "draft-1",
+      draft_kind: "seating",
+      revision: 2,
+      smart_enabled: true,
+      use_history: true,
+    },
     students: [{ id: "student-1", display_name: "Ada Lovelace" }],
-    unseatedStudents: [{ id: "student-1", display_name: "Ada Lovelace" }],
     seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
-    seatAssignments: [],
-    seatingPreferences: [],
-    relationshipRules: [],
-    pendingRelationshipStudentIds: [],
-    activeSeatingSmartTool: null,
-    smartRuleFeedbackMessage: null,
-    canCommitPendingRelationshipRule: false,
+    seatAssignments: [{ student_id: "student-1", seat_id: "seat-1" }],
+    seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+    relationshipRules: [
+      { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
+    ],
     isWorkspaceBusy: false,
+    isRunningSmartSeating: false,
     canUndo: false,
     canRedo: false,
-    setActiveSeatingSmartTool: vi.fn(),
-    clearPendingRelationshipSelection: vi.fn(),
-    commitPendingRelationshipRule: vi.fn(() => true),
-    deleteRelationshipRule: vi.fn(),
     undoSeatingDraft: vi.fn(),
     redoSeatingDraft: vi.fn(),
-    randomizeSeating: vi.fn(),
-    clearSeatAssignment: vi.fn(),
+    runSeatingShuffle: vi.fn(),
     clearSeatingAssignments: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
+    setDraftUseHistoryEnabled: vi.fn(),
   }))(),
 }));
 
@@ -83,53 +73,86 @@ vi.mock("../useClassroomState", () => ({
   useClassroomState: () => stateMocks.plannerState,
 }));
 
-describe("PlannerSeatingWorkspacePane export wiring", () => {
+function buildTemplate(): RoomTemplate {
+  return {
+    id: "template-1",
+    name: "Sal 101",
+    seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
+    fixtures: [],
+  };
+}
+
+describe("PlannerSeatingWorkspaceToolbar", () => {
   beforeEach(() => {
-    stateMocks.plannerState.template = {
-      id: "template-1",
-      name: "Sal 101",
-      seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
-      fixtures: [],
+    stateMocks.plannerState.template = buildTemplate();
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "seating",
+      revision: 2,
+      smart_enabled: true,
+      use_history: true,
     };
     stateMocks.plannerState.students = [{ id: "student-1", display_name: "Ada Lovelace" }];
-    stateMocks.plannerState.unseatedStudents = [{ id: "student-1", display_name: "Ada Lovelace" }];
     stateMocks.plannerState.seats = [{ id: "seat-1", x: 0, y: 0, zone: null }];
-    stateMocks.plannerState.seatAssignments = [];
-    stateMocks.plannerState.seatingPreferences = [];
-    stateMocks.plannerState.relationshipRules = [];
-    stateMocks.plannerState.pendingRelationshipStudentIds = [];
-    stateMocks.plannerState.activeSeatingSmartTool = null;
-    stateMocks.plannerState.smartRuleFeedbackMessage = null;
-    stateMocks.plannerState.canCommitPendingRelationshipRule = false;
-    stateMocks.plannerState.canEditSeatingSmartRules = true;
+    stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
+    stateMocks.plannerState.seatingPreferences = [{ student_id: "student-1", near_teacher: true }];
+    stateMocks.plannerState.relationshipRules = [
+      { id: "rule-1", kind: "keep_apart", student_ids: ["student-1", "student-2"] },
+    ];
     stateMocks.plannerState.isWorkspaceBusy = false;
+    stateMocks.plannerState.isRunningSmartSeating = false;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
-    stateMocks.plannerState.setActiveSeatingSmartTool.mockReset();
-    stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
-    stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
-    stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
-    stateMocks.plannerState.deleteRelationshipRule.mockReset();
+    stateMocks.plannerState.undoSeatingDraft.mockReset();
+    stateMocks.plannerState.redoSeatingDraft.mockReset();
+    stateMocks.plannerState.runSeatingShuffle.mockReset();
+    stateMocks.plannerState.clearSeatingAssignments.mockReset();
     stateMocks.plannerState.setDraftSmartEnabled.mockReset();
+    stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
   });
 
-  it("renders the compact export group and forwards export actions", async () => {
-    const wrapper = mount(PlannerSeatingWorkspacePane, {
+  it("renders the detached seating selector, history cluster, and compact rule pill", () => {
+    const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
       props: {
+        availableTemplates: [buildTemplate()],
         selectedTemplateId: "template-1",
-      },
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
-          PlannerToolbarIconButton: { template: "<button type='button'><slot /></button>" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
       },
     });
 
-    expect(wrapper.find('[data-test="seating-export-group"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="seating-template-select"]').classes()).toContain("h-[28px]");
+    expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="seating-active-rule-count"]').text()).toContain("2 regler");
+  });
+
+  it("routes seating actions through the detached toolbar controls", async () => {
+    const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
+      props: {
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: "template-1",
+      },
+    });
+
+    await wrapper.get('[data-test="randomize-seating"]').trigger("click");
+    await wrapper.get('[data-test="seating-use-history-toggle"]').trigger("click");
+    await wrapper.get('[data-test="seating-open-rules"]').trigger("click");
+
+    expect(stateMocks.plannerState.runSeatingShuffle).toHaveBeenCalledTimes(1);
+    expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);
+    expect(wrapper.emitted("open-rules")).toEqual([[]]);
+  });
+
+  it("keeps export feedback compact and forwards seating export actions", async () => {
+    const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
+      props: {
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: "template-1",
+        exportErrorMessage: "PDF skapades men kunde inte laddas ned automatiskt. Hämta den i Mina filer.",
+      },
+    });
+
+    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="seating-export-status-pill"]').text()).toContain("Exportproblem");
 
     await wrapper.get('[data-test="seating-export-default"]').trigger("click");
     expect(wrapper.emitted("export-default")).toEqual([[]]);
@@ -143,56 +166,21 @@ describe("PlannerSeatingWorkspacePane export wiring", () => {
     expect(wrapper.emitted("export-option")).toEqual([["xlsx"]]);
   });
 
-  it("shows status state, supports retry, and allows dismissal", async () => {
-    const wrapper = mount(PlannerSeatingWorkspacePane, {
+  it("focuses the classroom picker instead of starting a draft without a classroom", async () => {
+    const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
+      attachTo: document.body,
       props: {
-        selectedTemplateId: "template-1",
-        exportStatusLabel: "PDF hämtad och sparad i Mina filer.",
-        exportErrorMessage: "PDF skapades men kunde inte laddas ned automatiskt.",
-        canDownloadLatestExport: true,
-      },
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
-          PlannerToolbarIconButton: { template: "<button type='button'><slot /></button>" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
+        availableTemplates: [buildTemplate()],
+        selectedTemplateId: null,
       },
     });
 
-    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-export-status"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-export-error"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-export-download-latest"]').exists()).toBe(true);
+    await wrapper.get('[data-test="new-seating-draft"]').trigger("click");
 
-    await wrapper.get('[data-test="seating-export-download-latest"]').trigger("click");
-    expect(wrapper.emitted("download-latest-export")).toEqual([[]]);
+    expect(wrapper.emitted("new-seating-draft")).toBeUndefined();
+    expect(wrapper.get('[data-test="seating-template-select"]').element).toBe(document.activeElement);
+    expect(wrapper.text()).toContain("Välj klassrum innan du startar ett nytt sittschema.");
 
-    await wrapper.get('[data-test="seating-export-status-dismiss"]').trigger("click");
-    expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
-  });
-
-  it("renders a dense classroom selector and grouped undo-redo controls", () => {
-    const wrapper = mount(PlannerSeatingWorkspacePane, {
-      props: {
-        selectedTemplateId: "template-1",
-        availableTemplates: [
-          { id: "template-1", name: "Sal 101", seats: [{ id: "seat-1", x: 0, y: 0, zone: null }], fixtures: [] },
-        ],
-      },
-      global: {
-        stubs: {
-          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
-          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
-          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
-          PlannerConfirmationDialog: true,
-        },
-      },
-    });
-
-    expect(wrapper.get('[data-test="seating-template-select"]').classes()).toContain("h-[28px]");
-    expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
+    wrapper.unmount();
   });
 });

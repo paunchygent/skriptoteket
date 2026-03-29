@@ -287,6 +287,7 @@ watch(
     }
     toast.info(nextNotice);
     lastWorkspaceNotice.value = nextNotice;
+    emit("dismiss-workspace-notice");
   },
   { immediate: true },
 );
