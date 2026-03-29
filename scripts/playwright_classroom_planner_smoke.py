@@ -23,6 +23,7 @@ from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
     login_to_app,
     open_class_workspace,
+    workspace_toggle,
 )
 from scripts._playwright_config import get_config
 from scripts.playwright_ui_smoke import _launch_chromium
@@ -222,7 +223,7 @@ def _return_to_class_workspace(page: Any) -> None:
     """Return to the class workspace without discarding the active draft."""
 
     focus_workspace_mode(page, label="Översikt")
-    expect(page.locator('[data-ui="segmented-toggle"]')).to_be_visible()
+    expect(workspace_toggle(page)).to_be_visible()
     expect(page.locator('[data-test="overview-roster-select"]')).to_be_visible()
 
 
@@ -367,7 +368,7 @@ def _delete_remaining_historic_seating_draft(page: Any) -> None:
 def _exit_to_origin(page: Any) -> None:
     """Leave the class workspace and land on the current planner origin."""
 
-    page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Avsluta", re.IGNORECASE)).first.click()
     expect(page).to_have_url(re.compile(r"/browse(?:\?.*)?$"))
     expect(page.get_by_role("heading", name=re.compile(r"Katalog", re.IGNORECASE))).to_be_visible()
 

@@ -20,9 +20,15 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     GroupingExportJobStatus,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints import (
+    GroupingExportCheckpoint,
+)
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
+from skriptoteket.protocols.classroom_planner import (
+    GroupingExportCheckpointRepositoryProtocol,
+)
 from skriptoteket.protocols.classroom_planner_exports import GroupingExportJobRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -41,6 +47,7 @@ class GroupingExportJobFinalizer:
         self,
         *,
         jobs: GroupingExportJobRepositoryProtocol,
+        checkpoints: GroupingExportCheckpointRepositoryProtocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -50,6 +57,7 @@ class GroupingExportJobFinalizer:
         settings: Settings,
     ) -> None:
         self._jobs = jobs
+        self._checkpoints = checkpoints
         self._vault_files = vault_files
         self._vault_usage = vault_usage
         self._vault_storage = vault_storage
@@ -63,6 +71,7 @@ class GroupingExportJobFinalizer:
         *,
         job: GroupingExportJob,
         content: bytes,
+        checkpoint: GroupingExportCheckpoint | None = None,
         filename: str | None = None,
     ) -> GroupingExportJob:
         """Persist one locally generated artifact and complete the export job."""
@@ -77,6 +86,7 @@ class GroupingExportJobFinalizer:
             status=GroupingExportJobStatus.SUCCEEDED,
             vault_file_id=vault_file.id,
             error_message=None,
+            checkpoint=checkpoint,
         )
 
     async def mark_failed(
@@ -92,6 +102,7 @@ class GroupingExportJobFinalizer:
             status=GroupingExportJobStatus.FAILED,
             vault_file_id=job.vault_file_id,
             error_message=error_message,
+            checkpoint=None,
         )
 
     async def _persist_terminal_status(
@@ -101,6 +112,7 @@ class GroupingExportJobFinalizer:
         status: GroupingExportJobStatus,
         vault_file_id: UUID | None,
         error_message: str | None,
+        checkpoint: GroupingExportCheckpoint | None,
     ) -> GroupingExportJob:
         updated = job.model_copy(
             update={
@@ -110,7 +122,17 @@ class GroupingExportJobFinalizer:
             }
         )
         async with self._uow:
-            return await self._jobs.update(job=updated)
+            persisted_job = await self._jobs.update(job=updated)
+            if checkpoint is not None and status is GroupingExportJobStatus.SUCCEEDED:
+                latest_checkpoints = await self._checkpoints.list_recent_for_roster(
+                    roster_id=checkpoint.roster_id
+                )
+                latest_checkpoint = latest_checkpoints[0] if latest_checkpoints else None
+                if latest_checkpoint is None or (
+                    latest_checkpoint.assignment_hash != checkpoint.assignment_hash
+                ):
+                    await self._checkpoints.create(checkpoint=checkpoint)
+            return persisted_job
 
     async def _save_to_vault(
         self,

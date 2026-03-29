@@ -6,28 +6,29 @@ Keep this file updated so the next session can pick up work quickly.
 - Do not paste large code blocks; link to files instead.
 - Never include secrets/tokens/passwords or personal data.
 - Keep this file under 200 lines; move history to `docs/`.
-
 ## Snapshot
-
-- Date: 2026-03-29
+- Date: 2026-03-30
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`, `PR-0166`
-
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`, `PR-0166`, `PR-0169`
 ## Status
-
 - `ST-07-07` is now shipped locally and live on Hemma: `src/skriptoteket/web/dishka_compat.py` is removed, HTTP DI now resolves through `request.state.dishka_container`, websocket resolution is explicit via `src/skriptoteket/web/dishka_dependencies.py`, `skriptoteket_reviewer` approved the final tree with no actionable findings, and Hemma `skriptoteket-web` / `skriptoteket-worker` are healthy again after the `2026-03-29` seating-export deploy gate.
 - Hemma is now back on the current published `main` commit with a clean `git status --short`; the canonical deploy gate now fast-forwards a clean checkout to `origin/main` before it rebuilds.
-- EPIC-26 export baseline is in place locally:
-  - grouping + seating PDF rendering is local in Skriptoteket
-  - grouping + seating XLSX delivery shipped
-  - keep using host `dev-local` for real planner/export proof, not container logs alone
-- Conversion Hub `PR-0148` is done locally:
-  - local job ledger is authoritative at the product boundary
-  - upstream Sir Convert job ids stay internal
-  - live proof on `http://127.0.0.1:5173` passed with the real `wait_seconds <= 20` constraint
-- Smart-assignment docs are approved and aligned across `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-06`, and `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`.
+- `ST-09-06` / `PR-0169` are done:
+  - `src/skriptoteket/config.py` and `src/skriptoteket/infrastructure/curated_apps/registry.py` now apply a production-only curated app allowlist
+  - `demo.counter` and `games.flunk_out_frenzy` are hidden in production; approved apps such as `classroom.group-seating-studio` still resolve
+- `ST-09-07` / `PR-0170` are now in progress with the repo-side hardening implemented locally:
+  - `src/skriptoteket/config.py`, `src/skriptoteket/web/request_metadata.py`, `src/skriptoteket/web/api/v1/auth.py`, `src/skriptoteket/observability/health.py`, `src/skriptoteket/observability/metrics.py`, `src/skriptoteket/web/routes/observability.py`, and `compose.prod.yaml` now fail closed on the confirmed March 29 public-edge findings
+  - production defaults now keep `/docs` and `/openapi.json` off, public `/healthz` minimal, identity/session gauges off in `/metrics`, and trusted client IP parsing limited to explicitly trusted proxies
+  - Docker-based local dev login via `http://127.0.0.1:5174` works again because `skriptoteket_web` is allowed only outside production
+  - independent `skriptoteket_reviewer` approved the final code slice with no actionable findings after one `skriptoteket_implementation_specialist` follow-up iteration
+- `ST-09-08` / `PR-0171` are ready:
+  - remaining work is Hemma/nginx deploy follow-through only: protect public `/metrics`, set the exact nginx-proxy trust CIDR, and stop reserved-host fallthrough for `hule.education`, `api.hule.education`, and `ws.hule.education`
+- EPIC-02 password-reset docs slice is now prepared:
+  - proposed `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`, ready `docs/backlog/stories/story-02-07-local-password-reset-via-emailed-token.md` / `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`, and pending `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md` are in place
+  - `docs/backlog/epics/epic-02-identity-and-access-control.md` and `docs/index.md` now reflect the planned local password-reset lane and the repo's current self-registration/email-verification reality
+- Smart-assignment docs are approved and aligned across `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-06`, and `docs/backlog/prs/pr-0167-st-27-04-smart-grouping-v1-grouping-history-and-live-seating-influence.md`.
 - Smart-assignment docs are aligned for the current lane:
   - rerun diversity belongs to the core smart-run contract in `ADR-0074`, `ST-27-03`, `ST-27-04`, and `PR-0154`
   - `ST-27-05` now covers explanation/rerun messaging only
@@ -82,7 +83,6 @@ Keep this file updated so the next session can pick up work quickly.
   - recovered export completion now announces once per browser session via toast with `Mina filer` copy, while export progress/error stays localized to the toolbar row and no success/helper band returns on re-entry
 
 ## Verification
-
 - 2026-03-27 `PR-0148` Conversion Hub:
   - `pdm run db-upgrade`
   - `pdm run pytest tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/web/conversion_hub/test_apps_conversion_hub_api.py tests/unit/web/conversion_hub/test_apps_conversion_hub_job_spec.py tests/unit/infrastructure/curated_apps/apps/conversion_hub/test_sir_convert_client_v2.py`
@@ -122,11 +122,29 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run pytest tests/unit/infrastructure/repositories/ -q`
   - `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[3e8b5c1a7d4f]' -q`
   - `pdm run docs-validate`
-  - note: `pdm run pytest tests/integration/migration_schema_assertions.py -q` currently collects `0` tests because that module is a schema-assertion registry used by the docker idempotency runner, not a standalone pytest file
   - backend-only close-out; no planner UI/route smoke was required because no UI behavior changed in this session
-- 2026-03-27 smart-assignment docs scope refinement:
+- 2026-03-30 EPIC-02 password-reset docs slice:
   - `pdm run docs-validate`
-  - updated `ADR-0074`, `EPIC-27`, `REV-EPIC-27`, `ST-27-03`, `ST-27-04`, `ST-27-05`, `PR-0154`, and the decision memo so smart reruns prefer different good candidates on repeated `Slumpa` runs and `ST-27-05` no longer adds a separate alternate-result control
+- 2026-03-30 security edge hardening:
+  - baseline before edits:
+    - `pdm run pytest tests/unit/web/test_app_security_hardening.py tests/unit/web/test_observability_routes.py tests/unit/web/test_api_v1_auth_and_csrf_routes.py -q`
+    - `pdm run ruff check src/skriptoteket/config.py src/skriptoteket/web/app.py src/skriptoteket/web/middleware/security_headers.py tests/unit/web/test_app_security_hardening.py`
+    - live production-edge audit confirmed public `/docs`, `/openapi.json`, `/metrics`, `/healthz`, plus reserved-host fallthrough for `hule.education` / `api.hule.education` / `ws.hule.education`
+  - repo-side hardening verification after implementation:
+    - `pdm run pytest tests/unit/test_config.py tests/unit/web/test_request_metadata.py tests/unit/web/test_observability_routes.py tests/unit/web/test_api_v1_auth_and_csrf_routes.py tests/unit/web/test_app_security_hardening.py -q`
+    - `pdm run ruff check src/skriptoteket/config.py src/skriptoteket/web/request_metadata.py src/skriptoteket/web/api/v1/auth.py src/skriptoteket/observability/health.py src/skriptoteket/observability/metrics.py src/skriptoteket/web/routes/observability.py tests/unit/test_config.py tests/unit/web/test_request_metadata.py tests/unit/web/test_observability_routes.py tests/unit/web/test_app_security_hardening.py`
+    - `docker compose -f compose.prod.yaml config >/dev/null`
+    - live functional check:
+      - `curl -sS -o /tmp/skriptoteket-login-wrong.out -w '%{http_code}\n' -H 'Content-Type: application/json' -d '{"email":"superuser@local.dev","password":"wrong-password"}' http://127.0.0.1:5174/api/v1/auth/login` -> `401`
+      - bootstrap-superuser login through `http://127.0.0.1:5174/api/v1/auth/login` -> `200` with `user` + `csrf_token`
+      - `docker exec windsurf-project-frontend-1 node -e "fetch('http://skriptoteket_web:8000/healthz',{headers:{Host:'skriptoteket_web:8000'}})..."` -> `200`
+  - reviewer loop summary:
+    - first `skriptoteket_reviewer` pass found broad proxy trust, production host-allowlist drift, and missing regression coverage
+    - one `skriptoteket_implementation_specialist` iteration fixed the approved slice
+    - final `skriptoteket_reviewer` pass returned no actionable code findings; residual risk is now deploy/ops only (`TRUSTED_PROXY_CIDRS` must be set exactly on Hemma, `/metrics` still needs edge protection, reserved hosts still need placeholder ownership)
+- 2026-03-27/2026-03-29 smart-assignment docs scope refinement:
+  - `pdm run docs-validate`
+  - updated `ADR-0074`, `REV-EPIC-27`, `ST-27-04`, `PR-0167`, and earlier smart-assignment docs so grouping history is separate from live seating continuity, active seating continuity outranks rotational diversity when explicitly enabled, and smart reruns still prefer different good candidates on repeated `Slumpa` runs
 - 2026-03-27 smart-assignment UI docs refinement:
   - `pdm run docs-validate`
   - updated `ADR-0074`, `EPIC-27`, `REV-EPIC-27`, `ST-27-03`, `ST-27-04`, `ST-27-05`, `PR-0154`, `docs/index.md`, and the decision memo
@@ -138,22 +156,6 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run fe-type-check`; `pdm run docs-validate`
   - live proof: `pdm run python -m scripts.playwright_pr_0155_rules_workspace_check --base-url http://127.0.0.1:5173`
   - artifacts under `.artifacts/pr-0155-rules-workspace-check/`; proof covered top-level `Regler`, explicit overview-template bootstrap, the map-field `Planeringskarta`/`Sittschema` switch (and its absence from the rail), the unified rail-owned pending/create-save flow for all rule kinds, compact summary-only smart panes, wider map real estate, single-row map markers, and the removed rules helper copy
-- 2026-03-28 auth-cutover planning package:
-  - `pdm run docs-validate`
-  - added `ADR-0076`, `EPIC-28`, `REV-EPIC-28`, `ST-28-01`..`ST-28-04`, and updated `docs/index.md`
-- 2026-03-28 planner UI-doctrine alignment:
-  - `pdm run docs-validate`
-  - updated `docs/index.md`, `.agents/rules/045-huleedu-design-system.md`, `.claude/skills/skriptoteket-frontend-specialist/SKILL.md`, and `.claude/skills/brutalist-academic-ui/SKILL.md`
-  - refined the doctrine around desktop-first workspace composition and symbol-first repeated operations
-- 2026-03-28 planner redesign planning package:
-  - `pdm run docs-validate`
-  - `REV-EPIC-29` fixes landed: `EPIC-29` is the canonical UI-overhaul hub, `PR-0127`..`PR-0132` now hang under `ST-29-03`/`ST-29-04`, the conflicting EPIC-26 story docs were removed, `REF-shared-tool-control-language-v1` now defines the first minimal cross-app control matrix, and `ST-29-08` / `PR-0160` now reserve the custom tooltip enhancement as a separate post-core lane
-- 2026-03-28 `PR-0157` dense-tool primitives:
-  - `pdm run fe-type-check`
-  - `pdm run fe-test -- --run src/components/ui/UiDenseStatusPill.spec.ts src/components/editor/EditorWorkspaceToolbar.spec.ts src/components/ui/UiDenseSplitButton.spec.ts src/components/ui/UiSegmentedToggle.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/CreateRosterModal.spec.ts`
-  - `pdm run docs-validate`
-  - live proof: `pdm run python -m scripts.playwright_pr_0157_dense_toolbar_check --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_vault_sort_subrail_check --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_pr_0157_overview_alignment_check --base-url http://127.0.0.1:5173`, and `pdm run python -m scripts.playwright_pr_0157_group_card_alignment_check --base-url http://127.0.0.1:5173`
-  - artifacts under `.artifacts/pr-0157-live-check/`, `.artifacts/classroom-planner-smoke`, `.artifacts/vault-sort-subrail-check`, and `.artifacts/pr-0157-overview-alignment-check`; proof covered planner seating/grouping dense-tool follow-ups, the planner-wide shared button-recipe sweep in modals/drawers/overview/template-editor surfaces, grouped undo/redo outer-edge `4px` corners, compact overflow, grouping count stepper, the updated grouping smoke selector for `Nytt utkast`, the quieter planner shell/header typography and chrome, the shared secondary subrail treatment across the rules map switch and Vault sort, the taller dedicated workspace mode selector for Klassrumskartan, the restored interior dividers between all segmented options, and the denser overview/student-pool/canvas surfaces without duplicate overview resume cards, with live-aligned overview panels, quieter footer actions, Vault sort/search height parity, and the shortened `Redigera` gear actions
 - 2026-03-27 `PR-0154` smart seating:
   - backend semantics alignment verified with domain/application/web/repository pytest lanes plus `pdm run typecheck` and `pdm run docs-validate`
   - live proof against a fresh host backend: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002` and `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
@@ -189,12 +191,10 @@ pdm run python -m scripts.playwright_pr_0137_class_list_import_check --base-url 
 ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh'
 ```
 ## Known Issues / Risks
-
 - Hemma production is healthy again on the current published `main` commit; for live verification, use the container healthcheck or in-container `curl`, because `skriptoteket-web` is not host-published on `127.0.0.1:8000`.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
   - `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions
 ## Next Steps
-
 - Next checkpoints are any follow-up continuity fixes that emerge once local editor fixtures exist for a live editor-shell audit, plus the continuing planner redesign lane in `ST-29-03` and later `ST-29-04`..`ST-29-06`.

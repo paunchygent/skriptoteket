@@ -1,3 +1,11 @@
+"""Identity protocols for persistence and application-level domain services.
+
+Purpose:
+  Define the protocol-first seams used by handlers, repositories, and
+  registration domain validation without binding the application layer to
+  concrete infrastructure.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -28,7 +36,15 @@ from skriptoteket.application.identity.commands import (
     UpdateProfileCommand,
     UpdateProfileResult,
 )
-from skriptoteket.domain.identity.models import Role, Session, User, UserAuth, UserProfile
+from skriptoteket.domain.identity.models import (
+    AllowedDomain,
+    BlockedDomain,
+    Role,
+    Session,
+    User,
+    UserAuth,
+    UserProfile,
+)
 
 
 class UserRepositoryProtocol(Protocol):
@@ -63,6 +79,24 @@ class SessionRepositoryProtocol(Protocol):
         inline_completion_provider: str | None,
         now: datetime,
     ) -> None: ...
+
+
+class AllowedDomainRepositoryProtocol(Protocol):
+    async def get_by_domain(self, domain: str) -> AllowedDomain | None: ...
+    async def upsert(self, *, domain: AllowedDomain) -> AllowedDomain: ...
+    async def list_all(self) -> list[AllowedDomain]: ...
+
+
+class BlockedDomainRepositoryProtocol(Protocol):
+    async def get_by_domain(self, domain: str) -> BlockedDomain | None: ...
+    async def upsert(self, *, domain: BlockedDomain) -> BlockedDomain: ...
+    async def list_all(self) -> list[BlockedDomain]: ...
+
+
+class DomainValidatorProtocol(Protocol):
+    def normalize_seed_domain(self, domain: str) -> str: ...
+    def extract_root_domain_from_email(self, email: str) -> str: ...
+    async def validate_registration_email(self, email: str) -> None: ...
 
 
 class PasswordHasherProtocol(Protocol):

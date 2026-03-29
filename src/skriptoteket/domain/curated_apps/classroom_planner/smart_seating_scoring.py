@@ -164,6 +164,7 @@ def near_teacher_score(
 def keep_near_pair_score(
     *,
     pair: SeatPairTopology,
+    cluster_size: int,
     current_mode: KeepNearRelationMode | None = None,
     pair_key: frozenset[str] | None = None,
     pair_seat_ids: frozenset[str] | None = None,
@@ -171,21 +172,38 @@ def keep_near_pair_score(
 ) -> float:
     """Score one compact keep-near relation, including local-mode rotation."""
 
-    if pair.orthogonally_adjacent:
-        score = 16.0
-    elif pair.diagonal_neighbor and pair.same_local_zone:
-        score = 14.5
-    elif pair.same_line_one_step:
-        score = 12.5
-    elif pair.same_row or pair.same_column:
-        score = 2.0 - pair.grid_manhattan * 3.0
-    elif pair.same_local_zone and pair.grid_manhattan <= 3:
-        score = -2.0
-    elif pair.same_local_zone:
-        score = -6.0
+    if cluster_size == 2:
+        if pair.orthogonally_adjacent:
+            score = 18.0
+        elif pair.same_line_one_step:
+            score = 2.5
+        elif pair.diagonal_neighbor and pair.same_local_zone:
+            score = -4.0
+        elif pair.same_row or pair.same_column:
+            score = -6.0 - float(pair.grid_manhattan)
+        elif pair.same_local_zone and pair.grid_manhattan <= 3:
+            score = -8.0
+        elif pair.same_local_zone:
+            score = -10.0
+        else:
+            score = -12.0
     else:
-        score = -10.0
+        if pair.orthogonally_adjacent:
+            score = 16.0
+        elif pair.diagonal_neighbor and pair.same_local_zone:
+            score = 14.5
+        elif pair.same_line_one_step:
+            score = 12.5
+        elif pair.same_row or pair.same_column:
+            score = 2.0 - pair.grid_manhattan * 3.0
+        elif pair.same_local_zone and pair.grid_manhattan <= 3:
+            score = -2.0
+        elif pair.same_local_zone:
+            score = -6.0
+        else:
+            score = -10.0
     next_modes = _next_keep_near_modes(
+        cluster_size=cluster_size,
         current_mode=current_mode,
         pair_key=pair_key,
         current_pair_seat_ids=current_pair_seat_ids,
@@ -244,6 +262,7 @@ def _normalized_keep_near_mode(
 
 def _next_keep_near_modes(
     *,
+    cluster_size: int,
     current_mode: KeepNearRelationMode | None,
     pair_key: frozenset[str] | None,
     current_pair_seat_ids: frozenset[str] | None,
@@ -251,6 +270,16 @@ def _next_keep_near_modes(
     normalized_mode = _normalized_keep_near_mode(current_mode)
     if normalized_mode is None or pair_key is None:
         return ()
+    if cluster_size == 2:
+        if normalized_mode == "adjacent-row":
+            return ("adjacent-column",)
+        if normalized_mode == "adjacent-column":
+            return ("adjacent-row",)
+        seed_parts = sorted(current_pair_seat_ids or pair_key)
+        digest = blake2b("|".join(seed_parts).encode("utf-8"), digest_size=1).digest()[0]
+        if digest % 2 == 0:
+            return ("adjacent-row", "adjacent-column")
+        return ("adjacent-column", "adjacent-row")
     if normalized_mode == "adjacent-row":
         return ("diagonal-block",)
     if normalized_mode == "adjacent-column":

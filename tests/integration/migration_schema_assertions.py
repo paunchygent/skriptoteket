@@ -47,6 +47,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "6a1e9d3c4b7f",
     "7d4c1a2b9e6f",
     "3e8b5c1a7d4f",
+    "4d2c6b8e1a9f",
 )
 
 
@@ -86,6 +87,21 @@ async def _index_names(engine: AsyncEngine, table_name: str) -> set[str]:
             {"table_name": table_name},
         )
         return {row[0] for row in result.fetchall()}
+
+
+async def _index_definitions(engine: AsyncEngine, table_name: str) -> dict[str, str]:
+    async with engine.connect() as conn:
+        result = await conn.execute(
+            text(
+                """
+                SELECT indexname, indexdef
+                FROM pg_indexes
+                WHERE schemaname = 'public' AND tablename = :table_name
+                """
+            ),
+            {"table_name": table_name},
+        )
+        return {row.indexname: row.indexdef for row in result.fetchall()}
 
 
 async def _foreign_key_targets(engine: AsyncEngine, table_name: str) -> dict[str, str]:
@@ -434,6 +450,44 @@ async def _assert_3e8b_seating_export_checkpoints(engine: AsyncEngine) -> None:
     assert foreign_keys["source_export_job_id"] == "classroom_planner_seating_export_jobs"
 
 
+async def _assert_4d2c_grouping_export_checkpoints(engine: AsyncEngine) -> None:
+    await _assert_3e8b_seating_export_checkpoints(engine)
+    tables = await _table_names(engine)
+    assert "classroom_planner_grouping_export_checkpoints" in tables
+    columns = await _column_map(engine, "classroom_planner_grouping_export_checkpoints")
+    assert {
+        "roster_id",
+        "template_id",
+        "source_draft_id",
+        "source_export_job_id",
+        "assignment_hash",
+        "grouping_snapshot",
+    }.issubset(columns)
+    indexes = await _index_names(engine, "classroom_planner_grouping_export_checkpoints")
+    assert {
+        "ix_classroom_planner_grouping_export_checkpoints_roster_id",
+        "ix_classroom_planner_grouping_export_checkpoints_template_id",
+        "ix_cp_grouping_export_checkpoints_roster_created",
+        "uq_cp_grouping_export_checkpoints_source_job",
+    }.issubset(indexes)
+    index_definitions = await _index_definitions(
+        engine, "classroom_planner_grouping_export_checkpoints"
+    )
+    assert any(
+        name.startswith("ix_classroom_planner_grouping_export_checkpoints_source_")
+        and "(source_draft_id)" in definition
+        for name, definition in index_definitions.items()
+    )
+    foreign_keys = await _foreign_key_targets(
+        engine,
+        "classroom_planner_grouping_export_checkpoints",
+    )
+    assert foreign_keys["roster_id"] == "classroom_planner_rosters"
+    assert foreign_keys["template_id"] == "classroom_planner_room_templates"
+    assert foreign_keys["source_draft_id"] == "classroom_planner_plan_drafts"
+    assert foreign_keys["source_export_job_id"] == "classroom_planner_grouping_export_jobs"
+
+
 SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "0001_init": _assert_0001_init,
     "0012_tool_owner_user_id": _assert_0012_tool_owner_user_id,
@@ -466,6 +520,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "6a1e9d3c4b7f": _assert_6a1e_merged_heads,
     "7d4c1a2b9e6f": _assert_7d4c_roster_smart_rule_repair,
     "3e8b5c1a7d4f": _assert_3e8b_seating_export_checkpoints,
+    "4d2c6b8e1a9f": _assert_4d2c_grouping_export_checkpoints,
 }
 
 

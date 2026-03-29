@@ -478,6 +478,7 @@ def _partial_seat_score(
                 continue
             score += keep_near_pair_score(
                 pair=context.topology.pair(seat_id, peer_seat_id),
+                cluster_size=len(cluster),
                 current_mode=context.current_keep_near_mode_by_pair.get(
                     frozenset((student_id, peer_id))
                 ),
@@ -531,6 +532,7 @@ def _score_candidate(
             pair = context.topology.pair(left_seat_id, right_seat_id)
             pair_score = keep_near_pair_score(
                 pair=pair,
+                cluster_size=len(cluster),
                 current_mode=context.current_keep_near_mode_by_pair.get(
                     frozenset((left_id, right_id))
                 ),
@@ -541,7 +543,7 @@ def _score_candidate(
                 ),
             )
             quality += pair_score
-            if _keep_near_has_tradeoff(pair):
+            if _keep_near_has_tradeoff(pair=pair, cluster_size=len(cluster)):
                 has_tradeoffs = True
 
     for cluster in context.keep_apart_clusters:
@@ -587,28 +589,30 @@ def _teacher_priority_score(
 
 
 def _keep_apart_pair_score(*, pair: SeatPairTopology) -> float:
-    if pair.orthogonally_adjacent:
-        return -32.0
+    if _keep_apart_is_hard_negative(pair):
+        return -32.0 if pair.orthogonally_adjacent else -28.0
     spread_score = pair.front_gap * 4.0 + pair.lateral_gap * 4.0
     if not pair.same_block:
         return spread_score + 8.0
-    if pair.diagonal_neighbor:
-        return spread_score + 1.5
     if pair.same_row or pair.same_column:
         return spread_score - 2.5
     return spread_score - 1.0
 
 
-def _keep_near_has_tradeoff(pair: SeatPairTopology) -> bool:
+def _keep_near_has_tradeoff(*, pair: SeatPairTopology, cluster_size: int) -> bool:
+    if cluster_size == 2:
+        return not pair.orthogonally_adjacent
     return pair.keep_near_relation_mode is None
 
 
+def _keep_apart_is_hard_negative(pair: SeatPairTopology) -> bool:
+    """Return whether two seats violate the immediate keep-apart buffer."""
+
+    return pair.orthogonally_adjacent or pair.diagonal_neighbor
+
+
 def _keep_apart_has_tradeoff(pair: SeatPairTopology) -> bool:
-    if pair.orthogonally_adjacent:
-        return True
-    if not pair.same_block:
-        return False
-    return pair.front_gap + pair.lateral_gap < 2
+    return _keep_apart_is_hard_negative(pair)
 
 
 def _is_better_score(*, score: _CandidateScore, current_best: _CandidateScore | None) -> bool:

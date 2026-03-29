@@ -1,0 +1,11 @@
+domain,reason,source,source_ref,is_active,notes
+gmail.com,personal_email_provider,manual_seed,common_provider_seed,true,
+hotmail.com,personal_email_provider,manual_seed,common_provider_seed,true,
+outlook.com,personal_email_provider,manual_seed,common_provider_seed,true,
+live.com,personal_email_provider,manual_seed,common_provider_seed,true,
+icloud.com,personal_email_provider,manual_seed,common_provider_seed,true,
+yahoo.com,personal_email_provider,manual_seed,common_provider_seed,true,
+me.com,personal_email_provider,manual_seed,common_provider_seed,true,
+proton.me,personal_email_provider,manual_seed,common_provider_seed,true,
+protonmail.com,personal_email_provider,manual_seed,common_provider_seed,true,
+pm.me,personal_email_provider,manual_seed,common_provider_seed,true,

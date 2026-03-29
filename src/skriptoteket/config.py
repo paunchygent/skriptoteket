@@ -26,6 +26,7 @@ _CONTAINER_VAULT_ROOT = Path("/var/lib/skriptoteket/vault")
 _HOST_DEV_ARTIFACTS_ROOT = Path("/tmp/skriptoteket/artifacts")
 _HOST_DEV_VAULT_ROOT = Path("/tmp/skriptoteket/vault")
 _DOCKER_HOST_ALIASES = frozenset({"host.docker.internal", "gateway.docker.internal"})
+_NON_PRODUCTION_ALLOWED_HOSTS = frozenset({"skriptoteket_web"})
 
 
 def _is_running_in_container() -> bool:
@@ -53,6 +54,18 @@ def _normalize_host_dev_sir_convert_base_url(raw_url: str) -> str:
     return _replace_url_hostname(parsed=parsed, hostname="127.0.0.1")
 
 
+def _split_csv_values(raw_value: str) -> tuple[str, ...]:
+    values: list[str] = []
+    seen: set[str] = set()
+    for part in raw_value.split(","):
+        normalized = part.strip()
+        if not normalized or normalized in seen:
+            continue
+        values.append(normalized)
+        seen.add(normalized)
+    return tuple(values)
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -63,7 +76,13 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: Literal["json", "console"] = "json"
 
-    ENABLE_DOCS: bool = True
+    ENABLE_DOCS: bool | None = None
+    ALLOWED_HOSTS: str = "localhost,127.0.0.1,::1,skriptoteket.hule.education"
+    TRUST_PROXY_HEADERS: bool = False
+    TRUSTED_PROXY_CIDRS: str = "127.0.0.1/32,::1/128"
+    CURATED_APPS_PRODUCTION_ALLOWLIST: str = (
+        "chemistry.reagent_prep_chef,documents.conversion_hub,classroom.group-seating-studio"
+    )
 
     # Frontend dev server (legacy SSR + SPA islands; ADR-0025 superseded by ADR-0027)
     # If set, templates render SPA assets from the Vite dev server instead of the production
@@ -159,6 +178,8 @@ class Settings(BaseSettings):
     EMAIL_DEFAULT_FROM_EMAIL: str = "noreply@hule.education"
     EMAIL_DEFAULT_FROM_NAME: str = "Skriptoteket"
     HEALTHZ_SMTP_CHECK_ENABLED: bool = True
+    HEALTHZ_DETAILED_RESPONSE: bool | None = None
+    METRICS_IDENTITY_GAUGES_ENABLED: bool | None = None
 
     # Email verification
     EMAIL_VERIFICATION_TTL_HOURS: int = 24
@@ -270,6 +291,27 @@ class Settings(BaseSettings):
     LLM_HEURISTIC_MESSAGE_OVERHEAD_TOKENS: int = 4
     LLM_HEURISTIC_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4
 
+    @property
+    def curated_apps_production_allowlist(self) -> frozenset[str]:
+        return frozenset(_split_csv_values(self.CURATED_APPS_PRODUCTION_ALLOWLIST))
+
+    @property
+    def allowed_hosts(self) -> frozenset[str]:
+        allowed_hosts = set(_split_csv_values(self.ALLOWED_HOSTS))
+        if self.ENVIRONMENT != "production":
+            allowed_hosts.update(_NON_PRODUCTION_ALLOWED_HOSTS)
+        return frozenset(allowed_hosts)
+
+    @property
+    def trusted_proxy_cidrs(self) -> frozenset[str]:
+        return frozenset(_split_csv_values(self.TRUSTED_PROXY_CIDRS))
+
+    @property
+    def enable_docs(self) -> bool:
+        if self.ENABLE_DOCS is None:
+            return self.ENVIRONMENT != "production"
+        return self.ENABLE_DOCS
+
     @model_validator(mode="after")
     def _normalize_host_dev_runtime(self) -> Settings:
         if self.ENVIRONMENT != "development" or _is_running_in_container():
@@ -286,3 +328,15 @@ class Settings(BaseSettings):
         if normalized_base_url != self.SIR_CONVERT_A_LOT_V2_BASE_URL:
             self.SIR_CONVERT_A_LOT_V2_BASE_URL = normalized_base_url
         return self
+
+    @property
+    def healthz_detailed_response(self) -> bool:
+        if self.HEALTHZ_DETAILED_RESPONSE is None:
+            return self.ENVIRONMENT != "production"
+        return self.HEALTHZ_DETAILED_RESPONSE
+
+    @property
+    def metrics_identity_gauges_enabled(self) -> bool:
+        if self.METRICS_IDENTITY_GAUGES_ENABLED is None:
+            return self.ENVIRONMENT != "production"
+        return self.METRICS_IDENTITY_GAUGES_ENABLED

@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:492d79b8984e3bd551276c3a65b9d524640f66ae0bb01e740341337f8186568e"
+content_hash = "sha256:70958c7e46d0335929701ba68122740e13a79eb16af3dd5870d2005e87540a7b"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -659,7 +659,7 @@ name = "filelock"
 version = "3.25.2"
 requires_python = ">=3.10"
 summary = "A platform independent file lock."
-groups = ["monorepo-tools"]
+groups = ["default", "monorepo-tools"]
 files = [
     {file = "filelock-3.25.2-py3-none-any.whl", hash = "sha256:ca8afb0da15f229774c9ad1b455ed96e85a81373065fb10446672f64444ddf70"},
     {file = "filelock-3.25.2.tar.gz", hash = "sha256:b64ece2b38f4ca29dd3e810287aa8c48182bbecd1ae6e9ae126c9b35f1382694"},
@@ -2466,6 +2466,19 @@ files = [
 ]
 
 [[package]]
+name = "requests-file"
+version = "3.0.1"
+summary = "File transport adapter for Requests"
+groups = ["default"]
+dependencies = [
+    "requests>=1.0.0",
+]
+files = [
+    {file = "requests_file-3.0.1-py2.py3-none-any.whl", hash = "sha256:d0f5eb94353986d998f80ac63c7f146a307728be051d4d1cd390dbdb59c10fa2"},
+    {file = "requests_file-3.0.1.tar.gz", hash = "sha256:f14243d7796c588f3521bd423c5dea2ee4cc730e54a3cac9574d78aca1272576"},
+]
+
+[[package]]
 name = "rich"
 version = "14.3.3"
 requires_python = ">=3.8.0"
@@ -2831,6 +2844,23 @@ dependencies = [
 files = [
     {file = "tinyhtml5-2.1.0-py3-none-any.whl", hash = "sha256:6e11cfff38515834268daf89d5f85bbde0b6dd02e8d9e212d1385c2289b89f0a"},
     {file = "tinyhtml5-2.1.0.tar.gz", hash = "sha256:60a50ec3d938a37e491efa01af895853060943dcebb5627de5b10d188b338a67"},
+]
+
+[[package]]
+name = "tldextract"
+version = "5.3.1"
+requires_python = ">=3.10"
+summary = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
+groups = ["default"]
+dependencies = [
+    "filelock>=3.0.8",
+    "idna",
+    "requests-file>=1.4",
+    "requests>=2.1.0",
+]
+files = [
+    {file = "tldextract-5.3.1-py3-none-any.whl", hash = "sha256:6bfe36d518de569c572062b788e16a659ccaceffc486d243af0484e8ecf432d9"},
+    {file = "tldextract-5.3.1.tar.gz", hash = "sha256:a72756ca170b2510315076383ea2993478f7da6f897eef1f4a5400735d5057fb"},
 ]
 
 [[package]]

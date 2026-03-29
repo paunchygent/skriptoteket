@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from skriptoteket.config import Settings
-from skriptoteket.observability.health import build_health_response, check_smtp
+from skriptoteket.observability.health import HealthPayload, build_health_response, check_smtp
 
 
 def test_build_health_response_degraded_when_smtp_degraded() -> None:
@@ -16,11 +18,12 @@ def test_build_health_response_degraded_when_smtp_degraded() -> None:
         smtp_status="degraded",
         smtp_error="SMTP unreachable",
     )
+    detailed_payload = cast(HealthPayload, payload)
 
     assert status_code == 503
-    assert payload["status"] == "degraded"
-    assert payload["dependencies"]["smtp"]["status"] == "degraded"
-    assert payload["checks"]["dependencies_available"] is False
+    assert detailed_payload["status"] == "degraded"
+    assert detailed_payload["dependencies"]["smtp"]["status"] == "degraded"
+    assert detailed_payload["checks"]["dependencies_available"] is False
 
 
 def test_build_health_response_unhealthy_when_database_unhealthy() -> None:
@@ -33,10 +36,11 @@ def test_build_health_response_unhealthy_when_database_unhealthy() -> None:
         smtp_status="healthy",
         smtp_error=None,
     )
+    detailed_payload = cast(HealthPayload, payload)
 
     assert status_code == 503
-    assert payload["status"] == "unhealthy"
-    assert payload["dependencies"]["database"]["status"] == "unhealthy"
+    assert detailed_payload["status"] == "unhealthy"
+    assert detailed_payload["dependencies"]["database"]["status"] == "unhealthy"
 
 
 @pytest.mark.asyncio

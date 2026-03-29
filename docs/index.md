@@ -89,6 +89,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
 - Rules workspace + dual-map smart authoring follow-up:
   `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
+- Smart grouping v1 implementation slice:
+  `docs/backlog/prs/pr-0167-st-27-04-smart-grouping-v1-grouping-history-and-live-seating-influence.md`
 - ST-29-01 docs/codemap foundation:
   `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
 - ST-29-01 shared primitive implementation:
@@ -121,8 +123,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
 - Accepted same-shell transition continuity ADR:
   `docs/adr/adr-0077-same-shell-transition-continuity.md`
+- Proposed local password reset ADR:
+  `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
+- Pending local password reset review:
+  `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md`
+- Local password reset planning slice:
+  `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -137,6 +145,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
 - Same-shell transition continuity implementation slice:
   `docs/backlog/prs/pr-0166-st-30-02-transition-continuity-adoption-and-remaining-transition-audit.md`
+- Production curated-app visibility hardening slice:
+  `docs/backlog/prs/pr-0169-production-curated-app-visibility-gate.md`
+- Public-edge app/runtime hardening slice:
+  `docs/backlog/prs/pr-0170-st-09-07-public-edge-app-runtime-hardening.md`
+- Hemma edge observability + reserved-host lockdown slice:
+  `docs/backlog/prs/pr-0171-st-09-08-hemma-edge-observability-and-host-lockdown.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -241,6 +255,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
 - `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
 - `docs/adr/adr-0077-same-shell-transition-continuity.md`
+- `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
 - `docs/reference/ref-runner-contract-v3.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-frontend-transition-continuity-v1.md`
@@ -346,6 +361,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 
 ### Backlog Reviews
 
+- `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md`
 - `docs/backlog/reviews/review-epic-06-linter-architecture-refactor.md`
 - `docs/backlog/reviews/review-epic-07-correlation-middleware-asgi.md`
 - `docs/backlog/reviews/review-epic-08-ai-completion.md`
@@ -451,6 +467,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
 - `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
 - `docs/backlog/prs/pr-0166-st-30-02-transition-continuity-adoption-and-remaining-transition-audit.md`
+- `docs/backlog/prs/pr-0169-production-curated-app-visibility-gate.md`
+- `docs/backlog/prs/pr-0170-st-09-07-public-edge-app-runtime-hardening.md`
+- `docs/backlog/prs/pr-0171-st-09-08-hemma-edge-observability-and-host-lockdown.md`
+- `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
@@ -564,6 +584,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-02-03-self-registration.md`
 - `docs/backlog/stories/story-02-04-user-profile-and-password-change.md`
 - `docs/backlog/stories/story-02-05-brute-force-lockout.md`
+- `docs/backlog/stories/story-02-06-swedish-school-domain-allowlist-registration.md`
+- `docs/backlog/stories/story-02-07-local-password-reset-via-emailed-token.md`
 - `docs/backlog/stories/story-03-01-submit-script-suggestion.md`
 - `docs/backlog/stories/story-03-02-admin-review-and-decision.md`
 - `docs/backlog/stories/story-03-03-publish-and-depublish-tools.md`
@@ -649,6 +671,9 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-09-03-firewall-audit.md`
 - `docs/backlog/stories/story-09-04-production-perimeter-hardening-v2.md`
 - `docs/backlog/stories/story-09-05-content-security-policy-spa.md`
+- `docs/backlog/stories/story-09-06-production-curated-app-visibility-gate.md`
+- `docs/backlog/stories/story-09-07-public-edge-app-runtime-hardening.md`
+- `docs/backlog/stories/story-09-08-hemma-edge-observability-and-host-lockdown.md`
 - `docs/backlog/stories/story-10-01-tool-ui-contract-v2.md`
 - `docs/backlog/stories/story-10-02-tool-sessions.md`
 - `docs/backlog/stories/story-10-03-ui-payload-normalizer.md`

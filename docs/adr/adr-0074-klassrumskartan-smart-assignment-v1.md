@@ -6,6 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-25
+updated: 2026-03-29
 links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25", "ST-27-06", "ST-27-07"]
 ---
 
@@ -169,14 +170,17 @@ V1 history sources are explicit export-backed checkpoints only.
   - unplaced students
   - normalized ordering only
   - no export layout, print styling, or artifact metadata
-- Grouping remains mode-specific when grouping exports exist later, and grouping checkpoints then
-  become the primary grouping-history source.
-- Smart grouping may additionally read seating checkpoints as a secondary source for:
-  - relation carry-over
-  - optional seating-distance signals
-- When `Use history` is enabled but no eligible checkpoints exist for the requested run, the system
-  must not silently degrade to no-history behavior; it blocks the history-enabled run with a short
-  teacher-facing message.
+- Grouping history remains mode-specific and label-insensitive:
+  - grouping checkpoints are the primary grouping-history source
+  - exact and near-repeat grouping memory must compare normalized student partitions and repeated
+    student co-memberships rather than raw `group_id` or group-name matches
+- Smart grouping may additionally read seating continuity through a separate non-history lane:
+  - active seating draft first when the explicit grouping seat-continuity signal is enabled
+  - eligible seating checkpoints second when no active seating draft exists
+  - this seating continuity lane is not grouping history
+- When `Use history` is enabled but no eligible grouping checkpoints exist for the requested run,
+  the system must not silently degrade to no-history behavior; it blocks the history-enabled run
+  with a short teacher-facing message.
 
 Checkpoints are history artifacts only. They may keep source-draft provenance if useful, but they
 must not become the authoritative home for class-global smart rules.
@@ -209,6 +213,8 @@ separate three ownership lanes:
   - current seating/group arrangement state and bounded draft history
 - export-backed checkpoints:
   - roster-scoped seating checkpoints with assignment-hash deduplication
+  - roster-scoped grouping checkpoints with normalized grouping-partition identity and similarity
+    semantics
   - normalized room-context identity plus stored template provenance for honest teacher-distance
     history
   - identical room geometry stays one checkpoint lane even when template ids differ or copied room
@@ -216,8 +222,8 @@ separate three ownership lanes:
 
 Smart rules must not remain draft-owned as the end-state model.
 
-Grouping should use its own later mode-specific assignment hash once grouping export checkpoints
-exist, rather than sharing the seating hash shape.
+Grouping should use its own label-insensitive grouping-partition hash and similarity model rather
+than sharing the seating hash shape.
 
 Teacher-facing `keep apart` and `keep near` rules are defined by visible seating geometry, not by
 pairwise graph math.
@@ -245,10 +251,12 @@ The client may keep cheap local hints, but it must not duplicate the full solver
 It acts as an explicit exception to the default teacher-distance fairness balancing.
 
 Grouping must not expose or consume that teacher-distance preference directly. Grouping may still
-use seating distance through the explicit seat-distance toggle when:
+use seating continuity through the explicit seat-distance toggle when:
 
 - the seating-distance signal is enabled
 - usable seating context exists
+- the current seating draft may be read first as a live continuity input, with eligible seating
+  checkpoints as fallback continuity input only
 
 This keeps grouping honest instead of pretending teacher-distance is a shared cross-mode rule.
 
@@ -281,14 +289,20 @@ For V1:
 
 - `Keep apart` in grouping means those students should be spread across different groups whenever
   possible
+- `Keep near` in grouping means those students should prefer the same group whenever the rule set
+  and current group structure allow it
 - if there are fewer groups than students in one keep-apart cluster, the solver should maximize
   spread and minimize collisions rather than failing
+- if one keep-near cluster cannot fit perfectly because of conflicting rules or current group
+  structure, the solver should minimize the split instead of scattering those students broadly
 - `Keep apart` in seating means those students should be meaningfully separated, not merely "not in
   direct orthogonal adjacency"
 - direct left/right adjacency in the same row is not acceptable when a stronger layout exists
 - direct above/below adjacency in the same column is not acceptable when a stronger layout exists
-- near-diagonal or almost-across placements that still leave students effectively close are also
-  not acceptable when the room has clear space for stronger separation
+- immediate diagonal neighbors are also not acceptable when the room has clear space for stronger
+  separation
+- same-row or same-column placements remain acceptable when one full seat buffer stays between the
+  students
 - greater separation than the minimum should be preferred when the solver has room to do so, and
   the solver should prefer clearer row/column distance or different local seating blocks over tiny
   visual separators alone
@@ -296,6 +310,8 @@ For V1:
   merely sit somewhere in the same broad area of the room
 - direct left/right adjacency in the same row or direct above/below adjacency in the same column is
   the preferred satisfaction for a near-pair
+- for a 2-student near-pair, diagonal or one-seat-buffer placements are fallback/tradeoff outcomes
+  rather than normal successful pair layouts
 - a one-step looser same-row or same-column fallback is acceptable only when the room or other
   rules prevent direct adjacency
 - for three or more students, one connected compact cluster is ideal; if that is impossible, the
@@ -316,6 +332,8 @@ For V1:
 
 - the primary objective remains smart quality under the teacher-authored rules
 - rerun diversity is a secondary objective, not a reason to accept obviously weaker placements
+- for smart grouping, rerun diversity sits below explicit relation rules, explicit live seating
+  continuity when enabled, and grouping-history anti-repeat memory
 - repeated smart runs should prefer a materially different valid assignment from the current draft
   arrangement when multiple good candidates exist
 - the backend may achieve this through randomized tie-breaking, multi-start search, or a soft

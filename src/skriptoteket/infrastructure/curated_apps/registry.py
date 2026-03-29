@@ -20,6 +20,15 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 
 
+def _filter_registry_apps_for_environment(
+    *, apps: list[CuratedAppDefinition], settings: Settings
+) -> list[CuratedAppDefinition]:
+    if settings.ENVIRONMENT != "production":
+        return apps
+    allowed_app_ids = settings.curated_apps_production_allowlist
+    return [app for app in apps if app.app_id in allowed_app_ids]
+
+
 class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
     def __init__(self, *, settings: Settings) -> None:
         app_version = f"app:{settings.APP_VERSION}"
@@ -99,6 +108,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 ],
             ),
         ]
+        apps = _filter_registry_apps_for_environment(apps=apps, settings=settings)
 
         self._apps = apps
         self._apps_by_id = {app.app_id: app for app in apps}

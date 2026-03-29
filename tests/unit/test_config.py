@@ -60,3 +60,42 @@ def test_container_runtime_keeps_container_paths_and_urls(monkeypatch) -> None:
     assert settings.ARTIFACTS_ROOT == Path("/var/lib/skriptoteket/artifacts")
     assert settings.VAULT_ROOT == Path("/var/lib/skriptoteket/vault")
     assert settings.SIR_CONVERT_A_LOT_V2_BASE_URL == "http://host.docker.internal:8085"
+
+
+def test_production_defaults_minimize_public_health_details() -> None:
+    settings = Settings.model_construct(
+        ENVIRONMENT="production",
+        HEALTHZ_DETAILED_RESPONSE=None,
+        METRICS_IDENTITY_GAUGES_ENABLED=None,
+    )
+
+    assert settings.healthz_detailed_response is False
+    assert settings.metrics_identity_gauges_enabled is False
+
+
+def test_non_production_allowed_hosts_include_containerized_dev_backend_alias() -> None:
+    settings = Settings.model_construct(
+        ENVIRONMENT="development",
+        ALLOWED_HOSTS="localhost,127.0.0.1,skriptoteket.hule.education",
+    )
+
+    assert settings.allowed_hosts == frozenset(
+        {"localhost", "127.0.0.1", "skriptoteket.hule.education", "skriptoteket_web"}
+    )
+
+
+def test_production_allowed_hosts_do_not_include_test_or_dev_only_aliases() -> None:
+    settings = Settings.model_construct(
+        ENVIRONMENT="production",
+        ALLOWED_HOSTS="localhost,127.0.0.1,::1,skriptoteket.hule.education",
+    )
+
+    assert settings.allowed_hosts == frozenset(
+        {"localhost", "127.0.0.1", "::1", "skriptoteket.hule.education"}
+    )
+
+
+def test_trusted_proxy_cidrs_parse_as_unique_csv_values() -> None:
+    settings = Settings.model_construct(TRUSTED_PROXY_CIDRS="127.0.0.1/32, 10.0.0.0/8,127.0.0.1/32")
+
+    assert settings.trusted_proxy_cidrs == frozenset({"127.0.0.1/32", "10.0.0.0/8"})

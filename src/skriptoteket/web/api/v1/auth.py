@@ -1,3 +1,16 @@
+"""Authentication routes for Skriptoteket's SPA-facing API.
+
+Purpose:
+    Expose login, logout, identity, and email-verification endpoints backed by
+    application-layer protocols and cookie-based session auth.
+
+Relationships:
+    - Uses `skriptoteket.web.request_metadata` to capture audit metadata for
+      login events.
+    - Depends on `skriptoteket.config.Settings` for cookie policy and runtime
+      feature flags.
+"""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Request, Response, status
@@ -119,7 +132,7 @@ async def login(
         LoginCommand(
             email=payload.email,
             password=payload.password,
-            ip_address=get_client_ip(request),
+            ip_address=get_client_ip(request, settings=settings),
             user_agent=get_user_agent(request),
             correlation_id=get_correlation_id(request),
         )

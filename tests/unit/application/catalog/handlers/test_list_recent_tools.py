@@ -194,3 +194,37 @@ async def test_list_recent_tools_returns_empty_when_no_runs(now: datetime) -> No
     tools.list_by_ids.assert_not_awaited()
     favorites.list_favorites_for_tools.assert_not_awaited()
     favorites.list_favorites_for_apps.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_list_recent_tools_omits_curated_apps_missing_from_registry(now: datetime) -> None:
+    actor = make_user(role=Role.USER)
+    hidden_app_id = "games.flunk_out_frenzy"
+
+    runs = AsyncMock(spec=ToolRunRepositoryProtocol)
+    runs.list_recent_tools_for_user.return_value = [
+        RecentRunRow(
+            source_kind=RunSourceKind.CURATED_APP,
+            tool_id=curated_app_tool_id(app_id=hidden_app_id),
+            curated_app_id=hidden_app_id,
+            last_used_at=now,
+        )
+    ]
+
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_app_id.return_value = None
+    favorites = AsyncMock(spec=FavoritesRepositoryProtocol)
+
+    handler = ListRecentToolsHandler(
+        runs=runs,
+        tools=tools,
+        curated_apps=curated_apps,
+        favorites=favorites,
+    )
+
+    result = await handler.handle(actor=actor, query=ListRecentToolsQuery(limit=5))
+
+    assert result.items == []
+    favorites.list_favorites_for_tools.assert_not_awaited()
+    favorites.list_favorites_for_apps.assert_not_awaited()

@@ -257,15 +257,15 @@ small while making smart seating real end-to-end:
     geometry into teacher-facing ranks, contiguous local zones, and spread-oriented seating blocks
   - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating.py` and
     `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py` now score
-    `Närmare läraren` as a rotating valid teacher pool, `Keep near` as rotating compact local
-    row/column/diagonal relation modes, and `Keep apart` plus rerun diversity with all-student
-    seat rotation
+    `Närmare läraren` as a rotating valid teacher pool, 2-student `Keep near` pairs as rotating
+    direct row/column adjacency targets instead of standard diagonal placements, and `Keep apart`
+    plus rerun diversity with all-student seat rotation
 - Repeated smart reruns now prefer a different strong candidate when one exists; there is still no
   separate alternate-result control.
 - Toy solver-outcome tests were replaced by the real `G20` / `SA24D` scenario suite, and the live
   semantics proof now passes on a fresh local backend with 120 history-enabled reruns, 120 unique
   valid layouts, a 12-seat near-teacher pool with 11 occupied seats, 10 distinct seats for each
-  near-teacher student, and keep-near row/column/diagonal mode rotation.
+  near-teacher student, and keep-near pair row/column rotation.
 - A second real-room solver suite now covers `BF25` / `G104`, including one student who belongs to
   both `Närmare läraren` and `Keep apart`, so the overlap case is regression-guarded alongside the
   original `SA24D` / `G20` classroom.
@@ -285,11 +285,15 @@ small while making smart seating real end-to-end:
 
 - `Keep near` is canonically defined as one immediate local cluster:
   - direct left/right or above/below adjacency is preferred
+  - for a 2-student pair, diagonal or one-seat-buffer fallback is acceptable only when needed and
+    should not be the standard good outcome
   - a one-step looser same-row or same-column fallback is acceptable only when needed
   - different-row-plus-different-column placements are not acceptable when a more compact cluster
     exists
 - `Keep apart` is canonically defined as meaningful separation:
   - not merely "not touching" or "not in direct orthogonal adjacency"
+  - immediate orthogonal and diagonal neighbors are invalid placements
+  - same-row or same-column placements are still acceptable when one full seat buffer remains
   - stronger layouts should prefer clearer row/column distance or different local seating blocks
     over tiny visual separators alone
 - `Närmare läraren` is canonically defined as nearer the teaching edge first and the teaching zone

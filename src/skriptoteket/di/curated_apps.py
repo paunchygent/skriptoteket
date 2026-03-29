@@ -44,6 +44,7 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     PrepareSeatingExportHandler,
     RedoDraftHandler,
     ResolveDraftHandler,
+    RunSmartGroupingHandler,
     RunSmartSeatingHandler,
     SeatingExportJobFinalizer,
     UndoDraftHandler,
@@ -145,6 +146,9 @@ from skriptoteket.infrastructure.repositories.classroom_planner import (
 from skriptoteket.infrastructure.repositories.classroom_planner_export_jobs import (
     PostgreSQLSeatingExportJobRepository,
 )
+from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_checkpoints import (
+    PostgreSQLGroupingExportCheckpointRepository,
+)
 from skriptoteket.infrastructure.repositories.classroom_planner_grouping_export_jobs import (
     PostgreSQLGroupingExportJobRepository,
 )
@@ -158,6 +162,7 @@ from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
     PostgreSQLConversionHubJobRepository,
 )
 from skriptoteket.protocols.classroom_planner import (
+    GroupingExportCheckpointRepositoryProtocol,
     PlanDraftRepositoryProtocol,
     RoomTemplateRepositoryProtocol,
     RosterRepositoryProtocol,
@@ -738,6 +743,7 @@ class CuratedAppsProvider(Provider):
     def grouping_export_job_finalizer(
         self,
         jobs: GroupingExportJobRepositoryProtocol,
+        checkpoints: GroupingExportCheckpointRepositoryProtocol,
         vault_files: VaultFileRepositoryProtocol,
         vault_usage: VaultUsageRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
@@ -748,6 +754,7 @@ class CuratedAppsProvider(Provider):
     ) -> GroupingExportJobFinalizer:
         return GroupingExportJobFinalizer(
             jobs=jobs,
+            checkpoints=checkpoints,
             vault_files=vault_files,
             vault_usage=vault_usage,
             vault_storage=vault_storage,
@@ -956,6 +963,29 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def run_smart_grouping_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        drafts: PlanDraftRepositoryProtocol,
+        rosters: RosterRepositoryProtocol,
+        templates: RoomTemplateRepositoryProtocol,
+        smart_rules: RosterSmartRuleRepositoryProtocol,
+        grouping_checkpoints: GroupingExportCheckpointRepositoryProtocol,
+        seating_checkpoints: SeatingExportCheckpointRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> RunSmartGroupingHandler:
+        return RunSmartGroupingHandler(
+            uow=uow,
+            drafts=drafts,
+            rosters=rosters,
+            templates=templates,
+            smart_rules=smart_rules,
+            grouping_checkpoints=grouping_checkpoints,
+            seating_checkpoints=seating_checkpoints,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def plan_draft_repository(self, session: AsyncSession) -> PlanDraftRepositoryProtocol:
         return PostgreSQLPlanDraftRepository(session=session)
 
@@ -990,6 +1020,12 @@ class CuratedAppsProvider(Provider):
         self, session: AsyncSession
     ) -> GroupingExportJobRepositoryProtocol:
         return PostgreSQLGroupingExportJobRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def grouping_export_checkpoint_repository(
+        self, session: AsyncSession
+    ) -> GroupingExportCheckpointRepositoryProtocol:
+        return PostgreSQLGroupingExportCheckpointRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
     def conversion_hub_job_repository(

@@ -1,6 +1,12 @@
 """Observability endpoints: /healthz and /metrics.
 
-Public endpoints (no authentication required) for monitoring infrastructure.
+Purpose:
+    Expose the public health probe and the Prometheus scrape route while
+    keeping production responses safe-by-default at the application boundary.
+
+Relationships:
+    - Uses `skriptoteket.observability.health` to compute the canonical status.
+    - Uses `skriptoteket.observability.metrics` for shared Prometheus collectors.
 
 NOTE: Do NOT use `from __future__ import annotations` in router modules.
 See .agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
@@ -17,7 +23,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.session_files.usage import get_session_file_usage
 from skriptoteket.observability.health import build_health_response, check_database, check_smtp
-from skriptoteket.observability.metrics import get_metrics
+from skriptoteket.observability.metrics import get_identity_metrics, get_metrics
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import SessionRepositoryProtocol, UserRepositoryProtocol
 from skriptoteket.web.dishka_dependencies import FromDishka
@@ -49,6 +55,7 @@ async def healthz(
         db_error=db_error,
         smtp_status=smtp_status,
         smtp_error=smtp_error,
+        detailed=settings.healthz_detailed_response,
     )
     return JSONResponse(content=payload, status_code=status_code)
 
@@ -63,12 +70,16 @@ async def metrics(
     """Prometheus metrics endpoint for scraping."""
     metrics = get_metrics()
     usage = await asyncio.to_thread(get_session_file_usage, artifacts_root=settings.ARTIFACTS_ROOT)
-    now = clock.now()
-    active_sessions = await sessions.count_active(now=now)
-    users_by_role = await users.count_active_by_role()
     metrics["session_files_bytes_total"].set(usage.bytes_total)
     metrics["session_files_count"].set(usage.files)
-    metrics["active_sessions"].set(active_sessions)
-    for role in Role:
-        metrics["users_by_role"].labels(role=role.value).set(users_by_role.get(role, 0))
+    if settings.metrics_identity_gauges_enabled:
+        identity_metrics = get_identity_metrics()
+        now = clock.now()
+        active_sessions = await sessions.count_active(now=now)
+        users_by_role = await users.count_active_by_role()
+        identity_metrics["active_sessions"].set(active_sessions)
+        for role in Role:
+            identity_metrics["users_by_role"].labels(role=role.value).set(
+                users_by_role.get(role, 0)
+            )
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

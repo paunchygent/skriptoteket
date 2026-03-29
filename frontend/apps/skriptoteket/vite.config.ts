@@ -1,13 +1,13 @@
-import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const devHost = process.env.VITE_DEV_HOST ?? "127.0.0.1";
+const devHost = process.env.VITE_DEV_HOST ?? true;
 const devPort = Number.parseInt(process.env.VITE_DEV_PORT ?? "5173", 10);
-const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET ?? "http://127.0.0.1:8000";
+const devProxyTarget = process.env.VITE_DEV_PROXY_TARGET ?? "http://localhost:8000";
 const usePolling = process.env.VITE_DEV_POLLING === "true";
 const pollingInterval = Number.parseInt(process.env.VITE_DEV_POLLING_INTERVAL ?? "", 10);
 const watch = usePolling
@@ -36,9 +36,15 @@ export default defineConfig(({ command }) => ({
     },
     watch,
     proxy: {
-      "/api": devProxyTarget,
+      "/api": {
+        target: devProxyTarget,
+        changeOrigin: true,
+      },
       // Proxy non-SPA static assets to backend; SPA assets served by Vite
-      "^/static/(?!spa)": devProxyTarget,
+      "^/static/(?!spa)": {
+        target: devProxyTarget,
+        changeOrigin: true,
+      },
     },
   },
 }));

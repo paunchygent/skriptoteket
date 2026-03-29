@@ -14,8 +14,9 @@ acceptance_criteria:
   - "Given the teacher reruns `Slumpa` in `Sittplatser` with `Smart` still `on`, when multiple good rule-respecting seating candidates exist, then the backend prefers a materially different valid result over repeating the current assignment hash."
   - "Given the teacher authors roster-global `Keep apart`, `Keep near`, and `Närmare läraren` rules and enables draft-local `Use history`, when smart seating runs, then those inputs affect the backend result without exposing raw weights, score tables, or rule-engine jargon."
   - "Given the teacher creates or edits smart rules from one seating draft and later opens another draft for the same class, when the second draft loads, then those same roster-global rules are available there without reauthoring them."
-  - "Given one seating `Keep apart` cluster exists, when smart seating places those students, then it strongly avoids direct orthogonal adjacency in the same row or column and prefers extra spacing when the room allows it."
-  - "Given one seating `Keep near` cluster exists, when smart seating places those students, then it prefers one local vicinity for the cluster rather than requiring one exact shoulder-to-shoulder seat pairing."
+  - "Given one seating `Keep apart` cluster exists, when smart seating places those students, then it treats immediate orthogonal or diagonal neighbors as invalid placements, still allows same-row or same-column seating when one full seat buffer remains between them, and prefers extra spacing when the room allows it."
+  - "Given one seating `Keep near` pair exists, when smart seating places those two students, then direct left/right or above/below adjacency is the clean target, while diagonal or one-seat-buffer fallback is only used when stronger adjacency is impossible."
+  - "Given one seating `Keep near` cluster larger than two students exists, when smart seating places those students, then it prefers one local vicinity for the cluster rather than requiring one exact shoulder-to-shoulder seat pairing."
   - "Given `Use history` is enabled and a student does not have `Närmare läraren`, when smart seating runs across multiple teacher-approved checkpoints, then it tries to balance that student's teacher-distance more fairly over time rather than repeatedly leaving the same students nearest the teacher."
   - "Given room-owned teaching cues exist, when smart seating evaluates teacher-distance, then it infers the teaching/front edge from `Whiteboard` and `Kateder`; if no stronger cue exists, the default teaching position is top-middle in the standard planner view."
   - "Given eligible seating checkpoints exist and `Use history` is enabled, when smart seating runs, then history is derived from those checkpoints rather than from draft autosave or undo/redo mechanics."
@@ -48,8 +49,12 @@ lane on top of that foundation.
   shipped solver:
   - `Keep near` means one immediate local cluster, with direct left/right or above/below adjacency
     preferred and only constrained fallback loosening
+  - for a 2-student `Keep near` pair, diagonal or one-seat-buffer placements are fallback/tradeoff
+    results rather than normal successful pair layouts
   - `Keep apart` means meaningful separation, not merely "not touching" or "not in direct
     orthogonal adjacency"
+  - immediate orthogonal and diagonal neighbors are invalid for `Keep apart`, while same-row or
+    same-column placements remain valid when one full seat buffer stays between the students
   - `Närmare läraren` means nearer the teaching edge first and the teaching zone second, not merely
     nearer one arbitrary point-anchor
 - Overlapping visible relationship clusters are intentionally out of scope for V1.
@@ -76,8 +81,9 @@ lane on top of that foundation.
   spread-oriented seating blocks, so `G20` and similar classrooms no longer fall back to toy-grid
   adjacency assumptions.
 - `Närmare läraren` now rotates inside the valid teacher pool instead of pinning the same strongest
-  seats, `Keep near` rotates across compact row/column/diagonal relation modes, and `Keep apart`
-  plus rerun diversity now keep every student moving across repeated history-enabled smart runs.
+  seats, 2-student `Keep near` pairs now rerun across direct row/column adjacency rather than
+  standard diagonal placement, and `Keep apart` plus rerun diversity now keep every student moving
+  across repeated history-enabled smart runs.
 - The solver contract is now regression-covered by two classroom-scale scenario suites:
   - `SA24D` / `G20` for mixed `Keep apart`, `Keep near`, and `Närmare läraren`
   - `BF25` / `G104` for an overlapping-rule student who is both `Närmare läraren` and part of one
@@ -85,5 +91,5 @@ lane on top of that foundation.
 - Verification now closes with the real `G20` / `SA24D` scenario suite, the `BF25` / `G104`
   overlap suite, focused backend tests, and a live semantics proof on a fresh local backend that
   produced 120 valid reruns with 120 unique layouts, a 12-seat valid teacher pool with 11 seats
-  exercised, 10 distinct seats for each near-teacher student, and keep-near row/column/diagonal
-  mode rotation.
+  exercised, 10 distinct seats for each near-teacher student, pairwise keep-near row/column
+  adjacency rotation, and stricter keep-apart diagonal rejection.

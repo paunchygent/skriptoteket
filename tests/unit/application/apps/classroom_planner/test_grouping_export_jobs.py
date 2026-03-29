@@ -163,11 +163,13 @@ async def test_create_grouping_export_job_persists_placeholder_submitted_job():
     xlsx_renderer = AsyncMock(spec=GroupingXlsxRendererProtocol)
     xlsx_renderer.render.return_value = b"PK\x03\x04"
     finalizer = AsyncMock(spec=GroupingExportJobFinalizer)
-    finalizer.complete_local_success.side_effect = lambda *, job, content, filename: job.model_copy(
-        update={
-            "status": GroupingExportJobStatus.SUCCEEDED,
-            "vault_file_id": uuid4(),
-        }
+    finalizer.complete_local_success.side_effect = lambda *, job, content, checkpoint, filename: (
+        job.model_copy(
+            update={
+                "status": GroupingExportJobStatus.SUCCEEDED,
+                "vault_file_id": uuid4(),
+            }
+        )
     )
 
     handler = CreateGroupingExportJobHandler(
@@ -206,6 +208,7 @@ async def test_create_grouping_pdf_job_renders_local_pdf_and_completes_successfu
     now = datetime(2026, 3, 26, tzinfo=timezone.utc)
     job_id = uuid4()
     prepare = AsyncMock(spec=PrepareGroupingExportHandler)
+    prepare.load_workspace.return_value = _grouping_workspace(owner_user_id=actor.id)
     prepare.handle.return_value = _prepared_contract().model_copy(
         update={
             "export_kind": GroupingExportKind.PDF,
@@ -218,11 +221,13 @@ async def test_create_grouping_pdf_job_renders_local_pdf_and_completes_successfu
     pdf_renderer.render.return_value = b"%PDF-1.7"
     xlsx_renderer = AsyncMock(spec=GroupingXlsxRendererProtocol)
     finalizer = AsyncMock(spec=GroupingExportJobFinalizer)
-    finalizer.complete_local_success.side_effect = lambda *, job, content, filename: job.model_copy(
-        update={
-            "status": GroupingExportJobStatus.SUCCEEDED,
-            "vault_file_id": uuid4(),
-        }
+    finalizer.complete_local_success.side_effect = lambda *, job, content, checkpoint, filename: (
+        job.model_copy(
+            update={
+                "status": GroupingExportJobStatus.SUCCEEDED,
+                "vault_file_id": uuid4(),
+            }
+        )
     )
 
     handler = CreateGroupingExportJobHandler(

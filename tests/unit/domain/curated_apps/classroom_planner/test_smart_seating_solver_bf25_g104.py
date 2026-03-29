@@ -351,10 +351,11 @@ def _near_teacher_valid(run: _ScenarioRun, topology: SeatTopology) -> bool:
 def _keep_apart_valid(run: _ScenarioRun, topology: SeatTopology) -> bool:
     for index, left_id in enumerate(_KEEP_APART_STUDENT_IDS):
         for right_id in _KEEP_APART_STUDENT_IDS[index + 1 :]:
-            if topology.pair(
+            pair = topology.pair(
                 run.assignments_by_student[left_id],
                 run.assignments_by_student[right_id],
-            ).orthogonally_adjacent:
+            )
+            if pair.orthogonally_adjacent or pair.diagonal_neighbor:
                 return False
     return True
 

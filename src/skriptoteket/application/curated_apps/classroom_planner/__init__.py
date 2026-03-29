@@ -54,6 +54,7 @@ from .handlers.seating_history import (
     ActivateSeatingHistoryDraftHandler,
     DeleteHistoricSeatingDraftHandler,
 )
+from .handlers.smart_grouping import RunSmartGroupingHandler
 from .handlers.smart_rules import (
     GetRosterSmartRulesHandler,
     PatchRosterSmartRulesHandler,
@@ -109,6 +110,7 @@ __all__ = [
     "PreparedSeatingExportContract",
     "RedoDraftHandler",
     "ResolveDraftHandler",
+    "RunSmartGroupingHandler",
     "RunSmartSeatingHandler",
     "SeatingExportKind",
     "SeatingExportLayoutId",

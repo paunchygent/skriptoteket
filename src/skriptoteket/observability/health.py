@@ -42,6 +42,11 @@ class HealthPayload(TypedDict):
     dependencies: dict[str, Dependency]
 
 
+class PublicHealthPayload(TypedDict):
+    status: HealthStatus
+    message: str
+
+
 async def check_database(engine: AsyncEngine) -> tuple[HealthStatus, str | None]:
     """Check database connectivity with timeout.
 
@@ -104,7 +109,8 @@ def build_health_response(
     db_error: str | None,
     smtp_status: HealthStatus | None = None,
     smtp_error: str | None = None,
-) -> tuple[HealthPayload, int]:
+    detailed: bool = True,
+) -> tuple[HealthPayload | PublicHealthPayload, int]:
     """Build HuleEdu-compliant health response.
 
     Args:
@@ -145,15 +151,21 @@ def build_health_response(
     else:
         overall_status = "healthy"
 
-    payload: HealthPayload = {
-        "service": service_name,
-        "status": overall_status,
-        "message": f"Service is {overall_status}",
-        "version": version,
-        "environment": environment,
-        "checks": checks,
-        "dependencies": dependencies,
-    }
+    if detailed:
+        payload: HealthPayload | PublicHealthPayload = {
+            "service": service_name,
+            "status": overall_status,
+            "message": f"Service is {overall_status}",
+            "version": version,
+            "environment": environment,
+            "checks": checks,
+            "dependencies": dependencies,
+        }
+    else:
+        payload = {
+            "status": overall_status,
+            "message": f"Service is {overall_status}",
+        }
 
     status_code = 200 if overall_status == "healthy" else 503
     return payload, status_code

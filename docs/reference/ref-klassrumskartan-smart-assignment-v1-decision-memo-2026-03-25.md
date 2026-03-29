@@ -79,8 +79,10 @@ explicit, and the current class-first workflow intact.
 - The backend may achieve that through randomized tie-breaking, multi-start search, or an internal
   diversity penalty against the current assignment hash or another equivalent mechanism.
 - Treat relation rules as strong best-effort objectives rather than brittle hard requirements:
-  - `Keep apart` in seating means no direct orthogonal adjacency when possible
-  - `Keep near` in seating means same local vicinity rather than exact seat pairing
+  - `Keep apart` in seating means no immediate orthogonal or diagonal adjacency when possible,
+    while same-row or same-column placements with one full seat buffer remain acceptable
+  - `Keep near` in seating means one local vicinity overall, but a 2-student pair should prefer
+    direct left/right or above/below adjacency over diagonal placement
   - `Keep apart` in grouping should spread cluster members across different groups whenever possible
 - Compute teacher-distance from room-owned teaching cues:
   - recommend that the teacher places `Whiteboard` or `Kateder`

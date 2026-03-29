@@ -141,3 +141,33 @@ async def test_list_favorites_respects_limit_and_overfetch(now: datetime) -> Non
 
     assert len(result.items) == 1
     favorites.list_catalog_refs_for_user.assert_awaited_once_with(user_id=actor.id, limit=6)
+
+
+@pytest.mark.asyncio
+async def test_list_favorites_omits_curated_apps_missing_from_registry(now: datetime) -> None:
+    actor = make_user(role=Role.USER)
+    hidden_app_id = "games.flunk_out_frenzy"
+
+    favorites = AsyncMock(spec=FavoritesRepositoryProtocol)
+    favorites.list_catalog_refs_for_user.return_value = [
+        FavoriteCatalogRef(
+            kind=FavoriteCatalogItemKind.CURATED_APP,
+            app_id=hidden_app_id,
+            created_at=now,
+        )
+    ]
+
+    tools = AsyncMock(spec=ToolRepositoryProtocol)
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.get_by_app_id.return_value = None
+
+    handler = ListFavoritesHandler(
+        favorites=favorites,
+        tools=tools,
+        curated_apps=curated_apps,
+    )
+
+    result = await handler.handle(actor=actor, query=ListFavoritesQuery())
+
+    assert result.items == []
+    curated_apps.get_by_app_id.assert_called_once_with(app_id=hidden_app_id)

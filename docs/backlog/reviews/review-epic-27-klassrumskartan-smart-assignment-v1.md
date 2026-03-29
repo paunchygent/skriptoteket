@@ -5,7 +5,7 @@ title: "Review: Klassrumskartan smart assignment v1"
 status: approved
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 reviewer: "lead-developer"
 epic: EPIC-27
 adrs:
@@ -153,6 +153,14 @@ re-coupling it through one shared save contract.
     exact-current-arrangement view
   - `Sittplatser` and `Grupper` now keep only compact smart summaries plus a small settings-link
     affordance near `Smart`; drawers may summarize but not edit rules
+- 2026-03-29 smart-grouping precedence refinement before `ST-27-04` implementation:
+  - grouping history is now explicitly separate from live seating continuity
+  - grouping `Use history` now means label-insensitive grouping anti-repeat memory based on
+    normalized student partitions and repeated co-memberships rather than raw group ids
+  - the explicit grouping seat-distance toggle now reads the active seating draft first and
+    eligible seating checkpoints second as continuity input only, never as grouping history
+  - for smart grouping, rerun diversity now sits below explicit relation rules, explicit live
+    seating continuity when enabled, and grouping-history anti-repeat memory
 
 ## Suggested Approval Wording
 

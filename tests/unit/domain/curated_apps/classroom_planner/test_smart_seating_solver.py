@@ -42,6 +42,9 @@ from skriptoteket.domain.curated_apps.classroom_planner.seat_topology import (
 )
 from skriptoteket.domain.curated_apps.classroom_planner.smart_seating import (
     SmartSeatingResult,
+    _keep_apart_has_tradeoff,
+    _keep_apart_pair_score,
+    _keep_near_has_tradeoff,
     solve_smart_seating,
 )
 
@@ -52,7 +55,7 @@ _HISTORY_CHECKPOINT_COUNT = 6
 _HISTORY_RERUN_COUNT = 240
 _MIN_VALID_LAYOUT_COUNT = 10
 _MIN_DISTINCT_SEAT_COUNT = 2
-_MIN_NEAR_TEACHER_DISTINCT_SEAT_COUNT = 6
+_MIN_NEAR_TEACHER_DISTINCT_SEAT_COUNT = 3
 _MIN_NEAR_TEACHER_ROTATION_POOL_SIZE = 6
 _MIN_KEEP_APART_MEAN_DISTANCE = 7.0
 _MIN_KEEP_APART_BLOCK_COUNT = 2
@@ -375,7 +378,7 @@ def _keep_near_valid(run: _ScenarioRun, topology: SeatTopology) -> bool:
         run.assignments_by_student[_KEEP_NEAR_STUDENT_IDS[0]],
         run.assignments_by_student[_KEEP_NEAR_STUDENT_IDS[1]],
     )
-    return pair.keep_near_relation_mode is not None
+    return pair.orthogonally_adjacent
 
 
 def _keep_apart_valid(run: _ScenarioRun, topology: SeatTopology) -> bool:
@@ -385,9 +388,38 @@ def _keep_apart_valid(run: _ScenarioRun, topology: SeatTopology) -> bool:
                 run.assignments_by_student[left_id],
                 run.assignments_by_student[right_id],
             )
-            if pair.orthogonally_adjacent:
+            if pair.orthogonally_adjacent or pair.diagonal_neighbor:
                 return False
     return True
+
+
+def test_g20_immediate_diagonal_is_invalid_keep_apart_geometry() -> None:
+    template = _build_template()
+    topology = build_seat_topology(
+        seats=template.seats,
+        anchor=infer_teaching_anchor(template=template),
+        fixtures=template.fixtures,
+    )
+
+    pair = topology.pair("seat-2", "seat-12")
+
+    assert pair.diagonal_neighbor is True
+    assert _keep_apart_has_tradeoff(pair) is True
+    assert _keep_apart_pair_score(pair=pair) < 0.0
+
+
+def test_g20_pair_keep_near_requires_direct_row_or_column_contact() -> None:
+    template = _build_template()
+    topology = build_seat_topology(
+        seats=template.seats,
+        anchor=infer_teaching_anchor(template=template),
+        fixtures=template.fixtures,
+    )
+
+    pair = topology.pair("seat-1", "seat-11")
+
+    assert pair.diagonal_neighbor is True
+    assert _keep_near_has_tradeoff(pair=pair, cluster_size=2) is True
 
 
 def _near_teacher_occupied_seat_ids(simulation: _ScenarioSimulation) -> frozenset[str]:
@@ -475,6 +507,8 @@ def test_g20_sa24d_history_reruns_rotate_each_rule_lane(
                 seat_count=len(_NEAR_TEACHER_STUDENT_IDS)
             )
         )
+        # The teacher-zone lane should stay broad overall even when one specific
+        # student's viable front-row subpool narrows under stricter pair geometry.
         assert min(distinct_seat_counts.values()) >= _MIN_NEAR_TEACHER_DISTINCT_SEAT_COUNT
         assert occupied_pool_seat_ids <= teacher_pool_seat_ids
         assert len(occupied_pool_seat_ids) >= _MIN_NEAR_TEACHER_ROTATION_POOL_SIZE
@@ -493,7 +527,8 @@ def test_g20_sa24d_history_reruns_rotate_each_rule_lane(
         }
         keep_near_modes.discard(None)
         assert min(distinct_seat_counts.values()) >= _MIN_DISTINCT_SEAT_COUNT
-        assert len(keep_near_modes) >= 3
+        assert keep_near_modes <= {"adjacent-row", "adjacent-column"}
+        assert len(keep_near_modes) >= 2
         return
     distinct_seat_counts = _distinct_seat_counts_by_student(
         g20_sa24d_history_simulation,

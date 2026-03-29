@@ -5,6 +5,12 @@ from __future__ import annotations
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.infrastructure.repositories.allowed_domain_repository import (
+    PostgreSQLAllowedDomainRepository,
+)
+from skriptoteket.infrastructure.repositories.blocked_domain_repository import (
+    PostgreSQLBlockedDomainRepository,
+)
 from skriptoteket.infrastructure.repositories.category_repository import (
     PostgreSQLCategoryRepository,
 )
@@ -78,6 +84,8 @@ from skriptoteket.protocols.email_verification import EmailVerificationTokenRepo
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.identity import (
+    AllowedDomainRepositoryProtocol,
+    BlockedDomainRepositoryProtocol,
     ProfileRepositoryProtocol,
     SessionRepositoryProtocol,
     UserRepositoryProtocol,
@@ -103,6 +111,14 @@ from skriptoteket.protocols.vault import (
 
 class InfrastructureRepositoryProvider(Provider):
     """Provides database-backed repository bindings."""
+
+    @provide(scope=Scope.REQUEST)
+    def allowed_domain_repo(self, session: AsyncSession) -> AllowedDomainRepositoryProtocol:
+        return PostgreSQLAllowedDomainRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def blocked_domain_repo(self, session: AsyncSession) -> BlockedDomainRepositoryProtocol:
+        return PostgreSQLBlockedDomainRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def user_repo(self, session: AsyncSession) -> UserRepositoryProtocol:

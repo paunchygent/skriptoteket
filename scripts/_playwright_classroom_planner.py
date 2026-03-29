@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Locator, Page, expect
 
 APP_PATH = "/apps/classroom.group-seating-studio"
 
@@ -30,6 +30,27 @@ def wait_for_app_heading(page: Page) -> None:
         page.wait_for_timeout(500)
 
     raise AssertionError("Klassrumskartan did not render after protected-route login.")
+
+
+def _wait_for_visible_heading_or_text(page: Page, *, label: str) -> None:
+    """Wait until a matching heading or exact text becomes visible."""
+
+    heading = page.get_by_role("heading", name=re.compile(re.escape(label)))
+    text_match = page.get_by_text(label, exact=True)
+    for _ in range(20):
+        if heading.count() > 0 and heading.first.is_visible():
+            return
+        if text_match.count() > 0 and text_match.first.is_visible():
+            return
+        page.wait_for_timeout(250)
+
+    raise AssertionError(f"{label!r} did not become visible in the live planner UI.")
+
+
+def workspace_toggle(page: Page) -> Locator:
+    """Return the planner workspace switch used for mode changes."""
+
+    return page.locator('[data-test="planner-workspace-switch"]').first
 
 
 def login_to_app(page: Page, *, base_url: str, email: str, password: str) -> None:
@@ -78,7 +99,7 @@ def create_roster(page: Page, *, roster_name: str) -> None:
     page.get_by_placeholder(re.compile(r"Klass 9A", re.IGNORECASE)).fill(roster_name)
     page.locator("textarea").fill("Ada Lovelace\nBo Berg")
     page.get_by_role("button", name=re.compile(r"Skapa klasslista", re.IGNORECASE)).click()
-    expect(page.get_by_role("heading", name=re.compile(re.escape(roster_name)))).to_be_visible()
+    _wait_for_visible_heading_or_text(page, label=roster_name)
 
 
 def create_template(page: Page, *, template_name: str) -> None:
@@ -139,24 +160,13 @@ def create_template(page: Page, *, template_name: str) -> None:
     ).to_be_visible()
 
     page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()
-    template_heading = page.get_by_role("heading", name=re.compile(re.escape(template_name)))
-    template_text = page.get_by_text(template_name, exact=True)
-    for _ in range(20):
-        if template_heading.count() > 0 and template_heading.first.is_visible():
-            return
-        if template_text.count() > 0 and template_text.first.is_visible():
-            return
-        page.wait_for_timeout(250)
-
-    raise AssertionError(
-        f"Created classroom {template_name!r} did not become visible in the live UI."
-    )
+    _wait_for_visible_heading_or_text(page, label=template_name)
 
 
 def focus_workspace_mode(page: Page, *, label: str) -> None:
     """Select one compact class-workspace mode through the segmented toggle."""
 
-    toggle = page.locator('[data-ui="segmented-toggle"]')
+    toggle = workspace_toggle(page)
     matcher = re.compile(re.escape(label), re.IGNORECASE)
     radio_option = toggle.get_by_role("radio", name=matcher)
     if radio_option.count() > 0:
@@ -181,5 +191,5 @@ def open_class_workspace(page: Page, *, roster_name: str) -> None:
     )
     roster_select.select_option(value=matching_option["value"])
     expect(roster_select).to_have_value(matching_option["value"])
-    expect(page.get_by_role("heading", name=re.compile(re.escape(roster_name)))).to_be_visible()
-    expect(page.locator('[data-ui="segmented-toggle"]')).to_be_visible()
+    _wait_for_visible_heading_or_text(page, label=roster_name)
+    expect(workspace_toggle(page)).to_be_visible()

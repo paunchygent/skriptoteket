@@ -16,8 +16,9 @@ Relationships:
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     GroupingExportJob,
@@ -29,6 +30,11 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
     build_grouping_export_presentation,
     build_grouping_pdf_view_model,
     build_grouping_xlsx_view_model,
+)
+from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints import (
+    GroupingExportCheckpoint,
+    build_grouping_assignment_hash,
+    build_normalized_grouping_snapshot,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.models import ClassroomPlannerWorkspace
 from skriptoteket.domain.errors import not_found, validation_error
@@ -118,6 +124,11 @@ class CreateGroupingExportJobHandler:
             completed_job = await self._finalizer.complete_local_success(
                 job=job,
                 content=artifact_bytes,
+                checkpoint=_build_grouping_checkpoint(
+                    workspace=workspace,
+                    job_id=job.id,
+                    created_at=self._clock.now(),
+                ),
                 filename=view_model.output_filename,
             )
         except Exception:
@@ -135,6 +146,10 @@ class CreateGroupingExportJobHandler:
         draft_id: UUID,
         paper_size: GroupingExportPaperSize | None,
     ) -> GroupingExportJobResult:
+        workspace = await self._prepare.load_workspace(
+            draft_id=draft_id,
+            owner_user_id=actor.id,
+        )
         prepared = await self._prepare.handle(
             draft_id=draft_id,
             owner_user_id=actor.id,
@@ -158,6 +173,11 @@ class CreateGroupingExportJobHandler:
             completed_job = await self._finalizer.complete_local_success(
                 job=job,
                 content=artifact_bytes,
+                checkpoint=_build_grouping_checkpoint(
+                    workspace=workspace,
+                    job_id=job.id,
+                    created_at=self._clock.now(),
+                ),
                 filename=view_model.output_filename,
             )
         except Exception:
@@ -375,6 +395,30 @@ def _unassigned_student_names(
             ),
             key=lambda name: name.casefold(),
         )
+    )
+
+
+def _build_grouping_checkpoint(
+    *,
+    workspace: ClassroomPlannerWorkspace,
+    job_id: UUID,
+    created_at: datetime,
+) -> GroupingExportCheckpoint:
+    """Build one export-backed grouping-history checkpoint from the workspace."""
+
+    grouping_snapshot = build_normalized_grouping_snapshot(
+        roster=workspace.roster,
+        group_assignments=workspace.group_assignments,
+    )
+    return GroupingExportCheckpoint(
+        id=uuid4(),
+        roster_id=workspace.roster.id,
+        template_id=workspace.template.id if workspace.template is not None else None,
+        source_draft_id=workspace.draft.id,
+        source_export_job_id=job_id,
+        assignment_hash=build_grouping_assignment_hash(grouping_snapshot=grouping_snapshot),
+        grouping_snapshot=grouping_snapshot,
+        created_at=created_at,
     )
 
 

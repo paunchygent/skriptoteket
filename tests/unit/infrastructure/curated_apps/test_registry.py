@@ -1,4 +1,4 @@
-"""Registry tests for competitive-game curated app discoverability."""
+"""Registry tests for environment-aware curated app discoverability."""
 
 from __future__ import annotations
 
@@ -8,10 +8,11 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.curated_apps.registry import InMemoryCuratedAppRegistry
 
 
-def test_registry_includes_flunk_out_frenzy_with_expected_identity() -> None:
+def test_registry_keeps_flunk_out_frenzy_available_outside_production() -> None:
     registry = InMemoryCuratedAppRegistry(
         settings=Settings(
             APP_VERSION="9.9.9",
+            ENVIRONMENT="development",
             DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/test",
         )
     )
@@ -27,3 +28,21 @@ def test_registry_includes_flunk_out_frenzy_with_expected_identity() -> None:
     assert app.min_role is Role.USER
     assert app.matches_placement(profession_slug="gemensamt", category_slug="ovrigt") is True
     assert app.matches_placement(profession_slug="larare", category_slug="ovrigt") is True
+
+
+def test_registry_hides_demo_and_in_development_apps_in_production() -> None:
+    registry = InMemoryCuratedAppRegistry(
+        settings=Settings(
+            APP_VERSION="9.9.9",
+            ENVIRONMENT="production",
+            DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/test",
+        )
+    )
+
+    assert registry.get_by_app_id(app_id="demo.counter") is None
+    assert registry.get_by_app_id(app_id="games.flunk_out_frenzy") is None
+    assert [app.app_id for app in registry.list_all()] == [
+        "chemistry.reagent_prep_chef",
+        "documents.conversion_hub",
+        "classroom.group-seating-studio",
+    ]

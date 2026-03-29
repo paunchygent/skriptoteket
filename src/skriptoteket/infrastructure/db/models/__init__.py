@@ -1,5 +1,10 @@
 """SQLAlchemy model exports for metadata discovery and Alembic imports."""
 
+from skriptoteket.infrastructure.db.models.allowed_domain import AllowedDomainModel
+from skriptoteket.infrastructure.db.models.blocked_domain import BlockedDomainModel
+from skriptoteket.infrastructure.db.models.classroom_planner_grouping_export_checkpoint import (
+    GroupingExportCheckpointModel,
+)
 from skriptoteket.infrastructure.db.models.classroom_planner_grouping_export_job import (
     GroupingExportJobModel,
 )
@@ -37,8 +42,11 @@ from skriptoteket.infrastructure.db.models.user_favorite import (
 )
 
 __all__ = [
+    "AllowedDomainModel",
+    "BlockedDomainModel",
     "DraftGroupModel",
     "ConversionHubJobModel",
+    "GroupingExportCheckpointModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",
     "PlanDraftModel",

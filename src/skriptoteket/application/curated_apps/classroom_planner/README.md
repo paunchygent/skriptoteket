@@ -8,7 +8,7 @@ The application implements a Layered/DDD architecture to separate planning logic
 
 ### 1. Domain Layer (`src/skriptoteket/domain/curated_apps/classroom_planner/`)
 - **Core Logic**: Smart-seating solver heuristics and heuristic class-list parsers.
-- **Smart Rules**: Implementation of teacher-defined constraints (proximity, relationship exclusions).
+- **Smart Rules**: Implementation of teacher-defined relationship clusters (Keep Near/Keep Apart for 2+ students) and teacher-distance preferences.
 - **Invariants**: Enforcement of room geometry and roster consistency.
 
 ### 2. Application Layer (`src/skriptoteket/application/curated_apps/classroom_planner/`)

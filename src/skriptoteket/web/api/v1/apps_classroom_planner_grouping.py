@@ -19,8 +19,13 @@ from skriptoteket.application.curated_apps.classroom_planner import (
     GetGroupingExportJobHandler,
     GetRecoverableGroupingExportJobForDraftHandler,
     PrepareGroupingExportHandler,
+    RunSmartGroupingHandler,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.web.api.v1.apps_classroom_planner import (
+    DraftWorkspaceResponse,
+    _serialize_workspace,
+)
 from skriptoteket.web.api.v1.apps_classroom_planner_draft_contracts import (
     PlanDraftDto,
     serialize_plan_draft,
@@ -49,6 +54,33 @@ class CreateGroupingDraftRequest(BaseModel):
 
     roster_id: UUID
     template_id: UUID | None = None
+
+
+class SmartGroupingRunRequest(BaseModel):
+    """Deserialize one backend-owned grouping smart-run request."""
+
+    expected_revision: int
+
+
+class AppliedSmartGroupingRunResponse(BaseModel):
+    """Serialize one applied backend smart-grouping result."""
+
+    status: str
+    workspace: DraftWorkspaceResponse
+    used_history: bool
+    used_live_seating: bool
+    message: str | None
+
+
+class BlockedSmartGroupingRunResponse(BaseModel):
+    """Serialize one blocked backend smart-grouping result."""
+
+    status: str
+    reason: str
+    message: str
+    workspace: None = None
+    used_history: bool
+    used_live_seating: bool
 
 
 @router.post("/drafts/grouping/new", response_model=PlanDraftDto)
@@ -85,6 +117,39 @@ async def delete_historic_grouping_draft(
     _: None = Depends(require_csrf_token),
 ) -> None:
     await handler.handle(draft_id=draft_id, owner_user_id=user.id)
+
+
+@router.post(
+    "/drafts/grouping/{draft_id}/smart-run",
+    response_model=AppliedSmartGroupingRunResponse | BlockedSmartGroupingRunResponse,
+)
+async def run_smart_grouping(
+    draft_id: UUID,
+    request: SmartGroupingRunRequest,
+    handler: FromDishka[RunSmartGroupingHandler],
+    user: User = Depends(require_user_api),
+    _: None = Depends(require_csrf_token),
+) -> AppliedSmartGroupingRunResponse | BlockedSmartGroupingRunResponse:
+    result = await handler.handle(
+        draft_id=draft_id,
+        owner_user_id=user.id,
+        expected_revision=request.expected_revision,
+    )
+    if result.status == "blocked":
+        return BlockedSmartGroupingRunResponse(
+            status=result.status,
+            reason=result.reason,
+            message=result.message,
+            used_history=result.used_history,
+            used_live_seating=result.used_live_seating,
+        )
+    return AppliedSmartGroupingRunResponse(
+        status=result.status,
+        workspace=_serialize_workspace(result.workspace),
+        used_history=result.used_history,
+        used_live_seating=result.used_live_seating,
+        message=result.message,
+    )
 
 
 @router.post("/drafts/grouping/{draft_id}/exports", response_model=PreparedGroupingExportDto)

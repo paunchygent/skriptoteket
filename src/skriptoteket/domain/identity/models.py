@@ -1,3 +1,14 @@
+"""Identity domain models for users, sessions, and registration allowlists.
+
+Purpose:
+  Keep framework-agnostic identity state in one place, including the
+  allowlist/blocklist records used by registration domain validation.
+
+Relationships:
+  - Consumed by application handlers and repository protocols.
+  - Mapped from SQLAlchemy models in `skriptoteket.infrastructure.db.models.*`.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -18,6 +29,44 @@ class Role(StrEnum):
 class AuthProvider(StrEnum):
     LOCAL = "local"
     HULEEDU = "huleedu"
+
+
+class OrganizationType(StrEnum):
+    KOMMUN = "kommun"
+    ENSKILD_HUVUDMAN = "enskild_huvudman"
+    GOVERNMENT_AGENCY = "government_agency"
+    OTHER = "other"
+
+
+class AllowedDomain(BaseModel):
+    """A root domain allowed for automatic user registration."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    domain: str  # e.g., "stockholm.se"
+    org_type: OrganizationType
+    org_name: str
+    source: str
+    source_ref: str | None = None
+    is_active: bool = True
+    notes: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class BlockedDomain(BaseModel):
+    """A root domain explicitly blocked (e.g., personal email providers)."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    domain: str  # e.g., "gmail.com"
+    reason: str | None = None
+    source: str
+    source_ref: str | None = None
+    is_active: bool = True
+    notes: str | None = None
+    created_at: datetime
+    updated_at: datetime
 
 
 class User(BaseModel):

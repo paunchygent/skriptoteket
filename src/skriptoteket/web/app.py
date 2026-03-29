@@ -17,6 +17,7 @@ from pathlib import Path
 import structlog
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
@@ -27,6 +28,7 @@ from skriptoteket.observability.tracing import init_tracing
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.middleware.metrics import metrics_middleware
+from skriptoteket.web.middleware.security_headers import SecurityHeadersMiddleware
 from skriptoteket.web.middleware.tracing import tracing_middleware
 from skriptoteket.web.router import router as web_router
 from skriptoteket.web.routes.observability import router as observability_router
@@ -73,18 +75,23 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
-        docs_url="/docs" if settings.ENABLE_DOCS else None,
+        docs_url="/docs" if settings.enable_docs else None,
+        redoc_url="/redoc" if settings.enable_docs else None,
+        openapi_url="/openapi.json" if settings.enable_docs else None,
         lifespan=_build_lifespan(settings=settings),
     )
 
     # Middleware execution order:
-    #   correlation (ASGI) → tracing → metrics → error_handler
+    #   correlation (ASGI) → security_headers (ASGI) → trusted_hosts
+    #   → tracing → metrics → error_handler
     #
     # Starlette inserts new middleware at the start of the stack, so we register
     # innermost-first and add correlation last to ensure it is outermost.
     app.middleware("http")(error_handler_middleware)
     app.middleware("http")(metrics_middleware)
     app.middleware("http")(tracing_middleware)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(CorrelationMiddleware)
 
     static_dir = Path(__file__).resolve().parent / "static"

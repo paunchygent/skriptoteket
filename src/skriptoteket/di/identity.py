@@ -5,6 +5,7 @@ from __future__ import annotations
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.identity.current_user_provider import CurrentUserProvider
+from skriptoteket.application.identity.domain_validator import TldextractDomainValidator
 from skriptoteket.application.identity.handlers.change_email import ChangeEmailHandler
 from skriptoteket.application.identity.handlers.change_password import ChangePasswordHandler
 from skriptoteket.application.identity.handlers.create_local_user import CreateLocalUserHandler
@@ -34,10 +35,13 @@ from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRende
 from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
+    AllowedDomainRepositoryProtocol,
+    BlockedDomainRepositoryProtocol,
     ChangeEmailHandlerProtocol,
     ChangePasswordHandlerProtocol,
     CreateLocalUserHandlerProtocol,
     CurrentUserProviderProtocol,
+    DomainValidatorProtocol,
     GetProfileHandlerProtocol,
     GetUserHandlerProtocol,
     ListUsersHandlerProtocol,
@@ -63,6 +67,17 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 class IdentityProvider(Provider):
     """Provides identity/authentication handlers."""
+
+    @provide(scope=Scope.REQUEST)
+    def domain_validator(
+        self,
+        allowed_domains: AllowedDomainRepositoryProtocol,
+        blocked_domains: BlockedDomainRepositoryProtocol,
+    ) -> DomainValidatorProtocol:
+        return TldextractDomainValidator(
+            allowed_domains=allowed_domains,
+            blocked_domains=blocked_domains,
+        )
 
     @provide(scope=Scope.REQUEST)
     def current_user_provider(
@@ -161,6 +176,7 @@ class IdentityProvider(Provider):
         email_sender: EmailSenderProtocol,
         email_renderer: EmailTemplateRendererProtocol,
         sleeper: SleeperProtocol,
+        domain_validator: DomainValidatorProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -175,6 +191,7 @@ class IdentityProvider(Provider):
             email_sender=email_sender,
             email_renderer=email_renderer,
             sleeper=sleeper,
+            domain_validator=domain_validator,
             password_hasher=password_hasher,
             clock=clock,
             id_generator=id_generator,

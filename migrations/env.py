@@ -11,6 +11,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from skriptoteket.infrastructure.db.base import Base
+from skriptoteket.infrastructure.db.models.allowed_domain import AllowedDomainModel
+from skriptoteket.infrastructure.db.models.blocked_domain import BlockedDomainModel
 from skriptoteket.infrastructure.db.models.category import CategoryModel
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -71,6 +73,8 @@ from skriptoteket.infrastructure.db.models.user_vault_usage import (
 
 # Explicitly use models to satisfy linter and ensure they are registered on Base.metadata
 _MODELS = [
+    AllowedDomainModel,
+    BlockedDomainModel,
     CategoryModel,
     RoomTemplateModel,
     RosterModel,

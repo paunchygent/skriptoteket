@@ -1,3 +1,16 @@
+"""User self-registration handler.
+
+Purpose:
+  Validate registration input, enforce the school-domain allowlist, create the
+  local user/profile pair, and send the verification email within one unit of
+  work so failures roll back cleanly.
+
+Relationships:
+  - Depends on protocol-first repositories and services from the identity layer.
+  - Reuses local user creation and password validation helpers.
+  - Calls the registration-domain validator before any user is persisted.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -19,6 +32,7 @@ from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRende
 from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
+    DomainValidatorProtocol,
     PasswordHasherProtocol,
     ProfileRepositoryProtocol,
     RegisterUserHandlerProtocol,
@@ -46,6 +60,7 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         email_sender: EmailSenderProtocol,
         email_renderer: EmailTemplateRendererProtocol,
         sleeper: SleeperProtocol,
+        domain_validator: DomainValidatorProtocol,
         password_hasher: PasswordHasherProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -59,6 +74,7 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         self._email_sender = email_sender
         self._email_renderer = email_renderer
         self._sleeper = sleeper
+        self._domain_validator = domain_validator
         self._password_hasher = password_hasher
         self._clock = clock
         self._id_generator = id_generator
@@ -81,6 +97,7 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
             )
 
         validate_password_strength(password=command.password)
+        await self._domain_validator.validate_registration_email(command.email)
 
         async with self._uow:
             result = await create_local_user(

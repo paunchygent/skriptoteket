@@ -21,6 +21,7 @@ from skriptoteket.protocols.email import (
 from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
+    DomainValidatorProtocol,
     PasswordHasherProtocol,
     ProfileRepositoryProtocol,
     UserRepositoryProtocol,
@@ -82,6 +83,7 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
     )
 
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -104,6 +106,7 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -122,6 +125,7 @@ async def test_register_user_creates_profile_and_sends_verification_email(now: d
     assert result.user == created_user
     assert result.profile == expected_profile
     assert result.verification_email_sent is True
+    domain_validator.validate_registration_email.assert_awaited_once_with("Teacher@Example.com")
 
     # Verify token was created
     verification_tokens.create.assert_awaited_once()
@@ -149,6 +153,12 @@ async def test_register_user_rejects_invalid_email(now: datetime) -> None:
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
+    domain_validator.validate_registration_email.side_effect = DomainError(
+        code=ErrorCode.VALIDATION_ERROR,
+        message="Ogiltig e-postadress",
+        details={"email": "not-an-email"},
+    )
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -166,6 +176,7 @@ async def test_register_user_rejects_invalid_email(now: datetime) -> None:
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -188,6 +199,7 @@ async def test_register_user_rejects_invalid_email(now: datetime) -> None:
     profiles.create.assert_not_awaited()
     verification_tokens.create.assert_not_awaited()
     email_sender.send.assert_not_awaited()
+    domain_validator.validate_registration_email.assert_awaited_once_with("not-an-email")
 
 
 @pytest.mark.asyncio
@@ -210,6 +222,7 @@ async def test_register_user_rejects_duplicate_email(now: datetime) -> None:
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -228,6 +241,7 @@ async def test_register_user_rejects_duplicate_email(now: datetime) -> None:
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -245,10 +259,226 @@ async def test_register_user_rejects_duplicate_email(now: datetime) -> None:
         )
 
     assert exc_info.value.code == ErrorCode.DUPLICATE_ENTRY
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@example.com")
     users.create.assert_not_awaited()
     profiles.create.assert_not_awaited()
     verification_tokens.create.assert_not_awaited()
     email_sender.send.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_register_user_rejects_blocked_domain_before_user_creation(now: datetime) -> None:
+    settings = Settings()
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
+    email_sender = AsyncMock(spec=EmailSenderProtocol)
+    email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
+    domain_validator.validate_registration_email.side_effect = DomainError(
+        code=ErrorCode.VALIDATION_ERROR,
+        message="E-postdomänen är inte tillåten för registrering",
+        details={"domain": "gmail.com", "reason": "personal_email_provider"},
+    )
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+
+    handler = RegisterUserHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        verification_tokens=verification_tokens,
+        email_sender=email_sender,
+        email_renderer=email_renderer,
+        sleeper=sleeper,
+        domain_validator=domain_validator,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            RegisterUserCommand(
+                email="teacher@gmail.com",
+                password="password123",
+                first_name="Ada",
+                last_name="Lovelace",
+            )
+        )
+
+    assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+    assert exc_info.value.message == "E-postdomänen är inte tillåten för registrering"
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@gmail.com")
+    users.get_auth_by_email.assert_not_awaited()
+    users.create.assert_not_awaited()
+    profiles.create.assert_not_awaited()
+    verification_tokens.create.assert_not_awaited()
+    email_sender.send.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_register_user_rejects_unknown_domain_before_user_creation(now: datetime) -> None:
+    settings = Settings()
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
+    email_sender = AsyncMock(spec=EmailSenderProtocol)
+    email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
+    domain_validator.validate_registration_email.side_effect = DomainError(
+        code=ErrorCode.VALIDATION_ERROR,
+        message="E-postdomänen är inte godkänd för registrering",
+        details={"domain": "unknown-school.se"},
+    )
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+
+    handler = RegisterUserHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        verification_tokens=verification_tokens,
+        email_sender=email_sender,
+        email_renderer=email_renderer,
+        sleeper=sleeper,
+        domain_validator=domain_validator,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await handler.handle(
+            RegisterUserCommand(
+                email="teacher@unknown-school.se",
+                password="password123",
+                first_name="Ada",
+                last_name="Lovelace",
+            )
+        )
+
+    assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+    assert exc_info.value.message == "E-postdomänen är inte godkänd för registrering"
+    domain_validator.validate_registration_email.assert_awaited_once_with(
+        "teacher@unknown-school.se"
+    )
+    users.get_auth_by_email.assert_not_awaited()
+    users.create.assert_not_awaited()
+    profiles.create.assert_not_awaited()
+    verification_tokens.create.assert_not_awaited()
+    email_sender.send.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_register_user_accepts_allowed_subdomain_email(now: datetime) -> None:
+    settings = Settings()
+    user_id = uuid4()
+    token_id = uuid4()
+    created_user = make_user(email="teacher@mail.harryda.se", user_id=user_id).model_copy(
+        update={"created_at": now, "updated_at": now, "email_verified": False}
+    )
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = None
+    users.create.return_value = created_user
+
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    expected_profile = UserProfile(
+        user_id=user_id,
+        first_name="Ada",
+        last_name="Lovelace",
+        display_name=None,
+        locale="sv-SE",
+        created_at=now,
+        updated_at=now,
+    )
+    profiles.create.return_value = expected_profile
+
+    verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
+    email_sender = AsyncMock(spec=EmailSenderProtocol)
+    email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    email_renderer.render.return_value = EmailMessage(
+        to_email="teacher@mail.harryda.se",
+        subject="Verifiera din e-postadress",
+        html_body="<html>verification link</html>",
+        text_body="verification link",
+    )
+    sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
+
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.hash.return_value = "hash"
+
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [user_id, token_id]
+
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+    token_generator.new_token.return_value = "verification-token"
+
+    handler = RegisterUserHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        verification_tokens=verification_tokens,
+        email_sender=email_sender,
+        email_renderer=email_renderer,
+        sleeper=sleeper,
+        domain_validator=domain_validator,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+    )
+
+    result = await handler.handle(
+        RegisterUserCommand(
+            email="teacher@mail.harryda.se",
+            password="password123",
+            first_name="Ada",
+            last_name="Lovelace",
+        )
+    )
+
+    assert result.user == created_user
+    assert result.profile == expected_profile
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@mail.harryda.se")
+    users.create.assert_awaited_once()
+    email_sender.send.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -301,6 +531,7 @@ async def test_register_user_retries_transient_email_failure_then_succeeds(now: 
     )
 
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -323,6 +554,7 @@ async def test_register_user_retries_transient_email_failure_then_succeeds(now: 
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -341,6 +573,7 @@ async def test_register_user_retries_transient_email_failure_then_succeeds(now: 
     assert result.user == created_user
     assert result.profile == expected_profile
     assert result.verification_email_sent is True
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@example.com")
     assert email_sender.send.await_count == 2
     sleeper.sleep.assert_awaited_once_with(0.5)
 
@@ -392,6 +625,7 @@ async def test_register_user_fails_fast_on_permanent_email_error(now: datetime) 
     )
 
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -414,6 +648,7 @@ async def test_register_user_fails_fast_on_permanent_email_error(now: datetime) 
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -431,6 +666,7 @@ async def test_register_user_fails_fast_on_permanent_email_error(now: datetime) 
         )
 
     assert exc_info.value.code == ErrorCode.EMAIL_SEND_FAILED
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@example.com")
     email_sender.send.assert_awaited_once()
     sleeper.sleep.assert_not_awaited()
 
@@ -493,6 +729,7 @@ async def test_register_user_rolls_back_when_email_send_fails_after_retries(now:
     )
 
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -515,6 +752,7 @@ async def test_register_user_rolls_back_when_email_send_fails_after_retries(now:
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -532,6 +770,7 @@ async def test_register_user_rolls_back_when_email_send_fails_after_retries(now:
         )
 
     assert exc_info.value.code == ErrorCode.EMAIL_SEND_FAILED
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@example.com")
     assert email_sender.send.await_count == 3
     sleeper.sleep.assert_has_awaits([call(0.5), call(1.0)])
     users.create.assert_awaited_once()
@@ -554,6 +793,7 @@ async def test_register_user_rejects_empty_first_name(now: datetime) -> None:
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -571,6 +811,7 @@ async def test_register_user_rejects_empty_first_name(now: datetime) -> None:
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -588,6 +829,7 @@ async def test_register_user_rejects_empty_first_name(now: datetime) -> None:
         )
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+    domain_validator.validate_registration_email.assert_not_awaited()
     users.get_auth_by_email.assert_not_awaited()
 
 
@@ -606,6 +848,7 @@ async def test_register_user_rejects_empty_last_name(now: datetime) -> None:
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -623,6 +866,7 @@ async def test_register_user_rejects_empty_last_name(now: datetime) -> None:
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -640,6 +884,7 @@ async def test_register_user_rejects_empty_last_name(now: datetime) -> None:
         )
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+    domain_validator.validate_registration_email.assert_not_awaited()
     users.get_auth_by_email.assert_not_awaited()
 
 
@@ -658,6 +903,7 @@ async def test_register_user_rejects_name_too_long(now: datetime) -> None:
     email_sender = AsyncMock(spec=EmailSenderProtocol)
     email_renderer = Mock(spec=EmailTemplateRendererProtocol)
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     clock = Mock(spec=ClockProtocol)
@@ -675,6 +921,7 @@ async def test_register_user_rejects_name_too_long(now: datetime) -> None:
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -692,6 +939,7 @@ async def test_register_user_rejects_name_too_long(now: datetime) -> None:
         )
 
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+    domain_validator.validate_registration_email.assert_not_awaited()
     users.get_auth_by_email.assert_not_awaited()
 
 
@@ -751,6 +999,7 @@ async def test_register_user_enters_uow_before_user_creation(now: datetime) -> N
         text_body="verification link",
     )
     sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
 
     password_hasher = Mock(spec=PasswordHasherProtocol)
     password_hasher.hash.return_value = "hash"
@@ -773,6 +1022,7 @@ async def test_register_user_enters_uow_before_user_creation(now: datetime) -> N
         email_sender=email_sender,
         email_renderer=email_renderer,
         sleeper=sleeper,
+        domain_validator=domain_validator,
         password_hasher=password_hasher,
         clock=clock,
         id_generator=id_generator,
@@ -789,5 +1039,6 @@ async def test_register_user_enters_uow_before_user_creation(now: datetime) -> N
     )
 
     assert events[0] == "uow_enter"
+    domain_validator.validate_registration_email.assert_awaited_once_with("teacher@example.com")
     assert "get_auth_by_email" in events
     assert "create_user" in events

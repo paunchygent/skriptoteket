@@ -14,6 +14,9 @@ from uuid import UUID
 from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
     SeatingExportCheckpoint,
 )
+from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints import (
+    GroupingExportCheckpoint,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     ClassWorkspaceDraftSummary,
     DraftWorkspace,
@@ -188,6 +191,26 @@ class SeatingExportCheckpointRepositoryProtocol(Protocol):
         checkpoint: SeatingExportCheckpoint,
     ) -> SeatingExportCheckpoint:
         """Persist one newly created export-backed seating checkpoint."""
+        ...
+
+
+class GroupingExportCheckpointRepositoryProtocol(Protocol):
+    """Persist export-backed grouping checkpoints for smart-history."""
+
+    async def list_recent_for_roster(
+        self,
+        *,
+        roster_id: UUID,
+    ) -> list[GroupingExportCheckpoint]:
+        """Load the fixed latest eligible smart-grouping history window."""
+        ...
+
+    async def create(
+        self,
+        *,
+        checkpoint: GroupingExportCheckpoint,
+    ) -> GroupingExportCheckpoint:
+        """Persist one newly created export-backed grouping checkpoint."""
         ...
 
 
