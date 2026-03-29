@@ -165,10 +165,10 @@ Keep this file updated so the next session can pick up work quickly.
   - `PYTHONPATH=src pdm run python -c "from skriptoteket.web.app import create_app; app=create_app(); print(app.title); print(bool(app.openapi().get('info', {}).get('title')))"`
   - local container proof: `pdm run dev-rebuild`; `docker exec skriptoteket_web pdm run python -c "from importlib.metadata import version; print('fastapi', version('fastapi')); print('starlette', version('starlette')); print('dishka', version('dishka')); print('starlette-dishka', version('starlette-dishka'))"`; `curl -sf http://127.0.0.1:8000/healthz`; `curl -sf http://127.0.0.1:8000/metrics | head -n 20`
   - Hemma proof: `ssh hemma "sudo docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,10p'"`; `ssh hemma "sudo docker inspect -f '{{json .State.Health}}' skriptoteket-web"`; `ssh hemma "sudo docker exec skriptoteket-web curl -sf http://127.0.0.1:8000/healthz"`; `ssh hemma "sudo docker exec skriptoteket-web curl -sf http://127.0.0.1:8000/metrics | sed -n '1,10p'"`; `ssh hemma "tail -n 120 ~/apps/skriptoteket/.artifacts/st-07-07-hemma-deploy.log"`; host-level `ssh hemma "curl -sf http://127.0.0.1:8000/healthz"` does not work there because `skriptoteket-web` is not host-published
-- 2026-03-29 classroom editor sticky-rail follow-up:
-  - `pnpm -C frontend/apps/skriptoteket exec vitest run src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomTemplateBuilderSurface.spec.ts`
-  - `pdm run fe-type-check`
-  - live proof fallback: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (browser smoke passed; targeted ad hoc modal probe was not retained)
+- 2026-03-29 `ST-08-34` planner contextual help:
+  - `pdm run fe-test -- --run src/components/help/HelpPanel.spec.ts`
+  - `pdm run fe-type-check`; `pdm run docs-validate`
+  - live proof: `pdm run python - <<'PY' ... planner help live check ... PY` confirmed `Översikt` now renders `Översikt: klass och klassrum` + `Steg 1 -- Skapa din första klass`; artifact: `.artifacts/help-debug/planner-overview-help-fixed.png`
 - 2026-03-29 `PR-0161` / `ST-29-02` shell-compression feedback-contract cleanup:
   - `pnpm -C frontend --filter @skriptoteket/spa test -- src/views/apps/useGroupingExportFlow.spec.ts src/views/apps/useSeatingExportFlow.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
   - `pdm run fe-type-check`

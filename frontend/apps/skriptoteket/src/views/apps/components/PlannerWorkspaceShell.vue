@@ -8,7 +8,7 @@
  * whole-workspace mental model.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 
 import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
 import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
@@ -21,6 +21,7 @@ import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
+import { useHelp } from "../../../components/help/useHelp";
 import { useToast } from "../../../composables/useToast";
 
 type PlannerView = "groups" | "seats" | "rules";
@@ -111,6 +112,11 @@ const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules
   }
   return "seating";
 });
+
+// Keep the global help panel in sync with the active planner mode.
+const { setHelpContext } = useHelp();
+watch(workspaceModeValue, (mode) => setHelpContext(`planner_${mode}`), { immediate: true });
+onUnmounted(() => setHelpContext(null));
 const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && plannerState.template === null;
 });

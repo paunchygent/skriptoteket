@@ -363,6 +363,9 @@ textbook-corpus-baseline = "python -m scripts.build_textbook_corpus_baseline"
 textbook-corpus-mechanical = "python -m scripts.build_textbook_corpus_mechanical_cleanup"
 textbook-corpus-manual = "python -m scripts.build_textbook_corpus_manual_restoration_workflow"
 
+# Help content generation
+generate-planner-help = "python -m scripts.generate_planner_help"
+
 # Agent skills (repo-local)
 skills-prompt = "python -m scripts.skills_prompt"
 skills-validate = "python -m scripts.skills_prompt --validate"

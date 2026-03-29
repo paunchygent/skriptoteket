@@ -623,6 +623,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-08-31-openai-responses-api-migration.md`
 - `docs/backlog/stories/story-08-32-ai-inline-completion-harness.md`
 - `docs/backlog/stories/story-08-33-ai-inline-completion-normalization-and-caps.md`
+- `docs/backlog/stories/story-08-34-klassrumskartan-contextual-help.md`
 - `docs/backlog/stories/story-09-01-http-security-headers.md`
 - `docs/backlog/stories/story-09-02-content-security-policy.md`
 - `docs/backlog/stories/story-09-03-firewall-audit.md`

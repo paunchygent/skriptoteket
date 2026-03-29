@@ -7,10 +7,10 @@ import { prefetchHelpTopics, resolveHelpTopicComponent } from "./helpTopics";
 import { resolveHelpTopic, useHelp } from "./useHelp";
 
 const route = useRoute();
-const { isOpen, activeTopic, close, showIndex, showTopic } = useHelp();
+const { isOpen, activeTopic, helpContext, close, showIndex, showTopic } = useHelp();
 const hasPrefetched = ref(false);
 
-const routeTopic = computed(() => resolveHelpTopic(route.name));
+const routeTopic = computed(() => resolveHelpTopic(route.name, helpContext.value));
 const activeTopicComponent = computed(() => resolveHelpTopicComponent(activeTopic.value));
 
 function syncToRoute(): void {
@@ -48,6 +48,15 @@ watch(
 
 watch(
   () => route.fullPath,
+  () => {
+    if (isOpen.value) {
+      syncToRoute();
+    }
+  },
+);
+
+watch(
+  () => helpContext.value,
   () => {
     if (isOpen.value) {
       syncToRoute();

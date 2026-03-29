@@ -1,10 +1,33 @@
-import { defineAsyncComponent, type AsyncComponentLoader, type Component } from "vue";
+import {
+  defineAsyncComponent,
+  defineComponent,
+  h,
+  type AsyncComponentLoader,
+  type Component,
+} from "vue";
 
 import type { HelpTopicId } from "./useHelp";
 import HelpTopicLoadError from "./topics/HelpTopicLoadError.vue";
 import HelpTopicLoading from "./topics/HelpTopicLoading.vue";
 
 type HelpTopicLoader = AsyncComponentLoader<Component>;
+
+/**
+ * Create a loader that binds a ``section`` prop to
+ * ``HelpTopicPlanner.vue`` so each planner mode gets its own async
+ * component entry without duplicating the Vue file.
+ */
+function plannerSectionLoader(section: string): HelpTopicLoader {
+  return () =>
+    import("./topics/HelpTopicPlanner.vue").then((mod) =>
+      defineComponent({
+        name: `HelpTopicPlanner_${section}`,
+        render() {
+          return h(mod.default, { section });
+        },
+      }),
+    );
+}
 
 const helpTopicLoaders: Record<HelpTopicId, HelpTopicLoader> = {
   login: () => import("./topics/HelpTopicLogin.vue"),
@@ -20,6 +43,10 @@ const helpTopicLoaders: Record<HelpTopicId, HelpTopicLoader> = {
   admin_suggestions: () => import("./topics/HelpTopicAdminSuggestions.vue"),
   admin_tools: () => import("./topics/HelpTopicAdminTools.vue"),
   admin_editor: () => import("./topics/HelpTopicAdminEditor.vue"),
+  planner_overview: plannerSectionLoader("planner_overview"),
+  planner_seating: plannerSectionLoader("planner_seating"),
+  planner_grouping: plannerSectionLoader("planner_grouping"),
+  planner_rules: plannerSectionLoader("planner_rules"),
 };
 
 function createAsyncTopic(loader: HelpTopicLoader): Component {
@@ -46,6 +73,10 @@ const helpTopicComponents: Record<HelpTopicId, Component> = {
   admin_suggestions: createAsyncTopic(helpTopicLoaders.admin_suggestions),
   admin_tools: createAsyncTopic(helpTopicLoaders.admin_tools),
   admin_editor: createAsyncTopic(helpTopicLoaders.admin_editor),
+  planner_overview: createAsyncTopic(helpTopicLoaders.planner_overview),
+  planner_seating: createAsyncTopic(helpTopicLoaders.planner_seating),
+  planner_grouping: createAsyncTopic(helpTopicLoaders.planner_grouping),
+  planner_rules: createAsyncTopic(helpTopicLoaders.planner_rules),
 };
 
 export function resolveHelpTopicComponent(topic: HelpTopicId | null): Component | null {

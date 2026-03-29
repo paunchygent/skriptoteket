@@ -9,7 +9,7 @@
  * resumable cards, roster controls, and classroom controls in one file.
  */
 
-import { computed, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 
 import type {
   ClassWorkspaceSummary,
@@ -17,6 +17,7 @@ import type {
   RoomTemplate,
   Roster,
 } from "../classroomPlannerTypes";
+import { useHelp } from "../../../components/help/useHelp";
 import PlannerRosterOverviewPanel from "./PlannerRosterOverviewPanel.vue";
 import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
@@ -53,6 +54,12 @@ const emit = defineEmits<{
 }>();
 
 const workspaceMode = ref<"overview" | "grouping" | "seating" | "rules">("overview");
+
+// Keep the global help panel aware that we are in overview mode.
+const { setHelpContext } = useHelp();
+setHelpContext("planner_overview");
+onUnmounted(() => setHelpContext(null));
+
 const activeRosterSummary = computed(() => props.workspaceSummary?.roster ?? null);
 const selectedRoster = computed(() => {
   return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;

@@ -14,7 +14,11 @@ export type HelpTopicId =
   | "suggestions_new"
   | "admin_suggestions"
   | "admin_tools"
-  | "admin_editor";
+  | "admin_editor"
+  | "planner_overview"
+  | "planner_seating"
+  | "planner_grouping"
+  | "planner_rules";
 
 const ROUTE_TOPIC_MAP: Record<string, HelpTopicId> = {
   home: "home",
@@ -34,9 +38,33 @@ const ROUTE_TOPIC_MAP: Record<string, HelpTopicId> = {
   "admin-tool-version-editor": "admin_editor",
 };
 
+/**
+ * Context-based topic map.  When a component sets a help context string
+ * (e.g. ``planner_seating``), this map takes priority over the route-
+ * based resolution so that sub-views within a single route can show
+ * mode-specific help content.
+ */
+const CONTEXT_TOPIC_MAP: Record<string, HelpTopicId> = {
+  planner_overview: "planner_overview",
+  planner_seating: "planner_seating",
+  planner_grouping: "planner_grouping",
+  planner_rules: "planner_rules",
+};
+
+/**
+ * Resolve the help topic for the current route and optional context.
+ * Context (set by sub-views like the planner) takes priority over route.
+ */
 export function resolveHelpTopic(
   routeName: RouteRecordName | null | undefined,
+  context?: string | null,
 ): HelpTopicId | null {
+  if (context) {
+    const contextTopic = CONTEXT_TOPIC_MAP[context];
+    if (contextTopic) {
+      return contextTopic;
+    }
+  }
   if (!routeName) {
     return null;
   }
@@ -46,6 +74,7 @@ export function resolveHelpTopic(
 
 const isOpen = ref(false);
 const activeTopic = ref<HelpTopicId | null>(null);
+const helpContext = ref<string | null>(null);
 
 export function useHelp() {
   function open(): void {
@@ -68,13 +97,19 @@ export function useHelp() {
     activeTopic.value = topic;
   }
 
+  function setHelpContext(ctx: string | null): void {
+    helpContext.value = ctx;
+  }
+
   return {
     isOpen,
     activeTopic,
+    helpContext,
     open,
     close,
     toggle,
     showIndex,
     showTopic,
+    setHelpContext,
   };
 }

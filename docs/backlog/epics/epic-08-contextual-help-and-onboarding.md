@@ -5,7 +5,7 @@ title: "Contextual help (Hjälp) and onboarding"
 status: active
 owners: "agents"
 created: 2025-12-17
-updated: 2026-01-21
+updated: 2026-03-29
 outcome: "Users understand what they can do on each page via concise, Swedish, context-aware help without external documentation."
 ---
 
@@ -61,8 +61,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - [ST-08-31: AI: migrate OpenAI providers to Responses API](../stories/story-08-31-openai-responses-api-migration.md)
 - [ST-08-32: AI: inline completion harness (gpt-5-nano logic validation)](../stories/story-08-32-ai-inline-completion-harness.md)
 - [ST-08-33: AI: inline completion normalization + 32-token caps](../stories/story-08-33-ai-inline-completion-normalization-and-caps.md)
+- [ST-08-34: Klassrumskartan contextual help (overview + workspace modes)](../stories/story-08-34-klassrumskartan-contextual-help.md)
 
-## Implementation Summary (as of 2026-01-21)
+## Implementation Summary (as of 2026-03-29)
 
 - AI inline completions (ghost text) are live with backend LLM proxy and CodeMirror integration (ST-08-14).
 - AI edit suggestions MVP (ST-08-16) shipped, then the legacy edit-suggestion flow was removed after cutover to
@@ -82,6 +83,9 @@ outcome: "Users understand what they can do on each page via concise, Swedish, c
 - OpenAI-backed providers use the Responses API (ST-08-31) with canonical docs/runbook guidance.
 - Inline completion harness exists for GPT-5-nano variants and local baselines (ST-08-32).
 - Inline completion normalization + token budgets are in place (ST-08-33).
+- Klassrumskartan planner help now ships through a guide-generated topic source with mode-aware context
+  selection for `Översikt`, `Grupper`, `Sittplatser`, and `Regler`, plus focused SPA tests for render
+  and context switching (ST-08-34).
 - Remaining work:
   - Tabby provider switch + prompt A/B evaluation for edit suggestions (ST-08-17).
   - Editor chat virtual file context retention + tokenizer budgeting research and review (ST-08-27).
