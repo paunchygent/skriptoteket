@@ -11,23 +11,21 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`, `PR-0166`, `PR-0169`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`, `PR-0166`, `PR-0169`, `PR-0170`, `PR-0171`
 ## Status
 - `ST-07-07` is now shipped locally and live on Hemma: `src/skriptoteket/web/dishka_compat.py` is removed, HTTP DI now resolves through `request.state.dishka_container`, websocket resolution is explicit via `src/skriptoteket/web/dishka_dependencies.py`, `skriptoteket_reviewer` approved the final tree with no actionable findings, and Hemma `skriptoteket-web` / `skriptoteket-worker` are healthy again after the `2026-03-29` seating-export deploy gate.
 - Hemma is now back on the current published `main` commit with a clean `git status --short`; the canonical deploy gate now fast-forwards a clean checkout to `origin/main` before it rebuilds.
 - `ST-09-06` / `PR-0169` are done:
-  - `src/skriptoteket/config.py` and `src/skriptoteket/infrastructure/curated_apps/registry.py` now apply a production-only curated app allowlist
-  - `demo.counter` and `games.flunk_out_frenzy` are hidden in production; approved apps such as `classroom.group-seating-studio` still resolve
-- `ST-09-07` / `PR-0170` are now in progress with the repo-side hardening implemented locally:
+  - `src/skriptoteket/config.py` and `src/skriptoteket/infrastructure/curated_apps/registry.py` now apply a production-only curated app allowlist; `demo.counter` and `games.flunk_out_frenzy` are hidden in production while approved apps such as `classroom.group-seating-studio` still resolve
+- `ST-09-07` / `PR-0170` are done and live on Hemma:
   - `src/skriptoteket/config.py`, `src/skriptoteket/web/request_metadata.py`, `src/skriptoteket/web/api/v1/auth.py`, `src/skriptoteket/observability/health.py`, `src/skriptoteket/observability/metrics.py`, `src/skriptoteket/web/routes/observability.py`, and `compose.prod.yaml` now fail closed on the confirmed March 29 public-edge findings
-  - production defaults now keep `/docs` and `/openapi.json` off, public `/healthz` minimal, identity/session gauges off in `/metrics`, and trusted client IP parsing limited to explicitly trusted proxies
-  - Docker-based local dev login via `http://127.0.0.1:5174` works again because `skriptoteket_web` is allowed only outside production
+  - production defaults now keep `/docs` and `/openapi.json` off, public `/healthz` minimal, identity/session gauges off in `/metrics`, and trusted client IP parsing limited to explicitly trusted proxies; Docker-based local dev login via `http://127.0.0.1:5174` works again because `skriptoteket_web` is allowed only outside production
   - independent `skriptoteket_reviewer` approved the final code slice with no actionable findings after one `skriptoteket_implementation_specialist` follow-up iteration
-- `ST-09-08` / `PR-0171` are ready:
-  - remaining work is Hemma/nginx deploy follow-through only: protect public `/metrics`, set the exact nginx-proxy trust CIDR, and stop reserved-host fallthrough for `hule.education`, `api.hule.education`, and `ws.hule.education`
+- `ST-09-08` / `PR-0171` are done and live on Hemma:
+  - `~/apps/skriptoteket/.env` now sets exact proxy trust for the current nginx-proxy (`TRUSTED_PROXY_CIDRS=172.18.0.5/32`), keeps public `/healthz` minimal, keeps identity/session gauges off in `/metrics`, and nginx now returns `403` for public `/metrics`
+  - `hule.education`, `api.hule.education`, and `ws.hule.education` are claimed by the explicit placeholder instead of falling through to Skriptoteket, and Hemma fast-forwarded to published `main`, rebuilt `skriptoteket-web` / `skriptoteket-worker`, and upgraded the production DB to Alembic head `5a7c1d9e3b2f`
 - EPIC-02 password-reset docs slice is now prepared:
-  - proposed `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`, ready `docs/backlog/stories/story-02-07-local-password-reset-via-emailed-token.md` / `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`, and pending `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md` are in place
-  - `docs/backlog/epics/epic-02-identity-and-access-control.md` and `docs/index.md` now reflect the planned local password-reset lane and the repo's current self-registration/email-verification reality
+  - `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`, `docs/backlog/stories/story-02-07-local-password-reset-via-emailed-token.md`, and `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md` now require one active token per user, hashed reset tokens at rest, explicit `202`/`200` HTTP contracts, application-owned normalized-email cooldowns, and bulk session revocation proof; `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md` is now `changes_requested` pending re-review, and `docs/backlog/epics/epic-02-identity-and-access-control.md` / `docs/index.md` reflect the lane's current review state
 - Smart-assignment docs are approved and aligned across `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`, `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`, `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` through `story-27-06`, and `docs/backlog/prs/pr-0167-st-27-04-smart-grouping-v1-grouping-history-and-live-seating-influence.md`.
 - Smart-assignment docs are aligned for the current lane:
   - rerun diversity belongs to the core smart-run contract in `ADR-0074`, `ST-27-03`, `ST-27-04`, and `PR-0154`
@@ -141,7 +139,10 @@ Keep this file updated so the next session can pick up work quickly.
   - reviewer loop summary:
     - first `skriptoteket_reviewer` pass found broad proxy trust, production host-allowlist drift, and missing regression coverage
     - one `skriptoteket_implementation_specialist` iteration fixed the approved slice
-    - final `skriptoteket_reviewer` pass returned no actionable code findings; residual risk is now deploy/ops only (`TRUSTED_PROXY_CIDRS` must be set exactly on Hemma, `/metrics` still needs edge protection, reserved hosts still need placeholder ownership)
+    - final `skriptoteket_reviewer` pass returned no actionable code findings; remaining risk is operational drift if the nginx-proxy IP/network changes and `TRUSTED_PROXY_CIDRS` is not kept aligned
+  - Hemma deploy/revalidation:
+    - `ssh hemma 'cd ~/apps/skriptoteket && git pull --ff-only origin main'`; `ssh hemma 'sudo docker exec -e PYTHONPATH=/app/src skriptoteket-worker pdm run db-upgrade'`; `ssh hemma 'cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build web worker'`; `ssh hemma /bin/bash -s <<'EOF' ... sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz ... sudo docker exec skriptoteket-web /bin/sh -lc \"curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_(active_sessions|users_by_role)' || true\" ... EOF` -> healthy JSON and no leaked identity/session gauges
+    - `curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs` -> `404`; `curl -sS -D - -o /dev/null https://skriptoteket.hule.education/openapi.json` -> `404`; `curl -sS -D - -o /dev/null https://skriptoteket.hule.education/metrics` -> `403`; `curl -sS https://skriptoteket.hule.education/healthz` -> `{\"status\":\"healthy\",\"message\":\"Service is healthy\"}`; `curl -k https://hule.education` / `api.hule.education` / `ws.hule.education` -> `200` `HuleEdu reserved host placeholder`
 - 2026-03-27/2026-03-29 smart-assignment docs scope refinement:
   - `pdm run docs-validate`
   - updated `ADR-0074`, `REV-EPIC-27`, `ST-27-04`, `PR-0167`, and earlier smart-assignment docs so grouping history is separate from live seating continuity, active seating continuity outranks rotational diversity when explicitly enabled, and smart reruns still prefer different good candidates on repeated `Slumpa` runs
@@ -191,10 +192,9 @@ pdm run python -m scripts.playwright_pr_0137_class_list_import_check --base-url 
 ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh'
 ```
 ## Known Issues / Risks
-- Hemma production is healthy again on the current published `main` commit; for live verification, use the container healthcheck or in-container `curl`, because `skriptoteket-web` is not host-published on `127.0.0.1:8000`.
+- Hemma production now includes the ST-09-07/ST-09-08 hardening deploy; keep `TRUSTED_PROXY_CIDRS` aligned with the current nginx-proxy container/network and replace the temporary reserved-host placeholder when the real HuleEdu edge services ship.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
-- Smart-assignment sequencing is still strict:
-  - `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions
+- Smart-assignment sequencing is still strict: `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions.
 ## Next Steps
-- Next checkpoints are any follow-up continuity fixes that emerge once local editor fixtures exist for a live editor-shell audit, plus the continuing planner redesign lane in `ST-29-03` and later `ST-29-04`..`ST-29-06`.
+- Next checkpoints are any follow-up continuity fixes that emerge once local editor fixtures exist for a live editor-shell audit, plus the continuing planner redesign lane in `ST-29-03` and later `ST-29-06`.
