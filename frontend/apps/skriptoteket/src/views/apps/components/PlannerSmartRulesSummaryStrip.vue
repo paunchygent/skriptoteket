@@ -16,13 +16,11 @@ import {
 } from "../classroomPlannerSmartRulePresentation";
 
 const props = withDefaults(defineProps<{
-  title?: string;
   emptyLabel?: string;
   nearTeacherStudents?: Student[];
   relationshipRules?: RelationshipRule[];
   studentsById?: Record<string, Student | undefined>;
 }>(), {
-  title: "Smarta regler",
   emptyLabel: "Inga regler ännu. Öppna Regler för att lägga till eller ändra dem.",
   nearTeacherStudents: () => [],
   relationshipRules: () => [],
@@ -44,16 +42,14 @@ function relationshipRuleLabel(rule: RelationshipRule, index: number): string {
 </script>
 
 <template>
-  <section class="border border-navy/20 bg-white px-3 py-3 shadow-brutal-sm">
+  <section
+    class="border border-navy/20 bg-white px-3 py-2.5 shadow-brutal-sm"
+    aria-label="Aktiva regler"
+  >
     <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="space-y-1">
-        <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          {{ title }}
-        </p>
-        <p class="text-sm text-navy/70">
-          {{ totalRuleCount }} aktiva regler
-        </p>
-      </div>
+      <p class="text-sm text-navy/70">
+        {{ totalRuleCount }} aktiva regler
+      </p>
 
       <div
         v-if="$slots.controls"

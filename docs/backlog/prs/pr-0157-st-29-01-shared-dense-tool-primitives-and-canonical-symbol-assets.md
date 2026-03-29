@@ -5,7 +5,7 @@ title: "ST-29-01: shared dense-tool primitives and canonical symbol assets"
 status: ready
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-03-29
 stories:
   - "ST-29-01"
 tags: ["frontend", "design-system", "components", "klassrumskartan", "editor"]
@@ -19,6 +19,7 @@ acceptance_criteria:
   - "Given the repository still lacks a dedicated `frontend/packages/huleedu-ui` package, when this slice ships, then the canonical primitive implementation lives in one shared SPA location that later stories can consume without duplicating planner/editor-specific variants."
   - "Given `configure_context` routes to a destination that needs disambiguation such as `Regler` or `Inställningar`, when this slice ships, then the control does not render as a bare mystery gear and instead uses the shared adjustments/sliders symbol with icon-led or text-visible labeling."
   - "Given dense-action primitives are introduced, when this slice ships, then primitive size, spacing, disclosure width, hover, focus, active, and disabled behavior live in the primitives themselves rather than in toolbar-level descendant overrides."
+  - "Given dense-tool buttons share one primitive family, when this slice ships, then corner treatment is harmonized as one hard small-radius (`4px`) shape language for standalone controls, with grouped controls keeping the same radius only on their outer edges instead of mixing square and rounded buttons casually on one toolbar."
   - "Given split and menu behavior are frozen in this slice, when shared components ship, then their APIs are generic enough for planner and editor reuse and include keyboard rules for open, navigate, escape, and focus return."
   - "Given undo and redo are frozen shared operations, when this slice ships, then editor and planner both render them through the canonical icon components rather than mixing icons with unicode glyphs."
   - "Given the segmented mode switch is introduced as a shared primitive, when this slice ships, then it freezes as a single-choice mode switch with the correct semantics rather than as an ambiguous pressed-button group."
@@ -63,6 +64,7 @@ Implement the first shared dense-tool primitive layer for the SPA:
      - split button
      - menu trigger
      - toggle
+     - dense status pill
      - segmented mode switcher
      - compound toggle cluster for `toggle + configure_context child`
 
@@ -86,8 +88,117 @@ Implement the first shared dense-tool primitive layer for the SPA:
      adapters over the shared primitive layer.
    - Remove dense-action dependence on page-button primitives such as `btn-ghost` plus local
      overrides.
+   - Move repeated Klassrumskartan button recipes out of inline template class strings and into
+     shared planner-facing button classes in `frontend/apps/skriptoteket/src/assets/main.css` so
+     the planner can tune shape and density globally instead of per surface.
+   - Remove overview-owned duplicate resume CTAs once the segmented mode switch is the canonical
+     task-entry surface, and compress oversized overview/pool/canvas panels onto the same dense
+     control-language rhythm.
 
 6. Add focused component tests and one live proof on the current dense-tool surfaces.
+
+## Coding assessment (2026-03-28)
+
+The current codebase confirms that the primitive freeze should ship as a shared SPA layer first,
+not as planner-local cleanup:
+
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.vue`
+  currently forces dense sizing through descendant selectors such as
+  `[&_.btn-ghost]:px-3 [&_.btn-ghost]:py-1.5`, which violates the primitive-owned spacing rule.
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarIconButton.vue`
+  already expresses the quieter dense-toolbar direction and should become a thin adapter over the
+  shared icon-button primitive rather than remain the source of truth.
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue`
+  is visually close to the target split button, but its API is still planner-shaped because it
+  bakes planner export unions, default labels, and test ids into the component.
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue`,
+  `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`, and
+  `frontend/apps/skriptoteket/src/components/editor/EditorToolMenu.vue` each carry their own menu
+  lifecycle instead of reading from one shared keyboard/focus contract.
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue` still renders
+  unicode undo/redo glyphs and derives dense controls from `btn-ghost`, which is explicitly out of
+  bounds for this slice.
+- `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue` is visually close to the
+  target mode switch, but it still exposes pressed-button semantics instead of a single-choice
+  mode-switch contract.
+
+## Touched-file scope
+
+The first implementation pass should stay inside the following files.
+
+Shared icon surface:
+
+- `frontend/apps/skriptoteket/src/components/icons/index.ts`
+- `frontend/apps/skriptoteket/src/components/icons/IconPlus.vue`
+- `frontend/apps/skriptoteket/src/components/icons/IconZoomIn.vue`
+- `frontend/apps/skriptoteket/src/components/icons/IconZoomOut.vue`
+- `frontend/apps/skriptoteket/src/components/icons/IconFitView.vue`
+- `frontend/apps/skriptoteket/src/components/icons/IconAdjustments.vue`
+
+Shared dense-tool primitives:
+
+- `frontend/apps/skriptoteket/src/components/ui/index.ts`
+- `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts`
+- `frontend/apps/skriptoteket/src/components/ui/useDenseMenuSurface.ts`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseIconButton.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseMenuButton.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseSplitButton.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseStatusPill.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseToggle.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseCompoundToggle.vue`
+- `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue`
+
+Planner/editor adoption surfaces:
+
+- `frontend/apps/skriptoteket/src/assets/main.css`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarIconButton.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerConfirmationDialog.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerHistoryDrawer.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerMetadataDrawer.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRosterOverviewPanel.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesInspector.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesMapCanvas.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesToolRail.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerTemplateOverviewPanel.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerTopPanel.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/CreateRosterModal.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/GroupCard.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateBuilderSurface.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateEditorSidebar.vue`
+- `frontend/apps/skriptoteket/src/views/apps/components/SeatNode.vue`
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.vue`
+- `frontend/apps/skriptoteket/src/components/editor/EditorToolMenu.vue`
+
+Verification surface:
+
+- `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceToolbar.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.spec.ts`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseStatusPill.spec.ts`
+- `frontend/apps/skriptoteket/src/components/ui/UiDenseSplitButton.spec.ts`
+- `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.spec.ts`
+- `frontend/apps/skriptoteket/src/views/apps/components/CreateRosterModal.spec.ts`
+
+## Explicit deferrals
+
+This PR should still avoid:
+
+- shell surgery and feedback-band removal
+- rules-rail visual composition work
+- editor save/publish workflow standardization beyond the menu/button primitive contract
+- package extraction into `frontend/packages/huleedu-ui`
 
 ## PR-sized execution checklist
 
@@ -118,6 +229,8 @@ Do not merge this slice until all of the following are true:
 - Live check:
   - `http://127.0.0.1:5173/apps/classroom.group-seating-studio`
   - `http://127.0.0.1:5173/admin/tools/:toolId`
+  - `pdm run python -m scripts.playwright_pr_0157_dense_toolbar_check --base-url http://127.0.0.1:5173`
+  - `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
 
 ## Rollback plan
 

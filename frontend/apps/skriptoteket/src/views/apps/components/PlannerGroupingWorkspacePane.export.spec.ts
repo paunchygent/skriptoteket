@@ -27,6 +27,7 @@ type PlannerStateMock = {
   randomizeGroups: ReturnType<typeof vi.fn>;
   clearGroupingAssignments: ReturnType<typeof vi.fn>;
   addGroup: ReturnType<typeof vi.fn>;
+  removeGroup: ReturnType<typeof vi.fn>;
   removeStudentFromGroup: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
 };
@@ -52,6 +53,7 @@ const stateMocks = vi.hoisted(() => ({
     randomizeGroups: vi.fn(),
     clearGroupingAssignments: vi.fn(),
     addGroup: vi.fn(),
+    removeGroup: vi.fn(),
     removeStudentFromGroup: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
   }))(),
@@ -67,6 +69,9 @@ describe("PlannerGroupingWorkspacePane export wiring", () => {
     stateMocks.plannerState.isWorkspaceBusy = false;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
+    stateMocks.plannerState.groups = [{ id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false }];
+    stateMocks.plannerState.addGroup.mockReset();
+    stateMocks.plannerState.removeGroup.mockReset();
   });
 
   it("renders the grouping export cluster and forwards export actions", async () => {
@@ -124,5 +129,53 @@ describe("PlannerGroupingWorkspacePane export wiring", () => {
 
     await wrapper.get('[data-test="grouping-export-status-dismiss"]').trigger("click");
     expect(wrapper.find('[data-test="grouping-export-status-bar"]').exists()).toBe(false);
+  });
+
+  it("renders a dense classroom selector and grouped undo-redo controls", () => {
+    const wrapper = mount(PlannerGroupingWorkspacePane, {
+      props: {
+        availableTemplates: [
+          { id: "template-1", name: "Sal 101", seats: [], fixtures: [] },
+        ],
+      },
+      global: {
+        stubs: {
+          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
+          GroupBoard: { template: "<div data-test='group-board-stub' />" },
+          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
+          PlannerConfirmationDialog: true,
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="grouping-template-select"]').classes()).toContain("h-[28px]");
+    expect(wrapper.find('[data-test="grouping-history-cluster"]').exists()).toBe(true);
+  });
+
+  it("uses a quiet group-count stepper instead of a CTA add-group button", async () => {
+    stateMocks.plannerState.groups = [
+      { id: "group-1", name: "Grupp 1", sort_order: 0, name_is_custom: false },
+      { id: "group-2", name: "Grupp 2", sort_order: 1, name_is_custom: false },
+    ];
+
+    const wrapper = mount(PlannerGroupingWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
+          GroupBoard: { template: "<div data-test='group-board-stub' />" },
+          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
+          PlannerConfirmationDialog: true,
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-test="add-group"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="group-count-value"]').text()).toContain("2");
+
+    await wrapper.get('[data-test="increment-group-count"]').trigger("click");
+    expect(stateMocks.plannerState.addGroup).toHaveBeenCalledTimes(1);
+
+    await wrapper.get('[data-test="decrement-group-count"]').trigger("click");
+    expect(stateMocks.plannerState.removeGroup).toHaveBeenCalledWith("group-2");
   });
 });

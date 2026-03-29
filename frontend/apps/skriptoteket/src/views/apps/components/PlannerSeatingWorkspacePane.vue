@@ -9,7 +9,13 @@
 
 import { computed, nextTick, ref, watch } from "vue";
 
-import { IconHistory, IconRedo, IconSettings, IconShuffle, IconUndo, IconX } from "../../../components/icons";
+import { IconAdjustments, IconHistory, IconRedo, IconShuffle, IconUndo, IconX } from "../../../components/icons";
+import {
+  DENSE_FORM_INPUT_CLASS,
+  UiDenseActionButton,
+  UiDenseCompoundToggle,
+  UiDenseToggle,
+} from "../../../components/ui";
 import type { SeatingExportOption } from "../classroomPlannerExportApi";
 import type { RoomTemplate, Student } from "../classroomPlannerTypes";
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
@@ -84,7 +90,7 @@ const {
 });
 const canEditCurrentTemplate = computed(() => plannerState.template !== null);
 const nearTeacherStudents = computed<Student[]>(() => {
-  return plannerState.seatingPreferences
+  return (plannerState.seatingPreferences ?? [])
     .filter((preference) => preference.near_teacher === true)
     .map((preference) => plannerState.studentsById[preference.student_id] ?? null)
     .filter((student): student is Student => student !== null);
@@ -118,7 +124,7 @@ const secondaryActionItems = computed(() => [
   {
     id: "edit-template",
     label: "Redigera klassrum",
-    icon: IconSettings,
+    icon: IconAdjustments,
     disabled: !canEditCurrentTemplate.value || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
     testId: "edit-current-template",
     onSelect: editCurrentTemplate,
@@ -221,22 +227,6 @@ function editCurrentTemplate(): void {
   }
 }
 
-function updateSmartEnabled(event: Event): void {
-  const target = event.target;
-  if (!(target instanceof HTMLInputElement)) {
-    return;
-  }
-  plannerState.setDraftSmartEnabled(target.checked);
-}
-
-function updateUseHistory(event: Event): void {
-  const target = event.target;
-  if (!(target instanceof HTMLInputElement)) {
-    return;
-  }
-  plannerState.setDraftUseHistoryEnabled(target.checked);
-}
-
 function handleExportOption(option: PlannerExportOptionValue): void {
   emit("export-option", option as SeatingExportOption);
 }
@@ -261,16 +251,14 @@ watch(
     <PlannerWorkspaceActionBar>
       <template #leading>
         <label
-          class="block w-[12rem] space-y-1"
+          class="block w-[12rem]"
           data-test="seating-workspace-setup"
         >
-          <span class="block text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-            Klassrum
-          </span>
           <select
             ref="seatingTemplateSelect"
             data-test="seating-template-select"
-            class="w-full border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
+            aria-label="Klassrum"
+            :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
             :value="selectedTemplateId ?? ''"
             @change="changeSeatingTemplateFromEvent"
           >
@@ -294,89 +282,68 @@ watch(
         </label>
       </template>
 
-      <PlannerToolbarIconButton
-        label="Ångra"
-        class="2xl:hidden"
-        data-test="undo-seating-draft"
-        :disabled="!plannerState.canUndo || seatingLifecycleBusy"
-        @click="void undoSeatingDraft()"
+      <div
+        class="flex items-center [&>*+*]:-ml-px"
+        data-test="seating-history-cluster"
       >
-        <IconUndo :size="18" />
-      </PlannerToolbarIconButton>
-      <button
-        type="button"
-        class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
-        :disabled="!plannerState.canUndo || seatingLifecycleBusy"
-        @click="void undoSeatingDraft()"
-      >
-        Ångra
-      </button>
-      <PlannerToolbarIconButton
-        label="Gör om"
-        class="2xl:hidden"
-        data-test="redo-seating-draft"
-        :disabled="!plannerState.canRedo || seatingLifecycleBusy"
-        @click="void redoSeatingDraft()"
-      >
-        <IconRedo :size="18" />
-      </PlannerToolbarIconButton>
-      <button
-        type="button"
-        class="btn-ghost hidden border-navy/30 bg-white shadow-none 2xl:inline-flex"
-        :disabled="!plannerState.canRedo || seatingLifecycleBusy"
-        @click="void redoSeatingDraft()"
-      >
-        Gör om
-      </button>
-      <button
-        type="button"
-        class="btn-ghost inline-flex items-center gap-2 border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+        <PlannerToolbarIconButton
+          label="Ångra"
+          size="utility"
+          group-position="start"
+          data-test="undo-seating-draft"
+          :disabled="!plannerState.canUndo || seatingLifecycleBusy"
+          @click="void undoSeatingDraft()"
+        >
+          <IconUndo :size="16" />
+        </PlannerToolbarIconButton>
+        <PlannerToolbarIconButton
+          label="Gör om"
+          size="utility"
+          group-position="end"
+          data-test="redo-seating-draft"
+          :disabled="!plannerState.canRedo || seatingLifecycleBusy"
+          @click="void redoSeatingDraft()"
+        >
+          <IconRedo :size="16" />
+        </PlannerToolbarIconButton>
+      </div>
+      <UiDenseActionButton
+        label="Slumpa"
         data-test="randomize-seating"
         :disabled="!canRandomizeSeating"
         @click="void randomizeCurrentSeatingDraft()"
       >
-        <IconShuffle :size="16" />
-        <span>Slumpa</span>
-      </button>
-      <label
-        class="inline-flex items-center gap-2 rounded-md border border-navy/20 bg-canvas px-3 py-2 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
-        data-test="seating-smart-toggle"
-      >
-        <input
-          type="checkbox"
-          class="h-4 w-4 border-navy/40 text-navy"
-          :checked="plannerState.draft?.smart_enabled ?? false"
-          :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-          @change="updateSmartEnabled"
-        >
-        <span>Smart</span>
-      </label>
-      <PlannerToolbarIconButton
-        label="Öppna Regler"
-        data-test="seating-open-rules"
+        <template #leading>
+          <IconShuffle :size="16" />
+        </template>
+      </UiDenseActionButton>
+      <UiDenseCompoundToggle
+        root-test-id="seating-smart-toggle"
+        label="Smart"
+        :model-value="plannerState.draft?.smart_enabled ?? false"
         :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-        @click="emit('open-rules')"
-      >
-        <IconSettings :size="18" />
-      </PlannerToolbarIconButton>
-      <button
-        type="button"
-        class="btn-ghost border-navy/30 bg-white shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+        action-label="Regler"
+        action-title="Öppna regler"
+        :action-disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+        action-test-id="seating-open-rules"
+        @update:model-value="plannerState.setDraftSmartEnabled($event)"
+        @action="emit('open-rules')"
+      />
+      <UiDenseActionButton
+        label="Börja om"
         data-test="reset-seating-draft"
         :disabled="seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
+        tone="danger"
         @click="openResetSeatingDialog"
       >
         Börja om
-      </button>
-      <button
-        type="button"
-        class="btn-ghost border-navy/30 bg-white shadow-none"
+      </UiDenseActionButton>
+      <UiDenseActionButton
+        label="Nytt sittschema"
         data-test="new-seating-draft"
         :disabled="seatingLifecycleBusy"
         @click="void startNewSeatingDraft()"
-      >
-        Nytt sittschema
-      </button>
+      />
       <PlannerExportActionGroup
         :busy="exportBusy"
         @export-default="emit('export-default')"
@@ -413,7 +380,7 @@ watch(
         </p>
         <button
           type="button"
-          class="btn-ghost border-amber-400/70 bg-white px-3 py-1.5 text-amber-900 shadow-none"
+          class="btn-ghost planner-btn-alert planner-btn-ghost-sm"
           data-test="seating-smart-retry-hydration"
           @click="void plannerState.retrySmartRuleHydration()"
         >
@@ -444,7 +411,7 @@ watch(
       <button
         v-if="canDownloadLatestExport"
         type="button"
-        class="font-semibold text-navy underline underline-offset-2 transition-colors hover:text-burgundy"
+        class="planner-link-button"
         data-test="seating-export-download-latest"
         @click="emit('download-latest-export')"
       >
@@ -452,7 +419,7 @@ watch(
       </button>
       <button
         type="button"
-        class="ml-auto text-navy/50 transition-colors hover:text-navy"
+        class="planner-icon-dismiss"
         aria-label="Stäng exportstatus"
         data-test="seating-export-status-dismiss"
         @click="isExportStatusDismissed = true"
@@ -467,23 +434,17 @@ watch(
       :students-by-id="plannerState.studentsById"
     >
       <template #controls>
-        <label
-          class="inline-flex items-center gap-2 rounded-md border border-navy/20 bg-canvas px-3 py-2 text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+        <UiDenseToggle
           data-test="seating-use-history-toggle"
-        >
-          <input
-            type="checkbox"
-            class="h-4 w-4 border-navy/40 text-navy"
-            :checked="plannerState.draft?.use_history ?? false"
-            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-            @change="updateUseHistory"
-          >
-          <span>Använd historik</span>
-        </label>
+          label="Använd historik"
+          :model-value="plannerState.draft?.use_history ?? false"
+          :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+          @update:model-value="plannerState.setDraftUseHistoryEnabled($event)"
+        />
       </template>
     </PlannerSmartRulesSummaryStrip>
 
-    <div class="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-stretch">
+    <div class="grid gap-3 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-stretch">
       <PlannerStudentPool
         title="Ej placerade"
         :students="plannerState.unseatedStudents"

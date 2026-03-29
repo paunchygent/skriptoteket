@@ -84,7 +84,7 @@ def _exercise_grouping_fundamentals(page: Any) -> None:
     first_group_name = page.locator("input[type='text']").first
     redo_button = page.locator('[data-test="redo-grouping"]')
 
-    page.get_by_role("button", name=re.compile(r"Nytt grupputkast", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Nytt (grupputkast|utkast)", re.IGNORECASE)).click()
     expect(first_group_name).to_be_enabled()
     expect(first_group_name).to_have_value("Grupp 1")
     expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
@@ -108,7 +108,7 @@ def _start_second_grouping_draft(page: Any) -> None:
 
     first_group_name = page.locator("input[type='text']").first
 
-    page.get_by_role("button", name=re.compile(r"Nytt grupputkast", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Nytt (grupputkast|utkast)", re.IGNORECASE)).click()
     expect(first_group_name).to_have_value("Grupp 1")
     expect(page.locator("input[type='text']").nth(1)).to_have_value("Grupp 2")
 
@@ -222,10 +222,8 @@ def _return_to_class_workspace(page: Any) -> None:
     """Return to the class workspace without discarding the active draft."""
 
     focus_workspace_mode(page, label="Översikt")
-    expect(
-        page.get_by_role("heading", name=re.compile(r"Klassarbetsyta", re.IGNORECASE))
-    ).to_be_visible()
     expect(page.locator('[data-ui="segmented-toggle"]')).to_be_visible()
+    expect(page.locator('[data-test="overview-roster-select"]')).to_be_visible()
 
 
 def _verify_seating_toolbar(page: Any) -> None:

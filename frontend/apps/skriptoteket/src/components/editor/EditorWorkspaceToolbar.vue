@@ -1,5 +1,27 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+/**
+ * Dense workspace toolbar for the script editor.
+ *
+ * Relationships:
+ * - consumes the shared dense-tool primitives introduced in PR-0157
+ * - keeps editor-specific save/open and AI status content local while reading shared button/menu contracts
+ */
+
+import { computed, ref } from "vue";
+
+import { IconRedo, IconUndo } from "../icons";
+import {
+  DENSE_FORM_INPUT_CLASS,
+  DENSE_MENU_PANEL_CLASS,
+  DENSE_MENU_SECTION_LABEL_CLASS,
+  UiDenseIconButton,
+  UiDenseMenuButton,
+  UiDenseStatusPill,
+  denseStatusPillClass,
+  denseMenuItemClass,
+  type DenseStatusTone,
+} from "../ui";
+import { useDenseMenuSurface } from "../ui/useDenseMenuSurface";
 
 import EditorToolMenu from "./EditorToolMenu.vue";
 
@@ -42,17 +64,34 @@ const emit = defineEmits<{
   (event: "redoAi"): void;
 }>();
 
-const utilityButtonClass =
-  "btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none";
-
-const menuButtonClass =
-  "btn-ghost w-full justify-start h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none";
-
 const isSaveMenuOpen = ref(false);
+const saveMenuContainerRef = ref<HTMLElement | null>(null);
 const saveMenuRef = ref<HTMLElement | null>(null);
+const saveMenuTriggerRef = ref<InstanceType<typeof UiDenseMenuButton> | null>(null);
 const checkpointLabel = ref("");
 const isAiMenuOpen = ref(false);
+const aiMenuContainerRef = ref<HTMLElement | null>(null);
 const aiMenuRef = ref<HTMLElement | null>(null);
+const aiMenuTriggerRef = ref<HTMLButtonElement | null>(null);
+
+const {
+  closeMenu: closeSaveMenu,
+  toggleMenu: toggleSaveMenu,
+  onTriggerKeydown: onSaveTriggerKeydown,
+  onMenuKeydown: onSaveMenuKeydown,
+} = useDenseMenuSurface({
+  isOpen: isSaveMenuOpen,
+  containerRef: saveMenuContainerRef,
+  menuRef: saveMenuRef,
+  triggerRef: saveMenuTriggerRef,
+});
+
+const { toggleMenu: toggleAiMenu, onMenuKeydown: onAiMenuKeydown } = useDenseMenuSurface({
+  isOpen: isAiMenuOpen,
+  containerRef: aiMenuContainerRef,
+  menuRef: aiMenuRef,
+  triggerRef: aiMenuTriggerRef,
+});
 
 const isSaveDisabled = computed(
   () =>
@@ -83,74 +122,29 @@ const saveBlockers = computed(() => {
   return blockers;
 });
 
-function toggleSaveMenu(): void {
-  isSaveMenuOpen.value = !isSaveMenuOpen.value;
-}
-
-function closeSaveMenu(): void {
-  isSaveMenuOpen.value = false;
-}
-
-function toggleAiMenu(): void {
-  isAiMenuOpen.value = !isAiMenuOpen.value;
-}
-
-function closeAiMenu(): void {
-  isAiMenuOpen.value = false;
-}
-
 function handleCreateCheckpoint(): void {
   emit("createCheckpoint", checkpointLabel.value.trim());
   checkpointLabel.value = "";
   closeSaveMenu();
 }
 
-function handleDocumentClick(event: MouseEvent): void {
-  const target = event.target as Node | null;
-  if (!target) return;
-  if (saveMenuRef.value && !saveMenuRef.value.contains(target)) {
-    closeSaveMenu();
-  }
-  if (aiMenuRef.value && !aiMenuRef.value.contains(target)) {
-    closeAiMenu();
-  }
-}
-
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key !== "Escape") {
-    return;
-  }
-
-  if (isSaveMenuOpen.value || isAiMenuOpen.value) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  closeSaveMenu();
-  closeAiMenu();
-}
-
-onMounted(() => {
-  document.addEventListener("click", handleDocumentClick);
-  document.addEventListener("keydown", handleKeydown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleDocumentClick);
-  document.removeEventListener("keydown", handleKeydown);
-});
-
-const aiPillClass = computed(() => {
-  const base =
-    "inline-flex items-center h-[28px] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide border leading-none";
+const aiStatusTone = computed<DenseStatusTone>(() => {
   if (props.aiError) {
-    return `${base} border-error text-error bg-error/10`;
+    return "error";
   }
   if (props.aiStatus === "applied") {
-    return `${base} border-success text-success bg-success/10`;
+    return "success";
   }
-  return `${base} border-navy/30 text-navy/70 bg-canvas/40`;
+  return "neutral";
 });
+
+const aiPillClass = computed(() =>
+  denseStatusPillClass({
+    tone: aiStatusTone.value,
+    interactive: true,
+    active: isAiMenuOpen.value,
+  }),
+);
 
 function formatDateTime(value: string | number): string {
   const date = new Date(value);
@@ -172,37 +166,36 @@ function formatDateTime(value: string | number): string {
   <div class="flex flex-wrap items-center gap-3">
     <div class="flex flex-wrap items-center gap-2">
       <div
-        ref="saveMenuRef"
+        ref="saveMenuContainerRef"
         class="relative"
       >
-        <button
-          type="button"
-          :class="utilityButtonClass"
-          :aria-expanded="isSaveMenuOpen"
-          aria-haspopup="menu"
-          aria-label="Spara/Öppna"
-          @click="toggleSaveMenu"
-        >
-          Spara/Öppna
-          <span class="ml-1">▾</span>
-        </button>
+        <UiDenseMenuButton
+          ref="saveMenuTriggerRef"
+          label="Spara/Öppna"
+          :expanded="isSaveMenuOpen"
+          @click="toggleSaveMenu()"
+          @keydown="onSaveTriggerKeydown"
+        />
         <div
           v-if="isSaveMenuOpen"
-          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
+          ref="saveMenuRef"
+          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] bg-canvas"
+          :class="DENSE_MENU_PANEL_CLASS"
           role="menu"
+          @keydown="onSaveMenuKeydown"
         >
           <div class="p-3 space-y-3">
             <div class="space-y-2">
-              <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+              <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
                 Spara arbetsversion
               </div>
               <div class="space-y-1">
-                <label class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+                <label :class="DENSE_MENU_SECTION_LABEL_CLASS">
                   Ändringssammanfattning (valfritt)
                 </label>
                 <input
                   :value="props.changeSummary"
-                  class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+                  :class="DENSE_FORM_INPUT_CLASS"
                   placeholder="T.ex. fixade bugg..."
                   :disabled="props.isReadOnly"
                   @input="emit('update:changeSummary', ($event.target as HTMLInputElement).value)"
@@ -211,7 +204,7 @@ function formatDateTime(value: string | number): string {
               <button
                 type="button"
                 role="menuitem"
-                :class="menuButtonClass"
+                :class="denseMenuItemClass()"
                 :disabled="isSaveDisabled"
                 :title="props.saveTitle || undefined"
                 @click="
@@ -226,7 +219,7 @@ function formatDateTime(value: string | number): string {
                 v-if="isSaveDisabled && saveBlockers.length > 0"
                 class="pt-2 space-y-1"
               >
-                <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+                <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
                   Blockerar sparning
                 </div>
                 <ul class="space-y-0.5 text-[10px] text-navy/60">
@@ -241,16 +234,16 @@ function formatDateTime(value: string | number): string {
             </div>
 
             <div class="border-t border-navy/20 pt-3 space-y-2">
-              <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+              <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
                 Återställningspunkt
               </div>
               <div class="space-y-1">
-                <label class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+                <label :class="DENSE_MENU_SECTION_LABEL_CLASS">
                   Namn (valfritt)
                 </label>
                 <input
                   v-model="checkpointLabel"
-                  class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+                  :class="DENSE_FORM_INPUT_CLASS"
                   placeholder="T.ex. före refactor"
                   :disabled="props.isReadOnly"
                 >
@@ -258,7 +251,7 @@ function formatDateTime(value: string | number): string {
               <button
                 type="button"
                 role="menuitem"
-                :class="menuButtonClass"
+                :class="denseMenuItemClass()"
                 :disabled="props.isReadOnly || props.isCheckpointBusy"
                 @click="handleCreateCheckpoint"
               >
@@ -267,13 +260,13 @@ function formatDateTime(value: string | number): string {
             </div>
 
             <div class="border-t border-navy/20 pt-3 space-y-2">
-              <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+              <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
                 Öppna
               </div>
               <button
                 type="button"
                 role="menuitem"
-                :class="menuButtonClass"
+                :class="denseMenuItemClass()"
                 @click="
                   emit('openHistoryDrawer');
                   closeSaveMenu();
@@ -293,9 +286,9 @@ function formatDateTime(value: string | number): string {
         :can-create-tool="props.canCreateTool"
       />
 
-      <button
-        type="button"
-        class="btn-ghost h-[28px] w-[28px] p-0 text-[12px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none lg:hidden"
+      <UiDenseIconButton
+        :label="props.isChatCollapsed ? 'Öppna kodassistenten' : 'Stäng kodassistenten'"
+        class="lg:hidden"
         :aria-label="props.isChatCollapsed ? 'Öppna kodassistenten' : 'Stäng kodassistenten'"
         @click="emit('toggleChatCollapsed')"
       >
@@ -339,54 +332,54 @@ function formatDateTime(value: string | number): string {
             stroke-linecap="round"
           />
         </svg>
-      </button>
+      </UiDenseIconButton>
 
       <div
         v-if="props.aiStatus"
-        ref="aiMenuRef"
+        ref="aiMenuContainerRef"
         class="relative flex items-center gap-1 shrink-0"
       >
         <button
+          ref="aiMenuTriggerRef"
           type="button"
           :class="aiPillClass"
           :aria-expanded="isAiMenuOpen"
           aria-haspopup="menu"
           aria-label="AI-ändring"
-          @click="toggleAiMenu"
+          @click="toggleAiMenu()"
         >
           AI
         </button>
 
-        <button
-          type="button"
-          class="btn-ghost h-[28px] w-[28px] p-0 text-[12px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        <UiDenseIconButton
+          label="Ångra AI-ändring"
           :disabled="!props.aiCanUndo"
           :title="props.aiUndoDisabledReason || undefined"
-          aria-label="Ångra AI-ändring"
           @click="emit('undoAi')"
         >
-          ↶
-        </button>
+          <IconUndo :size="16" />
+        </UiDenseIconButton>
 
-        <button
-          type="button"
-          class="btn-ghost h-[28px] w-[28px] p-0 text-[12px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        <UiDenseIconButton
+          label="Återställ AI-ändring"
           :disabled="!props.aiCanRedo"
           :title="props.aiRedoDisabledReason || undefined"
-          aria-label="Återställ AI-ändring"
           @click="emit('redoAi')"
         >
-          ↷
-        </button>
+          <IconRedo :size="16" />
+        </UiDenseIconButton>
 
         <div
           v-if="isAiMenuOpen"
-          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
+          ref="aiMenuRef"
+          class="absolute left-0 top-full mt-2 w-[min(320px,90vw)] bg-canvas"
+          :class="DENSE_MENU_PANEL_CLASS"
           role="menu"
+          @keydown="onAiMenuKeydown"
         >
           <div class="p-3 space-y-2">
             <div class="space-y-1">
-              <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+              <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
                 AI-ändring
               </div>
               <div class="text-[11px] text-navy/70">
@@ -416,22 +409,17 @@ function formatDateTime(value: string | number): string {
         </div>
       </div>
 
-      <span
+      <UiDenseStatusPill
         v-if="props.hasDirtyChanges"
-        class="text-[10px] text-burgundy font-semibold uppercase tracking-wide"
-      >
-        Osparat
-      </span>
+        label="Osparat"
+        tone="warning"
+      />
 
-      <span
+      <UiDenseStatusPill
         v-if="props.lockBadgeLabel"
-        class="inline-flex items-center h-[28px] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide border leading-none"
-        :class="props.lockBadgeTone === 'success'
-          ? 'border-success text-success bg-success/10'
-          : 'border-navy/30 text-navy/70 bg-canvas/40'"
-      >
-        {{ props.lockBadgeLabel }}
-      </span>
+        :label="props.lockBadgeLabel"
+        :tone="props.lockBadgeTone === 'success' ? 'success' : 'neutral'"
+      />
     </div>
   </div>
 </template>

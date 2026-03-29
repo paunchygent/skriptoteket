@@ -59,7 +59,7 @@ def _verify_new_seating_draft_requires_classroom(page: Any) -> None:
     """Prove the seating action row refuses new drafts before room selection."""
 
     toggle = page.locator('[data-ui="segmented-toggle"]')
-    toggle.get_by_role("button", name=re.compile(r"Sittplatser", re.IGNORECASE)).click()
+    toggle.get_by_role("radio", name=re.compile(r"Sittplatser", re.IGNORECASE)).click()
     template_select = page.locator('[data-test="seating-template-select"]')
     expect(template_select).to_be_visible()
     page.locator('[data-test="new-seating-draft"]').click()

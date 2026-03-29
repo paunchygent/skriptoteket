@@ -100,16 +100,10 @@ const {
 <template>
   <div class="mx-auto max-w-[90rem] space-y-6 px-4 py-4 md:px-6">
     <header class="border-b border-navy pb-4">
-      <div class="space-y-1">
-        <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          Curated App
-        </p>
-        <h1 class="font-serif text-4xl text-navy md:text-5xl">
+      <div>
+        <h1 class="page-title">
           Klassrumskartan
         </h1>
-        <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
-          Arbeta vidare från översikten och öppna grupper, sittplatser eller regler när du behöver dem.
-        </p>
       </div>
     </header>
 

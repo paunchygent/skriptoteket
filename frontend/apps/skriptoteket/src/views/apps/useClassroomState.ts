@@ -385,6 +385,7 @@ export const useClassroomState = defineStore("classroom-state", () => {
     activeSeatingSmartTool: smartRuleUiState.activeSeatingSmartTool,
     pendingRelationshipStudentIds: smartRuleUiState.pendingRelationshipStudentIds,
     editingRelationshipRuleId: smartRuleUiState.editingRelationshipRuleId,
+    editingNearTeacherRule: smartRuleUiState.editingNearTeacherRule,
     smartRuleFeedbackMessage: smartRuleUiState.feedbackMessage,
     studentPlanningMeta,
     groupAssignments,
@@ -428,6 +429,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     handleSeatingSmartToolStudentSelection: smartRuleActions.handleSeatingSmartToolStudentSelection,
     commitPendingRelationshipRule: smartRuleActions.commitPendingRelationshipRule,
     beginRelationshipRuleEdit: smartRuleActions.beginRelationshipRuleEdit,
+    beginNearTeacherEdit: smartRuleActions.beginNearTeacherEdit,
+    clearNearTeacherRule: smartRuleActions.clearNearTeacherRule,
     deleteRelationshipRule: smartRuleActions.deleteRelationshipRule,
     isStudentMarkedNearTeacher: smartRuleActions.isStudentMarkedNearTeacher,
     isStudentInPendingRelationshipSelection:

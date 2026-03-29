@@ -173,4 +173,26 @@ describe("PlannerSeatingWorkspacePane export wiring", () => {
     await wrapper.get('[data-test="seating-export-status-dismiss"]').trigger("click");
     expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
   });
+
+  it("renders a dense classroom selector and grouped undo-redo controls", () => {
+    const wrapper = mount(PlannerSeatingWorkspacePane, {
+      props: {
+        selectedTemplateId: "template-1",
+        availableTemplates: [
+          { id: "template-1", name: "Sal 101", seats: [{ id: "seat-1", x: 0, y: 0, zone: null }], fixtures: [] },
+        ],
+      },
+      global: {
+        stubs: {
+          PlannerStudentPool: { template: "<div data-test='student-pool-stub' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas-stub' />" },
+          PlannerToolbarOverflowMenu: { template: "<button type='button' data-test='overflow-menu-stub' />" },
+          PlannerConfirmationDialog: true,
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="seating-template-select"]').classes()).toContain("h-[28px]");
+    expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
+  });
 });

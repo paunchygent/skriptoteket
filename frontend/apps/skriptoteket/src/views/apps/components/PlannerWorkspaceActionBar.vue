@@ -17,7 +17,7 @@ defineSlots<{
     <div class="flex-none">
       <slot name="leading" />
     </div>
-    <div class="ml-auto flex flex-wrap items-center gap-2 [&_.btn-ghost]:px-3 [&_.btn-ghost]:py-1.5 [&_.btn-primary]:px-3 [&_.btn-primary]:py-1.5 [&_.btn-primary]:shadow-none">
+    <div class="ml-auto flex flex-wrap items-center gap-2">
       <slot />
     </div>
   </div>

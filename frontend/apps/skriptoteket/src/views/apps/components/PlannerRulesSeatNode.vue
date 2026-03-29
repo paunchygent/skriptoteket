@@ -11,7 +11,7 @@ import RoomSeatToken from "./RoomSeatToken.vue";
 import type { Seat, Student } from "../classroomPlannerTypes";
 import { getSeatFrameStyle } from "../roomSeatPresentation";
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   seat: Seat;
   student: Student | null;
   selected?: boolean;
@@ -39,12 +39,12 @@ const emit = defineEmits<{
   >
     <div
       v-if="markers.length > 0"
-      class="pointer-events-none absolute -top-5 left-1/2 z-10 flex -translate-x-1/2 flex-wrap justify-center gap-1"
+      class="pointer-events-none absolute -top-7 left-1/2 z-10 flex w-max max-w-none -translate-x-1/2 flex-nowrap items-center gap-0.5 whitespace-nowrap"
     >
       <span
         v-for="marker in markers"
         :key="marker"
-        class="border border-navy/20 bg-canvas px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+        class="inline-flex h-3.5 shrink-0 items-center border border-navy/20 bg-canvas px-1.5 text-[8px] font-semibold uppercase tracking-[0.08em] text-navy/70"
       >
         {{ marker }}
       </span>

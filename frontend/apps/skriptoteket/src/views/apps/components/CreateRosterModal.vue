@@ -188,7 +188,7 @@ function closeModal(): void {
     <button
       type="button"
       aria-label="Stäng modal"
-      class="fixed inset-0 bg-navy/70"
+      class="planner-overlay-backdrop"
       @click="closeModal"
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
@@ -204,7 +204,7 @@ function closeModal(): void {
           </div>
           <button
             type="button"
-            class="mr-6 mt-6 btn-ghost h-[32px] w-[32px] px-0 py-0 shadow-none border-navy/30 bg-canvas md:mr-8 md:mt-8"
+            class="mr-6 mt-6 btn-ghost planner-btn-ghost-canvas planner-btn-icon-md md:mr-8 md:mt-8"
             @click="closeModal"
           >
             ×
@@ -353,14 +353,14 @@ function closeModal(): void {
                   <div class="flex flex-wrap gap-3">
                     <button
                       type="button"
-                      class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-burgundy underline"
+                      class="planner-text-link-danger"
                       @click="appendAmbiguousRow(index)"
                     >
                       Lägg till i elevlistan
                     </button>
                     <button
                       type="button"
-                      class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60 underline"
+                      class="planner-text-link-muted"
                       @click="dismissAmbiguousRow(index)"
                     >
                       Ignorera
@@ -377,7 +377,7 @@ function closeModal(): void {
             <button
               v-if="isEditing"
               type="button"
-              class="btn-ghost border-burgundy/40 bg-white text-burgundy"
+              class="btn-ghost planner-btn-danger"
               :disabled="isDeleting"
               @click="removeRoster"
             >
@@ -387,7 +387,7 @@ function closeModal(): void {
           <div class="flex flex-wrap justify-end gap-3">
             <button
               type="button"
-              class="btn-ghost border-navy/30 bg-canvas shadow-none"
+              class="btn-ghost planner-btn-ghost-canvas"
               @click="closeModal"
             >
               Avbryt

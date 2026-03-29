@@ -91,7 +91,7 @@ function confirmDelete(draftId: string): void {
         </div>
         <button
           type="button"
-          class="btn-ghost h-[28px] w-[28px] border-navy/30 bg-canvas px-0 py-0 shadow-none"
+          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-sm"
           aria-label="Stäng historik"
           @click="emit('close')"
         >
@@ -146,7 +146,7 @@ function confirmDelete(draftId: string): void {
             <div class="flex items-start justify-between gap-3">
               <button
                 type="button"
-                class="min-w-0 flex-1 space-y-2 text-left disabled:cursor-wait disabled:opacity-60"
+                class="planner-summary-button"
                 :disabled="props.busySummaryId === summary.id"
                 @click="props.canOpenSummaries ? emit('open-summary', summary.id) : undefined"
               >
@@ -169,7 +169,7 @@ function confirmDelete(draftId: string): void {
               <button
                 v-if="props.canDeleteSummaries"
                 type="button"
-                class="btn-ghost h-[36px] w-[36px] shrink-0 border-navy/20 bg-white px-0 py-0 shadow-none"
+                class="btn-ghost planner-btn-ghost-subtle planner-btn-icon-lg"
                 :disabled="props.busySummaryId === summary.id"
                 aria-label="Ta bort historiskt utkast"
                 @click.stop="requestDelete(summary.id)"
@@ -193,14 +193,14 @@ function confirmDelete(draftId: string): void {
               <div class="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  class="btn-ghost border-burgundy/30 bg-white text-burgundy shadow-none"
+                  class="btn-ghost planner-btn-danger-soft"
                   @click="confirmDelete(summary.id)"
                 >
                   Ta bort
                 </button>
                 <button
                   type="button"
-                  class="btn-ghost border-navy/25 bg-white shadow-none"
+                  class="btn-ghost planner-btn-ghost-soft"
                   @click="cancelDelete"
                 >
                   Avbryt

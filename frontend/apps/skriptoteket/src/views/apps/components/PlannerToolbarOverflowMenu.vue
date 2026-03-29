@@ -2,14 +2,20 @@
 /**
  * Compact overflow menu for planner secondary actions.
  *
- * This keeps group and seating toolbars visually light by collapsing
- * lower-priority actions behind a shared overflow trigger while still using
- * Skriptoteket's canonical icon resources and accessible menu semantics.
+ * Relationships:
+ * - planner adapter over the shared dense-menu lifecycle and icon-button primitive
+ * - keeps planner overflow content local while reading shared keyboard/focus behavior
  */
 
-import { computed, onBeforeUnmount, onMounted, ref, type Component } from "vue";
+import { computed, ref, type Component } from "vue";
 
 import { IconMoreVertical } from "../../../components/icons";
+import {
+  DENSE_MENU_PANEL_CLASS,
+  UiDenseIconButton,
+  denseMenuItemClass,
+} from "../../../components/ui";
+import { useDenseMenuSurface } from "../../../components/ui/useDenseMenuSurface";
 
 type PlannerToolbarMenuItem = {
   id: string;
@@ -34,19 +40,16 @@ const props = withDefaults(
 );
 
 const isOpen = ref(false);
+const containerRef = ref<HTMLElement | null>(null);
 const menuRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLElement | null>(null);
 const hasItems = computed(() => props.items.length > 0);
-
-function closeMenu(): void {
-  isOpen.value = false;
-}
-
-function toggleMenu(): void {
-  if (!hasItems.value) {
-    return;
-  }
-  isOpen.value = !isOpen.value;
-}
+const { closeMenu, toggleMenu, onTriggerKeydown, onMenuKeydown } = useDenseMenuSurface({
+  isOpen,
+  containerRef,
+  menuRef,
+  triggerRef,
+});
 
 function handleSelect(item: PlannerToolbarMenuItem): void {
   if (item.disabled) {
@@ -55,69 +58,44 @@ function handleSelect(item: PlannerToolbarMenuItem): void {
   item.onSelect();
   closeMenu();
 }
-
-function handleDocumentClick(event: MouseEvent): void {
-  const target = event.target as Node | null;
-  if (!target || !menuRef.value || menuRef.value.contains(target)) {
-    return;
-  }
-  closeMenu();
-}
-
-function handleEscape(event: KeyboardEvent): void {
-  if (event.key !== "Escape" || !isOpen.value) {
-    return;
-  }
-  event.preventDefault();
-  event.stopPropagation();
-  closeMenu();
-}
-
-onMounted(() => {
-  document.addEventListener("click", handleDocumentClick);
-  document.addEventListener("keydown", handleEscape);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleDocumentClick);
-  document.removeEventListener("keydown", handleEscape);
-});
 </script>
 
 <template>
   <div
-    ref="menuRef"
+    ref="containerRef"
     class="relative"
   >
-    <button
-      type="button"
-      class="grid h-9 w-9 place-items-center rounded-sm bg-transparent text-navy transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-navy/25 hover:bg-canvas/60"
-      :aria-label="label"
-      :title="label"
+    <UiDenseIconButton
+      ref="triggerRef"
+      :label="label"
+      size="utility"
       :aria-expanded="isOpen"
-      aria-haspopup="menu"
+      has-popup="menu"
       :data-test="testId"
       :disabled="!hasItems"
       @click.stop="toggleMenu"
+      @keydown="onTriggerKeydown"
     >
-      <IconMoreVertical :size="18" />
-    </button>
+      <IconMoreVertical :size="16" />
+    </UiDenseIconButton>
 
     <Transition name="popover">
       <div
         v-if="isOpen"
-        class="absolute right-0 z-50 mt-2 min-w-[12rem] border border-navy bg-white shadow-brutal-sm"
+        ref="menuRef"
+        class="absolute right-0 z-50 mt-2 min-w-[12rem]"
+        :class="DENSE_MENU_PANEL_CLASS"
         role="menu"
         :aria-label="label"
         @click.stop
+        @keydown="onMenuKeydown"
       >
         <button
           v-for="item in items"
           :key="item.id"
           type="button"
           role="menuitem"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:text-navy/35"
-          :class="item.tone === 'danger' ? 'text-burgundy' : 'text-navy'"
+          :class="denseMenuItemClass(item.tone === 'danger' ? 'danger' : 'default')"
           :data-test="item.testId"
           :disabled="item.disabled"
           @click="handleSelect(item)"

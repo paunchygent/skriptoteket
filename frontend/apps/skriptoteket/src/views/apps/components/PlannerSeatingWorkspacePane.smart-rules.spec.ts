@@ -157,9 +157,9 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
 
     expect(wrapper.find('[data-test="seating-smart-rule-surface"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(true);
+    expect(wrapper.get('[aria-label="Aktiva regler"]').text()).toContain("2 aktiva regler");
     expect(wrapper.text()).toContain("Närmare läraren");
     expect(wrapper.text()).toContain("Håll isär");
-    expect(wrapper.text()).toContain("Smarta regler");
     expect(wrapper.text()).toContain("Ada Lovelace");
   });
 
@@ -238,7 +238,7 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Smarta regler");
+    expect(wrapper.get('[aria-label="Aktiva regler"]').text()).toContain("2 aktiva regler");
     expect(wrapper.get('[data-test="seating-open-rules"]').attributes("disabled")).toBeUndefined();
 
     await wrapper.get('[data-test="seating-open-rules"]').trigger("click");
@@ -285,7 +285,7 @@ describe("PlannerSeatingWorkspacePane smart rules", () => {
     });
 
     await wrapper.get('[data-test="randomize-seating"]').trigger("click");
-    await wrapper.get('[data-test="seating-use-history-toggle"] input').setValue(false);
+    await wrapper.get('[data-test="seating-use-history-toggle"]').trigger("click");
 
     expect(stateMocks.plannerState.runSeatingShuffle).toHaveBeenCalledTimes(1);
     expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);

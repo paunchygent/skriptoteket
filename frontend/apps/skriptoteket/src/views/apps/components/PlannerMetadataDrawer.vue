@@ -58,7 +58,7 @@ const currentMeta = computed(() => {
         </div>
         <button
           type="button"
-          class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
+          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-sm"
           @click="emit('close')"
         >
           ×
@@ -100,7 +100,7 @@ const currentMeta = computed(() => {
 
           <button
             type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none"
+            class="btn-ghost planner-btn-ghost"
             @click="state.resetStudentPlanningMeta(selectedStudent.id)"
           >
             Återställ elevanteckningar

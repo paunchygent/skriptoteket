@@ -115,7 +115,7 @@ async function removeTemplate(): Promise<void> {
     <button
       type="button"
       aria-label="Stäng modal"
-      class="fixed inset-0 bg-navy/70"
+      class="planner-overlay-backdrop"
       @click="emit('close')"
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
@@ -134,7 +134,7 @@ async function removeTemplate(): Promise<void> {
           </div>
           <button
             type="button"
-            class="mb-0 mr-6 mt-6 btn-ghost h-[32px] w-[32px] self-start border-navy/30 bg-canvas px-0 py-0 shadow-none md:mr-8 md:mt-8 lg:self-auto"
+            class="mb-0 mr-6 mt-6 btn-ghost planner-btn-ghost-canvas planner-btn-icon-md self-start md:mr-8 md:mt-8 lg:self-auto"
             @click="emit('close')"
           >
             ×
@@ -200,7 +200,7 @@ async function removeTemplate(): Promise<void> {
             <button
               v-if="isEditing"
               type="button"
-              class="btn-ghost border-burgundy/40 bg-white text-burgundy"
+              class="btn-ghost planner-btn-danger"
               :disabled="isDeleting"
               @click="removeTemplate"
             >
@@ -210,7 +210,7 @@ async function removeTemplate(): Promise<void> {
           <div class="flex flex-wrap justify-end gap-3">
             <button
               type="button"
-              class="btn-ghost border-navy/30 bg-canvas shadow-none"
+              class="btn-ghost planner-btn-ghost-canvas"
               @click="emit('close')"
             >
               Avbryt

@@ -35,7 +35,7 @@ export function buildSmartRuleMarkersByStudentId(
     if (preference.near_teacher !== true) {
       continue;
     }
-    markers[preference.student_id] = [...(markers[preference.student_id] ?? []), "Lärare"];
+    markers[preference.student_id] = [...(markers[preference.student_id] ?? []), "Nära läraren"];
   }
 
   relationshipRules.forEach((rule, index) => {

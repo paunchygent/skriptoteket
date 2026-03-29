@@ -2,7 +2,7 @@
 id: "045-huleedu-design-system"
 type: "implementation"
 created: 2025-12-15
-updated: 2026-03-28
+updated: 2026-03-29
 scope: "frontend"
 references:
   - ADR-0027
@@ -194,11 +194,27 @@ Notes:
 - Dense-action sizing belongs to the primitive, not to the parent toolbar wrapper. Parent surfaces
   may arrange primitives, but should not set their final height, padding, or icon size through
   descendant selectors.
+- Shared button-class shape belongs to the class source too. If a control renders through a reused
+  class such as `btn-primary`, `btn-cta`, `btn-ghost`, or the `btn-inline-*` family, its base
+  corner treatment must be defined once in that shared class, not reintroduced through local
+  per-surface radius overrides.
+- Dense-action corner radius belongs to the primitive too. Dense toolbars should not mix sharp-corner
+  and slightly rounded standalone controls arbitrarily; use one hard small-radius family (`4px`)
+  for dense buttons so the surface feels harmonized while staying intentionally blocky rather than
+  smooth.
+- Grouped controls (`split`, history clusters, steppers, segmented compounds) should keep slight
+  rounding only on their outer edges and square inner seams/dividers.
 - First-pass dense control size tiers:
   - `dense_icon = 36px`
   - `dense_text = 28px`
   - `compact_segment = 24px`
 - `compact_segment` is for segmented/toggle internals, not for standalone primary action buttons.
+- Secondary/local rails such as sort switches, local canvas-view switches, and similar low-priority
+  mode controls must resolve to the shared segmented primitive with the smaller subrail treatment,
+  not to ad hoc local button groups.
+- Equal-weight workspace selectors in curated-app shells must not reuse the compact editor/subrail
+  treatment. Use the taller shared workspace segmented variant so the mode switch reads as a primary
+  navigation surface, while overview management buttons remain quieter and smaller.
 
 ### Examples
 

@@ -1,11 +1,26 @@
 <script setup lang="ts">
+/**
+ * Shared segmented mode switch for mutually exclusive dense-tool modes.
+ *
+ * Relationships:
+ * - consumed by planner/editor mode selection surfaces
+ * - freezes segmented controls as a single-choice mode switch instead of pressed buttons
+ */
+
 import { computed, nextTick, onMounted, onScopeDispose, ref, watch } from "vue";
+
+import {
+  DENSE_SEGMENTED_SHELL_CLASS,
+  DENSE_SEGMENTED_SUBRAIL_SHELL_CLASS,
+  DENSE_SEGMENTED_WORKSPACE_SHELL_CLASS,
+} from "./denseToolPrimitives";
 
 export type UiSegmentedToggleOption = {
   value: string;
   label: string;
   disabled?: boolean;
   title?: string;
+  dataTest?: string;
 };
 
 const props = withDefaults(
@@ -14,6 +29,7 @@ const props = withDefaults(
     options: UiSegmentedToggleOption[];
     ariaLabel?: string;
     density?: "default" | "compact";
+    variant?: "default" | "subrail" | "workspace";
     disabled?: boolean;
     columns?: number;
     width?: "responsive" | "full" | "auto";
@@ -21,6 +37,7 @@ const props = withDefaults(
   {
     ariaLabel: undefined,
     density: "default",
+    variant: "default",
     disabled: false,
     columns: undefined,
     width: "responsive",
@@ -39,10 +56,7 @@ const columnCount = computed(() => {
   if (props.columns && props.columns > 0) {
     return Math.min(props.columns, Math.max(1, props.options.length));
   }
-  if (props.options.length <= 2) {
-    return Math.max(1, props.options.length);
-  }
-  return 2;
+  return Math.max(1, props.options.length);
 });
 
 const widthClass = computed(() => {
@@ -57,12 +71,42 @@ const widthClass = computed(() => {
 });
 
 const containerStyle = computed(() => {
+  if (props.width === "auto") {
+    return {
+      gridTemplateColumns: `repeat(${columnCount.value}, auto)`,
+    };
+  }
+
   return {
     gridTemplateColumns: `repeat(${columnCount.value}, minmax(0, 1fr))`,
   };
 });
 
 const isCompact = computed(() => props.density === "compact");
+const shellClass = computed(() => {
+  switch (props.variant) {
+    case "subrail":
+      return DENSE_SEGMENTED_SUBRAIL_SHELL_CLASS;
+    case "workspace":
+      return DENSE_SEGMENTED_WORKSPACE_SHELL_CLASS;
+    default:
+      return DENSE_SEGMENTED_SHELL_CLASS;
+  }
+});
+
+const optionClass = computed(() => {
+  if (props.variant === "workspace") {
+    return "h-[40px] px-4 text-[12px] font-semibold uppercase tracking-[0.12em] leading-none whitespace-nowrap";
+  }
+
+  if (props.variant === "subrail") {
+    return "h-[34px] px-3 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none whitespace-nowrap";
+  }
+
+  return isCompact.value
+    ? "h-[24px] px-2 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none whitespace-nowrap"
+    : "h-[28px] px-3 py-1 text-xs font-semibold tracking-wide whitespace-nowrap";
+});
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -126,6 +170,91 @@ function selectOption(option: UiSegmentedToggleOption): void {
   if (props.disabled || option.disabled) return;
   if (option.value === props.modelValue) return;
   emit("update:modelValue", option.value);
+}
+
+function enabledOptions(): UiSegmentedToggleOption[] {
+  return props.options.filter((option) => !props.disabled && !option.disabled);
+}
+
+function selectedIndex(): number {
+  const index = props.options.findIndex((option) => option.value === props.modelValue);
+  if (index >= 0) {
+    return index;
+  }
+  return props.options.findIndex((option) => !option.disabled);
+}
+
+function tabindexForOption(index: number): number {
+  if (props.disabled || props.options[index]?.disabled) {
+    return -1;
+  }
+  return index === selectedIndex() ? 0 : -1;
+}
+
+function focusOption(index: number): void {
+  buttonRefs.value[index]?.focus();
+}
+
+function nextEnabledIndex(fromIndex: number, direction: 1 | -1): number {
+  const total = props.options.length;
+  for (let step = 1; step <= total; step += 1) {
+    const candidate = (fromIndex + step * direction + total) % total;
+    if (!props.options[candidate]?.disabled) {
+      return candidate;
+    }
+  }
+  return fromIndex;
+}
+
+function firstEnabledIndex(): number {
+  return props.options.findIndex((option) => !option.disabled);
+}
+
+function lastEnabledIndex(): number {
+  for (let index = props.options.length - 1; index >= 0; index -= 1) {
+    if (!props.options[index]?.disabled) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function onOptionKeydown(event: KeyboardEvent, index: number): void {
+  if (props.disabled || props.options[index]?.disabled || enabledOptions().length === 0) {
+    return;
+  }
+
+  let targetIndex = index;
+  switch (event.key) {
+    case "ArrowRight":
+    case "ArrowDown":
+      targetIndex = nextEnabledIndex(index, 1);
+      break;
+    case "ArrowLeft":
+    case "ArrowUp":
+      targetIndex = nextEnabledIndex(index, -1);
+      break;
+    case "Home":
+      targetIndex = firstEnabledIndex();
+      break;
+    case "End":
+      targetIndex = lastEnabledIndex();
+      break;
+    case " ":
+    case "Enter":
+      selectOption(props.options[index]!);
+      return;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  const nextOption = props.options[targetIndex];
+  if (!nextOption) {
+    return;
+  }
+  focusOption(targetIndex);
+  selectOption(nextOption);
 }
 
 const sliderStyle = computed(() => {
@@ -199,27 +328,13 @@ onScopeDispose(() => {
 <template>
   <div
     ref="containerRef"
-    class="relative grid items-stretch rounded-[4px] border border-navy/15 bg-canvas/50 p-0.5"
-    :class="widthClass"
+    class="relative grid items-stretch"
+    :class="[shellClass, widthClass]"
     :style="containerStyle"
-    role="group"
+    role="radiogroup"
     :aria-label="ariaLabel"
     data-ui="segmented-toggle"
   >
-    <!-- Background Separators (The navy fill slides under these) -->
-    <div
-      aria-hidden="true"
-      class="absolute inset-0 grid pointer-events-none z-[1]"
-      :style="containerStyle"
-    >
-      <div
-        v-for="i in columnCount - 1"
-        :key="i"
-        class="h-full border-r border-navy/20 last:border-r-0"
-        :style="{ gridColumn: i }"
-      />
-    </div>
-
     <span
       aria-hidden="true"
       class="absolute left-0 top-0 rounded-[2px] bg-navy pointer-events-none z-0 will-change-transform"
@@ -232,17 +347,20 @@ onScopeDispose(() => {
       :ref="(el) => setButtonRef(index, el as HTMLButtonElement | null)"
       type="button"
       :disabled="props.disabled || option.disabled"
-      :aria-pressed="option.value === props.modelValue"
+      role="radio"
+      :aria-checked="option.value === props.modelValue"
+      :tabindex="tabindexForOption(index)"
       :title="option.title || undefined"
+      :data-test="option.dataTest"
       class="relative z-[2] inline-flex w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 transition-colors duration-200"
       :class="[
-        isCompact
-          ? 'h-[24px] px-2 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none whitespace-nowrap'
-          : 'h-[28px] px-3 py-1 text-xs font-semibold tracking-wide whitespace-nowrap',
+        optionClass,
+        index > 0 ? 'border-l border-navy/20' : '',
         option.value === props.modelValue ? 'text-canvas' : 'text-navy/70 hover:text-navy',
         props.disabled || option.disabled ? 'opacity-40 cursor-not-allowed hover:text-navy/70' : '',
       ]"
       @click="selectOption(option)"
+      @keydown="onOptionKeydown($event, index)"
     >
       {{ option.label }}
     </button>

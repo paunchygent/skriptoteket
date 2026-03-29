@@ -25,13 +25,19 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
   const activeSeatingSmartTool = ref<SeatingSmartTool | null>(null);
   const pendingRelationshipStudentIds = ref<string[]>([]);
   const editingRelationshipRuleId = ref<string | null>(null);
+  const editingNearTeacherRule = ref(false);
   const feedbackMessage = ref<string | null>(null);
 
   const canCommitPendingRelationshipRule = computed(() => {
+    if (!options.canEditSmartRules()) {
+      return false;
+    }
+    if (activeSeatingSmartTool.value === "near_teacher") {
+      return pendingRelationshipStudentIds.value.length >= 1;
+    }
     return (
       (activeSeatingSmartTool.value === "keep_near" || activeSeatingSmartTool.value === "keep_apart")
       && pendingRelationshipStudentIds.value.length >= 2
-      && options.canEditSmartRules()
     );
   });
 
@@ -42,6 +48,7 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
   function clearPendingRelationshipSelection(): void {
     pendingRelationshipStudentIds.value = [];
     editingRelationshipRuleId.value = null;
+    editingNearTeacherRule.value = false;
     clearFeedback();
   }
 
@@ -65,6 +72,18 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     activeSeatingSmartTool.value = tool;
     pendingRelationshipStudentIds.value = [...studentIds];
     editingRelationshipRuleId.value = ruleId;
+    editingNearTeacherRule.value = false;
+    clearFeedback();
+  }
+
+  function beginNearTeacherEdit(studentIds: readonly string[], existingRule = true): void {
+    if (!options.canEditSmartRules()) {
+      return;
+    }
+    activeSeatingSmartTool.value = "near_teacher";
+    pendingRelationshipStudentIds.value = [...studentIds];
+    editingRelationshipRuleId.value = null;
+    editingNearTeacherRule.value = existingRule;
     clearFeedback();
   }
 
@@ -100,6 +119,7 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     activeSeatingSmartTool,
     pendingRelationshipStudentIds,
     editingRelationshipRuleId,
+    editingNearTeacherRule,
     feedbackMessage,
     canCommitPendingRelationshipRule,
     clearFeedback,
@@ -107,6 +127,7 @@ export function useSmartRuleUiState(options: UseSmartRuleUiStateOptions) {
     setFeedbackMessage,
     reset,
     beginRelationshipRuleEdit,
+    beginNearTeacherEdit,
     setActiveSeatingSmartTool,
     isStudentInPendingRelationshipSelection,
     togglePendingRelationshipStudent,

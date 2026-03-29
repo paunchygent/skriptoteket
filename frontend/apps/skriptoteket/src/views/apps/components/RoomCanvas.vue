@@ -114,10 +114,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="border border-navy bg-white p-4 shadow-brutal-sm">
-    <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 md:flex-row md:items-start md:justify-between">
+  <section class="border border-navy bg-white p-3 shadow-brutal-sm">
+    <div class="flex flex-col gap-2 border-b border-navy/20 pb-2 md:flex-row md:items-start md:justify-between">
       <div>
-        <h3 class="font-serif text-xl text-navy">
+        <h3 class="font-serif text-lg text-navy">
           Sittschema
         </h3>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
@@ -134,7 +134,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           data-test="seating-zoom-out"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-out')"
         >
           −
@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           data-test="seating-zoom-in"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-in')"
         >
           +
@@ -150,7 +150,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           data-test="seating-zoom-fit"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-fit')"
         >
           Anpassa
@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
     <div
       ref="canvasViewport"
       data-test="room-canvas-viewport"
-      class="mt-4 min-h-[560px] overflow-auto border border-navy/20 bg-white p-4"
+      class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
     >
       <div
         data-test="room-canvas-scroll-frame"

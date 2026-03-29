@@ -11,7 +11,6 @@ import type { Student } from "../classroomPlannerTypes";
 
 withDefaults(
   defineProps<{
-    eyebrow?: string;
     title: string;
     students: Student[];
     selectedStudentId?: string | null;
@@ -23,7 +22,6 @@ withDefaults(
     emptyTestId?: string;
   }>(),
   {
-    eyebrow: "Studentpool",
     selectedStudentId: null,
     selectedStudentIds: () => [],
     smartRuleMarkersByStudentId: () => ({}),
@@ -43,17 +41,15 @@ const emit = defineEmits<{
 
 <template>
   <aside
-    class="flex flex-col border border-navy bg-white p-4 shadow-brutal-sm xl:sticky xl:top-4 xl:max-h-[calc(100svh-6rem)]"
+    class="flex flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:sticky xl:top-4 xl:max-h-[calc(100svh-6rem)]"
     :data-test="rootTestId"
+    :aria-label="title"
     @dragover="emit('pool-dragover', $event)"
     @drop="emit('pool-drop', $event)"
   >
-    <div class="flex items-end justify-between gap-3 border-b border-navy/20 pb-3">
+    <div class="flex items-end justify-between gap-3 border-b border-navy/20 pb-2">
       <div>
-        <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          {{ eyebrow }}
-        </p>
-        <h3 class="font-serif text-xl text-navy">
+        <h3 class="font-serif text-lg text-navy">
           {{ title }}
         </h3>
       </div>
@@ -62,13 +58,13 @@ const emit = defineEmits<{
       </span>
     </div>
 
-    <div class="mt-4 flex flex-1 flex-col gap-2 overflow-y-auto">
+    <div class="mt-3 flex flex-1 flex-col gap-1.5 overflow-y-auto">
       <button
         v-for="student in students"
         :key="student.id"
         type="button"
-        class="flex items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
-        :class="selectedStudentId === student.id || selectedStudentIds.includes(student.id) ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
+        class="flex items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
+        :class="selectedStudentId === student.id || selectedStudentIds.includes(student.id) ? 'planner-choice-button-active' : 'planner-choice-button-strong'"
         :disabled="disabled"
         :draggable="!disabled"
         @click="emit('student-selected', student.id)"
@@ -96,7 +92,7 @@ const emit = defineEmits<{
 
       <div
         v-if="students.length === 0"
-        class="flex flex-1 items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
+        class="flex flex-1 items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-4 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
         :data-test="emptyTestId"
       >
         {{ emptyLabel }}

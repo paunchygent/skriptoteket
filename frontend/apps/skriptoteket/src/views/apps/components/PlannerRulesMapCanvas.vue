@@ -10,6 +10,9 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import type { RoomTemplate, SeatAssignment, Student } from "../classroomPlannerTypes";
+import UiSegmentedToggle, {
+  type UiSegmentedToggleOption,
+} from "../../../components/ui/UiSegmentedToggle.vue";
 import {
   sortSeatsByReadingOrder,
   sortStudentsAlphabetically,
@@ -24,6 +27,8 @@ type RulesMapView = "planning_map" | "seating_arrangement";
 
 const props = withDefaults(defineProps<{
   mapView: RulesMapView;
+  canShowSeatingArrangement?: boolean;
+  seatingArrangementUnavailableMessage?: string | null;
   template?: RoomTemplate | null;
   students?: Student[];
   studentsById?: Record<string, Student | undefined>;
@@ -32,6 +37,8 @@ const props = withDefaults(defineProps<{
   pendingSelectedStudentIds?: string[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
+  canShowSeatingArrangement: false,
+  seatingArrangementUnavailableMessage: null,
   template: null,
   students: () => [],
   studentsById: () => ({}),
@@ -43,6 +50,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: "student-selected", studentId: string): void;
+  (e: "update:mapView", value: RulesMapView): void;
 }>();
 
 const roomGrid = computed(() => normalizeRoomGrid(props.template));
@@ -100,6 +108,24 @@ const shouldCenterSurface = computed(() => {
   const scaledWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0");
   return viewportWidth.value <= 0 || scaledWidth <= viewportWidth.value;
 });
+const mapViewOptions = computed<UiSegmentedToggleOption[]>(() => {
+  return [
+    {
+      value: "planning_map",
+      label: "Planeringskarta",
+      dataTest: "rules-map-view-planning",
+    },
+    {
+      value: "seating_arrangement",
+      label: "Sittschema",
+      dataTest: "rules-map-view-seating",
+      disabled: !props.canShowSeatingArrangement,
+      title: !props.canShowSeatingArrangement
+        ? props.seatingArrangementUnavailableMessage ?? undefined
+        : undefined,
+    },
+  ];
+});
 
 function syncViewportSize(): void {
   const element = canvasViewport.value;
@@ -145,25 +171,46 @@ function selectionOrder(studentId: string): number | null {
 function isStudentSelected(studentId: string): boolean {
   return props.selectedStudentId === studentId || props.pendingSelectedStudentIds.includes(studentId);
 }
+
+function updateMapView(value: string): void {
+  if (value !== "planning_map" && value !== "seating_arrangement") {
+    return;
+  }
+  if (value === props.mapView) {
+    return;
+  }
+  emit("update:mapView", value);
+}
 </script>
 
 <template>
-  <section class="border border-navy bg-white p-4 shadow-brutal-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-navy/20 pb-3">
-      <p class="text-sm text-navy/70">
-        {{
-          mapView === "planning_map"
-            ? "Planeringskarta använder alfabetisk placering på klassrummets riktiga geometri."
-            : "Sittschema visar den aktuella sittplaceringen utan att ändra den på kartan."
-        }}
-      </p>
+  <section
+    class="border border-navy bg-white p-3 shadow-brutal-sm"
+    data-test="rules-map-panel"
+  >
+    <div
+      class="flex flex-wrap items-center justify-between gap-2 border-b border-navy/20 pb-2"
+      data-test="rules-map-toolbar"
+    >
+      <UiSegmentedToggle
+        :model-value="mapView"
+        :options="mapViewOptions"
+        aria-label="Välj kartvy för regler"
+        density="compact"
+        variant="subrail"
+        width="auto"
+        :columns="2"
+        data-test="rules-map-view-switch"
+        @update:model-value="updateMapView"
+      />
+
       <div class="flex flex-wrap items-center gap-2">
         <span class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
           {{ scalePercent }}%
         </span>
         <button
           type="button"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           data-test="rules-zoom-out"
           @click="zoomOut"
         >
@@ -171,7 +218,7 @@ function isStudentSelected(studentId: string): boolean {
         </button>
         <button
           type="button"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           data-test="rules-zoom-in"
           @click="zoomIn"
         >
@@ -179,7 +226,7 @@ function isStudentSelected(studentId: string): boolean {
         </button>
         <button
           type="button"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           data-test="rules-zoom-fit"
           @click="resetZoom"
         >
@@ -190,7 +237,7 @@ function isStudentSelected(studentId: string): boolean {
 
     <div
       v-if="!template"
-      class="mt-4 border border-dashed border-navy/30 bg-canvas px-6 py-8 text-center text-sm leading-relaxed text-navy/70"
+      class="mt-3 border border-dashed border-navy/30 bg-canvas px-5 py-6 text-center text-sm leading-relaxed text-navy/70"
       data-test="rules-map-empty-state"
     >
       Välj ett klassrum i sittplatser om du vill arbeta med regler direkt på klassrummets geometri.
@@ -200,7 +247,7 @@ function isStudentSelected(studentId: string): boolean {
       v-else
       ref="canvasViewport"
       data-test="rules-map-canvas"
-      class="mt-4 min-h-[560px] overflow-auto border border-navy/20 bg-white p-4"
+      class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
     >
       <div
         class="flex min-h-full min-w-full items-start"
@@ -232,7 +279,7 @@ function isStudentSelected(studentId: string): boolean {
                   :student="projectedStudentsBySeatId[seat.id]"
                   :selected="
                     projectedStudentsBySeatId[seat.id] !== null
-                    && isStudentSelected(projectedStudentsBySeatId[seat.id]?.id ?? '')
+                      && isStudentSelected(projectedStudentsBySeatId[seat.id]?.id ?? '')
                   "
                   :selection-order="
                     projectedStudentsBySeatId[seat.id] !== null
@@ -254,7 +301,7 @@ function isStudentSelected(studentId: string): boolean {
 
     <div
       v-if="unplacedStudents.length > 0"
-      class="mt-4 border border-navy/20 bg-canvas px-3 py-3"
+      class="mt-3 border border-navy/20 bg-canvas px-3 py-2.5"
       data-test="rules-map-unplaced"
     >
       <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
@@ -268,8 +315,8 @@ function isStudentSelected(studentId: string): boolean {
           class="border px-2 py-1 text-[11px] font-semibold"
           :class="
             isStudentSelected(student.id)
-              ? 'border-burgundy bg-burgundy/10 text-burgundy'
-              : 'border-navy/20 bg-white text-navy/70'
+              ? 'planner-choice-button-active'
+              : 'planner-choice-button-idle-muted'
           "
           :data-test="`rules-unplaced-student-${student.id}`"
           @click="emit('student-selected', student.id)"

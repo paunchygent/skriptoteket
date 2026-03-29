@@ -2,35 +2,31 @@
 /**
  * Compact icon-first toolbar button for planner action rows.
  *
- * This keeps recurring secondary actions short enough to coexist with
- * selectors and primary buttons in the same control bar without adding another
- * line of chrome.
+ * Relationships:
+ * - thin planner-facing adapter over the shared `UiDenseIconButton` primitive
+ * - preserves existing planner call sites while the shared dense-tool layer settles
  */
 
-import { useAttrs } from "vue";
-
-defineOptions({
-  inheritAttrs: false,
-});
+import { UiDenseIconButton } from "../../../components/ui";
+import type { DenseActionGroupPosition, DenseActionSize } from "../../../components/ui";
 
 defineProps<{
   label: string;
   title?: string;
   disabled?: boolean;
+  size?: DenseActionSize;
+  groupPosition?: DenseActionGroupPosition;
 }>();
-
-const attrs = useAttrs();
 </script>
 
 <template>
-  <button
-    type="button"
-    v-bind="attrs"
-    :aria-label="label"
+  <UiDenseIconButton
+    :label="label"
     :title="title ?? label"
     :disabled="disabled"
-    class="grid h-9 w-9 place-items-center rounded-sm bg-transparent text-navy transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-navy/25 hover:bg-canvas/60"
+    :size="size"
+    :group-position="groupPosition"
   >
     <slot />
-  </button>
+  </UiDenseIconButton>
 </template>

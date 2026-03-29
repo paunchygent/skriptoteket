@@ -27,6 +27,6 @@ describe("PlannerTemplateOverviewPanel", () => {
     });
 
     expect(wrapper.get("[data-test='overview-classroom-preview']").html()).toContain("Dörr");
-    expect(wrapper.html()).toContain("writing-mode: vertical-rl;");
+    expect(wrapper.html()).toContain("writing-mode: vertical-");
   });
 });

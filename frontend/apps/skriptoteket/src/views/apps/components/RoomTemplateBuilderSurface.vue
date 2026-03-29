@@ -142,7 +142,7 @@ const shouldCenterSurface = computed(() => {
         <button
           type="button"
           data-test="builder-zoom-out"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-out')"
         >
           −
@@ -150,7 +150,7 @@ const shouldCenterSurface = computed(() => {
         <button
           type="button"
           data-test="builder-zoom-in"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-in')"
         >
           +
@@ -158,7 +158,7 @@ const shouldCenterSurface = computed(() => {
         <button
           type="button"
           data-test="builder-zoom-fit"
-          class="btn-ghost border-navy/30 bg-white px-3 py-1 shadow-none"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-fit')"
         >
           Anpassa
@@ -206,7 +206,7 @@ const shouldCenterSurface = computed(() => {
                       v-for="col in roomGrid.cols"
                       :key="`cell-${row}-${col}`"
                       type="button"
-                      class="relative aspect-square border border-navy/20 bg-white text-[9px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] transition-colors hover:border-navy/50"
+                      class="planner-grid-node-button"
                       @mousemove="emit('cell-hover', $event, row - 1, col - 1)"
                       @focus="emit('cell-focus', row - 1, col - 1)"
                       @click="emit('cell-click', row - 1, col - 1, $event)"

@@ -352,7 +352,7 @@ describe("CreateRoomTemplateModal", () => {
       },
     });
 
-    await wrapper.get("button.btn-ghost.border-burgundy\\/40").trigger("click");
+    await wrapper.get("button.planner-btn-danger").trigger("click");
     await Promise.resolve();
 
     expect(wrapper.text()).toContain(

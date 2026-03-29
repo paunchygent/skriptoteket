@@ -157,7 +157,12 @@ def focus_workspace_mode(page: Page, *, label: str) -> None:
     """Select one compact class-workspace mode through the segmented toggle."""
 
     toggle = page.locator('[data-ui="segmented-toggle"]')
-    toggle.get_by_role("button", name=re.compile(re.escape(label), re.IGNORECASE)).click()
+    matcher = re.compile(re.escape(label), re.IGNORECASE)
+    radio_option = toggle.get_by_role("radio", name=matcher)
+    if radio_option.count() > 0:
+        radio_option.first.click()
+        return
+    toggle.get_by_role("button", name=matcher).click()
 
 
 def open_class_workspace(page: Page, *, roster_name: str) -> None:
@@ -176,6 +181,5 @@ def open_class_workspace(page: Page, *, roster_name: str) -> None:
     )
     roster_select.select_option(value=matching_option["value"])
     expect(roster_select).to_have_value(matching_option["value"])
-    expect(page.get_by_text("Klassarbetsyta", exact=True)).to_be_visible()
     expect(page.get_by_role("heading", name=re.compile(re.escape(roster_name)))).to_be_visible()
     expect(page.locator('[data-ui="segmented-toggle"]')).to_be_visible()

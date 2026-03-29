@@ -2,7 +2,8 @@
  * Rules workspace pane tests.
  *
  * These tests lock the dedicated `Regler` workspace behavior so the map view
- * and inspector stay authoritative for smart-rule authoring after the cut-over.
+ * and top summary panel stay authoritative for smart-rule authoring after the
+ * cut-over.
  */
 
 import { mount } from "@vue/test-utils";
@@ -22,6 +23,7 @@ type PlannerStateMock = {
   activeSeatingSmartTool: "near_teacher" | "keep_near" | "keep_apart" | null;
   canEditSeatingSmartRules: boolean;
   editingRelationshipRuleId: string | null;
+  editingNearTeacherRule: boolean;
   canCommitPendingRelationshipRule: boolean;
   smartRuleFeedbackMessage: string | null;
   smartRuleHydrationStatus: "idle" | "hydrating" | "ready" | "error";
@@ -30,9 +32,10 @@ type PlannerStateMock = {
   clearPendingRelationshipSelection: ReturnType<typeof vi.fn>;
   retrySmartRuleHydration: ReturnType<typeof vi.fn>;
   beginRelationshipRuleEdit: ReturnType<typeof vi.fn>;
+  beginNearTeacherEdit: ReturnType<typeof vi.fn>;
+  clearNearTeacherRule: ReturnType<typeof vi.fn>;
   deleteRelationshipRule: ReturnType<typeof vi.fn>;
   commitPendingRelationshipRule: ReturnType<typeof vi.fn>;
-  setStudentNearTeacherEnabled: ReturnType<typeof vi.fn>;
   replaceNearTeacherPreference: ReturnType<typeof vi.fn>;
 };
 
@@ -58,7 +61,10 @@ const stateMocks = vi.hoisted(() => ({
       "student-3": { id: "student-3", display_name: "Grace Hopper" },
     },
     seatAssignments: [{ student_id: "student-1", seat_id: "seat-1" }],
-    seatingPreferences: [{ student_id: "student-1", near_teacher: true }],
+    seatingPreferences: [
+      { student_id: "student-1", near_teacher: true },
+      { student_id: "student-2", near_teacher: true },
+    ],
     relationshipRules: [
       { id: "rule-1", kind: "keep_apart", student_ids: ["student-2", "student-3"] },
     ],
@@ -66,6 +72,7 @@ const stateMocks = vi.hoisted(() => ({
     activeSeatingSmartTool: "keep_apart",
     canEditSeatingSmartRules: true,
     editingRelationshipRuleId: null,
+    editingNearTeacherRule: false,
     canCommitPendingRelationshipRule: true,
     smartRuleFeedbackMessage: null,
     smartRuleHydrationStatus: "ready",
@@ -74,9 +81,10 @@ const stateMocks = vi.hoisted(() => ({
     clearPendingRelationshipSelection: vi.fn(),
     retrySmartRuleHydration: vi.fn(),
     beginRelationshipRuleEdit: vi.fn(),
+    beginNearTeacherEdit: vi.fn(),
+    clearNearTeacherRule: vi.fn(() => true),
     deleteRelationshipRule: vi.fn(),
     commitPendingRelationshipRule: vi.fn(() => true),
-    setStudentNearTeacherEnabled: vi.fn(),
     replaceNearTeacherPreference: vi.fn(),
   }))(),
 }));
@@ -88,7 +96,10 @@ vi.mock("../useClassroomState", () => ({
 describe("PlannerRulesWorkspacePane", () => {
   beforeEach(() => {
     stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
-    stateMocks.plannerState.seatingPreferences = [{ student_id: "student-1", near_teacher: true }];
+    stateMocks.plannerState.seatingPreferences = [
+      { student_id: "student-1", near_teacher: true },
+      { student_id: "student-2", near_teacher: true },
+    ];
     stateMocks.plannerState.relationshipRules = [
       { id: "rule-1", kind: "keep_apart", student_ids: ["student-2", "student-3"] },
     ];
@@ -96,6 +107,7 @@ describe("PlannerRulesWorkspacePane", () => {
     stateMocks.plannerState.activeSeatingSmartTool = "keep_apart";
     stateMocks.plannerState.canEditSeatingSmartRules = true;
     stateMocks.plannerState.editingRelationshipRuleId = null;
+    stateMocks.plannerState.editingNearTeacherRule = false;
     stateMocks.plannerState.canCommitPendingRelationshipRule = true;
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
     stateMocks.plannerState.smartRuleHydrationStatus = "ready";
@@ -104,10 +116,12 @@ describe("PlannerRulesWorkspacePane", () => {
     stateMocks.plannerState.clearPendingRelationshipSelection.mockReset();
     stateMocks.plannerState.retrySmartRuleHydration.mockReset();
     stateMocks.plannerState.beginRelationshipRuleEdit.mockReset();
+    stateMocks.plannerState.beginNearTeacherEdit.mockReset();
+    stateMocks.plannerState.clearNearTeacherRule.mockReset();
+    stateMocks.plannerState.clearNearTeacherRule.mockReturnValue(true);
     stateMocks.plannerState.deleteRelationshipRule.mockReset();
     stateMocks.plannerState.commitPendingRelationshipRule.mockReset();
     stateMocks.plannerState.commitPendingRelationshipRule.mockReturnValue(true);
-    stateMocks.plannerState.setStudentNearTeacherEnabled.mockReset();
     stateMocks.plannerState.replaceNearTeacherPreference.mockReset();
   });
 
@@ -117,21 +131,49 @@ describe("PlannerRulesWorkspacePane", () => {
         stubs: {
           PlannerRulesMapCanvas: {
             props: ["mapView"],
-            template: "<div data-test='rules-map-canvas-stub'>{{ mapView }}</div>",
+            emits: ["update:mapView"],
+            template: `
+              <div>
+                <button
+                  type="button"
+                  data-test="rules-map-view-planning"
+                  aria-checked="true"
+                >
+                  Planeringskarta
+                </button>
+                <button
+                  type="button"
+                  data-test="rules-map-view-seating"
+                  @click="$emit('update:mapView', 'seating_arrangement')"
+                >
+                  Sittschema
+                </button>
+                <div data-test='rules-map-canvas-stub'>{{ mapView }}</div>
+              </div>
+            `,
           },
         },
       },
     });
 
-    const mapToggleButtons = wrapper.get("[data-ui='segmented-toggle']").findAll("button");
-    const planningButton = mapToggleButtons.find((button) => button.text() === "Planeringskarta");
-    const seatingButton = mapToggleButtons.find((button) => button.text() === "Sittschema");
+    const planningButton = wrapper.get('[data-test="rules-map-view-planning"]');
+    const seatingButton = wrapper.get('[data-test="rules-map-view-seating"]');
 
-    expect(planningButton?.attributes("aria-pressed")).toBe("true");
+    expect(wrapper.find('[data-test="rules-summary-panel"]').exists()).toBe(true);
+    expect(planningButton.attributes("aria-checked")).toBe("true");
     expect(wrapper.get("[data-test='rules-map-canvas-stub']").text()).toBe("planning_map");
     expect(wrapper.text()).toContain("2 valda");
+    expect(wrapper.text()).toContain("Nära läraren");
+    expect(wrapper.text()).not.toContain("Närmare läraren");
+    expect(wrapper.text()).not.toContain("totalt");
+    expect(
+      wrapper.find('[data-test="rules-tool-rail"] [data-test="rules-pending-panel"]').exists(),
+    ).toBe(true);
+    expect(
+      wrapper.find('[data-test="rules-summary-panel"] [data-test="rules-commit-rule"]').exists(),
+    ).toBe(false);
 
-    await seatingButton?.trigger("click");
+    await seatingButton.trigger("click");
 
     expect(wrapper.get("[data-test='rules-map-canvas-stub']").text()).toBe("seating_arrangement");
     expect(stateMocks.plannerState.setActiveSeatingSmartTool).not.toHaveBeenCalled();
@@ -155,7 +197,7 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(stateMocks.plannerState.beginRelationshipRuleEdit).toHaveBeenCalledWith("rule-1");
   });
 
-  it("edits near-teacher rules directly from the inspector", async () => {
+  it("activates the near-teacher tool from the summary panel instead of opening a dropdown edit flow", async () => {
     const wrapper = mount(PlannerRulesWorkspacePane, {
       global: {
         stubs: {
@@ -167,16 +209,11 @@ describe("PlannerRulesWorkspacePane", () => {
     });
 
     await wrapper.get('[data-test="rules-edit-near-teacher-0"]').trigger("click");
-    await wrapper.get('[data-test="rules-near-teacher-select-0"]').setValue("student-2");
-    await wrapper.get('[data-test="rules-save-near-teacher-0"]').trigger("click");
 
-    expect(stateMocks.plannerState.replaceNearTeacherPreference).toHaveBeenCalledWith(
-      "student-1",
-      "student-2",
-    );
+    expect(stateMocks.plannerState.beginNearTeacherEdit).toHaveBeenCalledWith();
   });
 
-  it("removes near-teacher rules directly from the inspector", async () => {
+  it("removes the consolidated near-teacher rule directly from the inspector", async () => {
     const wrapper = mount(PlannerRulesWorkspacePane, {
       global: {
         stubs: {
@@ -189,9 +226,6 @@ describe("PlannerRulesWorkspacePane", () => {
 
     await wrapper.get('[data-test="rules-delete-near-teacher-0"]').trigger("click");
 
-    expect(stateMocks.plannerState.setStudentNearTeacherEnabled).toHaveBeenCalledWith(
-      "student-1",
-      false,
-    );
+    expect(stateMocks.plannerState.clearNearTeacherRule).toHaveBeenCalledWith();
   });
 });

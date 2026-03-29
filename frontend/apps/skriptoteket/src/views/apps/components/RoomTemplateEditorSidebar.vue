@@ -59,7 +59,7 @@ const emit = defineEmits<{
           <div class="flex items-center gap-2">
             <button
               type="button"
-              class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact planner-btn-disabled-soft"
               :disabled="!canShrinkCols"
               @click="emit('resize-room', { axis: 'cols', delta: -1 })"
             >
@@ -67,7 +67,7 @@ const emit = defineEmits<{
             </button>
             <button
               type="button"
-              class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none"
+              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact"
               @click="emit('resize-room', { axis: 'cols', delta: 1 })"
             >
               +
@@ -79,7 +79,7 @@ const emit = defineEmits<{
           <div class="flex items-center gap-2">
             <button
               type="button"
-              class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none disabled:cursor-not-allowed disabled:border-navy/15 disabled:text-navy/35"
+              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact planner-btn-disabled-soft"
               :disabled="!canShrinkRows"
               @click="emit('resize-room', { axis: 'rows', delta: -1 })"
             >
@@ -87,7 +87,7 @@ const emit = defineEmits<{
             </button>
             <button
               type="button"
-              class="btn-ghost border-navy/30 bg-canvas px-3 py-1 shadow-none"
+              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact"
               @click="emit('resize-room', { axis: 'rows', delta: 1 })"
             >
               +
@@ -110,8 +110,8 @@ const emit = defineEmits<{
       <div class="grid gap-2">
         <button
           type="button"
-          class="btn-ghost justify-start shadow-none"
-          :class="selectedTool === 'seat' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+          class="btn-ghost planner-btn-ghost justify-start"
+          :class="selectedTool === 'seat' ? 'planner-tool-select-active' : 'planner-tool-select-idle'"
           @click="emit('update:selectedTool', 'seat')"
         >
           Placera plats
@@ -120,16 +120,16 @@ const emit = defineEmits<{
           v-for="fixture in roomFixturePalette"
           :key="fixture.type"
           type="button"
-          class="btn-ghost justify-start shadow-none"
-          :class="selectedTool === fixture.type ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+          class="btn-ghost planner-btn-ghost justify-start"
+          :class="selectedTool === fixture.type ? 'planner-tool-select-active' : 'planner-tool-select-idle'"
           @click="emit('update:selectedTool', fixture.type)"
         >
           {{ fixture.label }}
         </button>
         <button
           type="button"
-          class="btn-ghost justify-start shadow-none"
-          :class="selectedTool === 'erase' ? 'border-burgundy bg-white text-burgundy' : 'border-navy/30 bg-white'"
+          class="btn-ghost planner-btn-ghost justify-start"
+          :class="selectedTool === 'erase' ? 'planner-tool-select-active' : 'planner-tool-select-idle'"
           @click="emit('update:selectedTool', 'erase')"
         >
           Sudda
@@ -137,7 +137,7 @@ const emit = defineEmits<{
         <button
           type="button"
           data-test="builder-clear-room"
-          class="btn-ghost justify-start border-navy/30 bg-white text-navy shadow-none"
+          class="btn-ghost planner-btn-ghost justify-start"
           @click="emit('clear-room')"
         >
           Rensa

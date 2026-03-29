@@ -73,10 +73,13 @@ into the `laptop` proof width.
 - [ST-29-05: Grouping and seating desktop workspace overhaul](../stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md)
 - [ST-29-06: Rules workspace rail-map-inspector rebalance](../stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md)
 - [ST-29-07: Reduced mobile companion layouts and breakpoint cutover](../stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md)
+- [ST-29-08: Shared custom tooltip system and global hover contract](../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
 
 ## Notes
 
 - `EPIC-29` is the canonical story/task hub for the Klassrumskartan UI overhaul.
+- `ST-29-08` is intentionally an enhancement follow-up after the current core `ST-29-01`..`ST-29-07`
+  stack and should not delay the main desktop-first redesign sequence.
 - Applicable task decomposition from the earlier EPIC-26 redesign drafts is reassigned here and
   any conflicting story-level backlog docs should be removed rather than left around as dormant
   alternatives.

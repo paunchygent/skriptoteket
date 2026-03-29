@@ -29,7 +29,7 @@ describe("PlannerRosterOverviewPanel", () => {
     });
 
     expect(wrapper.text()).toContain("Ny klasslista");
-    expect(wrapper.text()).toContain("Redigera klass");
+    expect(wrapper.text()).toContain("Redigera");
     expect(wrapper.text()).not.toContain("Importera från fil");
   });
 });

@@ -104,10 +104,7 @@ describe("PlannerClassWorkspace", () => {
     await wrapper.get("[data-test='overview-template-select']").setValue("template-2");
     expect(wrapper.emitted("select-template")).toEqual([["template-2"]]);
 
-    const editRosterButton = wrapper.findAll("button").find((button) => button.text() === "Redigera klass");
-    if (!editRosterButton) {
-      throw new Error("Expected the overview to expose class editing.");
-    }
+    const editRosterButton = wrapper.get("[data-test='overview-edit-roster']");
     await editRosterButton.trigger("click");
     expect(wrapper.emitted("edit-roster")).toEqual([[]]);
 
@@ -118,10 +115,7 @@ describe("PlannerClassWorkspace", () => {
     await createRosterButton.trigger("click");
     expect(wrapper.emitted("create-roster")).toEqual([[]]);
 
-    const editTemplateButton = wrapper.findAll("button").find((button) => button.text() === "Redigera klassrum");
-    if (!editTemplateButton) {
-      throw new Error("Expected the overview to expose classroom editing.");
-    }
+    const editTemplateButton = wrapper.get("[data-test='overview-edit-template']");
     await editTemplateButton.trigger("click");
     expect(wrapper.emitted("edit-current-template")).toEqual([[buildTemplates()[0]]]);
 
@@ -146,7 +140,7 @@ describe("PlannerClassWorkspace", () => {
       throw new Error("Expected the segmented toggle to expose Grupper.");
     }
     await groupingToggle.trigger("click");
-    expect(groupingToggle.attributes("aria-pressed")).toBe("false");
+    expect(groupingToggle.attributes("aria-checked")).toBe("false");
     expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
 
     const seatingToggle = wrapper.findAll('[data-ui="segmented-toggle"] button').find(
@@ -156,11 +150,11 @@ describe("PlannerClassWorkspace", () => {
       throw new Error("Expected the segmented toggle to expose Sittplatser.");
     }
     await seatingToggle.trigger("click");
-    expect(seatingToggle.attributes("aria-pressed")).toBe("false");
+    expect(seatingToggle.attributes("aria-checked")).toBe("false");
     expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: "template-2" }]]);
   });
 
-  it("renders compact resumable cards with continue, settings, and dismiss actions", async () => {
+  it("keeps overview free of duplicate resume cards even when active drafts exist", () => {
     const wrapper = mountWorkspace({
       selectedTemplateId: "template-2",
       visibleGroupingDraft: {
@@ -185,24 +179,9 @@ describe("PlannerClassWorkspace", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="overview-resumable-surface"]').text()).toContain("Fortsätt grupper");
-    expect(wrapper.get('[data-test="overview-resumable-surface"]').text()).toContain("Fortsätt sittschema");
-    expect(wrapper.get('[data-test="overview-grouping-resume-card"]').text()).toContain("Revision 4");
-    expect(wrapper.get('[data-test="overview-seating-resume-card"]').text()).toContain("Sal 101");
-
-    await wrapper.get('[data-test="continue-grouping-draft"]').trigger("click");
-    await wrapper.get('[data-test="continue-seating-draft"]').trigger("click");
-    await wrapper.get('[data-test="grouping-draft-settings"]').trigger("click");
-    await wrapper.get('[data-test="seating-draft-settings"]').trigger("click");
-    await wrapper.get('[data-test="dismiss-grouping-resume"]').trigger("click");
-    await wrapper.get('[data-test="dismiss-seating-resume"]').trigger("click");
-
-    expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
-    expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: "template-1" }]]);
-    expect(wrapper.emitted("edit-roster")).toEqual([[]]);
-    expect(wrapper.emitted("edit-current-template")).toEqual([[buildTemplates()[0]]]);
-    expect(wrapper.emitted("dismiss-grouping-draft")).toEqual([[]]);
-    expect(wrapper.emitted("dismiss-seating-draft")).toEqual([[]]);
+    expect(wrapper.find('[data-test="overview-resumable-surface"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Fortsätt grupper");
+    expect(wrapper.text()).not.toContain("Fortsätt sittschema");
   });
 
   it("shows an explicit empty classroom state without exposing overview history controls", () => {

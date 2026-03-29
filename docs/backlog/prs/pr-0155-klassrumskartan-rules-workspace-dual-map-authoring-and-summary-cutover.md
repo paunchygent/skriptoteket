@@ -5,7 +5,7 @@ title: "Klassrumskartan: rules workspace, dual-map authoring, and summary-link c
 status: done
 owners: "agents"
 created: 2026-03-27
-updated: 2026-03-28
+updated: 2026-03-29
 stories:
   - "ST-27-07"
 tags:
@@ -29,7 +29,7 @@ acceptance_criteria:
   - "Given `Planeringskarta` is selected, when the map renders, then it preserves room geometry while assigning students alphabetically onto seats sorted in reading order."
   - "Given `Sittschema` is selected and a current seating arrangement exists, when the teacher toggles views, then the map switches projections without resetting the active tool, temporary selection, or current edit session."
   - "Given smart tools are visible, when the teacher changes tools or selects students, then icon-based active-tool state, cursor state, hover state, and ordered selection feedback are all clear before rule commit."
-  - "Given a saved smart rule is listed in the inspector, when the teacher chooses to edit it, then the correct tool and student selection are restored and saving updates the existing rule."
+  - "Given a saved smart rule is listed in the inspector, when the teacher chooses to edit it, then the correct tool and student selection are restored and saving updates the existing rule; `Nära läraren` uses the same rail-owned pending/create-save feedback as the relationship rules while still persisting as one consolidated rule."
   - "Given the teacher is in `Sittplatser` or `Grupper`, when smart controls are shown near `Slumpa`, then those task panes expose only compact summary/settings affordances and route rule editing to `Regler` through a small settings icon near `Smart`."
   - "Given a compact or collapsed task-pane smart drawer exists, when the teacher opens it, then it may show read-only rule summaries plus mode-local smart toggles such as `Use history`, but it never hosts inline rule creation or rule editing."
 ---
@@ -97,6 +97,8 @@ while keeping `Sittplatser` and `Grupper` calm:
    - Add explicit active-tool styling, hover/selection states, ordered multi-select badges, and a
      short status line.
    - Support editing existing rules by rehydrating the correct tool and selection state.
+   - Keep the top summary panel summary-only; the transient create/save flow belongs in the tool
+     rail, including `Nära läraren`.
 
 5. Cut over task-pane smart chrome.
    - Replace the seating-embedded full rule editor with a compact smart summary surface.

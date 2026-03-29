@@ -5,7 +5,7 @@ title: "Klassrumskartan workspace UI doctrine (2026-03-28)"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-03-29
 topic: "klassrumskartan-workspace-ui-doctrine"
 links:
   [
@@ -92,12 +92,12 @@ fairly restrained.
 
 ### Rules
 
-- The rules workspace reads as a set of equal-weight bordered cards instead of rail + dominant map +
-  supporting inspector.
-- The map itself is wrapped in too much framing: map panel, another explanatory panel, another
-  toolbar strip, then the actual map.
-- The inspector is too large and button-heavy for something that should support the map rather than
-  compete with it.
+- The rules workspace should not read as a set of equal-weight bordered cards or a persistent
+  right-side inspector squeezing the authoring map.
+- The map itself must stay dominant while transient rule creation/editing feedback lives in the
+  tool rail and saved rules collapse into a compact summary surface above the map.
+- Saved-rule summaries must stay calm, dense, and icon-led; they should not expand into a tall
+  button-heavy secondary application beside the canvas.
 
 ## Layout rules
 
@@ -106,7 +106,8 @@ fairly restrained.
 - `Grupper` should read as student pool plus group board, not as toolbar plus cards plus board.
 - `Sittplatser` should read as student pool plus room canvas, with the canvas clearly winning the
   visual hierarchy.
-- `Regler` should read as tool rail plus shared map plus inspector, not as three equal cards.
+- `Regler` should read as compact tool rail plus dominant shared map with a lightweight summary
+  surface above it, not as three equal cards or a right-side inspector squeezing the canvas.
 
 ### 1b. Desktop is the source composition
 
@@ -142,11 +143,13 @@ Use these named viewports in redesign reviews instead of vague references to "co
 
 ### 3. Stable side structures
 
-- Rails, inspectors, drawers, and side pools should keep fixed jobs.
+- Rails, summary bands, drawers, and side pools should keep fixed jobs.
 - Do not make the user rediscover where history, smart settings, or student metadata lives in each
   workspace.
 - If a side surface is secondary, it should visually recede through border weight, scale, and copy
   density rather than through disappearance alone.
+- In `Regler`, the tool rail owns pending selection and create/save confirmation, while the summary
+  surface owns persisted rule overview and compact edit/remove actions.
 
 ## Control language
 
@@ -208,7 +211,7 @@ Use these named viewports in redesign reviews instead of vague references to "co
 - Multiple stacked status bars that each consume their own band.
 - Repeating the same context in large prose blocks, headings, and helper lines.
 - Treating every workspace subsection as its own "card page."
-- Giving side rails and inspectors the same visual mass as the central map or board.
+- Giving side rails or summary surfaces the same visual mass as the central map or board.
 
 ## Implications for the upcoming UI overhaul
 

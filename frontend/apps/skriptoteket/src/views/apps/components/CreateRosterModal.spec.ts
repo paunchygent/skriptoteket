@@ -193,7 +193,7 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    await wrapper.get("button.btn-ghost.border-burgundy\\/40").trigger("click");
+    await wrapper.get("button.planner-btn-danger").trigger("click");
     await flushPromises();
 
     expect(wrapper.text()).toContain(

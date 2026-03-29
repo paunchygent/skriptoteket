@@ -548,7 +548,7 @@ describe("useClassroomState", () => {
     expect(state.pendingRelationshipStudentIds).toEqual([]);
   });
 
-  it("toggles near-teacher seating preferences immediately from the active smart tool", () => {
+  it("keeps near-teacher selections pending until the teacher confirms the rule", () => {
     const state = seedWorkspace();
     state.draft = {
       ...createDraft("template-1", "seating"),
@@ -557,6 +557,11 @@ describe("useClassroomState", () => {
     state.setActiveSeatingSmartTool("near_teacher");
 
     expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
+    expect(state.pendingRelationshipStudentIds).toEqual(["s1"]);
+    expect(state.seatingPreferences).toEqual([]);
+    expect(state.hasPendingAutosave).toBe(false);
+
+    expect(state.commitPendingRelationshipRule()).toBe(true);
     expect(state.seatingPreferences).toEqual([
       {
         student_id: "s1",
@@ -566,7 +571,17 @@ describe("useClassroomState", () => {
     expect(state.hasPendingAutosave).toBe(true);
 
     state.discardPendingSessionWork();
+    state.beginNearTeacherEdit();
     expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
+    expect(state.pendingRelationshipStudentIds).toEqual([]);
+    expect(state.commitPendingRelationshipRule()).toBe(false);
+    expect(state.seatingPreferences).toEqual([
+      {
+        student_id: "s1",
+        near_teacher: true,
+      },
+    ]);
+    expect(state.clearNearTeacherRule()).toBe(true);
     expect(state.seatingPreferences).toEqual([]);
   });
 
@@ -918,6 +933,8 @@ describe("useClassroomState", () => {
 
     expect(state.activeSeatingSmartTool).toBe("near_teacher");
     expect(state.handleSeatingSmartToolStudentSelection("s1")).toBe(true);
+    expect(state.pendingRelationshipStudentIds).toEqual(["s1"]);
+    expect(state.commitPendingRelationshipRule()).toBe(true);
     expect(state.seatingPreferences).toEqual([{ student_id: "s1", near_teacher: true }]);
   });
 
@@ -1053,10 +1070,13 @@ describe("useClassroomState", () => {
 
     state.setActiveSeatingSmartTool("near_teacher");
     state.handleSeatingSmartToolStudentSelection("s1");
+    state.commitPendingRelationshipRule();
     await vi.advanceTimersByTimeAsync(900);
     await Promise.resolve();
 
+    state.beginNearTeacherEdit();
     state.handleSeatingSmartToolStudentSelection("s2");
+    state.commitPendingRelationshipRule();
     firstSmartRuleSave.resolve({
       ...createSmartRulesResponse(),
       revision: 1,
@@ -1537,6 +1557,7 @@ describe("useClassroomState", () => {
     state.setStudentPlanningMeta("s1", { notes: "Behåll längst fram" });
     state.setActiveSeatingSmartTool("near_teacher");
     state.handleSeatingSmartToolStudentSelection("s1");
+    state.commitPendingRelationshipRule();
 
     await vi.advanceTimersByTimeAsync(900);
 

@@ -5,7 +5,7 @@ title: "Shared tool control language and primitive matrix v1"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-03-29
 topic: "shared-tool-control-language"
 links:
   [
@@ -101,6 +101,15 @@ and worked topologies.
 - Dense-action primitives own their own height, padding, icon size, disclosure width, and spacing.
   Parent toolbars may place primitives, but they should not normalize them with descendant
   selectors.
+- When dense or planner-facing controls still rely on shared button classes instead of dedicated
+  dense primitives, those repeated visual recipes should live in one shared class source rather
+  than as per-surface inline class strings. Shared tuning must happen once and then propagate.
+- Dense-action primitives also own their corner language. The default dense-tool family uses one
+  hard small-radius treatment (`4px`) rather than mixing perfectly square and softly rounded
+  standalone buttons on the same surface.
+- Grouped controls keep that same family: outer edges carry the slight radius, while internal seams
+  stay square/divided so split buttons, steppers, and clustered history controls still read as one
+  blocky instrument.
 - Split and menu primitives freeze as generic shared APIs, not planner-shaped widgets. Their item
   model and busy/disabled/menu-label contract should be reusable across planner and editor.
 - The canonical segmented control is a single-choice mode switch, not a loose collection of pressed

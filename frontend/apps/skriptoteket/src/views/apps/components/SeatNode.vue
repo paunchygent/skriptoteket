@@ -122,7 +122,7 @@ function onDragStart(event: DragEvent): void {
     <button
       v-if="student"
       type="button"
-      class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center border border-burgundy bg-white text-[11px] font-semibold text-burgundy"
+      class="planner-marker-button"
       @click.stop="emit('student-removed', student.id)"
     >
       ×

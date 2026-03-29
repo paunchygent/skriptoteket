@@ -2,15 +2,14 @@
 /**
  * Compact export action cluster for planner exports.
  *
- * This component renders the export subsection inside the planner toolbars
- * with one primary default action and a one-click-away alternate-options
- * menu. It stays presentational so the route shell can own export
- * orchestration for both seating and grouping.
+ * Relationships:
+ * - planner-facing wrapper over the shared `UiDenseSplitButton` primitive
+ * - keeps planner export semantics local while freezing the shared split-button contract
  */
 
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed } from "vue";
 
-import { IconArrow } from "../../../components/icons";
+import { UiDenseSplitButton, type UiDenseSplitButtonItem } from "../../../components/ui";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 
 export type PlannerExportOptionValue = SeatingExportOption | GroupingExportOption;
@@ -71,113 +70,42 @@ const emit = defineEmits<{
   (e: "export-option", option: PlannerExportOptionValue): void;
 }>();
 
-const menuRef = ref<HTMLElement | null>(null);
-const isMenuOpen = ref(false);
 const exportOptions = computed<PlannerExportOption[]>(() => props.options);
-const isMenuDisabled = computed(() => props.disabled || props.busy);
-
-function closeMenu(): void {
-  isMenuOpen.value = false;
-}
-
-function toggleMenu(): void {
-  if (isMenuDisabled.value) {
-    return;
-  }
-  isMenuOpen.value = !isMenuOpen.value;
-}
-
-function handleDocumentClick(event: MouseEvent): void {
-  const target = event.target as Node | null;
-  if (!target || !menuRef.value || menuRef.value.contains(target)) {
-    return;
-  }
-  closeMenu();
-}
-
-function handleEscape(event: KeyboardEvent): void {
-  if (event.key !== "Escape" || !isMenuOpen.value) {
-    return;
-  }
-  event.preventDefault();
-  event.stopPropagation();
-  closeMenu();
-}
-
-function selectOption(option: PlannerExportOptionValue): void {
-  emit("export-option", option);
-  closeMenu();
-}
-
-onMounted(() => {
-  document.addEventListener("click", handleDocumentClick);
-  document.addEventListener("keydown", handleEscape);
+const splitItems = computed<UiDenseSplitButtonItem[]>(() => {
+  return exportOptions.value.map((option) => ({
+    id: option.id,
+    label: option.label,
+    metaLabel: option.isDefault ? "Standard" : null,
+  }));
 });
 
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleDocumentClick);
-  document.removeEventListener("keydown", handleEscape);
-});
+function selectOption(optionId: string): void {
+  const option = exportOptions.value.find((item) => item.id === optionId);
+  if (!option) {
+    return;
+  }
+  emit("export-option", option.option);
+}
 </script>
 
 <template>
   <div
-    ref="menuRef"
     class="relative flex items-stretch border-l border-navy/15 pl-3"
     :data-test="groupTestId"
   >
-    <button
-      type="button"
-      class="bg-navy px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:bg-navy/40"
-      :data-test="defaultButtonTestId"
-      :disabled="disabled || busy"
-      @click="emit('export-default')"
-    >
-      {{ busy ? busyLabel : defaultLabel }}
-    </button>
-
-    <button
-      type="button"
-      class="flex items-center border-l border-white/15 bg-navy px-2 text-canvas transition-colors hover:bg-navy/90 disabled:cursor-not-allowed disabled:bg-navy/40"
-      :aria-label="menuAriaLabel"
-      aria-haspopup="menu"
-      :aria-expanded="isMenuOpen"
-      :disabled="isMenuDisabled"
-      :data-test="menuTriggerTestId"
-      @click.stop="toggleMenu"
-    >
-      <IconArrow
-        :size="12"
-        direction="down"
-      />
-    </button>
-
-    <Transition name="popover">
-      <div
-        v-if="isMenuOpen"
-        class="absolute right-0 top-full z-50 mt-1 min-w-[11rem] border border-navy bg-white shadow-brutal-sm"
-        role="menu"
-        aria-label="Exportval"
-        @click.stop
-      >
-        <button
-          v-for="option in exportOptions"
-          :key="option.id"
-          type="button"
-          role="menuitem"
-          class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-navy transition-colors hover:bg-canvas"
-          :data-test="`${optionTestIdPrefix}-${option.id}`"
-          @click="selectOption(option.option)"
-        >
-          <span>{{ option.label }}</span>
-          <span
-            v-if="option.isDefault"
-            class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/50"
-          >
-            Standard
-          </span>
-        </button>
-      </div>
-    </Transition>
+    <UiDenseSplitButton
+      :label="defaultLabel"
+      :busy-label="busyLabel"
+      :menu-label="menuAriaLabel"
+      :items="splitItems"
+      :disabled="disabled"
+      :busy="busy"
+      :root-test-id="groupTestId"
+      :main-button-test-id="defaultButtonTestId"
+      :menu-trigger-test-id="menuTriggerTestId"
+      :item-test-id-prefix="optionTestIdPrefix"
+      @trigger="emit('export-default')"
+      @select="selectOption"
+    />
   </div>
 </template>

@@ -15,6 +15,7 @@ acceptance_criteria:
   - "Given an icon-only or icon-led planner control renders, when the shared control system ships, then the control exposes an accessible name through visible text or `aria-label` and also provides a discoverability aid such as a tooltip, hover label, or nearby microcopy."
   - "Given a planner action is ambiguous, app-specific, destructive, or high commitment, when the slice ships, then text remains visible or is paired with the symbol rather than being hidden behind iconography alone."
   - "Given the planner control primitives are introduced, when later redesign stories or other tool-grade Skriptoteket apps implement the same operations, then they reuse shared design-system affordance components instead of inventing per-app glyph/button treatments."
+  - "Given dense planner controls render through the shared primitive family, when the slice ships, then standalone buttons no longer mix square and slightly rounded corner treatments arbitrarily and instead use one harmonized hard small-radius (`4px`) shape language, with grouped controls keeping that radius only on the outer edges."
 ui_impact: "Yes (shared planner controls, affordances, iconography)"
 data_impact: "No"
 ---

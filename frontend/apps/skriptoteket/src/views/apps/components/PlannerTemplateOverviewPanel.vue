@@ -15,17 +15,14 @@ import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import RoomSceneSurface from "./RoomSceneSurface.vue";
 
-const OVERVIEW_PREVIEW_HEIGHT_CLASS = "h-[20rem]";
-const OVERVIEW_HEADER_HEIGHT_CLASS = "h-[6rem]";
-const OVERVIEW_SELECTOR_HEIGHT_CLASS = "h-[4rem]";
-const OVERVIEW_PREVIEW_TARGET_WIDTH_PX = 520;
-const OVERVIEW_PREVIEW_TARGET_HEIGHT_PX = 288;
+const OVERVIEW_PREVIEW_TARGET_WIDTH_PX = 440;
+const OVERVIEW_PREVIEW_TARGET_HEIGHT_PX = 224;
 
 const props = defineProps<{
   selectedTemplate: RoomTemplate | null;
   selectedTemplateId: string | null;
   availableTemplates: RoomTemplate[];
-  description: string;
+  description?: string | null;
   isLoadingWorkspace: boolean;
 }>();
 
@@ -87,11 +84,11 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
 </script>
 
 <template>
-  <article class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4">
-    <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
-      <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-        Klassrum
-      </p>
+  <article
+    class="planner-overview-panel"
+    data-test="overview-template-panel"
+  >
+    <div class="planner-overview-panel-header">
       <div class="flex flex-wrap items-baseline gap-2">
         <p class="text-xl font-semibold text-navy">
           {{ selectedTemplate?.name ?? "Inget klassrum valt" }}
@@ -103,15 +100,18 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
           {{ selectedTemplate.seats.length }} platser
         </span>
       </div>
-      <p class="text-sm text-navy/70">
+      <p
+        v-if="description"
+        class="text-sm text-navy/70"
+      >
         {{ description }}
       </p>
     </div>
 
-    <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
+    <label class="planner-overview-panel-selector">
       <span class="font-semibold">Välj klassrum</span>
       <select
-        class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
+        class="planner-overview-panel-select"
         :disabled="isLoadingWorkspace"
         :value="selectedTemplateId ?? ''"
         data-test="overview-template-select"
@@ -131,62 +131,57 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
     </label>
 
     <div
-      v-if="selectedTemplate"
-      class="space-y-3"
+      class="planner-overview-panel-preview"
+      data-test="overview-classroom-preview"
     >
       <div
-        :class="['relative overflow-hidden border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-        data-test="overview-classroom-preview"
+        v-if="selectedTemplate && previewGrid"
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        :style="previewStageStyle"
       >
-        <div
-          v-if="previewGrid"
-          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          :style="previewStageStyle"
-        >
-          <div :style="previewSurfaceStyle">
-            <RoomSceneSurface
-              :grid="previewGrid"
-              :seats="selectedTemplate.seats"
-              :fixtures="selectedTemplate.fixtures"
-              show-backdrop-grid
-            />
-          </div>
+        <div :style="previewSurfaceStyle">
+          <RoomSceneSurface
+            :grid="previewGrid"
+            :seats="selectedTemplate.seats"
+            :fixtures="selectedTemplate.fixtures"
+            show-backdrop-grid
+          />
         </div>
-        <div
-          v-else
-          class="absolute inset-2 border border-dashed border-navy/10"
-        />
+      </div>
+      <div
+        v-else-if="selectedTemplate"
+        class="absolute inset-2 border border-dashed border-navy/10"
+      />
+      <div
+        v-else
+        class="planner-overview-panel-empty"
+        data-test="overview-classroom-empty"
+      >
+        Välj ett klassrum i listan ovan för att visa en kompakt förhandsgranskning här.
       </div>
     </div>
 
-    <div
-      v-else
-      :class="['flex items-center justify-center border border-dashed border-navy/25 bg-white px-4 py-8 text-center text-sm text-navy/55', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
-      data-test="overview-classroom-empty"
-    >
-      Välj ett klassrum i listan ovan för att visa en kompakt förhandsgranskning här.
-    </div>
-
-    <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
+    <div class="planner-overview-panel-footer">
       <button
         type="button"
-        class="btn-primary w-full justify-center"
+        class="btn-primary planner-overview-panel-action"
         @click="emit('create-template')"
       >
         Nytt klassrum
       </button>
       <button
         type="button"
-        class="btn-ghost inline-flex w-full items-center justify-center gap-2 border-navy/30 bg-white shadow-none"
+        class="btn-ghost planner-btn-ghost planner-overview-panel-action"
         :disabled="!selectedTemplate"
+        data-test="overview-edit-template"
         @click="emit('edit-current-template', selectedTemplate ?? undefined)"
       >
         <IconSettings :size="14" />
-        Redigera klassrum
+        Redigera
       </button>
       <button
         type="button"
-        class="btn-ghost w-full justify-center border-navy/30 bg-white text-navy/50 shadow-none hover:text-burgundy disabled:text-navy/40"
+        class="btn-ghost planner-btn-ghost planner-btn-ghost-muted planner-overview-panel-action"
         :disabled="!selectedTemplate"
         data-test="overview-delete-template"
         @click="emit('delete-current-template')"

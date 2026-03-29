@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+/**
+ * Dense tool-switch menu for the editor toolbar.
+ *
+ * Relationships:
+ * - consumes shared dense menu primitives while keeping tool-search content local
+ * - provides the editor-side proving ground for generic dense menu triggers and items
+ */
+
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { apiGet, isApiError } from "../../api/client";
@@ -9,6 +17,16 @@ import { useAdminToolsIndex } from "../../composables/admin/useAdminToolsIndex";
 import { listRecentEditorTools } from "../../composables/editor/editorRecentTools";
 import { searchTools } from "../../composables/tools/toolSearch";
 import { useAuthStore } from "../../stores/auth";
+import { IconPlus } from "../icons";
+import {
+  DENSE_FORM_INPUT_CLASS,
+  DENSE_MENU_PANEL_CLASS,
+  DENSE_MENU_SECTION_LABEL_CLASS,
+  UiDenseActionButton,
+  UiDenseMenuButton,
+  denseMenuItemClass,
+} from "../ui";
+import { useDenseMenuSurface } from "../ui/useDenseMenuSurface";
 import CreateDraftToolModal from "../admin/CreateDraftToolModal.vue";
 
 type ListMyToolsResponse = components["schemas"]["ListMyToolsResponse"];
@@ -30,15 +48,23 @@ const {
   ensureLoaded: ensureAdminToolsLoaded,
 } = useAdminToolsIndex();
 
-const utilityButtonClass =
-  "btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none";
-
-const menuButtonClass =
-  "btn-ghost w-full justify-start px-[var(--huleedu-space-3)] py-[var(--huleedu-space-2)] text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/20 bg-white leading-snug";
-
 const isOpen = ref(false);
+const menuContainerRef = ref<HTMLElement | null>(null);
 const menuRef = ref<HTMLElement | null>(null);
+const menuTriggerRef = ref<InstanceType<typeof UiDenseMenuButton> | null>(null);
 const searchQuery = ref("");
+
+const {
+  closeMenu,
+  toggleMenu,
+  onTriggerKeydown,
+  onMenuKeydown,
+} = useDenseMenuSurface({
+  isOpen,
+  containerRef: menuContainerRef,
+  menuRef,
+  triggerRef: menuTriggerRef,
+});
 
 const isLoadingMyTools = ref(false);
 const myToolsError = ref<string | null>(null);
@@ -151,47 +177,21 @@ async function loadMyTools(): Promise<void> {
   }
 }
 
-function toggleMenu(): void {
-  isOpen.value = !isOpen.value;
-  if (isOpen.value) {
-    refreshRecents();
-    void loadMyTools();
-  }
+function handleToggleMenu(): void {
+  toggleMenu();
 }
 
-function closeMenu(): void {
-  isOpen.value = false;
-  searchQuery.value = "";
-}
-
-function handleDocumentClick(event: MouseEvent): void {
-  const target = event.target as Node | null;
-  if (!target) return;
-  if (menuRef.value && !menuRef.value.contains(target)) {
-    closeMenu();
-  }
-}
-
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key !== "Escape") {
-    return;
-  }
-  if (isOpen.value) {
-    event.preventDefault();
-    event.stopPropagation();
-    closeMenu();
-  }
-}
-
-onMounted(() => {
-  document.addEventListener("click", handleDocumentClick);
-  document.addEventListener("keydown", handleKeydown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleDocumentClick);
-  document.removeEventListener("keydown", handleKeydown);
-});
+watch(
+  () => isOpen.value,
+  (value) => {
+    if (value) {
+      refreshRecents();
+      void loadMyTools();
+      return;
+    }
+    searchQuery.value = "";
+  },
+);
 
 watch(
   () => normalizedSearch.value,
@@ -205,11 +205,25 @@ watch(
 async function openTool(toolId: string): Promise<void> {
   if (!toolId) return;
   closeMenu();
+  searchQuery.value = "";
   await router.push(`/admin/tools/${toolId}`);
+}
+
+async function openToolPicker(): Promise<void> {
+  closeMenu();
+  searchQuery.value = "";
+  await router.push("/editor?pick=1");
+}
+
+async function openAdminToolsIndex(): Promise<void> {
+  closeMenu();
+  searchQuery.value = "";
+  await router.push("/admin/tools");
 }
 
 function openCreateModal(): void {
   closeMenu();
+  searchQuery.value = "";
   createDraftToolModal.open();
 }
 
@@ -224,29 +238,28 @@ async function createDraftTool(): Promise<void> {
 
 <template>
   <div
-    ref="menuRef"
+    ref="menuContainerRef"
     class="relative"
   >
-    <button
-      type="button"
-      :class="utilityButtonClass"
-      :aria-expanded="isOpen"
-      aria-haspopup="menu"
-      aria-label="Verktyg"
-      @click="toggleMenu"
-    >
-      Verktyg
-      <span class="ml-1">▾</span>
-    </button>
+    <UiDenseMenuButton
+      ref="menuTriggerRef"
+      label="Verktyg"
+      :expanded="isOpen"
+      @click="handleToggleMenu"
+      @keydown="onTriggerKeydown"
+    />
 
     <div
       v-if="isOpen"
-      class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(420px,92vw)] border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
+      ref="menuRef"
+      class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(420px,92vw)] bg-canvas"
+      :class="DENSE_MENU_PANEL_CLASS"
       role="menu"
+      @keydown="onMenuKeydown"
     >
       <div class="p-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-3)]">
         <div class="space-y-[var(--huleedu-space-1)]">
-          <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+          <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
             Aktivt verktyg
           </div>
           <div class="text-[11px] text-navy/70">
@@ -257,12 +270,12 @@ async function createDraftTool(): Promise<void> {
         </div>
 
         <div class="space-y-[var(--huleedu-space-1)]">
-          <label class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+          <label :class="DENSE_MENU_SECTION_LABEL_CLASS">
             Sök
           </label>
           <input
             v-model="searchQuery"
-            class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+            :class="DENSE_FORM_INPUT_CLASS"
             placeholder="Sök på titel eller URL-namn…"
           >
           <div class="text-[10px] text-navy/50">
@@ -274,7 +287,7 @@ async function createDraftTool(): Promise<void> {
           v-if="toolSearch.normalizedQuery"
           class="border-t border-navy/20 pt-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-2)]"
         >
-          <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+          <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
             Sökresultat
           </div>
 
@@ -308,7 +321,7 @@ async function createDraftTool(): Promise<void> {
               v-for="tool in toolSearch.results"
               :key="tool.id"
               type="button"
-              :class="menuButtonClass"
+              :class="denseMenuItemClass()"
               @click="openTool(tool.id)"
             >
               <div class="min-w-0">
@@ -331,10 +344,7 @@ async function createDraftTool(): Promise<void> {
               <button
                 type="button"
                 class="font-semibold uppercase tracking-wide text-navy underline underline-offset-4 hover:text-burgundy"
-                @click="
-                  closeMenu();
-                  void router.push('/admin/tools');
-                "
+                @click="void openAdminToolsIndex()"
               >
                 Visa alla verktyg
               </button>
@@ -344,7 +354,7 @@ async function createDraftTool(): Promise<void> {
 
         <template v-else>
           <div class="border-t border-navy/20 pt-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-2)]">
-            <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+            <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
               Senast öppnade
             </div>
             <div
@@ -361,7 +371,7 @@ async function createDraftTool(): Promise<void> {
                 v-for="tool in recentTools"
                 :key="tool.toolId"
                 type="button"
-                :class="menuButtonClass"
+                :class="denseMenuItemClass()"
                 @click="openTool(tool.toolId)"
               >
                 <div class="text-[11px] font-semibold text-navy truncate">
@@ -376,17 +386,14 @@ async function createDraftTool(): Promise<void> {
 
           <div class="border-t border-navy/20 pt-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-2)]">
             <div class="flex items-center justify-between gap-[var(--huleedu-space-3)]">
-              <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
+              <div :class="DENSE_MENU_SECTION_LABEL_CLASS">
                 Mina verktyg
               </div>
               <button
                 v-if="props.canCreateTool"
                 type="button"
                 class="text-[10px] font-semibold uppercase tracking-wide text-navy underline underline-offset-4 hover:text-burgundy"
-                @click="
-                  closeMenu();
-                  void router.push('/admin/tools');
-                "
+                @click="void openAdminToolsIndex()"
               >
                 Alla verktyg
               </button>
@@ -422,7 +429,7 @@ async function createDraftTool(): Promise<void> {
                 v-for="tool in sortedMyTools"
                 :key="tool.id"
                 type="button"
-                :class="menuButtonClass"
+                :class="denseMenuItemClass()"
                 @click="openTool(tool.id)"
               >
                 <div class="text-[11px] font-semibold text-navy truncate">
@@ -437,25 +444,21 @@ async function createDraftTool(): Promise<void> {
         </template>
 
         <div class="border-t border-navy/20 pt-[var(--huleedu-space-3)] flex flex-wrap gap-[var(--huleedu-space-2)]">
-          <button
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
-            @click="
-              closeMenu();
-              void router.push('/editor?pick=1');
-            "
-          >
-            Välj verktyg…
-          </button>
+          <UiDenseActionButton
+            label="Välj verktyg…"
+            @click="void openToolPicker()"
+          />
 
-          <button
+          <UiDenseActionButton
             v-if="props.canCreateTool"
-            type="button"
-            class="btn-primary h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 leading-none"
+            label="Skapa nytt…"
+            tone="primary"
             @click="openCreateModal"
           >
-            Skapa nytt…
-          </button>
+            <template #leading>
+              <IconPlus :size="14" />
+            </template>
+          </UiDenseActionButton>
         </div>
       </div>
     </div>

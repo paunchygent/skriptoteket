@@ -21,7 +21,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
-from playwright.sync_api import Page, expect, sync_playwright
+from playwright.sync_api import Locator, Page, expect, sync_playwright
 
 from scripts._playwright_classroom_planner import (
     focus_workspace_mode,
@@ -217,6 +217,13 @@ def _seat_button_texts(page: Page) -> list[str]:
     )
 
 
+def _bounding_box(locator: Locator) -> dict[str, float]:
+    box = locator.bounding_box()
+    if box is None:
+        raise AssertionError("Expected a visible element with a concrete bounding box.")
+    return box
+
+
 def _select_overview_template(page: Page, *, template_name: str) -> None:
     template_select = page.locator('[data-test="overview-template-select"]')
     expect(template_select).to_be_visible(timeout=60000)
@@ -234,20 +241,54 @@ def _select_overview_template(page: Page, *, template_name: str) -> None:
 
 
 def _assert_rules_workspace(page: Page, *, template_name: str) -> None:
-    expect(page.get_by_role("button", name="Regler", exact=True)).to_be_visible()
+    expect(
+        page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-switch"]')
+    ).to_be_visible(timeout=60000)
+    expect(page.locator('[data-test="rules-summary-panel"]')).to_be_visible(timeout=60000)
+    expect(
+        page.locator('[data-test="rules-tool-rail"] [data-test="rules-map-view-switch"]')
+    ).to_have_count(0)
     expect(page.locator('[data-test="rules-map-canvas"]')).to_be_visible(timeout=60000)
+    expect(page.locator('[data-test="rules-map-panel"]')).to_be_visible(timeout=60000)
     expect(page.locator('[data-test="rules-map-empty-state"]')).to_have_count(0)
-    expect(page.get_by_role("button", name="Planeringskarta", exact=True)).to_have_attribute(
-        "aria-pressed",
+    expect(
+        page.locator('[data-test="rules-tool-near_teacher"]').get_by_text("Nära läraren")
+    ).to_be_visible()
+    expect(
+        page.locator('[data-test="rules-active-cards"]').get_by_text("Nära läraren")
+    ).to_be_visible()
+    expect(page.get_by_text("Närmare läraren", exact=True)).to_have_count(0)
+    expect(page.get_by_text(re.compile(r"\\btotalt\\b", re.IGNORECASE))).to_have_count(0)
+    expect(
+        page.locator('[data-test="rules-summary-panel"] [data-test="rules-commit-rule"]')
+    ).to_have_count(0)
+    expect(
+        page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-planning"]')
+    ).to_have_attribute(
+        "aria-checked",
         "true",
     )
-    expect(
-        page.get_by_text(
-            "Planeringskarta använder alfabetisk placering på klassrummets riktiga geometri.",
-            exact=True,
-        )
-    ).to_be_visible()
     expect(page.get_by_text(re.compile(re.escape(template_name)))).to_be_visible()
+
+    summary_panel_box = _bounding_box(page.locator('[data-test="rules-summary-panel"]'))
+    tool_rail_box = _bounding_box(page.locator('[data-test="rules-tool-rail"]'))
+    map_panel_box = _bounding_box(page.locator('[data-test="rules-map-panel"]'))
+    tool_button_box = _bounding_box(page.locator('[data-test="rules-tool-near_teacher"]'))
+    rule_card_box = _bounding_box(page.locator('[data-test="rules-active-card"]').first)
+
+    assert summary_panel_box["y"] < map_panel_box["y"], (
+        summary_panel_box,
+        map_panel_box,
+    )
+    assert map_panel_box["width"] > tool_rail_box["width"] * 4, (
+        map_panel_box,
+        tool_rail_box,
+    )
+    assert tool_button_box["height"] <= 40.5, tool_button_box
+    assert rule_card_box["width"] < summary_panel_box["width"] * 0.45, (
+        rule_card_box,
+        summary_panel_box,
+    )
 
     seat_texts = _seat_button_texts(page)
     assert seat_texts[0].startswith("Ada Lovelace"), seat_texts
@@ -262,10 +303,12 @@ def _assert_switch_to_seating_arrangement_preserves_selection(page: Page) -> Non
     expect(page.get_by_text("2 valda", exact=False)).to_be_visible()
     expect(page.locator('[data-test="rules-commit-rule"]')).to_be_enabled()
 
-    page.get_by_role("button", name="Sittschema", exact=True).click()
+    page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-seating"]').click()
 
-    expect(page.get_by_role("button", name="Sittschema", exact=True)).to_have_attribute(
-        "aria-pressed",
+    expect(
+        page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-seating"]')
+    ).to_have_attribute(
+        "aria-checked",
         "true",
     )
     expect(page.get_by_text("2 valda", exact=False)).to_be_visible()
@@ -278,11 +321,13 @@ def _assert_relationship_rule_edit_from_inspector(page: Page) -> None:
     page.locator('[data-test="rules-clear-selection"]').click()
     page.locator('[data-test="rules-edit-rule-0"]').click()
     expect(page.locator('[data-test="rules-commit-rule"]')).to_contain_text("Spara regel")
-    page.get_by_role("button", name=re.compile(r"Ada Lovelace", re.IGNORECASE)).first.click()
+    page.locator('[data-test="rules-map-panel"]').get_by_role(
+        "button", name=re.compile(r"Ada Lovelace", re.IGNORECASE)
+    ).first.click()
     page.locator('[data-test="rules-commit-rule"]').click()
     rule_card_text = (
         page.locator('[data-test="rules-edit-rule-0"]')
-        .locator("xpath=ancestor::div[contains(@class, 'border')]")
+        .locator("xpath=ancestor::*[@data-test='rules-active-card'][1]")
         .first.text_content()
         or ""
     )
@@ -293,8 +338,29 @@ def _assert_relationship_rule_edit_from_inspector(page: Page) -> None:
 
 def _assert_near_teacher_edit_from_inspector(page: Page) -> None:
     page.locator('[data-test="rules-edit-near-teacher-0"]').click()
-    page.locator('[data-test="rules-near-teacher-select-0"]').select_option("student-2")
-    page.locator('[data-test="rules-save-near-teacher-0"]').click()
+    expect(page.locator('[data-test="rules-tool-near_teacher"]')).to_have_class(
+        re.compile(r"planner-choice-button-active")
+    )
+    expect(page.locator('[data-test="rules-commit-rule"]')).to_contain_text("Spara regel")
+    expect(page.locator('[data-test="rules-pending-student-chip"]')).to_have_count(1)
+    expect(page.get_by_text("1 vald", exact=False)).to_be_visible()
+
+    page.locator('[data-test="rules-map-panel"]').get_by_role(
+        "button", name=re.compile(r"Alan Turing", re.IGNORECASE)
+    ).first.click()
+
+    expect(page.locator('[data-test="rules-pending-student-chip"]')).to_have_count(2)
+    expect(page.get_by_text("2 valda", exact=False)).to_be_visible()
+
+    page.locator('[data-test="rules-commit-rule"]').click()
+
+    near_teacher_card = (
+        page.locator('[data-test="rules-edit-near-teacher-0"]')
+        .locator("xpath=ancestor::*[@data-test='rules-active-card'][1]")
+        .first
+    )
+    expect(near_teacher_card).to_contain_text("Ada Lovelace")
+    expect(near_teacher_card).to_contain_text("Alan Turing")
 
 
 def _assert_compact_summary_workspace(
@@ -305,8 +371,8 @@ def _assert_compact_summary_workspace(
 ) -> None:
     focus_workspace_mode(page, label=workspace_label)
     expect(page.locator(f'[data-test="{settings_test_id}"]')).to_be_visible(timeout=60000)
-    expect(page.get_by_text("Smarta regler", exact=True)).to_be_visible()
-    expect(page.get_by_text("Närmare läraren: Alan Turing", exact=False)).to_be_visible()
+    expect(page.get_by_text(re.compile(r"[0-9]+ aktiva regler", re.IGNORECASE))).to_be_visible()
+    expect(page.get_by_text("Håll isär A: Alan Turing, Grace Hopper", exact=False)).to_be_visible()
     expect(page.locator('[data-test="rules-commit-rule"]')).to_have_count(0)
     expect(page.locator('[data-test="rules-edit-rule-0"]')).to_have_count(0)
     expect(page.get_by_text("Pågående regel", exact=True)).to_have_count(0)

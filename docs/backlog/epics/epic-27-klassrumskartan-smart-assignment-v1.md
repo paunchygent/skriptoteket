@@ -5,7 +5,7 @@ title: "Klassrumskartan smart assignment v1"
 status: active
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-28
+updated: 2026-03-29
 outcome: "Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a dedicated `Regler` workspace, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon."
 dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-26"]
 ---
@@ -103,7 +103,8 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   - `Sittschema` is the optional exact-current-arrangement map
   - `Sittplatser` and `Grupper` keep compact summary/settings affordances only
 - The first visible smart-rule interaction model is locked:
-  - `Närmare läraren` is unary click-to-toggle on the map and editable/removable from the main inspector
+  - `Nära läraren` uses the same rail-owned pending selection plus explicit create/save confirmation
+    as the relationship rules, but still persists as one consolidated seating-only rule
   - `Keep apart` / `Keep near` are 2+ student clusters authored through multi-select plus explicit
     commit
   - overlapping visible relationship clusters are blocked in V1
@@ -117,7 +118,7 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
   on planner-wide flush/save-status/shared-timer semantics.
 - A review doc must approve this package before implementation begins.
 
-## Implementation Summary (as of 2026-03-28)
+## Implementation Summary (as of 2026-03-29)
 
 - ST-27-01 is done:
   - PR-0147 reset the seating-only smart-rule contract
@@ -143,8 +144,9 @@ dependencies: ["ADR-0069", "ADR-0071", "ADR-0072", "ADR-0074", "EPIC-24", "EPIC-
 - ST-27-07 is done:
   - PR-0155 shipped the dedicated `Regler` workspace, explicit seating-host bootstrap from
     overview-selected classroom context, `Planeringskarta` / `Sittschema` projection switching,
-    compact smart-summary cut-over in `Sittplatser` / `Grupper`, and inspector parity for editing
-    or removing `Närmare läraren` plus relationship rules
+    compact smart-summary cut-over in `Sittplatser` / `Grupper`, and a summary-only top rule panel
+    with unified rail-owned pending/create-save flow for `Nära läraren`, `Keep apart`, and
+    `Keep near`
   - close-out included targeted route-shell/store/frontend Vitest coverage, live proof on
     `http://127.0.0.1:5173`, one reviewer-follow-up fix for overview-to-`Regler` classroom
     bootstrap, and store-level persistence coverage for inspector-driven smart-rule edits

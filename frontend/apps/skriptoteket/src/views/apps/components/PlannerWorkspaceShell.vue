@@ -103,7 +103,7 @@ const isMetadataDrawerOpen = ref(false);
 const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
 const pendingGroupingTemplateId = ref(plannerState.template?.id ?? "");
 const pendingSeatingTemplateId = ref(plannerState.template?.id ?? "");
-const plannerTitle = computed(() => plannerState.roster?.name ?? "Klassarbetsyta");
+const plannerTitle = computed(() => plannerState.roster?.name ?? "Planering");
 const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules">(() => {
   if (currentView.value === "groups") {
     return "grouping";
@@ -282,7 +282,7 @@ watch(
       </div>
       <button
         type="button"
-        class="btn-ghost border-navy/30 bg-white shadow-none"
+        class="btn-ghost planner-btn-ghost"
         @click="reloadAfterConflict"
       >
         Ladda om utkast
@@ -307,7 +307,7 @@ watch(
       </div>
       <button
         type="button"
-        class="btn-ghost border-navy/30 bg-white shadow-none"
+        class="btn-ghost planner-btn-ghost"
         @click="emit('dismiss-workspace-notice')"
       >
         Stäng
@@ -316,7 +316,7 @@ watch(
 
     <PlannerTopPanel
       :title="plannerTitle"
-      :context-label="isSeatWorkspaceWithoutTemplate ? 'Välj klassrum i sittschemat' : `${workspaceContextLabel} · version ${plannerState.draft?.revision ?? 0}`"
+      :context-label="isSeatWorkspaceWithoutTemplate ? 'Välj klassrum i sittschemat' : workspaceContextLabel"
       :mode-value="workspaceModeValue"
       :supporting-text="currentViewHint"
       :status-label="plannerState.plannerStatusLabel"

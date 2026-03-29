@@ -85,30 +85,28 @@ function commitName(): void {
 <template>
   <div
     data-test="group-card"
-    class="flex self-start flex-col border border-navy bg-white p-4 shadow-brutal-sm transition-transform transition-shadow hover:-translate-y-0.5 hover:shadow-brutal"
+    class="flex self-start flex-col border border-navy bg-white p-3 shadow-brutal-sm"
     @dragover="onDragOver"
     @drop="onDrop"
   >
-    <div class="flex items-center justify-between gap-3 border-b border-navy/20 pb-3">
-      <div class="min-w-0 flex-1 space-y-2">
-        <label class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          Gruppnamn
-        </label>
+    <div class="flex items-center justify-between gap-2 border-b border-navy/20 pb-2">
+      <div class="min-w-0 flex-1">
         <input
           v-model="editableName"
           type="text"
-          class="w-full border border-navy/30 bg-canvas px-2 py-2 text-sm font-semibold text-navy shadow-none"
+          data-test="group-name-input"
+          class="h-[36px] w-full border border-navy/30 bg-canvas px-3 text-sm font-semibold text-navy shadow-none"
           :disabled="props.disabled"
           @blur="commitName"
           @keyup.enter="commitName"
         >
       </div>
-      <div class="flex items-center gap-1">
+      <div class="flex shrink-0 items-center gap-1">
         <button
           type="button"
           aria-label="Flytta grupp upp"
           data-test="move-group-up"
-          class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
+          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-lg"
           :disabled="props.disabled || !canMoveUp"
           @click="emit('group-moved', group.id, -1)"
         >
@@ -118,7 +116,7 @@ function commitName(): void {
           type="button"
           aria-label="Flytta grupp ned"
           data-test="move-group-down"
-          class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-navy/30 bg-canvas"
+          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-lg"
           :disabled="props.disabled || !canMoveDown"
           @click="emit('group-moved', group.id, 1)"
         >
@@ -126,7 +124,8 @@ function commitName(): void {
         </button>
         <button
           type="button"
-          class="btn-ghost h-[28px] w-[28px] px-0 py-0 shadow-none border-burgundy/40 bg-white text-burgundy"
+          data-test="remove-group"
+          class="btn-ghost planner-btn-danger planner-btn-icon-lg"
           :disabled="props.disabled"
           aria-label="Ta bort grupp"
           @click="emit('group-removed', group.id)"
@@ -136,18 +135,18 @@ function commitName(): void {
       </div>
     </div>
 
-    <div class="mt-3 flex flex-col gap-2">
+    <div class="mt-2.5 flex flex-col gap-1.5">
       <div
         v-for="student in students"
         :key="student.id"
-        class="flex min-h-[52px] items-start justify-between gap-3 border px-3 py-2 text-left transition-colors"
+        class="flex min-h-[44px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
         :class="selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
         :draggable="!props.disabled"
         @dragstart="onDragStart($event, student)"
       >
         <button
           type="button"
-          class="min-w-0 flex-1 text-left"
+          class="planner-row-select-button"
           :disabled="props.disabled"
           @click="emit('student-selected', student.id)"
         >
@@ -160,7 +159,7 @@ function commitName(): void {
         </button>
         <button
           type="button"
-          class="mt-0.5 shrink-0 text-burgundy opacity-60 transition-opacity hover:opacity-100"
+          class="planner-row-remove-button"
           :disabled="props.disabled"
           :aria-label="`Ta bort ${student.display_name} från grupp`"
           @click.stop="emit('student-removed', student.id)"
@@ -171,7 +170,7 @@ function commitName(): void {
 
       <div
         v-if="students.length === 0"
-        class="flex min-h-[112px] items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-6 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
+        class="flex min-h-[88px] items-center justify-center border border-dashed border-navy/30 bg-canvas px-4 py-4 text-center text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/40"
       >
         Släpp elever här
       </div>

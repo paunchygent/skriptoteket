@@ -10,7 +10,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Snapshot
 
-- Date: 2026-03-28
+- Date: 2026-03-29
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
@@ -68,18 +68,19 @@ Keep this file updated so the next session can pick up work quickly.
   - unchanged exports dedupe by roster plus normalized room-context identity; template id is stored provenance, and copied seat/fixture ids, seat zones, and fixture labels do not fork identical room layouts into separate checkpoint lanes
   - checkpoint recording remains wired only to successful seating export completion; draft handlers do not depend on the checkpoint write seam
 - `PR-0155` rules-workspace cut-over is now in place locally and live-proofed:
-  - `Regler` is a top-level workspace, bootstraps an explicit seating host from the overview-selected classroom when needed, and defaults to `Planeringskarta`
-  - `Sittplatser` / `Grupper` now keep only compact smart summaries plus the small settings affordance near `Smart`; no inline rule editor remains there
-  - the rules inspector can edit/remove relationship rules and `Närmare läraren`, with store-level autosave coverage for those persistence paths
+  - `Regler` is a top-level workspace, bootstraps an explicit seating host from the overview-selected classroom when needed, defaults to `Planeringskarta`, keeps the local `Planeringskarta` / `Sittschema` toggle in the map-field header, and leaves `Sittplatser` / `Grupper` with compact smart summaries plus the small settings affordance near `Smart`
+  - the rules layout now uses a compact global tool rail plus a stable top summary panel for active rules, so the right-side inspector column is gone and the map lane can use most of the workspace width
+  - active rule creation/edit confirmation lives in the tool rail for all rule kinds, `Nära läraren` now uses the same pending count/chip/save feedback as the relation rules while still persisting as one consolidated rule, and the top summary panel stays reserved for existing rules
+  - the active-rule cards no longer show pointless totals, `Nära läraren` is the shorter workspace label, summary actions are now tiny icon controls, and map markers stay single-row instead of wrapping down across student names
 - Planner UI-doctrine alignment is now documented for the upcoming overhaul:
   - added `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
   - tightened `.claude/skills/skriptoteket-frontend-specialist/SKILL.md`, `.claude/skills/brutalist-academic-ui/SKILL.md`, and `.agents/rules/045-huleedu-design-system.md` so future frontend work favors canvas-first, dense multi-workspace layouts over stacked panel chrome
   - doctrine now also states that workspace-heavy curated apps are desktop-first and that repeated operations should use a canonical symbol system before long text-button copy
-- Proposed redesign planning package is now drafted: `EPIC-29`, `REV-EPIC-29`, and `ST-29-01`..`ST-29-07`; status is planning-only (`proposed` / `pending` / `ready`)
-- Hemma kernel-lane recovery is now executed and documented in `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`: the broken `6.17.0-14` HWE lane was removed, `dpkg`/`apt` are clean again, the host is frozen on `6.14.0-37-generic`, and the AMDGPU/ROCm/DKMS lane is on hold pending a later coordinated `6.17` cutover.
-- Proposed auth-cutover planning package is now drafted:
-  - `ADR-0076`, `EPIC-28`, `REV-EPIC-28`, and `ST-28-01` through `ST-28-04`; status is still planning-only (`proposed` / `ready` / `pending`)
-- Current frontend god-file hotspots after the export-flow cleanup: `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue` and `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`, then editor/vault/profile hotspots outside the planner lane.
+- Proposed redesign planning package is now drafted: `EPIC-29`, `REV-EPIC-29`, and `ST-29-01`..`ST-29-08`; status is planning-only (`proposed` / `pending` / `ready`), with `ST-29-08` reserved as a post-core tooltip enhancement
+- `PR-0157` dense-tool primitive implementation is now in progress locally:
+  - canonical icons now include `IconAdjustments`, `IconPlus`, `IconZoomIn`, `IconZoomOut`, and `IconFitView`
+  - shared SPA dense primitives now live under `frontend/apps/skriptoteket/src/components/ui/` (`UiDenseActionButton`, `UiDenseIconButton`, `UiDenseMenuButton`, `UiDenseSplitButton`, `UiDenseStatusPill`, `UiDenseToggle`, `UiDenseCompoundToggle`, `useDenseMenuSurface`, `denseToolPrimitives.ts`)
+  - planner seating/grouping and editor toolbar/menu now read from that primitive layer, `Smart + Regler` is a compound control, editor AI undo/redo now use the canonical icon components, editor CRUD/status badges now use the shared dense status-pill contract, the shared `UiSegmentedToggle` now also carries the smaller secondary `subrail` treatment for local sort/view rails plus a taller `workspace` variant for equal-weight planner workspaces, now keeps one explicit column/divider per option instead of implicit multi-option wrapping, Klassrumskartan now reads repeated button recipes from shared `main.css` planner classes instead of scattered inline button styling, the planner shell/header chrome is quieter (`Curated App`, overview sales copy, panel-eyebrow labels, and visible `version N` shell text removed) with route hero vs active-workspace hierarchy encoded through shared `page-title` and `planner-shell-title` tiers, Mina filer no longer repeats the pointless `Filer` / `Aktiva filer och papperskorg` / `Sortera` / `Sök` chrome above controls, overview/pool/canvas surfaces are now denser with the duplicate overview resume CTA cards removed, shared overview panel tracks aligned, quieter overview footer actions, both gear-led overview edit buttons shortened to `Redigera`, and grouping cards now keep the rename field plus move/remove controls on one equal-height row with no redundant `Gruppnamn` label
 
 ## Verification
 
@@ -134,11 +135,10 @@ Keep this file updated so the next session can pick up work quickly.
     `Planeringskarta` / `Sittschema`, while `Sittplatser` / `Grupper` keep compact summaries and a
     settings-link affordance near `Smart`
 - 2026-03-28 `PR-0155` rules workspace cut-over:
-  - `pdm run fe-test -- --run src/views/apps/useSmartRuleUiState.spec.ts src/views/apps/useClassroomState.spec.ts src/views/apps/classroomPlannerRouteShellWorkspace.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/PlannerRulesWorkspacePane.spec.ts`
-  - `pdm run fe-type-check`
-  - `pdm run docs-validate`
+  - `pdm run fe-test -- --run src/views/apps/useSmartRuleUiState.spec.ts src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerRulesWorkspacePane.spec.ts`
+  - `pdm run fe-type-check`; `pdm run docs-validate`
   - live proof: `pdm run python -m scripts.playwright_pr_0155_rules_workspace_check --base-url http://127.0.0.1:5173`
-  - artifacts under `.artifacts/pr-0155-rules-workspace-check/`; proof covered top-level `Regler`, explicit overview-template bootstrap, `Planeringskarta`/`Sittschema`, inspector editing, and compact summary-only smart panes
+  - artifacts under `.artifacts/pr-0155-rules-workspace-check/`; proof covered top-level `Regler`, explicit overview-template bootstrap, the map-field `Planeringskarta`/`Sittschema` switch (and its absence from the rail), the unified rail-owned pending/create-save flow for all rule kinds, compact summary-only smart panes, wider map real estate, single-row map markers, and the removed rules helper copy
 - 2026-03-28 auth-cutover planning package:
   - `pdm run docs-validate`
   - added `ADR-0076`, `EPIC-28`, `REV-EPIC-28`, `ST-28-01`..`ST-28-04`, and updated `docs/index.md`
@@ -148,8 +148,13 @@ Keep this file updated so the next session can pick up work quickly.
   - refined the doctrine around desktop-first workspace composition and symbol-first repeated operations
 - 2026-03-28 planner redesign planning package:
   - `pdm run docs-validate`
-  - `REV-EPIC-29` fixes landed: `EPIC-29` is the canonical UI-overhaul hub, `PR-0127`..`PR-0132` now hang under `ST-29-03`/`ST-29-04`, the conflicting EPIC-26 story docs were removed, and `REF-shared-tool-control-language-v1` now defines the first minimal cross-app control matrix
-- 2026-03-28 Hemma kernel-lane recovery: `pdm run docs-validate`; on Hemma, purged the broken `linux-*6.17.0-14*` HWE packages with `dpkg`, restored clean `dpkg --audit`, marked the active `6.14.0-37` kernel packages manual, held the AMDGPU/ROCm/DKMS package set, and verified `dkms status`, `apt upgrade --simulate`, `rocminfo`, and `rocm-smi`.
+  - `REV-EPIC-29` fixes landed: `EPIC-29` is the canonical UI-overhaul hub, `PR-0127`..`PR-0132` now hang under `ST-29-03`/`ST-29-04`, the conflicting EPIC-26 story docs were removed, `REF-shared-tool-control-language-v1` now defines the first minimal cross-app control matrix, and `ST-29-08` / `PR-0160` now reserve the custom tooltip enhancement as a separate post-core lane
+- 2026-03-28 `PR-0157` dense-tool primitives:
+  - `pdm run fe-type-check`
+  - `pdm run fe-test -- --run src/components/ui/UiDenseStatusPill.spec.ts src/components/editor/EditorWorkspaceToolbar.spec.ts src/components/ui/UiDenseSplitButton.spec.ts src/components/ui/UiSegmentedToggle.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts src/views/apps/components/PlannerExportActionGroup.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/CreateRosterModal.spec.ts`
+  - `pdm run docs-validate`
+  - live proof: `pdm run python -m scripts.playwright_pr_0157_dense_toolbar_check --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_vault_sort_subrail_check --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_pr_0157_overview_alignment_check --base-url http://127.0.0.1:5173`, and `pdm run python -m scripts.playwright_pr_0157_group_card_alignment_check --base-url http://127.0.0.1:5173`
+  - artifacts under `.artifacts/pr-0157-live-check/`, `.artifacts/classroom-planner-smoke`, `.artifacts/vault-sort-subrail-check`, and `.artifacts/pr-0157-overview-alignment-check`; proof covered planner seating/grouping dense-tool follow-ups, the planner-wide shared button-recipe sweep in modals/drawers/overview/template-editor surfaces, grouped undo/redo outer-edge `4px` corners, compact overflow, grouping count stepper, the updated grouping smoke selector for `Nytt utkast`, the quieter planner shell/header typography and chrome, the shared secondary subrail treatment across the rules map switch and Vault sort, the taller dedicated workspace mode selector for Klassrumskartan, the restored interior dividers between all segmented options, and the denser overview/student-pool/canvas surfaces without duplicate overview resume cards, with live-aligned overview panels, quieter footer actions, Vault sort/search height parity, and the shortened `Redigera` gear actions
 - 2026-03-27 `PR-0154` smart seating:
   - backend semantics alignment + overlap-case verification:
     - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py -q`
@@ -191,9 +196,5 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 - Continue the smart-assignment lane in the corrected order:
   - take `ST-27-04` next on top of the shipped `PR-0150` checkpoint registry, `PR-0152` session/lane split, `PR-0154` smart seating run seam, and the new `PR-0155` rules workspace
   - keep relation rules as non-overlapping visible clusters in V1 and keep rule editing out of task-pane drawers; compact summaries are okay, full editors are not
-- Route the new auth-cutover package through `REV-EPIC-28` before drafting the matching HuleEdu-side ADR/task package.
-- If smart-seating hardening continues before new feature work:
-  - add stress/property testing on top of the shipped real-room scenarios instead of reopening toy-room solver checks
-- If cleanup continues before new feature work, start with:
-  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
-  - `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`
+- Continue `PR-0157` by widening adoption cautiously from the shipped primitive layer:
+  - next likely consumers are remaining planner/editor dense buttons that still inherit `btn-ghost`, but do not mix that with `PR-0158` shell compression

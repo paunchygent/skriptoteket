@@ -66,9 +66,9 @@ const stateOptions: UiSegmentedToggleOption[] = [
 ];
 
 const sortOptions: UiSegmentedToggleOption[] = [
-  { value: "newest", label: "Nyast" },
-  { value: "name", label: "Namn" },
-  { value: "size", label: "Storlek" },
+  { value: "newest", label: "Nyast", dataTest: "vault-sort-newest" },
+  { value: "name", label: "Namn", dataTest: "vault-sort-name" },
+  { value: "size", label: "Storlek", dataTest: "vault-sort-size" },
 ];
 
 function isVaultListState(value: string): value is VaultListState {
@@ -118,6 +118,15 @@ const showBulkActions = computed(() => isManageMode.value);
 const canAutoSearch = computed(() => {
   const trimmed = searchDraft.value.trim();
   return trimmed.length === 0 || trimmed.length >= searchMinChars;
+});
+
+const vaultHeaderStatusLabel = computed(() => {
+  if (isPickerMode.value) {
+    const count = props.modelValue.length;
+    if (count === 0) return null;
+    return selectionCountLabel.value;
+  }
+  return manageSelectionLabel.value;
 });
 
 function clearSearchDebounce(): void {
@@ -406,25 +415,13 @@ onUnmounted(() => {
 <template>
   <section class="border border-navy bg-white shadow-brutal-sm p-4 space-y-4">
     <header class="space-y-3">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div class="space-y-1">
-          <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-            Filer
-          </h2>
-          <p
-            v-if="isPickerMode"
-            class="text-xs text-navy/60"
-          >
-            Välj filer från Mina filer. {{ selectionCountLabel }}
-          </p>
-          <p
-            v-else
-            class="text-xs text-navy/60"
-          >
-            Aktiva filer och papperskorg.
-            <span v-if="manageSelectionLabel">· {{ manageSelectionLabel }}</span>
-          </p>
-        </div>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p
+          v-if="vaultHeaderStatusLabel"
+          class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+        >
+          {{ vaultHeaderStatusLabel }}
+        </p>
 
         <UiSegmentedToggle
           :model-value="state"
@@ -432,6 +429,9 @@ onUnmounted(() => {
           aria-label="Välj vy"
           width="auto"
           :density="'compact'"
+          variant="subrail"
+          :columns="2"
+          data-test="vault-state-switch"
           @update:model-value="onStateUpdate"
         />
       </div>
@@ -461,7 +461,6 @@ onUnmounted(() => {
           <div class="w-full sm:min-w-0 sm:flex-1 lg:flex-none lg:min-w-[var(--huleedu-max-width-sm)] lg:max-w-[var(--huleedu-max-width-md)]">
             <UiSearchBar
               v-model="searchDraft"
-              label="Sök"
               placeholder="Sök på filnamn…"
               :is-busy="isLoading"
               :show-button="true"
@@ -477,17 +476,16 @@ onUnmounted(() => {
             </p>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wide text-navy/70 mb-1">
-              Sortera
-            </label>
+          <div class="self-end">
             <UiSegmentedToggle
               :model-value="sort"
               :options="sortOptions"
-              aria-label="Sortera"
+              aria-label="Sortera filer"
               width="auto"
               :density="'compact'"
+              variant="subrail"
               :columns="3"
+              data-test="vault-sort-switch"
               @update:model-value="onSortUpdate"
             />
           </div>

@@ -33,6 +33,23 @@ describe("useSmartRuleUiState", () => {
     expect(state.canCommitPendingRelationshipRule.value).toBe(true);
   });
 
+  it("allows near-teacher commits after one pending student and tracks edit mode", () => {
+    const state = useSmartRuleUiState({
+      canEditSmartRules: () => true,
+    });
+
+    state.beginNearTeacherEdit(["s1"]);
+
+    expect(state.activeSeatingSmartTool.value).toBe("near_teacher");
+    expect(state.pendingRelationshipStudentIds.value).toEqual(["s1"]);
+    expect(state.editingNearTeacherRule.value).toBe(true);
+    expect(state.canCommitPendingRelationshipRule.value).toBe(true);
+
+    state.clearPendingRelationshipSelection();
+
+    expect(state.editingNearTeacherRule.value).toBe(false);
+  });
+
   it("ignores tool activation when smart rules are not editable", () => {
     const state = useSmartRuleUiState({
       canEditSmartRules: () => false,

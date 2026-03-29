@@ -11,6 +11,29 @@ function buildStudents(count: number) {
 }
 
 describe("GroupCard", () => {
+  it("keeps the rename row compact without a redundant group-name label", () => {
+    const wrapper = mount(GroupCard, {
+      props: {
+        group: {
+          id: "group-a",
+          name: "Grupp 1",
+          sort_order: 0,
+          name_is_custom: false,
+        },
+        students: [],
+        canMoveUp: false,
+        canMoveDown: true,
+        selectedStudentId: null,
+      },
+    });
+
+    expect(wrapper.text()).not.toContain("Gruppnamn");
+    expect(wrapper.get('[data-test="group-name-input"]').classes()).toContain("h-[36px]");
+    expect(wrapper.get('[data-test="move-group-up"]').classes()).toContain("planner-btn-icon-lg");
+    expect(wrapper.get('[data-test="move-group-down"]').classes()).toContain("planner-btn-icon-lg");
+    expect(wrapper.get('[data-test="remove-group"]').classes()).toContain("planner-btn-icon-lg");
+  });
+
   it("does not emit a rename on blur when the visible name is unchanged", async () => {
     const wrapper = mount(GroupCard, {
       props: {
@@ -48,7 +71,6 @@ describe("GroupCard", () => {
       },
     });
 
-    expect(wrapper.get('[data-test="group-order-badge"]').text()).toContain("Ordning 3");
     expect(wrapper.get('[data-test="move-group-up"]').attributes("disabled")).toBeUndefined();
     expect(wrapper.get('[data-test="move-group-down"]').attributes("disabled")).toBeDefined();
 

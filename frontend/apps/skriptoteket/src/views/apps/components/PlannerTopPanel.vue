@@ -44,10 +44,10 @@ const emit = defineEmits<{
 }>();
 
 const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => [
-  { value: "overview", label: "Översikt" },
-  { value: "grouping", label: "Grupper" },
-  { value: "seating", label: "Sittplatser" },
-  { value: "rules", label: "Regler" },
+  { value: "overview", label: "Översikt", dataTest: "planner-mode-overview" },
+  { value: "grouping", label: "Grupper", dataTest: "planner-mode-grouping" },
+  { value: "seating", label: "Sittplatser", dataTest: "planner-mode-seating" },
+  { value: "rules", label: "Regler", dataTest: "planner-mode-rules" },
 ]);
 
 const statusToneClass = computed(() => {
@@ -87,10 +87,7 @@ function selectWorkspaceMode(value: string): void {
   <article class="space-y-3 border border-navy bg-white p-4 shadow-brutal-sm">
     <div class="flex flex-col gap-3 border-b border-navy/20 pb-3 lg:flex-row lg:items-center lg:justify-between">
       <div class="min-w-0 space-y-1">
-        <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-          Klassarbetsyta
-        </p>
-        <h2 class="font-serif text-2xl text-navy md:text-3xl">
+        <h2 class="planner-shell-title">
           {{ title }}
         </h2>
         <p
@@ -103,7 +100,7 @@ function selectWorkspaceMode(value: string): void {
 
       <button
         type="button"
-        class="btn-ghost self-start border-navy/30 bg-canvas px-3 py-2 text-sm shadow-none lg:self-auto"
+        class="btn-ghost planner-btn-ghost-canvas self-start px-3 py-2 text-sm lg:self-auto"
         @click="emit('exit')"
       >
         {{ exitLabel }}
@@ -114,7 +111,9 @@ function selectWorkspaceMode(value: string): void {
       :model-value="modeValue"
       :options="workspaceOptions"
       aria-label="Välj arbetsyta i planeringen"
+      data-test="planner-workspace-switch"
       density="default"
+      variant="workspace"
       :columns="workspaceOptions.length"
       width="full"
       @update:model-value="selectWorkspaceMode"

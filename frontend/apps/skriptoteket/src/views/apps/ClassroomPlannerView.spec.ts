@@ -915,7 +915,7 @@ describe("ClassroomPlannerView", () => {
           },
           PlannerWorkspaceShell: {
             template:
-              "<button type='button' data-test='edit-grouping-roster' @click=\"$emit('edit-roster')\">Redigera klass</button>",
+              "<button type='button' data-test='edit-grouping-roster' @click=\"$emit('edit-roster')\">Redigera</button>",
           },
         },
       },
@@ -1148,7 +1148,7 @@ describe("ClassroomPlannerView", () => {
           },
           PlannerWorkspaceShell: {
             template:
-              "<button type='button' data-test='new-grouping-draft' @click=\"$emit('new-grouping-draft', { templateId: 'template-1' })\">Nytt grupputkast</button>",
+              "<button type='button' data-test='new-grouping-draft' @click=\"$emit('new-grouping-draft', { templateId: 'template-1' })\">Nytt utkast</button>",
           },
         },
       },
@@ -1537,7 +1537,7 @@ describe("ClassroomPlannerView", () => {
         stubs: {
           PlannerClassWorkspace: {
             template:
-              "<div><button type='button' data-test='select-template' @click=\"$emit('select-template', 'template-1')\">Välj klassrum</button><button type='button' data-test='edit-current-template' @click=\"$emit('edit-current-template')\">Redigera klassrum</button></div>",
+              "<div><button type='button' data-test='select-template' @click=\"$emit('select-template', 'template-1')\">Välj klassrum</button><button type='button' data-test='edit-current-template' @click=\"$emit('edit-current-template')\">Redigera</button></div>",
           },
           PlannerWorkspaceShell: true,
           CreateRosterModal: true,

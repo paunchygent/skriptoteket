@@ -10,14 +10,10 @@
 import { IconSettings } from "../../../components/icons";
 import type { Roster } from "../classroomPlannerTypes";
 
-const OVERVIEW_PREVIEW_HEIGHT_CLASS = "h-[20rem]";
-const OVERVIEW_HEADER_HEIGHT_CLASS = "h-[6rem]";
-const OVERVIEW_SELECTOR_HEIGHT_CLASS = "h-[4rem]";
-
 const props = defineProps<{
   title: string;
   countLabel: string;
-  description: string;
+  description?: string | null;
   selectedRoster: Roster | null;
   selectedRosterId: string | null;
   availableRosters: Roster[];
@@ -44,11 +40,11 @@ function selectRoster(event: Event): void {
 </script>
 
 <template>
-  <article class="grid grid-rows-[6rem_4rem_20rem_auto] gap-3 border border-navy/20 bg-canvas p-4">
-    <div :class="['grid h-full content-start grid-rows-[auto_auto_1fr] gap-2', OVERVIEW_HEADER_HEIGHT_CLASS]">
-      <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-        Klass
-      </p>
+  <article
+    class="planner-overview-panel"
+    data-test="overview-roster-panel"
+  >
+    <div class="planner-overview-panel-header">
       <div class="flex flex-wrap items-baseline gap-2">
         <p class="text-xl font-semibold text-navy">
           {{ title }}
@@ -57,15 +53,18 @@ function selectRoster(event: Event): void {
           {{ countLabel }}
         </span>
       </div>
-      <p class="text-sm text-navy/70">
+      <p
+        v-if="description"
+        class="text-sm text-navy/70"
+      >
         {{ description }}
       </p>
     </div>
 
-    <label :class="['grid h-full content-start gap-2 text-sm text-navy', OVERVIEW_SELECTOR_HEIGHT_CLASS]">
+    <label class="planner-overview-panel-selector">
       <span class="font-semibold">Byt klass</span>
       <select
-        class="w-full border border-navy/25 bg-white px-3 py-2 text-sm text-navy"
+        class="planner-overview-panel-select"
         :disabled="isLoadingWorkspace"
         :value="selectedRosterId ?? ''"
         data-test="overview-roster-select"
@@ -88,12 +87,12 @@ function selectRoster(event: Event): void {
     </label>
 
     <div
-      :class="['relative overflow-y-auto border border-navy/20 bg-white', OVERVIEW_PREVIEW_HEIGHT_CLASS]"
+      class="planner-overview-panel-preview overflow-y-auto"
       data-test="overview-roster-preview"
     >
       <div
         v-if="selectedRoster && selectedRosterPreviewNames.length > 0"
-        class="grid grid-cols-3 content-start gap-x-4 gap-y-1 p-4 text-[0.8rem] leading-5 text-navy/72"
+        class="grid grid-cols-3 content-start gap-x-3 gap-y-1 p-3 text-[0.8rem] leading-5 text-navy/72"
       >
         <span
           v-for="name in selectedRosterPreviewNames"
@@ -105,32 +104,33 @@ function selectRoster(event: Event): void {
       </div>
       <div
         v-else
-        class="flex h-full items-center justify-center p-4 text-center text-sm text-navy/55"
+        class="planner-overview-panel-empty"
       >
         Välj en klasslista för att visa en kompakt elevöversikt här.
       </div>
     </div>
 
-    <div class="grid gap-2 border-t border-navy/15 pt-2.5 md:grid-cols-3">
+    <div class="planner-overview-panel-footer">
       <button
         type="button"
-        class="btn-primary w-full justify-center"
+        class="btn-primary planner-overview-panel-action"
         @click="emit('create-roster')"
       >
         Ny klasslista
       </button>
       <button
         type="button"
-        class="btn-ghost inline-flex w-full items-center justify-center gap-2 border-navy/30 bg-white shadow-none"
+        class="btn-ghost planner-btn-ghost planner-overview-panel-action"
         :disabled="!selectedRoster"
+        data-test="overview-edit-roster"
         @click="emit('edit-roster')"
       >
         <IconSettings :size="14" />
-        Redigera klass
+        Redigera
       </button>
       <button
         type="button"
-        class="btn-ghost w-full justify-center border-navy/30 bg-white text-navy/50 shadow-none hover:text-burgundy disabled:text-navy/40"
+        class="btn-ghost planner-btn-ghost planner-btn-ghost-muted planner-overview-panel-action"
         :disabled="!selectedRoster"
         data-test="overview-delete-roster"
         @click="emit('delete-current-roster')"

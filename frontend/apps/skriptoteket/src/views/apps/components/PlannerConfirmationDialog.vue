@@ -26,7 +26,7 @@ const emit = defineEmits<{
     <button
       type="button"
       aria-label="Stäng bekräftelse"
-      class="fixed inset-0 bg-navy/70"
+      class="planner-overlay-backdrop"
       @click="emit('cancel')"
     />
     <div class="relative flex min-h-full items-center justify-center py-4">
@@ -55,7 +55,7 @@ const emit = defineEmits<{
         <div class="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-navy/15 pt-4">
           <button
             type="button"
-            class="btn-ghost border-navy/30 bg-white shadow-none"
+            class="btn-ghost planner-btn-ghost"
             :disabled="isSubmitting"
             @click="emit('cancel')"
           >
@@ -63,7 +63,7 @@ const emit = defineEmits<{
           </button>
           <button
             type="button"
-            class="btn-ghost border-burgundy/30 bg-white text-burgundy shadow-none disabled:text-burgundy/50"
+            class="btn-ghost planner-btn-danger-soft disabled:text-burgundy/50"
             :disabled="isSubmitting"
             data-test="confirm-dialog-confirm"
             @click="emit('confirm')"

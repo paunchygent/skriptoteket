@@ -273,7 +273,7 @@ describe("PlannerWorkspaceShell", () => {
 
     expect(wrapper.text()).not.toContain("Placeringprofil");
     expect(wrapper.text()).toContain("Slumpa");
-    expect(wrapper.text()).toContain("Nytt grupputkast");
+    expect(wrapper.text()).toContain("Nytt utkast");
     expect(wrapper.text()).toContain(
       "Dra elever mellan grupperna tills grupparbetet sitter.",
     );
@@ -395,7 +395,7 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Klassrum (valfritt)");
+    expect(wrapper.get('[data-test="grouping-template-select"]').attributes("aria-label")).toBe("Klassrum (valfritt)");
     expect(wrapper.text()).toContain("Arbeta utan klassrum");
 
     await wrapper.get('[data-test="grouping-template-select"]').setValue("template-2");
@@ -461,7 +461,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find("[data-test='room-canvas']").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Gruppvy");
     expect(wrapper.text()).toContain("Välj klassrum i sittschemat");
-    expect(wrapper.text()).toContain("Klassrum");
+    expect(wrapper.get('[data-test="seating-template-select"]').attributes("aria-label")).toBe("Klassrum");
     expect(wrapper.text()).toContain(
       "Välj eller byt klassrum direkt här i sittschemat.",
     );
