@@ -68,6 +68,21 @@ type CreateClassroomPlannerStateSupportOptions = {
 export function createClassroomPlannerStateSupport(
   options: CreateClassroomPlannerStateSupportOptions,
 ) {
+  function cloneRoster(nextRoster: Roster): Roster {
+    return {
+      ...nextRoster,
+      students: nextRoster.students.map((student) => ({ ...student })),
+    };
+  }
+
+  function cloneTemplate(nextTemplate: RoomTemplate): RoomTemplate {
+    return {
+      ...nextTemplate,
+      seats: nextTemplate.seats.map((seat) => ({ ...seat })),
+      fixtures: nextTemplate.fixtures.map((fixture) => ({ ...fixture })),
+    };
+  }
+
   function normalizeMutationError(error: unknown, fallbackMessage: string): string {
     if (isApiError(error)) {
       return error.message || fallbackMessage;
@@ -99,8 +114,8 @@ export function createClassroomPlannerStateSupport(
 
   function applyWorkspace(workspace: DraftWorkspaceResponse): void {
     options.draft.value = workspace.draft;
-    options.roster.value = workspace.roster;
-    options.template.value = workspace.template ?? null;
+    options.roster.value = cloneRoster(workspace.roster);
+    options.template.value = workspace.template ? cloneTemplate(workspace.template) : null;
     options.groups.value = reindexGroups(
       [...workspace.groups].sort((left, right) => left.sort_order - right.sort_order),
     );
@@ -150,6 +165,54 @@ export function createClassroomPlannerStateSupport(
     }
     options.smartRulesRevision.value = rules.revision;
     options.smartRuleLane.applyHydratedRules();
+  }
+
+  function replaceCurrentTemplate(nextTemplate: RoomTemplate): void {
+    if (options.template.value?.id !== nextTemplate.id) {
+      return;
+    }
+
+    const seatIds = new Set(nextTemplate.seats.map((seat) => seat.id));
+    options.template.value = cloneTemplate(nextTemplate);
+    options.seatAssignmentsByStudentId.value = Object.fromEntries(
+      Object.entries(options.seatAssignmentsByStudentId.value).filter(([, seatId]) => {
+        return typeof seatId === "string" && seatIds.has(seatId);
+      }),
+    );
+  }
+
+  function replaceCurrentRoster(nextRoster: Roster): void {
+    if (options.roster.value?.id !== nextRoster.id) {
+      return;
+    }
+
+    const studentIds = new Set(nextRoster.students.map((student) => student.id));
+    options.roster.value = cloneRoster(nextRoster);
+    options.groupAssignmentsByStudentId.value = Object.fromEntries(
+      Object.entries(options.groupAssignmentsByStudentId.value).filter(([studentId]) => {
+        return studentIds.has(studentId);
+      }),
+    );
+    options.seatAssignmentsByStudentId.value = Object.fromEntries(
+      Object.entries(options.seatAssignmentsByStudentId.value).filter(([studentId]) => {
+        return studentIds.has(studentId);
+      }),
+    );
+    options.studentPlanningMetaByStudentId.value = Object.fromEntries(
+      Object.entries(options.studentPlanningMetaByStudentId.value).filter(([studentId]) => {
+        return studentIds.has(studentId);
+      }),
+    );
+    options.seatingPreferences.value = options.seatingPreferences.value.filter((preference) => {
+      return studentIds.has(preference.student_id);
+    });
+    options.relationshipRules.value = options.relationshipRules.value
+      .map((rule) => ({
+        ...rule,
+        student_ids: [...new Set(rule.student_ids.filter((studentId) => studentIds.has(studentId)))],
+      }))
+      .filter((rule) => rule.student_ids.length >= 2);
+    options.smartRuleUiState.reset();
   }
 
   function serializeDraftPatch() {
@@ -234,6 +297,8 @@ export function createClassroomPlannerStateSupport(
     applyRosterSmartRules,
     applyDraftSaveAcknowledgement,
     applySmartRuleSaveAcknowledgement,
+    replaceCurrentTemplate,
+    replaceCurrentRoster,
     serializeDraftPatch,
     serializeSmartRulesPatch,
     createTransitionController,

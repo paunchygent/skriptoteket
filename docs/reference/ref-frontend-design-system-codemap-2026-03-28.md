@@ -5,7 +5,7 @@ title: "Frontend design-system codemap (SPA, planner, editor)"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-03-29
 topic: "frontend design system"
 links:
   - "ADR-0017"
@@ -14,7 +14,10 @@ links:
   - "ADR-0030"
   - "ADR-0032"
   - "ADR-0037"
+  - "ADR-0077"
   - "ST-29-01"
+  - "ST-30-01"
+  - "REF-frontend-transition-continuity-v1"
   - "REF-shared-tool-control-language-v1"
   - "REF-klassrumskartan-workspace-ui-doctrine-2026-03-28"
   - "REF-tool-editor-framework-codemap"
@@ -31,6 +34,7 @@ Use it when you need to answer one of these questions:
 - Where do tokens become CSS and Tailwind utilities?
 - Where do shared primitives exist today?
 - Which files are the real proving grounds for dense tool UX?
+- Where does the shared transition-continuity rule live?
 - What should a frontend designer read before changing planner or editor controls?
 
 ## Current structural truth
@@ -85,6 +89,8 @@ These are the first files a designer or frontend implementer should read.
 - `docs/adr/adr-0030-openapi-as-source-and-openapi-typescript.md`
 - `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
 - `docs/adr/adr-0037-toast-and-system-messages-spa.md`
+- `docs/adr/adr-0077-same-shell-transition-continuity.md`
+- `docs/reference/ref-frontend-transition-continuity-v1.md`
 - `docs/reference/ref-shared-tool-control-language-v1.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - `docs/reference/ref-tool-editor-framework-codemap.md`

@@ -30,6 +30,8 @@ type ClassroomPlannerOverviewCrudActions = {
   openClassWorkspace: (rosterId: string) => Promise<void>;
   openInitialHomeWorkspace: (preferredRosterId: string | null) => Promise<void>;
   syncWorkspaceTemplateSelection: (options?: { preserveCurrent?: boolean }) => void;
+  replaceActivePlannerRoster: (roster: Roster) => void;
+  replaceActivePlannerTemplate: (template: RoomTemplate) => void;
 };
 
 export function createClassroomPlannerOverviewCrudFlow(
@@ -47,6 +49,46 @@ export function createClassroomPlannerOverviewCrudFlow(
   const isDeletingOverviewRoster = ref(false);
   const isDeletingOverviewTemplate = ref(false);
 
+  function syncSummaryTemplateNames(template: RoomTemplate): void {
+    if (!state.classWorkspaceSummary.value) {
+      return;
+    }
+
+    const syncSummary = (summary: ClassWorkspaceSummary["active_seating_draft"]) => {
+      if (!summary || summary.template_id !== template.id) {
+        return summary;
+      }
+      return {
+        ...summary,
+        template_name: template.name,
+      };
+    };
+
+    state.classWorkspaceSummary.value = {
+      ...state.classWorkspaceSummary.value,
+      active_grouping_draft: syncSummary(state.classWorkspaceSummary.value.active_grouping_draft),
+      active_seating_draft: syncSummary(state.classWorkspaceSummary.value.active_seating_draft),
+      grouping_history: state.classWorkspaceSummary.value.grouping_history.map((summary) => {
+        if (summary.template_id !== template.id) {
+          return summary;
+        }
+        return {
+          ...summary,
+          template_name: template.name,
+        };
+      }),
+      seating_history: state.classWorkspaceSummary.value.seating_history.map((summary) => {
+        if (summary.template_id !== template.id) {
+          return summary;
+        }
+        return {
+          ...summary,
+          template_name: template.name,
+        };
+      }),
+    };
+  }
+
   function closeRosterModal(): void {
     isRosterModalOpen.value = false;
     activeRosterModal.value = null;
@@ -62,6 +104,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     const wasEditingCurrentRoster = activeRosterModal.value?.id === state.classWorkspaceSummary.value?.roster.id;
     const next = state.availableRosters.value.filter((item) => item.id !== roster.id);
     state.availableRosters.value = [...next, roster].sort((left, right) => left.name.localeCompare(right.name, "sv"));
+    actions.replaceActivePlannerRoster(roster);
     if (wasEditingCurrentRoster && state.classWorkspaceSummary.value) {
       state.classWorkspaceSummary.value = {
         ...state.classWorkspaceSummary.value,
@@ -101,6 +144,8 @@ export function createClassroomPlannerOverviewCrudFlow(
   function upsertTemplate(template: RoomTemplate): void {
     const next = state.availableTemplates.value.filter((item) => item.id !== template.id);
     state.availableTemplates.value = [...next, template].sort((left, right) => left.name.localeCompare(right.name, "sv"));
+    actions.replaceActivePlannerTemplate(template);
+    syncSummaryTemplateNames(template);
     state.selectedWorkspaceTemplateId.value = template.id;
     closeTemplateModal();
   }

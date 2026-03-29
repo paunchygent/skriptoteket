@@ -50,6 +50,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: "change-seating-template", templateId: string | null): void;
   (e: "new-seating-draft", templateId: string): void;
+  (e: "edit-roster"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-history"): void;
   (e: "open-rules"): void;
@@ -124,7 +125,15 @@ const secondaryActionItems = computed(() => [
     onSelect: () => emit("open-history"),
   },
   {
-    id: "edit-template",
+    id: "edit-roster",
+    label: "Redigera klass",
+    icon: IconAdjustments,
+    disabled: plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
+    testId: "edit-seating-roster",
+    onSelect: () => emit("edit-roster"),
+  },
+  {
+    id: "edit-classroom",
     label: "Redigera klassrum",
     icon: IconAdjustments,
     disabled: !canEditCurrentTemplate.value || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,

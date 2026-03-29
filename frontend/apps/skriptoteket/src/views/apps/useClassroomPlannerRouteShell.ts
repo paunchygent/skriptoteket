@@ -136,6 +136,8 @@ export function useClassroomPlannerRouteShell() {
       openClassWorkspace,
       openInitialHomeWorkspace,
       syncWorkspaceTemplateSelection: overviewStore.syncWorkspaceTemplateSelection,
+      replaceActivePlannerRoster: plannerState.replaceCurrentRoster,
+      replaceActivePlannerTemplate: plannerState.replaceCurrentTemplate,
     },
   );
 

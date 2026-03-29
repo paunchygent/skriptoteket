@@ -128,68 +128,73 @@ const {
       </div>
     </div>
 
-    <PlannerClassWorkspace
-      v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace'"
-      :key="classWorkspaceSummary?.roster.id ?? 'empty-overview'"
-      :workspace-summary="classWorkspaceSummary"
-      :available-rosters="availableRosters"
-      :available-templates="availableTemplates"
-      :selected-roster-id="selectedRosterId"
-      :selected-template-id="selectedWorkspaceTemplateId"
-      :is-loading-workspace="isLoadingClassWorkspace"
-      :transition-label="workspaceTransitionLabel"
-      :visible-grouping-draft="visibleOverviewGroupingDraft"
-      :visible-seating-draft="visibleOverviewSeatingDraft"
-      @exit-app="void exitPlannerApp()"
-      @create-roster="openRosterCreate"
-      @edit-roster="openSelectedRosterEdit"
-      @delete-current-roster="openSelectedRosterDelete"
-      @select-roster="selectWorkspaceRoster"
-      @create-template="openTemplateCreate"
-      @select-template="selectWorkspaceTemplate"
-      @edit-current-template="openOverviewTemplateEdit"
-      @delete-current-template="openSelectedTemplateDelete"
-      @open-grouping="void openGroupingWorkspace($event)"
-      @open-seating="void openSeatingWorkspace($event)"
-      @open-rules="void openRulesWorkspace()"
-      @dismiss-grouping-draft="dismissOverviewGroupingDraft"
-      @dismiss-seating-draft="dismissOverviewSeatingDraft"
-    />
+    <div class="relative">
+      <Transition name="planner-shell-swap">
+        <PlannerClassWorkspace
+          v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace'"
+          :key="classWorkspaceSummary?.roster.id ?? 'empty-overview'"
+          :workspace-summary="classWorkspaceSummary"
+          :available-rosters="availableRosters"
+          :available-templates="availableTemplates"
+          :selected-roster-id="selectedRosterId"
+          :selected-template-id="selectedWorkspaceTemplateId"
+          :is-loading-workspace="isLoadingClassWorkspace"
+          :transition-label="workspaceTransitionLabel"
+          :visible-grouping-draft="visibleOverviewGroupingDraft"
+          :visible-seating-draft="visibleOverviewSeatingDraft"
+          @exit-app="void exitPlannerApp()"
+          @create-roster="openRosterCreate"
+          @edit-roster="openSelectedRosterEdit"
+          @delete-current-roster="openSelectedRosterDelete"
+          @select-roster="selectWorkspaceRoster"
+          @create-template="openTemplateCreate"
+          @select-template="selectWorkspaceTemplate"
+          @edit-current-template="openOverviewTemplateEdit"
+          @delete-current-template="openSelectedTemplateDelete"
+          @open-grouping="void openGroupingWorkspace($event)"
+          @open-seating="void openSeatingWorkspace($event)"
+          @open-rules="void openRulesWorkspace()"
+          @dismiss-grouping-draft="dismissOverviewGroupingDraft"
+          @dismiss-seating-draft="dismissOverviewSeatingDraft"
+        />
 
-    <PlannerWorkspaceShell
-      v-if="!isBootstrapping && !bootstrapError && currentScreen === 'planner'"
-      :available-templates="availableTemplates"
-      :initial-view="plannerInitialView"
-      :workspace-summary="classWorkspaceSummary"
-      :seating-lifecycle-busy="isSeatingLifecycleBusy"
-      :seating-history-busy-draft-id="busySeatingHistoryDraftId"
-      :grouping-export-busy="isGroupingExportBusy"
-      :grouping-export-status-label="groupingExportStatusLabel"
-      :grouping-export-error-message="groupingExportErrorMessage"
-      :seating-export-busy="isSeatingExportBusy"
-      :seating-export-status-label="seatingExportStatusLabel"
-      :seating-export-error-message="seatingExportErrorMessage"
-      :transition-label="workspaceTransitionLabel"
-      :workspace-notice="workspaceNotice"
-      @change-grouping-template="void changeGroupingTemplate($event)"
-      @change-seating-template="void changeSeatingTemplate($event)"
-      @new-grouping-draft="void startNewGroupingDraft($event)"
-      @new-seating-draft="void startNewSeatingDraft($event)"
-      @export-grouping-default="void startDefaultGroupingExport()"
-      @export-grouping-option="void startGroupingExportOption($event)"
-      @export-seating-default="void startDefaultSeatingExport()"
-      @export-seating-option="void startSeatingExportOption($event)"
-      @edit-roster="openSelectedRosterEdit"
-      @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
-      @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"
-      @open-seating-history-draft="void openSeatingHistoryDraft($event)"
-      @delete-seating-history-draft="void deleteSeatingHistoryDraft($event)"
-      @edit-current-template="openOverviewTemplateEdit"
-      @open-rules="void openRulesWorkspace()"
-      @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
-      @dismiss-workspace-notice="dismissWorkspaceNotice"
-      @exit-app="void exitPlannerApp()"
-    />
+        <PlannerWorkspaceShell
+          v-else-if="!isBootstrapping && !bootstrapError && currentScreen === 'planner'"
+          key="planner"
+          :available-templates="availableTemplates"
+          :initial-view="plannerInitialView"
+          :workspace-summary="classWorkspaceSummary"
+          :seating-lifecycle-busy="isSeatingLifecycleBusy"
+          :seating-history-busy-draft-id="busySeatingHistoryDraftId"
+          :grouping-export-busy="isGroupingExportBusy"
+          :grouping-export-status-label="groupingExportStatusLabel"
+          :grouping-export-error-message="groupingExportErrorMessage"
+          :seating-export-busy="isSeatingExportBusy"
+          :seating-export-status-label="seatingExportStatusLabel"
+          :seating-export-error-message="seatingExportErrorMessage"
+          :transition-label="workspaceTransitionLabel"
+          :workspace-notice="workspaceNotice"
+          @change-grouping-template="void changeGroupingTemplate($event)"
+          @change-seating-template="void changeSeatingTemplate($event)"
+          @new-grouping-draft="void startNewGroupingDraft($event)"
+          @new-seating-draft="void startNewSeatingDraft($event)"
+          @export-grouping-default="void startDefaultGroupingExport()"
+          @export-grouping-option="void startGroupingExportOption($event)"
+          @export-seating-default="void startDefaultSeatingExport()"
+          @export-seating-option="void startSeatingExportOption($event)"
+          @edit-roster="openSelectedRosterEdit"
+          @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
+          @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"
+          @open-seating-history-draft="void openSeatingHistoryDraft($event)"
+          @delete-seating-history-draft="void deleteSeatingHistoryDraft($event)"
+          @edit-current-template="openOverviewTemplateEdit"
+          @open-rules="void openRulesWorkspace()"
+          @select-workspace-mode="void selectPlannerWorkspaceMode($event)"
+          @dismiss-workspace-notice="dismissWorkspaceNotice"
+          @exit-app="void exitPlannerApp()"
+        />
+      </Transition>
+    </div>
 
     <CreateRosterModal
       v-if="isRosterModalOpen"
@@ -243,3 +248,22 @@ const {
     />
   </div>
 </template>
+
+<style scoped>
+.planner-shell-swap-enter-active,
+.planner-shell-swap-leave-active {
+  transition: opacity var(--huleedu-duration-fast) var(--huleedu-ease-default);
+}
+
+.planner-shell-swap-enter-from,
+.planner-shell-swap-leave-to {
+  opacity: 0;
+}
+
+.planner-shell-swap-leave-active {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+</style>

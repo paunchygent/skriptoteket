@@ -134,6 +134,7 @@ function onToggleFocusMode(): void {
   position: sticky;
   top: 0;
   z-index: 30;
+  isolation: isolate;
 }
 
 @media (min-width: 768px) {
@@ -165,6 +166,8 @@ function onToggleFocusMode(): void {
   display: inline-flex;
   align-items: center;
   height: 32px;
+  flex: 0 0 auto;
+  z-index: 1;
 }
 
 .topbar-brand-spacer {
@@ -180,6 +183,17 @@ function onToggleFocusMode(): void {
   align-items: center;
   justify-content: flex-start;
   text-decoration: none;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  z-index: 1;
+}
+
+.topbar-brand-link :deep(.brand-logo) {
+  cursor: inherit;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .topbar-brand-link:focus-visible {

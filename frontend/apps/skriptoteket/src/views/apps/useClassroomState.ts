@@ -400,6 +400,8 @@ export const useClassroomState = defineStore("classroom-state", () => {
     canCommitPendingRelationshipRule: smartRuleUiState.canCommitPendingRelationshipRule,
     clearWorkspace: stateSupport.clearWorkspace,
     discardPendingSessionWork: stateSupport.discardPendingSessionWork,
+    replaceCurrentRoster: stateSupport.replaceCurrentRoster,
+    replaceCurrentTemplate: stateSupport.replaceCurrentTemplate,
     prepareForWorkspaceSwitch: lifecycle.prepareForWorkspaceSwitch,
     prepareForExport: lifecycle.prepareForExport,
     prepareForPlannerExit: lifecycle.prepareForPlannerExit,

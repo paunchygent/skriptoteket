@@ -10,7 +10,9 @@ topic: "klassrumskartan-workspace-ui-doctrine"
 links:
   [
     "PRD-group-seating-studio-v0.3",
+    "ADR-0077",
     "REF-group-seating-studio-product-direction-2026-03-21",
+    "REF-frontend-transition-continuity-v1",
     "PR-0155",
     "045-huleedu-design-system",
   ]
@@ -38,6 +40,9 @@ helps teachers stay oriented while switching between overview, grouping, seating
   surface owns the layout. Surrounding chrome should support it, not compete with it.
 - `One stable shell`: keep one anchored top shell for title, workspace mode, concise status, and
   exit. Do not keep reintroducing new full-width header cards below it.
+- `Continuity before motion`: when one workspace surface hands off to another inside the same
+  shell, keep the outgoing surface visible until the incoming one is ready, then use a short
+  overlap crossfade instead of a blank `out-in` handoff.
 - `Operational density`: teacher workspaces should prefer compact action bands, short labels,
   symbols, and visible state over paragraph-heavy helper copy.
 - `Progressive disclosure`: history, metadata, setup help, and destructive actions belong in
@@ -140,6 +145,8 @@ Use these named viewports in redesign reviews instead of vague references to "co
   - a compact strip attached to the local surface
   - toast/inbox feedback for completed exports
   instead of a new page-wide band.
+- If a workspace switch needs loading or teardown, the current surface should stay coherent until
+  the next one can fade in; never clear the planner to an empty frame just to start the animation.
 
 ### 3. Stable side structures
 

@@ -116,4 +116,93 @@ describe("createClassroomPlannerWorkspaceFlow", () => {
     );
     expect(plannerActionError.value).toBeNull();
   });
+
+  it("switches to the overview shell before clearing planner state on overview return", async () => {
+    const selectedRosterId = ref("roster-1");
+    const selectedWorkspaceTemplateId = ref<string | null>("template-overview-1");
+    const currentScreen = ref<"class-workspace" | "planner">("planner");
+    const plannerInitialView = ref<"groups" | "seats" | "rules">("groups");
+    const plannerActionError = ref<string | null>(null);
+    const classWorkspaceSummary = ref({
+      roster: { id: "roster-1", name: "SA24D", student_count: 28 },
+      task_entry_options: [
+        { draft_kind: "grouping" as const, classroom_selection_mode: "optional" as const },
+        { draft_kind: "seating" as const, classroom_selection_mode: "optional" as const },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    });
+    const isSeatingLifecycleBusy = ref(false);
+    const busySeatingHistoryDraftId = ref<string | null>(null);
+    const workspaceTransitionLabel = ref<string | null>(null);
+    const workspaceNotice = ref<string | null>(null);
+    const loadDeferred = createDeferred();
+    const loadClassWorkspaceSummary = vi.fn().mockImplementation(async () => {
+      await loadDeferred.promise;
+    });
+    const syncWorkspaceTemplateSelection = vi.fn();
+
+    const plannerState = {
+      draft: {
+        id: "draft-1",
+        roster_id: "roster-1",
+        draft_kind: "grouping" as const,
+        status: "active" as const,
+        revision: 1,
+        last_opened_at: "2026-03-29T10:00:00Z",
+      },
+      roster: { id: "roster-1" },
+      template: { id: "template-overview-1" },
+      prepareForPlannerExit: vi.fn().mockResolvedValue({ status: "saved" }),
+      prepareForWorkspaceSwitch: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      loadWorkspace: vi.fn(),
+      resolveDraft: vi.fn(),
+      clearWorkspace: vi.fn(),
+      startNewGroupingDraft: vi.fn(),
+      startNewSeatingDraft: vi.fn(),
+      activateGroupingHistoryDraft: vi.fn(),
+      activateSeatingHistoryDraft: vi.fn(),
+      deleteGroupingHistoryDraft: vi.fn(),
+      deleteSeatingHistoryDraft: vi.fn(),
+    };
+
+    const flow = createClassroomPlannerWorkspaceFlow(
+      {
+        selectedRosterId,
+        selectedWorkspaceTemplateId,
+        currentScreen,
+        plannerInitialView,
+        plannerActionError,
+        classWorkspaceSummary,
+        isSeatingLifecycleBusy,
+        busySeatingHistoryDraftId,
+        workspaceTransitionLabel,
+        workspaceNotice,
+      },
+      {
+        loadClassWorkspaceSummary,
+        refreshClassWorkspaceSummaryForSelectedRoster: vi.fn(),
+        openInitialHomeWorkspace: vi.fn(),
+        syncWorkspaceTemplateSelection,
+      },
+      plannerState,
+    );
+
+    const returnPromise = flow.selectPlannerWorkspaceMode("overview");
+    await vi.waitFor(() => {
+      expect(workspaceTransitionLabel.value).toBe("Återgår till Översikt...");
+      expect(currentScreen.value).toBe("class-workspace");
+      expect(plannerState.clearWorkspace).toHaveBeenCalledOnce();
+    });
+
+    loadDeferred.resolve();
+    await returnPromise;
+
+    expect(loadClassWorkspaceSummary).toHaveBeenCalledWith("roster-1");
+    expect(syncWorkspaceTemplateSelection).toHaveBeenCalledOnce();
+    expect(workspaceTransitionLabel.value).toBeNull();
+    expect(plannerActionError.value).toBeNull();
+  });
 });

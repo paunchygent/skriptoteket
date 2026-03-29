@@ -317,6 +317,44 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.emitted("dismiss-workspace-notice")).toEqual([[]]);
   });
 
+  it("keeps the shell stable and hides workspace surfaces while a cross-workspace transition is loading", async () => {
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        initialView: "groups",
+        transitionLabel: "Öppnar Regler...",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          PlannerGroupingWorkspaceToolbar: { template: "<div data-test='grouping-toolbar' />" },
+          PlannerSeatingWorkspaceToolbar: { template: "<div data-test='seating-toolbar' />" },
+          PlannerGroupingWorkspacePane: { template: "<div data-test='grouping-pane' />" },
+          PlannerSeatingWorkspacePane: { template: "<div data-test='seating-pane' />" },
+          PlannerRulesWorkspacePane: { template: "<div data-test='rules-pane' />" },
+          PlannerMetadataDrawer: { props: ["open"], template: "<div data-test='drawer' />" },
+          PlannerHistoryDrawer: { template: "<div data-test='history-drawer' />" },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Öppnar Regler...");
+    expect(wrapper.text()).toContain("Dra elever mellan grupperna tills grupparbetet sitter.");
+    expect(wrapper.find("[data-test='grouping-toolbar']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='grouping-pane']").exists()).toBe(false);
+
+    await wrapper.setProps({ initialView: "rules" });
+
+    expect(wrapper.text()).toContain("Dra elever mellan grupperna tills grupparbetet sitter.");
+    expect(wrapper.find("[data-test='rules-pane']").exists()).toBe(false);
+
+    await wrapper.setProps({ transitionLabel: null });
+
+    expect(wrapper.text()).toContain(
+      "Här ställer du in regler som påverkar hur sittschemat skapas.",
+    );
+    expect(wrapper.find("[data-test='rules-pane']").exists()).toBe(true);
+  });
+
   it("keeps grouping drafts on the grouping surface only", async () => {
     stateMocks.plannerState.template = null;
     const wrapper = mount(PlannerWorkspaceShell, {
@@ -777,7 +815,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.text()).not.toContain("Affisch (A3)");
   });
 
-  it("lets the seating toolbar edit the current classroom without exposing grouping actions", async () => {
+  it("lets the seating toolbar edit both the current class and classroom without exposing grouping actions", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-2",
       draft_kind: "seating",
@@ -802,6 +840,10 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.text()).not.toContain("Lägg till grupp");
+    await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
+    await wrapper.get('[data-test="edit-seating-roster"]').trigger("click");
+    expect(wrapper.emitted("edit-roster")).toEqual([[]]);
+
     await wrapper.get('[data-test="seating-actions-menu"]').trigger("click");
     await wrapper.get('[data-test="edit-current-template"]').trigger("click");
 

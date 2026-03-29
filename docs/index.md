@@ -21,6 +21,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 - Shared tool control language:
   `docs/reference/ref-shared-tool-control-language-v1.md`
+- Frontend transition continuity pattern:
+  `docs/reference/ref-frontend-transition-continuity-v1.md`
 - Frontend design-system codemap:
   `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 - Smart assignment V1 decision memo:
@@ -117,6 +119,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed auth-cutover ADR:
   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
+- Proposed same-shell transition continuity ADR:
+  `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed auth-cutover review:
@@ -125,6 +129,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul review:
   `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- Proposed same-shell transition continuity epic:
+  `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
+- Proposed same-shell transition continuity review:
+  `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
+- Same-shell transition continuity planning slice:
+  `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -228,8 +238,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
 - `docs/adr/adr-0075-klassrumskartan-local-export-artifacts-and-conversion-boundary.md`
 - `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
+- `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - `docs/reference/ref-runner-contract-v3.md`
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
+- `docs/reference/ref-frontend-transition-continuity-v1.md`
 - `docs/reference/ref-shared-tool-control-language-v1.md`
 - `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md`
 
@@ -280,6 +292,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 
 ### Backlog Stories
 
@@ -326,6 +339,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md`
 - `docs/backlog/stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md`
 - `docs/backlog/stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md`
+- `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md`
 
 ### Backlog Reviews
 
@@ -355,6 +369,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
+- `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 
 ### Backlog Sprints
 
@@ -431,6 +446,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0164-st-07-07-websocket-cutover-hybrid-compat-retirement-and-production-proof.md`
 - `docs/backlog/prs/pr-0160-st-29-08-shared-custom-tooltip-primitive-and-dense-tool-adoption.md`
 - `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
+- `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

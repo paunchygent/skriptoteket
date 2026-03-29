@@ -25,6 +25,7 @@ import { useHelp } from "../../../components/help/useHelp";
 import { useToast } from "../../../composables/useToast";
 
 type PlannerView = "groups" | "seats" | "rules";
+type PlannerStatusTone = "neutral" | "success" | "warning" | "danger";
 
 const props = withDefaults(
   defineProps<{
@@ -121,6 +122,11 @@ const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && plannerState.template === null;
 });
 const workspaceContextLabel = computed(() => plannerState.template?.name ?? "Utan klassrum");
+const topPanelContextLabel = computed(() => {
+  return isSeatWorkspaceWithoutTemplate.value
+    ? "Välj klassrum i sittschemat"
+    : workspaceContextLabel.value;
+});
 const activeGroupingSummary = computed(() => props.workspaceSummary?.active_grouping_draft ?? null);
 const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping_history ?? []);
 const activeSeatingSummary = computed(() => props.workspaceSummary?.active_seating_draft ?? null);
@@ -162,12 +168,52 @@ const currentViewHint = computed(() => {
     return "Dra elever mellan grupperna tills grupparbetet sitter.";
   }
   if (currentView.value === "rules") {
-    return "Arbeta med regler i planeringskartan och växla till sittschema när det finns ett aktuellt upplägg.";
+    return "Här ställer du in regler som påverkar hur sittschemat skapas.";
   }
   return "Dra elever till platserna och justera sittschemat direkt i klassrummet.";
 });
+const displayedPlannerTitle = ref(plannerTitle.value);
+const displayedContextLabel = ref(topPanelContextLabel.value);
+const displayedSupportingText = ref(currentViewHint.value);
+const displayedStatusLabel = ref<string | null>(plannerState.plannerStatusLabel ?? null);
+const displayedStatusMessage = ref<string | null>(plannerState.plannerStatusMessage ?? null);
+const displayedStatusTone = ref<PlannerStatusTone>(plannerState.plannerStatusTone);
+const isTransitioningBetweenWorkspaces = computed(() => Boolean(props.transitionLabel));
 const lastWorkspaceNotice = ref<string | null>(null);
 const lastSmartRunToast = ref<string | null>(null);
+
+watch(
+  [
+    plannerTitle,
+    topPanelContextLabel,
+    currentViewHint,
+    () => plannerState.plannerStatusLabel,
+    () => plannerState.plannerStatusMessage,
+    () => plannerState.plannerStatusTone,
+    () => props.transitionLabel,
+  ],
+  ([
+    nextTitle,
+    nextContextLabel,
+    nextSupportingText,
+    nextStatusLabel,
+    nextStatusMessage,
+    nextStatusTone,
+    nextTransitionLabel,
+  ]) => {
+    if (nextTransitionLabel) {
+      return;
+    }
+
+    displayedPlannerTitle.value = nextTitle;
+    displayedContextLabel.value = nextContextLabel;
+    displayedSupportingText.value = nextSupportingText;
+    displayedStatusLabel.value = nextStatusLabel;
+    displayedStatusMessage.value = nextStatusMessage;
+    displayedStatusTone.value = nextStatusTone;
+  },
+  { immediate: true },
+);
 
 function selectStudent(studentId: string): void {
   if (
@@ -339,107 +385,110 @@ watch(
       </button>
     </div>
 
+    <PlannerTopPanel
+      :title="displayedPlannerTitle"
+      :context-label="displayedContextLabel"
+      :mode-value="workspaceModeValue"
+      :supporting-text="displayedSupportingText"
+      :status-label="displayedStatusLabel"
+      :status-message="displayedStatusMessage"
+      :status-tone="displayedStatusTone"
+      @update:mode-value="selectWorkspaceMode"
+      @exit="emit('exit-app')"
+    />
+
     <div
       v-if="transitionLabel"
-      class="border border-navy bg-white px-4 py-3 text-sm font-semibold text-navy shadow-brutal-sm"
+      class="border border-navy bg-white px-4 py-10 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
       data-test="planner-workspace-transition"
     >
       {{ transitionLabel }}
     </div>
 
-    <PlannerTopPanel
-      :title="plannerTitle"
-      :context-label="isSeatWorkspaceWithoutTemplate ? 'Välj klassrum i sittschemat' : workspaceContextLabel"
-      :mode-value="workspaceModeValue"
-      :supporting-text="currentViewHint"
-      :status-label="plannerState.plannerStatusLabel"
-      :status-message="plannerState.plannerStatusMessage"
-      :status-tone="plannerState.plannerStatusTone"
-      @update:mode-value="selectWorkspaceMode"
-      @exit="emit('exit-app')"
-    />
+    <template v-if="!isTransitioningBetweenWorkspaces">
+      <PlannerGroupingWorkspaceToolbar
+        v-if="currentView === 'groups'"
+        class="sticky top-3 z-20"
+        :available-templates="availableTemplates"
+        :selected-template-id="pendingGroupingTemplateId"
+        :export-busy="groupingExportBusy"
+        :export-status-label="groupingExportStatusLabel"
+        :export-error-message="groupingExportErrorMessage"
+        @change-grouping-template="changeGroupingTemplate($event)"
+        @new-grouping-draft="startNewGroupingDraft"
+        @open-history="openGroupingHistoryDrawer"
+        @open-rules="emit('open-rules')"
+        @edit-roster="emit('edit-roster')"
+        @export-default="emit('export-grouping-default')"
+        @export-option="emit('export-grouping-option', $event)"
+      />
 
-    <PlannerGroupingWorkspaceToolbar
-      v-if="currentView === 'groups'"
-      class="sticky top-3 z-20"
-      :available-templates="availableTemplates"
-      :selected-template-id="pendingGroupingTemplateId"
-      :export-busy="groupingExportBusy"
-      :export-status-label="groupingExportStatusLabel"
-      :export-error-message="groupingExportErrorMessage"
-      @change-grouping-template="changeGroupingTemplate($event)"
-      @new-grouping-draft="startNewGroupingDraft"
-      @open-history="openGroupingHistoryDrawer"
-      @open-rules="emit('open-rules')"
-      @edit-roster="emit('edit-roster')"
-      @export-default="emit('export-grouping-default')"
-      @export-option="emit('export-grouping-option', $event)"
-    />
+      <PlannerSeatingWorkspaceToolbar
+        v-if="currentView === 'seats'"
+        class="sticky top-3 z-20"
+        :available-templates="availableTemplates"
+        :selected-template-id="pendingSeatingTemplateId"
+        :seating-lifecycle-busy="seatingLifecycleBusy"
+        :export-busy="seatingExportBusy"
+        :export-status-label="seatingExportStatusLabel"
+        :export-error-message="seatingExportErrorMessage"
+        @change-seating-template="changeSeatingTemplate($event)"
+        @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
+        @export-default="emit('export-seating-default')"
+        @export-option="emit('export-seating-option', $event)"
+        @edit-roster="emit('edit-roster')"
+        @edit-current-template="editCurrentTemplate"
+        @open-rules="emit('open-rules')"
+        @open-history="openSeatingHistoryDrawer"
+      />
 
-    <PlannerSeatingWorkspaceToolbar
-      v-if="currentView === 'seats'"
-      class="sticky top-3 z-20"
-      :available-templates="availableTemplates"
-      :selected-template-id="pendingSeatingTemplateId"
-      :seating-lifecycle-busy="seatingLifecycleBusy"
-      :export-busy="seatingExportBusy"
-      :export-status-label="seatingExportStatusLabel"
-      :export-error-message="seatingExportErrorMessage"
-      @change-seating-template="changeSeatingTemplate($event)"
-      @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
-      @export-default="emit('export-seating-default')"
-      @export-option="emit('export-seating-option', $event)"
-      @edit-current-template="editCurrentTemplate"
-      @open-rules="emit('open-rules')"
-      @open-history="openSeatingHistoryDrawer"
-    />
+      <PlannerRulesWorkspacePane
+        v-if="currentView === 'rules'"
+        :selected-student-id="selectedStudentId"
+        @student-selected="selectStudent"
+      />
 
-    <PlannerRulesWorkspacePane
-      v-if="currentView === 'rules'"
-      :selected-student-id="selectedStudentId"
-      @student-selected="selectStudent"
-    />
+      <PlannerGroupingWorkspacePane
+        v-if="currentView === 'groups'"
+        :selected-student-id="selectedStudentId"
+        @student-selected="selectStudent"
+      />
+      <PlannerSeatingWorkspacePane
+        v-if="currentView === 'seats'"
+        :selected-student-id="selectedStudentId"
+        :selected-template-id="pendingSeatingTemplateId"
+        @student-selected="selectStudent"
+      />
 
-    <PlannerGroupingWorkspacePane
-      v-if="currentView === 'groups'"
-      :selected-student-id="selectedStudentId"
-      @student-selected="selectStudent"
-    />
-    <PlannerSeatingWorkspacePane
-      v-if="currentView === 'seats'"
-      :selected-student-id="selectedStudentId"
-      :selected-template-id="pendingSeatingTemplateId"
-      @student-selected="selectStudent"
-    />
+      <PlannerMetadataDrawer
+        :selected-student-id="selectedStudentId"
+        :open="isMetadataDrawerOpen"
+        @close="isMetadataDrawerOpen = false"
+      />
 
-    <PlannerMetadataDrawer
-      :selected-student-id="selectedStudentId"
-      :open="isMetadataDrawerOpen"
-      @close="isMetadataDrawerOpen = false"
-    />
-
-    <PlannerHistoryDrawer
-      :open="isHistoryDrawerOpen"
-      :title="historyDrawerTitle"
-      :active-summary="historyDrawerActiveSummary"
-      :summaries="historyDrawerSummaries"
-      :empty-label="historyDrawerEmptyLabel"
-      :active-label="historyDrawerActiveLabel"
-      :history-label="historyDrawerLabel"
-      :can-open-summaries="!(openHistoryDrawerKind === 'seating' && props.seatingLifecycleBusy)"
-      :can-delete-summaries="!(openHistoryDrawerKind === 'seating' && props.seatingLifecycleBusy)"
-      :busy-summary-id="openHistoryDrawerKind === 'seating' ? props.seatingHistoryBusyDraftId : null"
-      @close="closeHistoryDrawer"
-      @open-summary="
-        openHistoryDrawerKind === 'seating'
-          ? openSeatingHistoryDraft($event)
-          : openGroupingHistoryDraft($event)
-      "
-      @delete-summary="
-        openHistoryDrawerKind === 'seating'
-          ? deleteSeatingHistoryDraft($event)
-          : deleteGroupingHistoryDraft($event)
-      "
-    />
+      <PlannerHistoryDrawer
+        :open="isHistoryDrawerOpen"
+        :title="historyDrawerTitle"
+        :active-summary="historyDrawerActiveSummary"
+        :summaries="historyDrawerSummaries"
+        :empty-label="historyDrawerEmptyLabel"
+        :active-label="historyDrawerActiveLabel"
+        :history-label="historyDrawerLabel"
+        :can-open-summaries="!(openHistoryDrawerKind === 'seating' && props.seatingLifecycleBusy)"
+        :can-delete-summaries="!(openHistoryDrawerKind === 'seating' && props.seatingLifecycleBusy)"
+        :busy-summary-id="openHistoryDrawerKind === 'seating' ? props.seatingHistoryBusyDraftId : null"
+        @close="closeHistoryDrawer"
+        @open-summary="
+          openHistoryDrawerKind === 'seating'
+            ? openSeatingHistoryDraft($event)
+            : openGroupingHistoryDraft($event)
+        "
+        @delete-summary="
+          openHistoryDrawerKind === 'seating'
+            ? deleteSeatingHistoryDraft($event)
+            : deleteGroupingHistoryDraft($event)
+        "
+      />
+    </template>
   </section>
 </template>

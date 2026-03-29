@@ -134,14 +134,38 @@ export function createClassroomPlannerWorkspaceFlow(
     }
   }
 
-  async function openGroupingWorkspace(payload: OpenWorkspacePayload): Promise<void> {
+  async function openGroupingWorkspace(
+    payload: OpenWorkspacePayload,
+    options?: {
+      transitionLabel?: string | null;
+      workspaceNotice?: string | null;
+    },
+  ): Promise<void> {
     state.workspaceNotice.value = null;
-    await openWorkspace(payload, "grouping", "groups", "Kunde inte öppna grupparbetsytan just nu.");
+    await openWorkspace(
+      payload,
+      "grouping",
+      "groups",
+      "Kunde inte öppna grupparbetsytan just nu.",
+      options,
+    );
   }
 
-  async function openSeatingWorkspace(payload: OpenWorkspacePayload): Promise<void> {
+  async function openSeatingWorkspace(
+    payload: OpenWorkspacePayload,
+    options?: {
+      transitionLabel?: string | null;
+      workspaceNotice?: string | null;
+    },
+  ): Promise<void> {
     state.workspaceNotice.value = null;
-    await openWorkspace(payload, "seating", "seats", "Kunde inte öppna sittplatserna just nu.");
+    await openWorkspace(
+      payload,
+      "seating",
+      "seats",
+      "Kunde inte öppna sittplatserna just nu.",
+      options,
+    );
   }
 
   async function openRulesWorkspace(): Promise<void> {
@@ -186,16 +210,20 @@ export function createClassroomPlannerWorkspaceFlow(
         state.plannerActionError.value = result.message;
         return;
       }
+      state.workspaceNotice.value = null;
+      state.workspaceTransitionLabel.value = "Återgår till Översikt...";
+      state.currentScreen.value = "class-workspace";
       plannerState.clearWorkspace();
       await actions.loadClassWorkspaceSummary(rosterId);
       state.selectedRosterId.value = rosterId;
       actions.syncWorkspaceTemplateSelection();
-      state.currentScreen.value = "class-workspace";
     } catch (error: unknown) {
       state.plannerActionError.value = normalizeClassroomPlannerUiError(
         error,
         "Kunde inte återvända till klassarbetsytan just nu.",
       );
+    } finally {
+      state.workspaceTransitionLabel.value = null;
     }
   }
 
@@ -410,7 +438,12 @@ export function createClassroomPlannerWorkspaceFlow(
     }
 
     if (mode === "grouping") {
-      await openGroupingWorkspace({ templateId: null });
+      await openGroupingWorkspace(
+        { templateId: null },
+        state.plannerInitialView.value === "rules"
+          ? { transitionLabel: "Öppnar Grupper..." }
+          : undefined,
+      );
       return;
     }
 
@@ -419,7 +452,12 @@ export function createClassroomPlannerWorkspaceFlow(
       return;
     }
 
-    await openSeatingWorkspace({ templateId: null });
+    await openSeatingWorkspace(
+      { templateId: null },
+      state.plannerInitialView.value === "rules"
+        ? { transitionLabel: "Öppnar Sittplatser..." }
+        : undefined,
+    );
   }
 
   function dismissWorkspaceNotice(): void {

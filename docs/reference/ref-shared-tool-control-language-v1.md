@@ -9,8 +9,12 @@ updated: 2026-03-29
 topic: "shared-tool-control-language"
 links:
   [
+    "ADR-0077",
     "EPIC-29",
+    "EPIC-30",
     "ST-29-01",
+    "ST-30-01",
+    "REF-frontend-transition-continuity-v1",
     "REF-klassrumskartan-workspace-ui-doctrine-2026-03-28",
     "045-huleedu-design-system",
   ]
@@ -139,6 +143,9 @@ and worked topologies.
   components and unicode arrows.
 - If a repeated operation is not in this first-pass matrix, do not invent a new primitive casually.
   Propose it explicitly in a later revision once the stable core is implemented.
+- When one stable shell hosts multiple mutually exclusive work surfaces, the mode switch must keep
+  continuity through `ADR-0077` / `REF-frontend-transition-continuity-v1` instead of through a
+  blank `out-in` swap.
 
 ## First-pass boundary
 
