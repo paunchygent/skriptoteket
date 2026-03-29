@@ -18,7 +18,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Status
 
 - `ST-07-07` is now shipped locally and live on Hemma: `src/skriptoteket/web/dishka_compat.py` is removed, HTTP DI now resolves through `request.state.dishka_container`, websocket resolution is explicit via `src/skriptoteket/web/dishka_dependencies.py`, `skriptoteket_reviewer` approved the final tree with no actionable findings, and Hemma `skriptoteket-web` / `skriptoteket-worker` are healthy again after the `2026-03-29` seating-export deploy gate.
-- Important nuance: Hemma is no longer Git-aligned because the deploy used the local ST-07-07 diff over checkout `c1993966`; `git status --short` on `~/apps/skriptoteket` is dirty until the same code is formally published.
+- Hemma is now back on published commit `1743db25` with a clean `git status --short` after the clean redeploy and seating-export gate rerun.
 - EPIC-26 export baseline is in place locally:
   - grouping + seating PDF rendering is local in Skriptoteket
   - grouping + seating XLSX delivery shipped
@@ -188,7 +188,7 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Known Issues / Risks
 
-- Hemma production is healthy again, but the checkout at `~/apps/skriptoteket` is currently dirty on top of `c1993966` because the ST-07-07 cutover was deployed by syncing the same local diff to the server before formal publication.
+- Hemma production is healthy again on published commit `1743db25`; for live verification, use the container healthcheck or in-container `curl`, because `skriptoteket-web` is not host-published on `127.0.0.1:8000`.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
@@ -196,5 +196,4 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Next Steps
 
-- Publish the current ST-07-07 diff so Hemma can return to a Git-aligned checkout instead of the temporary dirty worktree deploy.
 - With the production DI cutover healthy again, resume the planner lanes in order: `ST-29-02` shell compression, then the remaining `ST-29-*` workspace overhaul slices, while keeping the earlier smart-assignment/rules contracts intact.
