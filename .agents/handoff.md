@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`, `PR-0165`, `PR-0166`
 
 ## Status
 
@@ -76,7 +76,7 @@ Keep this file updated so the next session can pick up work quickly.
   - added `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
   - tightened `.claude/skills/skriptoteket-frontend-specialist/SKILL.md`, `.claude/skills/brutalist-academic-ui/SKILL.md`, and `.agents/rules/045-huleedu-design-system.md` so future frontend work favors canvas-first, dense multi-workspace layouts over stacked panel chrome
   - doctrine now also states that workspace-heavy curated apps are desktop-first and that repeated operations should use a canonical symbol system before long text-button copy
-- Proposed frontend planning packages are now drafted: `EPIC-29` / `REV-EPIC-29` / `ST-29-01`..`ST-29-08` for the planner redesign, plus `ADR-0077` / `EPIC-30` / `REV-EPIC-30` / `ST-30-01` / `PR-0165` for the repo-wide same-shell transition continuity standard and adoption inventory; all remain planning-only (`proposed` / `pending` / `ready`)
+- Same-shell transition continuity is now active and partially shipped: `ADR-0077` is accepted, `REV-EPIC-30` is approved, `EPIC-30` is active, `ST-30-01` / `PR-0165` are done, and `ST-30-02` / `PR-0166` now ship the editor/rules-map/tool-file-picker/Vault adoption plus the adjacent route/topbar/profile transition audit
 - `PR-0161` / `ST-29-02` shell-compression follow-up is now implemented locally:
   - grouping/seating keep detached sticky toolbars above the live workspace, the rules rail stays sticky, and the shell no longer carries the dead planner-side `download latest` export contract
   - recovered export completion now announces once per browser session via toast with `Mina filer` copy, while export progress/error stays localized to the toolbar row and no success/helper band returns on re-entry
@@ -169,11 +169,11 @@ Keep this file updated so the next session can pick up work quickly.
   - `pdm run fe-test -- --run src/components/help/HelpPanel.spec.ts`
   - `pdm run fe-type-check`; `pdm run docs-validate`
   - live proof: `pdm run python - <<'PY' ... planner help return-cycle check ... PY` confirmed repeated `Översikt -> Grupper -> Översikt` transitions keep `Översikt: klass och klassrum` instead of falling back to the empty help index; artifacts: `.artifacts/help-debug/planner-overview-help-fixed.png`, `.artifacts/help-debug/planner-help-overview-return-fixed-local.png`
-- 2026-03-29 planner workspace shell follow-ups:
-  - `pdm run fe-test -- --run src/views/apps/classroomPlannerRouteShellOverviewCrud.spec.ts src/views/apps/classroomPlannerStateSupport.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/classroomPlannerRouteShellWorkspace.spec.ts src/views/apps/components/PlannerClassWorkspace.spec.ts`
-  - `pdm run fe-type-check`; `pdm run lint`; `pdm run docs-validate`
-  - live proof: `pdm run python -m scripts.playwright_pr_0165_seating_editor_sync_check --base-url http://127.0.0.1:5173`, `pdm run python - <<'PY' ... planner transition render check ... PY`, and `pdm run python -m scripts.playwright_pr_0166_topbar_brand_hit_target_check --base-url http://127.0.0.1:5173`
-  - artifacts under `.artifacts/pr-0165-seating-editor-sync-check`, `.artifacts/pr-0166-transition-check`, and `.artifacts/pr-0166-topbar-brand-hit-target-check`; proof confirmed seating overflow still syncs class/classroom edits into the live canvas, the overview/grouping/rules/seating shell now stays rendered through mode switches without the old `Planering` fallback flash or the later blank `fade out -> pause -> fade in` gap, and the top-left Skriptoteket brand keeps modal blocking while restoring the anchor-owned pointer hit target after modal close; docs package adds `ADR-0077`, `REF-frontend-transition-continuity-v1`, `EPIC-30`, `REV-EPIC-30`, `ST-30-01`, and `PR-0165`
+- 2026-03-29 `PR-0165` / `PR-0166` same-shell transition continuity:
+  - `pdm run fe-test -- --run src/components/editor/EditorWorkspacePanel.spec.ts src/components/tool-run/ToolFileFieldPicker.spec.ts src/components/vault/VaultPanel.spec.ts src/views/apps/components/PlannerRulesMapCanvas.spec.ts src/App.spec.ts`
+  - `pdm run fe-type-check`; `pdm run docs-validate`
+  - live proof: `pdm run python -m scripts.playwright_pr_0165_seating_editor_sync_check --base-url http://127.0.0.1:5173`, `pdm run python - <<'PY' ... planner transition render check ... PY`, `pdm run python -m scripts.playwright_pr_0166_topbar_brand_hit_target_check --base-url http://127.0.0.1:5173`, and `pdm run python -m scripts.playwright_pr_0166_transition_continuity_audit --base-url http://127.0.0.1:5173`
+  - artifacts under `.artifacts/pr-0165-seating-editor-sync-check`, `.artifacts/pr-0166-transition-check`, `.artifacts/pr-0166-topbar-brand-hit-target-check`, and `.artifacts/pr-0166-transition-continuity-audit`; proof confirmed planner shell transitions, rules-map projection switching, route-shell crossfades, topbar focus-label swaps, and Vault refresh continuity all kept their stage count at `>= 1`, while the editor live lane was skipped only because the local DB had no saved admin-tool versions and `ProfileInlineField` is not mounted in the current profile flow
 ## How to Run
 ```bash
 # Local dev
@@ -197,4 +197,4 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
   - `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions
 ## Next Steps
 
-- Next planning checkpoints are review of the new same-shell transition continuity package (`ADR-0077`, `EPIC-30`, `ST-30-01`) and then the first adoption slice in the code editor, while the planner redesign lane continues with `ST-29-03` and later `ST-29-04`..`ST-29-06`.
+- Next checkpoints are any follow-up continuity fixes that emerge once local editor fixtures exist for a live editor-shell audit, plus the continuing planner redesign lane in `ST-29-03` and later `ST-29-04`..`ST-29-06`.

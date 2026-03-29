@@ -171,6 +171,10 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
     title: field.label,
   }));
 }
+
+function modeSurfaceKey(field: ToolFileFieldSpec): string {
+  return `${field.name}:${selectionFor(field).mode}`;
+}
 </script>
 
 <template>
@@ -214,179 +218,189 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
           />
         </div>
 
-        <div v-if="selectionFor(field).mode === 'upload'">
-          <label
-            :class="[
-              'group flex items-center gap-2 w-full border border-navy/30 bg-white px-2.5 py-1.5',
-              isCompact ? 'h-[28px]' : 'h-[36px]',
-              isReadOnly
-                ? 'opacity-60 cursor-not-allowed'
-                : 'cursor-pointer hover:bg-canvas/30 transition-colors',
-            ]"
-          >
-            <span
-              :class="[
-                'shrink-0 font-semibold uppercase underline underline-offset-4 decoration-navy/30',
-                isCompact
-                  ? 'text-[10px] tracking-[var(--huleedu-tracking-label)] text-navy/80'
-                  : 'text-xs tracking-wide text-navy',
-                isReadOnly ? '' : 'group-hover:text-burgundy',
-              ]"
-            >
-              Välj filer
-            </span>
-            <span :class="[isCompact ? 'text-[11px] text-navy/60 truncate' : 'text-sm text-navy/60 truncate']">
-              {{
-                selectionFor(field).uploads.length > 0
-                  ? `${selectionFor(field).uploads.length} fil(er) valda`
-                  : "Inga filer valda"
-              }}
-            </span>
-            <input
-              type="file"
-              :multiple="field.max > 1"
-              :accept="acceptByField[field.name]"
-              class="sr-only"
-              :disabled="isReadOnly"
-              @change="onFilesSelected(field, $event)"
-            >
-          </label>
-        </div>
-
-        <div v-else>
-          <div :class="[isCompact ? 'space-y-2' : 'space-y-3']">
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                :disabled="isReadOnly"
-                :class="[
-                  'btn-ghost border-navy/30 bg-canvas shadow-none',
-                  isCompact
-                    ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                    : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
-                ]"
-                @click="onSelectAllRefs(field)"
-              >
-                Markera alla
-              </button>
-              <button
-                type="button"
-                :disabled="isReadOnly"
-                :class="[
-                  'btn-ghost border-navy/30 bg-white shadow-none',
-                  isCompact
-                    ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                    : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
-                ]"
-                @click="onClearRefs(field)"
-              >
-                Avmarkera
-              </button>
-              <button
-                type="button"
-                :disabled="!canDeleteSelected(field)"
-                :class="[
-                  'btn-ghost border-burgundy/40 text-burgundy shadow-none',
-                  isCompact
-                    ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                    : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
-                ]"
-                @click="onDeleteSelectedRefs(field)"
-              >
-                Ta bort markerade
-              </button>
-            </div>
-
+        <div class="tool-file-picker-mode-stage">
+          <Transition name="tool-file-picker-mode-swap">
             <div
-              v-if="sessionRefsForField(field).length > 0"
-              :class="[isCompact ? 'space-y-1' : 'space-y-2']"
+              :key="modeSurfaceKey(field)"
+              class="tool-file-picker-mode-surface"
+              :data-test="`tool-file-picker-mode-${selectionFor(field).mode}`"
             >
-              <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
-                Session
-              </p>
-              <label
-                v-for="sessionRef in sessionRefsForField(field)"
-                :key="sessionRef.ref"
-                :class="[
-                  'flex items-start gap-2 border border-navy/20 bg-white px-2.5 py-2',
-                  isCompact ? 'text-[11px]' : 'text-sm',
-                  isReadOnly ? 'opacity-60 pointer-events-none' : '',
-                ]"
-              >
-                <input
-                  type="checkbox"
-                  class="mt-0.5 accent-burgundy"
-                  :checked="selectionFor(field).refs.includes(sessionRef.ref)"
-                  :disabled="isReadOnly || (!selectionFor(field).refs.includes(sessionRef.ref) && selectionFor(field).refs.length >= field.max)"
-                  @change="onToggleSessionRef(field, sessionRef.ref, $event)"
+              <div v-if="selectionFor(field).mode === 'upload'">
+                <label
+                  :class="[
+                    'group flex items-center gap-2 w-full border border-navy/30 bg-white px-2.5 py-1.5',
+                    isCompact ? 'h-[28px]' : 'h-[36px]',
+                    isReadOnly
+                      ? 'opacity-60 cursor-not-allowed'
+                      : 'cursor-pointer hover:bg-canvas/30 transition-colors',
+                  ]"
                 >
-                <span class="flex-1 min-w-0">
-                  <span class="block font-mono text-navy truncate">{{ sessionRef.name }}</span>
                   <span
                     :class="[
-                      'block text-navy/50',
-                      isCompact ? 'text-[10px]' : 'text-xs',
+                      'shrink-0 font-semibold uppercase underline underline-offset-4 decoration-navy/30',
+                      isCompact
+                        ? 'text-[10px] tracking-[var(--huleedu-tracking-label)] text-navy/80'
+                        : 'text-xs tracking-wide text-navy',
+                      isReadOnly ? '' : 'group-hover:text-burgundy',
                     ]"
                   >
-                    {{ formatBytes(sessionRef.bytes) }} · {{ sourceLabel(sessionRef) }}
-                    <span v-if="sessionRef.field">· fält: {{ sessionRef.field }}</span>
+                    Välj filer
                   </span>
-                </span>
-              </label>
-            </div>
-
-            <div :class="[isCompact ? 'space-y-1.5' : 'space-y-2']">
-              <div class="flex items-center justify-between gap-3">
-                <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
-                  Mina filer
-                </p>
-                <button
-                  type="button"
-                  class="btn-ghost border-navy/30 bg-canvas shadow-none"
-                  :disabled="isReadOnly || remainingVaultSlots(field) === 0"
-                  @click="openVaultPicker(field)"
-                >
-                  Välj bland Mina filer
-                </button>
+                  <span :class="[isCompact ? 'text-[11px] text-navy/60 truncate' : 'text-sm text-navy/60 truncate']">
+                    {{
+                      selectionFor(field).uploads.length > 0
+                        ? `${selectionFor(field).uploads.length} fil(er) valda`
+                        : "Inga filer valda"
+                    }}
+                  </span>
+                  <input
+                    type="file"
+                    :multiple="field.max > 1"
+                    :accept="acceptByField[field.name]"
+                    class="sr-only"
+                    :disabled="isReadOnly"
+                    @change="onFilesSelected(field, $event)"
+                  >
+                </label>
               </div>
 
-              <div
-                v-if="vaultRefsSelected(field).length > 0"
-                class="space-y-1"
-              >
-                <div
-                  v-for="refValue in vaultRefsSelected(field)"
-                  :key="refValue"
-                  class="flex items-center justify-between gap-3 border border-navy/20 bg-white px-2.5 py-2"
-                >
-                  <span class="font-mono text-navy truncate text-sm">
-                    {{ fileNameForRef(refValue) }}
-                  </span>
-                  <button
-                    type="button"
-                    class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-burgundy/40 text-burgundy bg-white leading-none"
-                    :disabled="isReadOnly"
-                    @click="emit('update:refs', { field: field.name, refs: selectionFor(field).refs.filter((value) => value !== refValue) })"
+              <div v-else>
+                <div :class="[isCompact ? 'space-y-2' : 'space-y-3']">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      :disabled="isReadOnly"
+                      :class="[
+                        'btn-ghost border-navy/30 bg-canvas shadow-none',
+                        isCompact
+                          ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
+                          : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
+                      ]"
+                      @click="onSelectAllRefs(field)"
+                    >
+                      Markera alla
+                    </button>
+                    <button
+                      type="button"
+                      :disabled="isReadOnly"
+                      :class="[
+                        'btn-ghost border-navy/30 bg-white shadow-none',
+                        isCompact
+                          ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
+                          : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
+                      ]"
+                      @click="onClearRefs(field)"
+                    >
+                      Avmarkera
+                    </button>
+                    <button
+                      type="button"
+                      :disabled="!canDeleteSelected(field)"
+                      :class="[
+                        'btn-ghost border-burgundy/40 text-burgundy shadow-none',
+                        isCompact
+                          ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
+                          : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
+                      ]"
+                      @click="onDeleteSelectedRefs(field)"
+                    >
+                      Ta bort markerade
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="sessionRefsForField(field).length > 0"
+                    :class="[isCompact ? 'space-y-1' : 'space-y-2']"
                   >
-                    Ta bort
-                  </button>
+                    <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
+                      Session
+                    </p>
+                    <label
+                      v-for="sessionRef in sessionRefsForField(field)"
+                      :key="sessionRef.ref"
+                      :class="[
+                        'flex items-start gap-2 border border-navy/20 bg-white px-2.5 py-2',
+                        isCompact ? 'text-[11px]' : 'text-sm',
+                        isReadOnly ? 'opacity-60 pointer-events-none' : '',
+                      ]"
+                    >
+                      <input
+                        type="checkbox"
+                        class="mt-0.5 accent-burgundy"
+                        :checked="selectionFor(field).refs.includes(sessionRef.ref)"
+                        :disabled="isReadOnly || (!selectionFor(field).refs.includes(sessionRef.ref) && selectionFor(field).refs.length >= field.max)"
+                        @change="onToggleSessionRef(field, sessionRef.ref, $event)"
+                      >
+                      <span class="flex-1 min-w-0">
+                        <span class="block font-mono text-navy truncate">{{ sessionRef.name }}</span>
+                        <span
+                          :class="[
+                            'block text-navy/50',
+                            isCompact ? 'text-[10px]' : 'text-xs',
+                          ]"
+                        >
+                          {{ formatBytes(sessionRef.bytes) }} · {{ sourceLabel(sessionRef) }}
+                          <span v-if="sessionRef.field">· fält: {{ sessionRef.field }}</span>
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div :class="[isCompact ? 'space-y-1.5' : 'space-y-2']">
+                    <div class="flex items-center justify-between gap-3">
+                      <p :class="[isCompact ? 'text-[10px] font-semibold uppercase tracking-wide text-navy/60' : 'text-xs font-semibold uppercase tracking-wide text-navy/70']">
+                        Mina filer
+                      </p>
+                      <button
+                        type="button"
+                        class="btn-ghost border-navy/30 bg-canvas shadow-none"
+                        :disabled="isReadOnly || remainingVaultSlots(field) === 0"
+                        @click="openVaultPicker(field)"
+                      >
+                        Välj bland Mina filer
+                      </button>
+                    </div>
+
+                    <div
+                      v-if="vaultRefsSelected(field).length > 0"
+                      class="space-y-1"
+                    >
+                      <div
+                        v-for="refValue in vaultRefsSelected(field)"
+                        :key="refValue"
+                        class="flex items-center justify-between gap-3 border border-navy/20 bg-white px-2.5 py-2"
+                      >
+                        <span class="font-mono text-navy truncate text-sm">
+                          {{ fileNameForRef(refValue) }}
+                        </span>
+                        <button
+                          type="button"
+                          class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-burgundy/40 text-burgundy bg-white leading-none"
+                          :disabled="isReadOnly"
+                          @click="emit('update:refs', { field: field.name, refs: selectionFor(field).refs.filter((value) => value !== refValue) })"
+                        >
+                          Ta bort
+                        </button>
+                      </div>
+                    </div>
+                    <p
+                      v-else
+                      :class="[isCompact ? 'text-[11px] text-navy/60' : 'text-xs text-navy/60']"
+                    >
+                      Inga valda filer från Mina filer.
+                    </p>
+
+                    <p
+                      v-if="remainingVaultSlots(field) === 0"
+                      :class="[isCompact ? 'text-[11px] text-navy/50' : 'text-xs text-navy/50']"
+                    >
+                      Avmarkera en sessionfil för att välja bland Mina filer.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <p
-                v-else
-                :class="[isCompact ? 'text-[11px] text-navy/60' : 'text-xs text-navy/60']"
-              >
-                Inga valda filer från Mina filer.
-              </p>
-
-              <p
-                v-if="remainingVaultSlots(field) === 0"
-                :class="[isCompact ? 'text-[11px] text-navy/50' : 'text-xs text-navy/50']"
-              >
-                Avmarkera en sessionfil för att välja bland Mina filer.
-              </p>
             </div>
-          </div>
+          </Transition>
         </div>
 
         <p
@@ -410,3 +424,33 @@ function modeOptions(field: ToolFileFieldSpec): UiSegmentedToggleOption[] {
     />
   </div>
 </template>
+
+<style scoped>
+.tool-file-picker-mode-stage {
+  position: relative;
+}
+
+.tool-file-picker-mode-swap-enter-active,
+.tool-file-picker-mode-swap-leave-active {
+  transition: opacity var(--huleedu-duration-fast, 150ms) var(--huleedu-ease-default, ease);
+}
+
+.tool-file-picker-mode-swap-enter-from,
+.tool-file-picker-mode-swap-leave-to {
+  opacity: 0;
+}
+
+.tool-file-picker-mode-surface.tool-file-picker-mode-swap-leave-active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-file-picker-mode-swap-enter-active,
+  .tool-file-picker-mode-swap-leave-active {
+    transition: none;
+  }
+}
+</style>

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0165
 title: "ST-30-01: transition continuity decision, inventory, and adoption plan"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-29
 updated: 2026-03-29

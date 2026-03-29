@@ -119,6 +119,8 @@ const canAutoSearch = computed(() => {
   const trimmed = searchDraft.value.trim();
   return trimmed.length === 0 || trimmed.length >= searchMinChars;
 });
+const isInitialLoad = computed(() => isLoading.value && files.value.length === 0);
+const isRefreshingResults = computed(() => isLoading.value && files.value.length > 0);
 
 const vaultHeaderStatusLabel = computed(() => {
   if (isPickerMode.value) {
@@ -422,6 +424,12 @@ onUnmounted(() => {
         >
           {{ vaultHeaderStatusLabel }}
         </p>
+        <p
+          v-else-if="isRefreshingResults"
+          class="text-xs font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+        >
+          Laddar filer…
+        </p>
 
         <UiSegmentedToggle
           :model-value="state"
@@ -554,7 +562,7 @@ onUnmounted(() => {
     />
 
     <div
-      v-if="isLoading"
+      v-if="isInitialLoad"
       class="p-4 text-sm text-navy/70"
     >
       Laddar Mina filer…
@@ -571,6 +579,8 @@ onUnmounted(() => {
     <div
       v-else
       class="space-y-2"
+      :class="{ 'opacity-70 pointer-events-none': isRefreshingResults }"
+      :aria-busy="isRefreshingResults ? 'true' : 'false'"
     >
       <ul class="space-y-2">
         <li

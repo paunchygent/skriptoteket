@@ -2,9 +2,10 @@
 type: epic
 id: EPIC-30
 title: "Frontend transition continuity for same-shell selectors"
-status: proposed
+status: active
 owners: "agents"
 created: 2026-03-29
+updated: 2026-03-29
 outcome: "Teachers and authors experience selector-driven same-shell transitions as seamless continuity instead of blank fades or shell jump cuts across planner, editor, and other dense SPA workspaces."
 dependencies:
   [
@@ -49,6 +50,7 @@ dependencies:
 ## Story Stack
 
 - [ST-30-01: Frontend transition continuity inventory and canonical adoption plan](../stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md)
+- [ST-30-02: Adopt transition continuity across editor and selector shells](../stories/story-30-02-adopt-transition-continuity-across-editor-and-selector-shells.md)
 
 ## Notes
 
@@ -57,4 +59,12 @@ dependencies:
 - The first implementation target after review is the code editor workspace selector.
 - Additional adoption stories should be split out after `ST-30-01` is reviewed and the inventory is
   accepted.
-- This epic requires review approval before implementation begins per the repo review workflow.
+
+## Implementation Summary (as of 2026-03-29)
+
+- `ST-30-01` is now complete locally through `PR-0165`: `ADR-0077`, the continuity reference, the
+  adoption inventory, and the cross-app backlog package are in place.
+- `ST-30-02` is now complete locally through `PR-0166`: the continuity pattern now covers the
+  editor workspace shell, rules-map projection switch, tool file picker, Vault refresh continuity,
+  route/profile/topbar continuity audit surfaces, and the repo scan no longer leaves any `out-in`
+  transitions in the SPA source tree.

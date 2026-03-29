@@ -92,18 +92,20 @@ function onToggleFocusMode(): void {
         :aria-pressed="isFocusMode"
         @click="onToggleFocusMode"
       >
-        <Transition
-          name="focus-toggle-label"
-          mode="out-in"
-        >
-          <span :key="isFocusMode ? 'active' : 'inactive'">
+        <span class="focus-toggle-stage">
+          <Transition name="focus-toggle-label">
             <span
-              v-if="isFocusMode"
-              class="focus-toggle-active-label"
-            >Avsluta fokusl&auml;ge</span>
-            <span v-else>Aktivera fokusl&auml;ge</span>
-          </span>
-        </Transition>
+              :key="isFocusMode ? 'active' : 'inactive'"
+              class="focus-toggle-label-surface"
+            >
+              <span
+                v-if="isFocusMode"
+                class="focus-toggle-active-label"
+              >Avsluta fokusl&auml;ge</span>
+              <span v-else>Aktivera fokusl&auml;ge</span>
+            </span>
+          </Transition>
+        </span>
       </button>
       <HelpButton />
       <span
@@ -251,6 +253,17 @@ function onToggleFocusMode(): void {
 .focus-toggle-label-enter-from,
 .focus-toggle-label-leave-to {
   opacity: 0;
+}
+
+.focus-toggle-stage {
+  position: relative;
+  display: inline-flex;
+}
+
+.focus-toggle-label-surface.focus-toggle-label-leave-active {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .focus-toggle-active-label {

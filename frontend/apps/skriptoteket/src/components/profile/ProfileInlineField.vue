@@ -85,101 +85,100 @@ watch(
       {{ label }}
     </dt>
     <dd class="profile-field-value">
-      <Transition
-        name="field-edit"
-        mode="out-in"
-      >
-        <span
-          v-if="!isEditing"
-          :key="'display'"
-          :class="isEmpty ? 'text-navy/50 italic' : 'text-navy'"
-        >{{ displayValue }}</span>
+      <span class="field-edit-stage">
+        <Transition name="field-edit">
+          <span
+            v-if="!isEditing"
+            :key="'display'"
+            class="field-edit-surface"
+            :class="isEmpty ? 'text-navy/50 italic' : 'text-navy'"
+          >{{ displayValue }}</span>
 
-        <div
-          v-else
-          :key="'edit'"
-          class="flex items-center gap-2"
-        >
-          <select
-            v-if="type === 'select'"
-            ref="inputRef"
-            v-model="editValue"
-            class="w-full max-w-[200px] border-2 border-navy/30 bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
-            :disabled="saving"
-            @keydown="handleKeydown"
-          >
-            <option
-              v-for="opt in options"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.label }}
-            </option>
-          </select>
-          <input
+          <div
             v-else
-            ref="inputRef"
-            v-model="editValue"
-            :type="type"
-            class="w-full max-w-[200px] border-2 border-navy/30 bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
-            :disabled="saving"
-            @keydown="handleKeydown"
+            :key="'edit'"
+            class="field-edit-surface flex items-center gap-2"
           >
-        </div>
-      </Transition>
+            <select
+              v-if="type === 'select'"
+              ref="inputRef"
+              v-model="editValue"
+              class="w-full max-w-[200px] border-2 border-navy/30 bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
+              :disabled="saving"
+              @keydown="handleKeydown"
+            >
+              <option
+                v-for="opt in options"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
+            </select>
+            <input
+              v-else
+              ref="inputRef"
+              v-model="editValue"
+              :type="type"
+              class="w-full max-w-[200px] border-2 border-navy/30 bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
+              :disabled="saving"
+              @keydown="handleKeydown"
+            >
+          </div>
+        </Transition>
+      </span>
     </dd>
     <div class="profile-field-action">
-      <Transition
-        name="field-edit"
-        mode="out-in"
-      >
-        <button
-          v-if="!isEditing && editable"
-          :key="'edit-btn'"
-          type="button"
-          class="btn-inline-edit"
-          :disabled="saving"
-          @click="startEditing"
-        >
-          <svg
-            class="w-3 h-3 mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <span class="field-edit-stage">
+        <Transition name="field-edit">
+          <button
+            v-if="!isEditing && editable"
+            :key="'edit-btn'"
+            type="button"
+            class="field-edit-surface btn-inline-edit"
+            :disabled="saving"
+            @click="startEditing"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
-          Ändra
-        </button>
+            <svg
+              class="w-3 h-3 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+            Ändra
+          </button>
 
-        <div
-          v-else-if="isEditing"
-          :key="'save-btns'"
-          class="flex items-center gap-1.5"
-        >
-          <button
-            type="button"
-            class="btn-inline-edit"
-            :disabled="saving"
-            @click="handleSave"
+          <div
+            v-else-if="isEditing"
+            :key="'save-btns'"
+            class="field-edit-surface flex items-center gap-1.5"
           >
-            {{ saving ? '...' : 'Spara' }}
-          </button>
-          <button
-            type="button"
-            class="btn-inline-edit"
-            :disabled="saving"
-            @click="handleCancel"
-          >
-            Avbryt
-          </button>
-        </div>
-      </Transition>
+            <button
+              type="button"
+              class="btn-inline-edit"
+              :disabled="saving"
+              @click="handleSave"
+            >
+              {{ saving ? '...' : 'Spara' }}
+            </button>
+            <button
+              type="button"
+              class="btn-inline-edit"
+              :disabled="saving"
+              @click="handleCancel"
+            >
+              Avbryt
+            </button>
+          </div>
+        </Transition>
+      </span>
     </div>
   </div>
 </template>
@@ -226,6 +225,16 @@ watch(
   }
 }
 
+.field-edit-stage {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.field-edit-surface {
+  max-width: 100%;
+}
+
 .field-edit-enter-active,
 .field-edit-leave-active {
   transition: opacity var(--huleedu-duration-fast, 150ms) var(--huleedu-ease-default, ease);
@@ -234,6 +243,12 @@ watch(
 .field-edit-enter-from,
 .field-edit-leave-to {
   opacity: 0;
+}
+
+.field-edit-surface.field-edit-leave-active {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,147 @@
+import { mount } from "@vue/test-utils";
+import { describe, expect, it } from "vitest";
+
+import EditorWorkspacePanel from "./EditorWorkspacePanel.vue";
+import type { EditorWorkspacePanelProps } from "./EditorWorkspacePanel.types";
+
+function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorWorkspacePanelProps {
+  const editOpsState: EditorWorkspacePanelProps["editOpsState"] = {
+    proposal: null,
+    diffItems: [],
+    previewMeta: null,
+    previewErrorDetails: null,
+    previewError: null,
+    applyError: null,
+    undoError: null,
+    canApply: false,
+    applyDisabledReason: null,
+    aiStatus: null,
+    aiAppliedAt: null,
+    isApplying: false,
+    requiresConfirmation: false,
+    canUndo: false,
+    undoDisabledReason: null,
+    canRedo: false,
+    redoDisabledReason: null,
+    confirmationAccepted: false,
+  };
+
+  return {
+    toolId: "tool-1",
+    versions: [],
+    selectedVersion: null,
+    entrypointOptions: ["main.py"],
+    changeSummary: "",
+    entrypoint: "main.py",
+    sourceCode: "print('hello')",
+    settingsSchemaText: "{}",
+    inputSchemaText: "{}",
+    settingsSchema: null,
+    settingsSchemaError: null,
+    inputSchema: [],
+    inputSchemaError: null,
+    schemaIssuesBySchema: { input_schema: [], settings_schema: [] },
+    hasBlockingSchemaIssues: false,
+    isSchemaValidating: false,
+    schemaValidationError: null,
+    validateSchemasNow: async () => true,
+    usageInstructions: "",
+    metadataTitle: "Tool",
+    metadataSlug: "tool",
+    metadataSummary: "",
+    slugError: null,
+    statusLine: "Publicerad",
+    isTitleSaving: false,
+    isSummarySaving: false,
+    selectedProfessionIds: [],
+    selectedCategoryIds: [],
+    canEditTaxonomy: true,
+    canEditMaintainers: true,
+    canEditSlug: true,
+    canRollbackVersions: false,
+    isWorkflowSubmitting: false,
+    isSaving: false,
+    saveLabel: "Spara",
+    saveTitle: "Spara",
+    openCompareTitle: "",
+    activeMode: "source",
+    canEnterDiff: false,
+    hasDirtyChanges: false,
+    isReadOnly: false,
+    isHistoryDrawerOpen: false,
+    isChatDrawerOpen: false,
+    isChatCollapsed: false,
+    canCompareVersions: false,
+    lockBadgeLabel: null,
+    lockBadgeTone: "neutral",
+    canSubmitReview: false,
+    submitReviewTooltip: null,
+    canPublish: false,
+    canRequestChanges: false,
+    canRollback: false,
+    professions: [],
+    categories: [],
+    taxonomyError: null,
+    isTaxonomyLoading: false,
+    isSavingAllMetadata: false,
+    maintainers: [],
+    ownerUserId: null,
+    isMaintainersLoading: false,
+    isMaintainersSaving: false,
+    maintainersError: null,
+    compareTarget: null,
+    compareActiveFileId: null,
+    canCompareWorkingCopy: false,
+    workingCopyProvider: null,
+    localCheckpoints: [],
+    pinnedCheckpointCount: 0,
+    pinnedCheckpointLimit: 5,
+    isCheckpointBusy: false,
+    chatMessages: [],
+    chatIsStreaming: false,
+    chatDisabledMessage: null,
+    chatError: null,
+    chatNoticeMessage: null,
+    chatNoticeVariant: "info",
+    remoteFallbackPrompt: null,
+    editOpsRequestError: null,
+    editOpsDisabledMessage: null,
+    editOpsClearDraftToken: 0,
+    editOpsState,
+    isEditOpsRequesting: false,
+    isEditOpsSlow: false,
+    ...overrides,
+  };
+}
+
+describe("EditorWorkspacePanel", () => {
+  it("keys the main mode surface by the active editor mode", async () => {
+    const wrapper = mount(EditorWorkspacePanel, {
+      props: buildProps(),
+      global: {
+        stubs: {
+          ScriptEditorHeaderPanel: true,
+          EditorWorkspaceToolbar: true,
+          WorkflowContextButtons: true,
+          EditorWorkspaceModeSelector: true,
+          EditorComparePanel: true,
+          MetadataDrawer: true,
+          InstructionsDrawer: true,
+          MaintainersDrawer: true,
+          EditorSandboxPanel: true,
+          EditorSourceCodePanel: true,
+          EditorInputSchemaPanel: true,
+          EditorSettingsSchemaPanel: true,
+          EditorWorkspaceDrawers: true,
+          VersionHistoryDrawer: true,
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-editor-mode="source"]').exists()).toBe(true);
+
+    await wrapper.setProps(buildProps({ activeMode: "metadata" }));
+
+    expect(wrapper.find('[data-editor-mode="metadata"]').exists()).toBe(true);
+  });
+});

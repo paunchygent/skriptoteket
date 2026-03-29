@@ -235,95 +235,134 @@ function updateMapView(value: string): void {
       </div>
     </div>
 
-    <div
-      v-if="!template"
-      class="mt-3 border border-dashed border-navy/30 bg-canvas px-5 py-6 text-center text-sm leading-relaxed text-navy/70"
-      data-test="rules-map-empty-state"
-    >
-      Välj ett klassrum i sittplatser om du vill arbeta med regler direkt på klassrummets geometri.
-    </div>
-
-    <div
-      v-else
-      ref="canvasViewport"
-      data-test="rules-map-canvas"
-      class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
-    >
-      <div
-        class="flex min-h-full min-w-full items-start"
-        :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
-      >
+    <div class="rules-map-view-stage">
+      <Transition name="rules-map-view-swap">
         <div
-          class="relative shrink-0"
-          :style="scaledSurfaceStyle"
+          :key="mapView"
+          class="rules-map-view-surface"
         >
           <div
-            class="absolute left-0 top-0"
-            :style="{
-              transform: `scale(${canvasScale})`,
-              transformOrigin: 'top left',
-            }"
+            v-if="!template"
+            class="mt-3 border border-dashed border-navy/30 bg-canvas px-5 py-6 text-center text-sm leading-relaxed text-navy/70"
+            data-test="rules-map-empty-state"
           >
-            <RoomSceneSurface
-              :grid="roomGrid"
-              :seats="template.seats"
-              :fixtures="template.fixtures"
-              :show-backdrop-grid="true"
-              :render-seat-tokens="false"
+            Välj ett klassrum i sittplatser om du vill arbeta med regler direkt på klassrummets geometri.
+          </div>
+
+          <div
+            v-else
+            ref="canvasViewport"
+            data-test="rules-map-canvas"
+            class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
+          >
+            <div
+              class="flex min-h-full min-w-full items-start"
+              :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
             >
-              <template #floor-overlay>
-                <PlannerRulesSeatNode
-                  v-for="seat in template.seats"
-                  :key="seat.id"
-                  :seat="seat"
-                  :student="projectedStudentsBySeatId[seat.id]"
-                  :selected="
-                    projectedStudentsBySeatId[seat.id] !== null
-                      && isStudentSelected(projectedStudentsBySeatId[seat.id]?.id ?? '')
-                  "
-                  :selection-order="
-                    projectedStudentsBySeatId[seat.id] !== null
-                      ? selectionOrder(projectedStudentsBySeatId[seat.id]?.id ?? '')
-                      : null
-                  "
-                  :markers="
-                    smartRuleMarkersByStudentId[projectedStudentsBySeatId[seat.id]?.id ?? ''] ?? []
-                  "
-                  :interactive="projectedStudentsBySeatId[seat.id] !== null"
-                  @student-selected="emit('student-selected', $event)"
-                />
-              </template>
-            </RoomSceneSurface>
+              <div
+                class="relative shrink-0"
+                :style="scaledSurfaceStyle"
+              >
+                <div
+                  class="absolute left-0 top-0"
+                  :style="{
+                    transform: `scale(${canvasScale})`,
+                    transformOrigin: 'top left',
+                  }"
+                >
+                  <RoomSceneSurface
+                    :grid="roomGrid"
+                    :seats="template.seats"
+                    :fixtures="template.fixtures"
+                    :show-backdrop-grid="true"
+                    :render-seat-tokens="false"
+                  >
+                    <template #floor-overlay>
+                      <PlannerRulesSeatNode
+                        v-for="seat in template.seats"
+                        :key="seat.id"
+                        :seat="seat"
+                        :student="projectedStudentsBySeatId[seat.id]"
+                        :selected="
+                          projectedStudentsBySeatId[seat.id] !== null
+                            && isStudentSelected(projectedStudentsBySeatId[seat.id]?.id ?? '')
+                        "
+                        :selection-order="
+                          projectedStudentsBySeatId[seat.id] !== null
+                            ? selectionOrder(projectedStudentsBySeatId[seat.id]?.id ?? '')
+                            : null
+                        "
+                        :markers="
+                          smartRuleMarkersByStudentId[projectedStudentsBySeatId[seat.id]?.id ?? ''] ?? []
+                        "
+                        :interactive="projectedStudentsBySeatId[seat.id] !== null"
+                        @student-selected="emit('student-selected', $event)"
+                      />
+                    </template>
+                  </RoomSceneSurface>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-if="unplacedStudents.length > 0"
+            class="mt-3 border border-navy/20 bg-canvas px-3 py-2.5"
+            data-test="rules-map-unplaced"
+          >
+            <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+              Ej på kartan
+            </p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button
+                v-for="student in unplacedStudents"
+                :key="student.id"
+                type="button"
+                class="border px-2 py-1 text-[11px] font-semibold"
+                :class="
+                  isStudentSelected(student.id)
+                    ? 'planner-choice-button-active'
+                    : 'planner-choice-button-idle-muted'
+                "
+                :data-test="`rules-unplaced-student-${student.id}`"
+                @click="emit('student-selected', student.id)"
+              >
+                {{ student.display_name }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div
-      v-if="unplacedStudents.length > 0"
-      class="mt-3 border border-navy/20 bg-canvas px-3 py-2.5"
-      data-test="rules-map-unplaced"
-    >
-      <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-        Ej på kartan
-      </p>
-      <div class="mt-2 flex flex-wrap gap-2">
-        <button
-          v-for="student in unplacedStudents"
-          :key="student.id"
-          type="button"
-          class="border px-2 py-1 text-[11px] font-semibold"
-          :class="
-            isStudentSelected(student.id)
-              ? 'planner-choice-button-active'
-              : 'planner-choice-button-idle-muted'
-          "
-          :data-test="`rules-unplaced-student-${student.id}`"
-          @click="emit('student-selected', student.id)"
-        >
-          {{ student.display_name }}
-        </button>
-      </div>
+      </Transition>
     </div>
   </section>
 </template>
+
+<style scoped>
+.rules-map-view-stage {
+  position: relative;
+}
+
+.rules-map-view-swap-enter-active,
+.rules-map-view-swap-leave-active {
+  transition: opacity var(--huleedu-duration-fast, 150ms) var(--huleedu-ease-default, ease);
+}
+
+.rules-map-view-swap-enter-from,
+.rules-map-view-swap-leave-to {
+  opacity: 0;
+}
+
+.rules-map-view-surface.rules-map-view-swap-leave-active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rules-map-view-swap-enter-active,
+  .rules-map-view-swap-leave-active {
+    transition: none;
+  }
+}
+</style>

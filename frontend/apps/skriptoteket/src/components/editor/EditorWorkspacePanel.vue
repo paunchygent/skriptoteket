@@ -154,148 +154,156 @@ const chatColumnWidth = computed(() => {
       </div>
 
       <div
-        class="min-h-0 min-w-0 px-3 lg:col-start-1 lg:row-start-2 flex flex-col h-full overflow-x-hidden overflow-y-auto"
-        :class="{ 'pb-3': !showsSchemaPanels }"
-        data-editor-panel="mode"
+        class="min-h-0 min-w-0 lg:col-start-1 lg:row-start-2 relative"
       >
-        <template v-if="isDiffMode">
-          <div class="h-full min-h-0 flex flex-col gap-4">
-            <EditorComparePanel
-              v-if="props.compareTarget"
-              class="flex-1 min-h-0"
-              :versions="props.versions"
-              :base-version="props.selectedVersion"
-              :base-files="baseFiles"
-              :compare-target="props.compareTarget"
-              :active-file-id="props.compareActiveFileId"
-              :base-is-dirty="props.hasDirtyChanges"
-              :can-compare-working-copy="props.canCompareWorkingCopy"
-              :working-copy-provider="props.workingCopyProvider"
-              @close="emit('closeCompare')"
-              @update-compare-target-value="
-                emit(
-                  'update:compareTarget',
-                  $event === 'working' ? { kind: 'working' } : { kind: 'version', versionId: $event },
-                )
-              "
-              @update-active-file-id="emit('update:compareActiveFileId', $event)"
-            />
-            <div
-              v-else
-              class="flex-1 min-h-0 panel-inset p-4 text-sm text-navy/70 flex items-center justify-center"
-              data-editor-empty="diff"
-            >
-              Ingen diff att visa.
-            </div>
+        <Transition name="editor-mode-swap">
+          <div
+            :key="props.activeMode"
+            class="min-h-0 min-w-0 px-3 lg:col-start-1 lg:row-start-2 flex flex-col h-full overflow-x-hidden overflow-y-auto"
+            :class="{ 'pb-3': !showsSchemaPanels }"
+            data-editor-panel="mode"
+            :data-editor-mode="props.activeMode"
+          >
+            <template v-if="isDiffMode">
+              <div class="h-full min-h-0 flex flex-col gap-4">
+                <EditorComparePanel
+                  v-if="props.compareTarget"
+                  class="flex-1 min-h-0"
+                  :versions="props.versions"
+                  :base-version="props.selectedVersion"
+                  :base-files="baseFiles"
+                  :compare-target="props.compareTarget"
+                  :active-file-id="props.compareActiveFileId"
+                  :base-is-dirty="props.hasDirtyChanges"
+                  :can-compare-working-copy="props.canCompareWorkingCopy"
+                  :working-copy-provider="props.workingCopyProvider"
+                  @close="emit('closeCompare')"
+                  @update-compare-target-value="
+                    emit(
+                      'update:compareTarget',
+                      $event === 'working' ? { kind: 'working' } : { kind: 'version', versionId: $event },
+                    )
+                  "
+                  @update-active-file-id="emit('update:compareActiveFileId', $event)"
+                />
+                <div
+                  v-else
+                  class="flex-1 min-h-0 panel-inset p-4 text-sm text-navy/70 flex items-center justify-center"
+                  data-editor-empty="diff"
+                >
+                  Ingen diff att visa.
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="isMetadataMode">
+              <div class="h-full min-h-0 overflow-y-auto">
+                <div class="grid gap-3 lg:grid-cols-2 content-start">
+                  <MetadataDrawer
+                    variant="panel"
+                    :is-open="true"
+                    :metadata-title="props.metadataTitle"
+                    :metadata-slug="props.metadataSlug"
+                    :metadata-summary="props.metadataSummary"
+                    :can-edit-slug="props.canEditSlug"
+                    :slug-error="props.slugError"
+                    :professions="props.professions"
+                    :categories="props.categories"
+                    :selected-profession-ids="props.selectedProfessionIds"
+                    :selected-category-ids="props.selectedCategoryIds"
+                    :taxonomy-error="props.taxonomyError"
+                    :is-loading="props.isTaxonomyLoading"
+                    :is-saving="props.isSavingAllMetadata"
+                    @close="emit('closeDrawer')"
+                    @save="emit('saveAllMetadata')"
+                    @update:metadata-title="emit('update:metadataTitle', $event)"
+                    @update:metadata-slug="emit('update:metadataSlug', $event)"
+                    @update:metadata-summary="emit('update:metadataSummary', $event)"
+                    @update:slug-error="emit('update:slugError', $event)"
+                    @suggest-slug-from-title="emit('suggestSlugFromTitle')"
+                    @update:selected-profession-ids="emit('update:selectedProfessionIds', $event)"
+                    @update:selected-category-ids="emit('update:selectedCategoryIds', $event)"
+                    @update:taxonomy-error="emit('update:taxonomyError', $event)"
+                  />
+
+                  <InstructionsDrawer
+                    variant="panel"
+                    :is-open="true"
+                    :usage-instructions="props.usageInstructions"
+                    :is-saving="props.isSaving"
+                    :is-read-only="props.isReadOnly"
+                    @close="emit('closeDrawer')"
+                    @save="emit('save')"
+                    @update:usage-instructions="emit('update:usageInstructions', $event)"
+                  />
+
+                  <MaintainersDrawer
+                    v-if="props.canEditMaintainers"
+                    class="lg:col-span-2"
+                    variant="panel"
+                    :is-open="true"
+                    :maintainers="props.maintainers"
+                    :owner-user-id="props.ownerUserId"
+                    :is-superuser="props.canRollbackVersions"
+                    :is-loading="props.isMaintainersLoading"
+                    :is-saving="props.isMaintainersSaving"
+                    :error="props.maintainersError"
+                    @close="emit('closeDrawer')"
+                    @add="emit('addMaintainer', $event)"
+                    @remove="emit('removeMaintainer', $event)"
+                    @update:error="emit('update:maintainersError', $event)"
+                  />
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="isTestMode">
+              <div class="flex flex-col h-full min-h-0 overflow-y-auto">
+                <EditorSandboxPanel
+                  class="flex-1 min-h-0"
+                  variant="mode"
+                  :tool-id="props.toolId"
+                  :selected-version="props.selectedVersion"
+                  :entrypoint-options="props.entrypointOptions"
+                  :entrypoint="props.entrypoint"
+                  :is-read-only="props.isReadOnly"
+                  :source-code="props.sourceCode"
+                  :usage-instructions="props.usageInstructions"
+                  :settings-schema="props.settingsSchema"
+                  :settings-schema-error="props.settingsSchemaError"
+                  :input-schema="props.inputSchema"
+                  :input-schema-error="props.inputSchemaError"
+                  :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
+                  :schema-validation-error="props.schemaValidationError"
+                  :validate-schemas-now="props.validateSchemasNow"
+                  @update:entrypoint="emit('update:entrypoint', $event)"
+                />
+              </div>
+            </template>
+
+            <template v-else>
+              <div class="h-full min-h-0 flex flex-col gap-3">
+                <EditorEditOpsPanel
+                  v-if="props.editOpsState.proposal"
+                  :state="props.editOpsState"
+                  @apply="emit('applyEditOps')"
+                  @discard="emit('discardEditOps')"
+                  @regenerate="emit('regenerateEditOps')"
+                  @set-confirmation-accepted="emit('setEditOpsConfirmationAccepted', $event)"
+                />
+                <div class="flex-1 min-h-0">
+                  <EditorSourceCodePanel
+                    :entrypoint="props.entrypoint"
+                    :source-code="props.sourceCode"
+                    :is-read-only="props.isReadOnly"
+                    @update:source-code="emit('update:sourceCode', $event)"
+                    @editor-view-ready="emit('editorViewReady', $event)"
+                  />
+                </div>
+              </div>
+            </template>
           </div>
-        </template>
-
-        <template v-else-if="isMetadataMode">
-          <div class="h-full min-h-0 overflow-y-auto">
-            <div class="grid gap-3 lg:grid-cols-2 content-start">
-              <MetadataDrawer
-                variant="panel"
-                :is-open="true"
-                :metadata-title="props.metadataTitle"
-                :metadata-slug="props.metadataSlug"
-                :metadata-summary="props.metadataSummary"
-                :can-edit-slug="props.canEditSlug"
-                :slug-error="props.slugError"
-                :professions="props.professions"
-                :categories="props.categories"
-                :selected-profession-ids="props.selectedProfessionIds"
-                :selected-category-ids="props.selectedCategoryIds"
-                :taxonomy-error="props.taxonomyError"
-                :is-loading="props.isTaxonomyLoading"
-                :is-saving="props.isSavingAllMetadata"
-                @close="emit('closeDrawer')"
-                @save="emit('saveAllMetadata')"
-                @update:metadata-title="emit('update:metadataTitle', $event)"
-                @update:metadata-slug="emit('update:metadataSlug', $event)"
-                @update:metadata-summary="emit('update:metadataSummary', $event)"
-                @update:slug-error="emit('update:slugError', $event)"
-                @suggest-slug-from-title="emit('suggestSlugFromTitle')"
-                @update:selected-profession-ids="emit('update:selectedProfessionIds', $event)"
-                @update:selected-category-ids="emit('update:selectedCategoryIds', $event)"
-                @update:taxonomy-error="emit('update:taxonomyError', $event)"
-              />
-
-              <InstructionsDrawer
-                variant="panel"
-                :is-open="true"
-                :usage-instructions="props.usageInstructions"
-                :is-saving="props.isSaving"
-                :is-read-only="props.isReadOnly"
-                @close="emit('closeDrawer')"
-                @save="emit('save')"
-                @update:usage-instructions="emit('update:usageInstructions', $event)"
-              />
-
-              <MaintainersDrawer
-                v-if="props.canEditMaintainers"
-                class="lg:col-span-2"
-                variant="panel"
-                :is-open="true"
-                :maintainers="props.maintainers"
-                :owner-user-id="props.ownerUserId"
-                :is-superuser="props.canRollbackVersions"
-                :is-loading="props.isMaintainersLoading"
-                :is-saving="props.isMaintainersSaving"
-                :error="props.maintainersError"
-                @close="emit('closeDrawer')"
-                @add="emit('addMaintainer', $event)"
-                @remove="emit('removeMaintainer', $event)"
-                @update:error="emit('update:maintainersError', $event)"
-              />
-            </div>
-          </div>
-        </template>
-
-        <template v-else-if="isTestMode">
-          <div class="flex flex-col h-full min-h-0 overflow-y-auto">
-            <EditorSandboxPanel
-              class="flex-1 min-h-0"
-              variant="mode"
-              :tool-id="props.toolId"
-              :selected-version="props.selectedVersion"
-              :entrypoint-options="props.entrypointOptions"
-              :entrypoint="props.entrypoint"
-              :is-read-only="props.isReadOnly"
-              :source-code="props.sourceCode"
-              :usage-instructions="props.usageInstructions"
-              :settings-schema="props.settingsSchema"
-              :settings-schema-error="props.settingsSchemaError"
-              :input-schema="props.inputSchema"
-              :input-schema-error="props.inputSchemaError"
-              :has-blocking-schema-issues="props.hasBlockingSchemaIssues"
-              :schema-validation-error="props.schemaValidationError"
-              :validate-schemas-now="props.validateSchemasNow"
-              @update:entrypoint="emit('update:entrypoint', $event)"
-            />
-          </div>
-        </template>
-
-        <template v-else>
-          <div class="h-full min-h-0 flex flex-col gap-3">
-            <EditorEditOpsPanel
-              v-if="props.editOpsState.proposal"
-              :state="props.editOpsState"
-              @apply="emit('applyEditOps')"
-              @discard="emit('discardEditOps')"
-              @regenerate="emit('regenerateEditOps')"
-              @set-confirmation-accepted="emit('setEditOpsConfirmationAccepted', $event)"
-            />
-            <div class="flex-1 min-h-0">
-              <EditorSourceCodePanel
-                :entrypoint="props.entrypoint"
-                :source-code="props.sourceCode"
-                :is-read-only="props.isReadOnly"
-                @update:source-code="emit('update:sourceCode', $event)"
-                @editor-view-ready="emit('editorViewReady', $event)"
-              />
-            </div>
-          </div>
-        </template>
+        </Transition>
       </div>
 
       <div
@@ -438,3 +446,29 @@ const chatColumnWidth = computed(() => {
     />
   </div>
 </template>
+
+<style scoped>
+.editor-mode-swap-enter-active,
+.editor-mode-swap-leave-active {
+  transition: opacity var(--huleedu-duration-fast, 150ms) var(--huleedu-ease-default, ease);
+}
+
+.editor-mode-swap-enter-from,
+.editor-mode-swap-leave-to {
+  opacity: 0;
+}
+
+[data-editor-panel="mode"].editor-mode-swap-leave-active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-mode-swap-enter-active,
+  .editor-mode-swap-leave-active {
+    transition: none;
+  }
+}
+</style>

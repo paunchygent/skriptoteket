@@ -719,6 +719,19 @@ body.app-shell-game-mode::before {
   opacity: 0;
 }
 
+.route-stage-item.page-leave-active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+.route-stage--editor .route-stage-item.page-leave-active {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-enter-active,
   .page-leave-active {

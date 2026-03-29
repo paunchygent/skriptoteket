@@ -2,7 +2,7 @@
 type: review
 id: REV-EPIC-30
 title: "Review: Frontend transition continuity for same-shell selectors"
-status: pending
+status: approved
 owners: "agents"
 created: 2026-03-29
 reviewer: "lead-developer"
@@ -56,34 +56,34 @@ cross-app epic that starts with an inventory/adoption-plan story before editor r
 
 ## Review Checklist
 
-- [ ] ADR scope is clear and does not overreach into unrelated motion work
-- [ ] Inventory covers the current known same-shell selector surfaces
-- [ ] Epic scope is appropriately cross-app and not planner-only
-- [ ] Story acceptance criteria are testable and sequencing is explicit
-- [ ] Risks and adoption order are reasonable
+- [x] ADR scope is clear and does not overreach into unrelated motion work
+- [x] Inventory covers the current known same-shell selector surfaces
+- [x] Epic scope is appropriately cross-app and not planner-only
+- [x] Story acceptance criteria are testable and sequencing is explicit
+- [x] Risks and adoption order are reasonable
 
 ---
 
 ## Review Feedback
 
 **Reviewer:** @lead-developer
-**Date:** YYYY-MM-DD
-**Verdict:** pending
+**Date:** 2026-03-29
+**Verdict:** approved
 
 ### Required Changes
 
-- None yet.
+- None.
 
 ### Suggestions (Optional)
 
-- None yet.
+- Keep the first implementation slice anchored to the editor before smaller selector cleanup.
 
 ### Decision Approvals
 
-- [ ] Same-shell selector continuity becomes a shared frontend standard
-- [ ] Retained outgoing surface plus overlap crossfade is the canonical technique
-- [ ] The editor workspace selector is the first adoption target
-- [ ] Smaller selector shells stay behind the editor in rollout priority
+- [x] Same-shell selector continuity becomes a shared frontend standard
+- [x] Retained outgoing surface plus overlap crossfade is the canonical technique
+- [x] The editor workspace selector is the first adoption target
+- [x] Smaller selector shells stay behind the editor in rollout priority
 
 ---
 
@@ -94,3 +94,4 @@ cross-app epic that starts with an inventory/adoption-plan story before editor r
 | 1 | `ADR-0077` | Added the same-shell transition continuity decision and explicit scope boundaries |
 | 2 | `REF-frontend-transition-continuity-v1` | Added the canonical pattern, adoption inventory, and rollout order |
 | 3 | `EPIC-30`, `ST-30-01`, `PR-0165` | Created the cross-app backlog package for phased adoption |
+| 4 | `REV-EPIC-30` | Approved the transition-continuity package so implementation can proceed |

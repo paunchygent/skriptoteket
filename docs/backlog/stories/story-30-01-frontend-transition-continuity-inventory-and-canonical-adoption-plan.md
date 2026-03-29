@@ -2,7 +2,7 @@
 type: story
 id: ST-30-01
 title: "Frontend transition continuity inventory and canonical adoption plan"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-29
 epic: "EPIC-30"

@@ -158,7 +158,6 @@ async function onLogout(): Promise<void> {
           <Transition
             v-if="isPageTransitionEnabled"
             name="page"
-            mode="out-in"
             :duration="150"
           >
             <div
@@ -200,7 +199,6 @@ async function onLogout(): Promise<void> {
           <Transition
             v-if="isPageTransitionEnabled"
             name="page"
-            mode="out-in"
             :duration="150"
           >
             <div

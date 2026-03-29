@@ -119,7 +119,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
 - Proposed auth-cutover ADR:
   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`
-- Proposed same-shell transition continuity ADR:
+- Accepted same-shell transition continuity ADR:
   `docs/adr/adr-0077-same-shell-transition-continuity.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
@@ -129,12 +129,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul review:
   `docs/backlog/reviews/review-epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`
-- Proposed same-shell transition continuity epic:
+- Active same-shell transition continuity epic:
   `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
-- Proposed same-shell transition continuity review:
+- Approved same-shell transition continuity review:
   `docs/backlog/reviews/review-epic-30-frontend-transition-continuity-for-same-shell-selectors.md`
 - Same-shell transition continuity planning slice:
   `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
+- Same-shell transition continuity implementation slice:
+  `docs/backlog/prs/pr-0166-st-30-02-transition-continuity-adoption-and-remaining-transition-audit.md`
 - Competitive games cross-cutting programme:
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`
 - Proposed ADR: `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`
@@ -340,6 +342,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md`
 - `docs/backlog/stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md`
 - `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md`
+- `docs/backlog/stories/story-30-02-adopt-transition-continuity-across-editor-and-selector-shells.md`
 
 ### Backlog Reviews
 
@@ -447,6 +450,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0160-st-29-08-shared-custom-tooltip-primitive-and-dense-tool-adoption.md`
 - `docs/backlog/prs/pr-0159-hemma-kernel-lane-recovery-6-14-freeze-and-6-17-cutover.md`
 - `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`
+- `docs/backlog/prs/pr-0166-st-30-02-transition-continuity-adoption-and-remaining-transition-audit.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0077
 title: "Same-shell transition continuity for selector-driven workspaces"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["lead-developer"]
 created: 2026-03-29
