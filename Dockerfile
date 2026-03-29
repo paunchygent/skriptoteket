@@ -133,12 +133,14 @@ RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
 RUN pip install --no-cache-dir pdm==2.26.2
 
 COPY --from=builder /app/__pypackages__ /app/__pypackages__
-# SPA assets are built to ../../../src/skriptoteket/web/static/spa relative to frontend/apps/skriptoteket
-COPY --from=frontend-builder /app/src/skriptoteket/web/static/spa ./src/skriptoteket/web/static/spa
 COPY pyproject.toml pdm.lock ./
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY src ./src
+# SPA assets are built to ../../../src/skriptoteket/web/static/spa relative to
+# frontend/apps/skriptoteket. Copy them after the backend source so ignored or
+# stale local artifacts can never overwrite the fresh frontend build.
+COPY --from=frontend-builder /app/src/skriptoteket/web/static/spa ./src/skriptoteket/web/static/spa
 # Repo-owned curated app corpora (markdown-first SDS corpus for Reagent Prep Chef).
 COPY data/reagent_prep_chef/sds/index.json ./data/reagent_prep_chef/sds/index.json
 COPY data/reagent_prep_chef/sds/markdown ./data/reagent_prep_chef/sds/markdown

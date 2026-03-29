@@ -17,6 +17,7 @@ __pycache__/
 docs/
 jupyter_scripts/
 tests/
+src/skriptoteket/web/static/spa/
 
 .DS_Store
 Thumbs.db
