@@ -55,14 +55,16 @@ function initialStatusLabelForOption(option: GroupingExportOption): string {
   return option === "xlsx" ? "Förbereder Excel…" : "Förbereder PDF…";
 }
 
-function readyMessageForJob(job: GroupingExportJob): string {
-  return job.export_kind === "xlsx" ? "Excel klar för nedladdning." : "PDF klar för nedladdning.";
-}
-
 function successMessageForJob(job: GroupingExportJob): string {
   return job.export_kind === "xlsx"
     ? "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov."
     : "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.";
+}
+
+function recoveredSuccessMessageForJob(job: GroupingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Excel klar och sparad i Mina filer. Hämta den där igen vid behov."
+    : "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.";
 }
 
 function autoDownloadFailureMessageForJob(job: GroupingExportJob): string {
@@ -89,12 +91,6 @@ function startErrorMessageForOption(option: GroupingExportOption): string {
     : "Det gick inte att exportera PDF-filen just nu.";
 }
 
-function downloadErrorMessageForJob(job: GroupingExportJob): string {
-  return job.export_kind === "xlsx"
-    ? "Det gick inte att ladda ned Excel-filen."
-    : "Det gick inte att ladda ned PDF-filen.";
-}
-
 export function useGroupingExportFlow(options: UseGroupingExportFlowOptions) {
   return createClassroomPlannerExportFlow<GroupingExportJob, GroupingExportOption, "grouping">({
     plannerState: options.plannerState,
@@ -112,13 +108,12 @@ export function useGroupingExportFlow(options: UseGroupingExportFlowOptions) {
       statusLabelForJob,
       fallbackDownloadName,
       initialStatusLabelForOption,
-      readyMessageForJob,
       successMessageForJob,
+      recoveredSuccessMessageForJob,
       autoDownloadFailureMessageForJob,
       exportErrorMessageForJob,
       restoreErrorMessageForJob,
       startErrorMessageForOption,
-      downloadErrorMessageForJob,
     },
     pollDelayMs: options.pollDelayMs,
     maxPollAttempts: options.maxPollAttempts,

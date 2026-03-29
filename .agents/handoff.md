@@ -13,7 +13,7 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0162`, `PR-0163`, `PR-0164`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0157`, `PR-0161`, `PR-0162`, `PR-0163`, `PR-0164`
 
 ## Status
 
@@ -77,10 +77,9 @@ Keep this file updated so the next session can pick up work quickly.
   - tightened `.claude/skills/skriptoteket-frontend-specialist/SKILL.md`, `.claude/skills/brutalist-academic-ui/SKILL.md`, and `.agents/rules/045-huleedu-design-system.md` so future frontend work favors canvas-first, dense multi-workspace layouts over stacked panel chrome
   - doctrine now also states that workspace-heavy curated apps are desktop-first and that repeated operations should use a canonical symbol system before long text-button copy
 - Proposed redesign planning package is now drafted: `EPIC-29`, `REV-EPIC-29`, and `ST-29-01`..`ST-29-08`; status is planning-only (`proposed` / `pending` / `ready`), with `ST-29-08` reserved as a post-core tooltip enhancement
-- `PR-0157` dense-tool primitive implementation is now in progress locally:
-  - canonical icons now include `IconAdjustments`, `IconPlus`, `IconZoomIn`, `IconZoomOut`, and `IconFitView`
-  - shared SPA dense primitives now live under `frontend/apps/skriptoteket/src/components/ui/` (`UiDenseActionButton`, `UiDenseIconButton`, `UiDenseMenuButton`, `UiDenseSplitButton`, `UiDenseStatusPill`, `UiDenseToggle`, `UiDenseCompoundToggle`, `useDenseMenuSurface`, `denseToolPrimitives.ts`)
-  - planner seating/grouping and editor toolbar/menu now read from that primitive layer, `Smart + Regler` is a compound control, editor AI undo/redo now use the canonical icon components, editor CRUD/status badges now use the shared dense status-pill contract, the shared `UiSegmentedToggle` now also carries the smaller secondary `subrail` treatment for local sort/view rails plus a taller `workspace` variant for equal-weight planner workspaces, now keeps one explicit column/divider per option instead of implicit multi-option wrapping, Klassrumskartan now reads repeated button recipes from shared `main.css` planner classes instead of scattered inline button styling, the planner shell/header chrome is quieter (`Curated App`, overview sales copy, panel-eyebrow labels, and visible `version N` shell text removed) with route hero vs active-workspace hierarchy encoded through shared `page-title` and `planner-shell-title` tiers, Mina filer no longer repeats the pointless `Filer` / `Aktiva filer och papperskorg` / `Sortera` / `Sök` chrome above controls, overview/pool/canvas surfaces are now denser with the duplicate overview resume CTA cards removed, shared overview panel tracks aligned, quieter overview footer actions, both gear-led overview edit buttons shortened to `Redigera`, and grouping cards now keep the rename field plus move/remove controls on one equal-height row with no redundant `Gruppnamn` label
+- `PR-0161` / `ST-29-02` shell-compression follow-up is now implemented locally:
+  - grouping/seating keep detached sticky toolbars above the live workspace, the rules rail stays sticky, and the shell no longer carries the dead planner-side `download latest` export contract
+  - recovered export completion now announces once per browser session via toast with `Mina filer` copy, while export progress/error stays localized to the toolbar row and no success/helper band returns on re-entry
 
 ## Verification
 
@@ -170,7 +169,11 @@ Keep this file updated so the next session can pick up work quickly.
   - `pnpm -C frontend/apps/skriptoteket exec vitest run src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomTemplateBuilderSurface.spec.ts`
   - `pdm run fe-type-check`
   - live proof fallback: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (browser smoke passed; targeted ad hoc modal probe was not retained)
-
+- 2026-03-29 `PR-0161` / `ST-29-02` shell-compression feedback-contract cleanup:
+  - `pnpm -C frontend --filter @skriptoteket/spa test -- src/views/apps/useGroupingExportFlow.spec.ts src/views/apps/useSeatingExportFlow.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
+  - `pdm run fe-type-check`
+  - live proof: `pdm run python -m scripts.playwright_pr_0157_dense_toolbar_check --base-url http://127.0.0.1:5173`; `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`
+  - artifacts under `.artifacts/classroom-planner-smoke`; live proof confirmed the sticky detached toolbar layout stayed intact while recovered export success now stays toast-first and no planner-side `download latest` affordance remains
 ## How to Run
 ```bash
 # Local dev
@@ -185,7 +188,6 @@ pdm run python -m scripts.playwright_pr_0137_class_list_import_check --base-url 
 # Hemma export deploy/readiness gate
 ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_export.sh'
 ```
-
 ## Known Issues / Risks
 
 - Hemma production is healthy again on published commit `1743db25`; for live verification, use the container healthcheck or in-container `curl`, because `skriptoteket-web` is not host-published on `127.0.0.1:8000`.
@@ -193,7 +195,6 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
   - `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions
-
 ## Next Steps
 
-- With the production DI cutover healthy again, resume the planner lanes in order: `ST-29-02` shell compression, then the remaining `ST-29-*` workspace overhaul slices, while keeping the earlier smart-assignment/rules contracts intact.
+- With `ST-29-02` now implemented locally, the next planner lane is `ST-29-03` shared desktop workspace composition primitives, then the deeper `ST-29-04`..`ST-29-06` workspace composition slices, while keeping the earlier smart-assignment/rules contracts intact.

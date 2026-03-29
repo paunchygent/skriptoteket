@@ -29,7 +29,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <aside class="space-y-5">
+  <aside
+    class="space-y-5 xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100svh-10rem)] xl:overflow-y-auto"
+    data-test="room-template-editor-sidebar"
+  >
     <div class="space-y-1">
       <label class="text-xs font-semibold uppercase tracking-wide text-navy/70">
         Klassrummets namn

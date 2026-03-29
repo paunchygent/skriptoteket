@@ -51,4 +51,31 @@ describe("RoomTemplateBuilderSurface", () => {
 
     expect(wrapper.get('[data-test="room-builder-scroll-frame"]').attributes("data-overflow-anchor")).toBe("start");
   });
+
+  it("keeps the builder heading but removes the incorrect geometry helper copy", () => {
+    const wrapper = mount(RoomTemplateBuilderSurface, {
+      props: {
+        roomGrid: { cols: 14, rows: 9 },
+        seats: [],
+        fixtures: [],
+        ghostPlacement: null,
+        ghostRenderableFixture: null,
+        builderScale: 0.8,
+        builderScaledSurfaceStyle: { width: "1120px", height: "768px" },
+        builderScalePercent: 80,
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: { template: "<div />" },
+          RoomSeatToken: { template: "<div />" },
+          RoomFixtureArtwork: { template: "<div />" },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Klassrumsyta");
+    expect(wrapper.text()).not.toContain(
+      "Anpassa vyn utan att ändra klassrummets sparade geometri.",
+    );
+  });
 });

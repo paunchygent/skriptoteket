@@ -231,6 +231,27 @@ describe("CreateRoomTemplateModal", () => {
     );
   });
 
+  it("uses a sticky left editor rail and removes the redundant modal eyebrow", () => {
+    const wrapper = mount(CreateRoomTemplateModal, {
+      props: {
+        template: {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 14,
+          grid_rows: 9,
+          seats: [],
+          fixtures: [],
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="room-template-editor-sidebar"]').classes()).toEqual(
+      expect.arrayContaining(["xl:sticky", "xl:top-4", "xl:self-start"]),
+    );
+    expect(wrapper.find('p.text-\\[11px\\]').exists()).toBe(false);
+    expect(wrapper.text()).toContain("Redigera klassrum");
+  });
+
   it("updates an existing classroom through the edit save contract", async () => {
     clientMocks.apiPut.mockResolvedValueOnce({
       id: "template-1",

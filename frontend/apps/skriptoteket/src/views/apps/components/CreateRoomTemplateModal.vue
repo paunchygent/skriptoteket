@@ -122,9 +122,6 @@ async function removeTemplate(): Promise<void> {
       <div class="flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-white shadow-brutal 2xl:max-w-[1680px]">
         <div class="flex flex-col gap-4 border-b border-navy/20 pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div class="space-y-1 px-6 pt-6 md:px-8 md:pt-8">
-            <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Klassrum
-            </p>
             <h2 class="font-serif text-2xl text-navy">
               {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
             </h2>
@@ -151,7 +148,7 @@ async function removeTemplate(): Promise<void> {
             </div>
           </div>
 
-          <div class="mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)]">
+          <div class="mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">
             <RoomTemplateEditorSidebar
               :name="name"
               :selected-tool="selectedTool"

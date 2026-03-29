@@ -2,7 +2,7 @@
 type: story
 id: ST-29-02
 title: "Klassrumskartan — Workspace shell compression and low-value feedback band reduction"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
 epic: "EPIC-29"

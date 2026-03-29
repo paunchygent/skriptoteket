@@ -12,6 +12,10 @@ import { computed, ref, watch } from "vue";
 import { isApiError } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { PlanDraft, PlanDraftKind } from "./classroomPlannerTypes";
+import {
+  hasAcknowledgedRecoveredExportNotice,
+  markRecoveredExportNoticeAcknowledged,
+} from "./classroomPlannerRecoveredExportNotices";
 import type { PlannerTransitionResult } from "./plannerTransitionPolicies";
 
 type ExportJobStatus = "submitted" | "processing" | "succeeded" | "failed";
@@ -48,13 +52,12 @@ type ClassroomPlannerExportFlowMessages<
   statusLabelForJob: (job: Job | null) => string | null;
   fallbackDownloadName: (job: Job) => string;
   initialStatusLabelForOption: (option: Option) => string;
-  readyMessageForJob: (job: Job) => string;
   successMessageForJob: (job: Job) => string;
+  recoveredSuccessMessageForJob: (job: Job) => string;
   autoDownloadFailureMessageForJob: (job: Job) => string;
   exportErrorMessageForJob: (job: Job) => string;
   restoreErrorMessageForJob: (job: Job) => string;
   startErrorMessageForOption: (option: Option) => string;
-  downloadErrorMessageForJob: (job: Job) => string;
 };
 
 type CreateClassroomPlannerExportFlowOptions<
@@ -137,7 +140,6 @@ export function createClassroomPlannerExportFlow<
   const maxPollAttempts = options.maxPollAttempts ?? DEFAULT_MAX_POLL_ATTEMPTS;
   const isStarting = ref(false);
   const activeJob = ref<Job | null>(null);
-  const latestCompletedJob = ref<Job | null>(null);
   const statusLabel = ref<string | null>(null);
   const errorMessage = ref<string | null>(null);
   const backgroundPollJobId = ref<string | null>(null);
@@ -145,7 +147,6 @@ export function createClassroomPlannerExportFlow<
   const draftScopeToken = ref(0);
 
   const isBusy = computed(() => isStarting.value || activeJob.value !== null);
-  const canDownloadLatest = computed(() => latestCompletedJob.value !== null && !isBusy.value);
 
   function getActiveDraftId(): string | null {
     const activeDraft = options.plannerState.draft;
@@ -158,10 +159,22 @@ export function createClassroomPlannerExportFlow<
   function resetExportState(): void {
     isStarting.value = false;
     activeJob.value = null;
-    latestCompletedJob.value = null;
     backgroundPollJobId.value = null;
     statusLabel.value = null;
     errorMessage.value = null;
+  }
+
+  function recoveredExportNoticeKey(jobId: string): string {
+    return `${options.draftKind}:${jobId}`;
+  }
+
+  function announceRecoveredExportSuccess(job: Job): void {
+    const noticeKey = recoveredExportNoticeKey(job.job_id);
+    if (hasAcknowledgedRecoveredExportNotice(noticeKey)) {
+      return;
+    }
+    markRecoveredExportNoticeAcknowledged(noticeKey);
+    toast.success(options.messages.recoveredSuccessMessageForJob(job));
   }
 
   function isActiveScope(scope: ExportScope): boolean {
@@ -211,7 +224,6 @@ export function createClassroomPlannerExportFlow<
     finalizeOptions: {
       autoDownload: boolean;
       successMessage?: string;
-      readyMessage?: string;
       toastOnSuccess?: boolean;
     } = {
       autoDownload: true,
@@ -219,11 +231,11 @@ export function createClassroomPlannerExportFlow<
     },
   ): Promise<void> {
     ensureActiveScope(scope);
-    latestCompletedJob.value = job;
     activeJob.value = null;
     backgroundPollJobId.value = null;
     if (!finalizeOptions.autoDownload) {
-      statusLabel.value = finalizeOptions.readyMessage ?? options.messages.readyMessageForJob(job);
+      statusLabel.value = null;
+      announceRecoveredExportSuccess(job);
       return;
     }
     try {
@@ -231,7 +243,7 @@ export function createClassroomPlannerExportFlow<
       await downloadCompletedJob(job);
       ensureActiveScope(scope);
       const successMessage = finalizeOptions.successMessage ?? options.messages.successMessageForJob(job);
-      statusLabel.value = successMessage;
+      statusLabel.value = null;
       if (finalizeOptions.toastOnSuccess ?? true) {
         toast.success(successMessage);
       }
@@ -239,7 +251,7 @@ export function createClassroomPlannerExportFlow<
       if (error instanceof ExportFlowScopeChangedError || !isActiveScope(scope)) {
         return;
       }
-      statusLabel.value = finalizeOptions.readyMessage ?? options.messages.readyMessageForJob(job);
+      statusLabel.value = null;
       errorMessage.value = normalizeExportError(
         error,
         options.messages.autoDownloadFailureMessageForJob(job),
@@ -252,7 +264,6 @@ export function createClassroomPlannerExportFlow<
     scope: ExportScope,
     backgroundOptions: {
       autoDownload: boolean;
-      readyMessage?: string;
     } = {
       autoDownload: true,
     },
@@ -266,7 +277,6 @@ export function createClassroomPlannerExportFlow<
       const completedJob = await pollUntilComplete(jobId, Number.MAX_SAFE_INTEGER, scope);
       await finalizeCompletedJob(completedJob, scope, {
         autoDownload: backgroundOptions.autoDownload,
-        readyMessage: backgroundOptions.readyMessage,
         toastOnSuccess: backgroundOptions.autoDownload,
       });
     } catch (error: unknown) {
@@ -308,25 +318,21 @@ export function createClassroomPlannerExportFlow<
       if (recoveredJob.status === "succeeded") {
         await finalizeCompletedJob(recoveredJob, scope, {
           autoDownload: false,
-          readyMessage: options.messages.readyMessageForJob(recoveredJob),
           toastOnSuccess: false,
         });
         return;
       }
 
       activeJob.value = recoveredJob;
-      latestCompletedJob.value = null;
       statusLabel.value = options.messages.recoveryStatusMessage;
       void continuePollingInBackground(recoveredJob.job_id, scope, {
         autoDownload: false,
-        readyMessage: options.messages.readyMessageForJob(recoveredJob),
       });
     } catch (error: unknown) {
       if (error instanceof ExportFlowScopeChangedError || !isActiveScope(scope)) {
         return;
       }
       activeJob.value = null;
-      latestCompletedJob.value = null;
       backgroundPollJobId.value = null;
       statusLabel.value = null;
       errorMessage.value = normalizeExportError(
@@ -386,7 +392,6 @@ export function createClassroomPlannerExportFlow<
       ensureActiveScope(scope);
       isStarting.value = false;
       activeJob.value = createdJob;
-      latestCompletedJob.value = null;
       statusLabel.value = options.messages.statusLabelForJob(createdJob);
       try {
         const completedJob = await pollUntilComplete(createdJob.job_id, maxPollAttempts, scope);
@@ -418,21 +423,6 @@ export function createClassroomPlannerExportFlow<
     }
   }
 
-  async function downloadLatest(): Promise<void> {
-    if (isBusy.value || !latestCompletedJob.value) {
-      return;
-    }
-    errorMessage.value = null;
-    try {
-      await downloadCompletedJob(latestCompletedJob.value);
-    } catch (error: unknown) {
-      errorMessage.value = normalizeExportError(
-        error,
-        options.messages.downloadErrorMessageForJob(latestCompletedJob.value),
-      );
-    }
-  }
-
   watch(
     () => options.plannerState.draft?.id ?? null,
     (draftId) => {
@@ -456,9 +446,7 @@ export function createClassroomPlannerExportFlow<
     isBusy,
     statusLabel,
     errorMessage,
-    canDownloadLatest,
     startDefaultExport: async () => await startExport(options.defaultOption),
     startExportOption: async (option: Option) => await startExport(option),
-    downloadLatest,
   };
 }

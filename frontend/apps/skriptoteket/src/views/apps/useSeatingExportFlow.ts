@@ -55,14 +55,16 @@ function initialStatusLabelForOption(option: SeatingExportOption): string {
   return option === "xlsx" ? "Förbereder Excel…" : "Förbereder affisch…";
 }
 
-function readyMessageForJob(job: SeatingExportJob): string {
-  return job.export_kind === "xlsx" ? "Excel klar för nedladdning." : "PDF klar för nedladdning.";
-}
-
 function successMessageForJob(job: SeatingExportJob): string {
   return job.export_kind === "xlsx"
     ? "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov."
     : "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.";
+}
+
+function recoveredSuccessMessageForJob(job: SeatingExportJob): string {
+  return job.export_kind === "xlsx"
+    ? "Excel klar och sparad i Mina filer. Hämta den där igen vid behov."
+    : "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.";
 }
 
 function autoDownloadFailureMessageForJob(job: SeatingExportJob): string {
@@ -89,12 +91,6 @@ function startErrorMessageForOption(option: SeatingExportOption): string {
     : "Det gick inte att exportera affischen just nu.";
 }
 
-function downloadErrorMessageForJob(job: SeatingExportJob): string {
-  return job.export_kind === "xlsx"
-    ? "Det gick inte att ladda ned Excel-filen."
-    : "Det gick inte att ladda ned PDF-filen.";
-}
-
 export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
   return createClassroomPlannerExportFlow<SeatingExportJob, SeatingExportOption, "seating">({
     plannerState: options.plannerState,
@@ -112,13 +108,12 @@ export function useSeatingExportFlow(options: UseSeatingExportFlowOptions) {
       statusLabelForJob,
       fallbackDownloadName,
       initialStatusLabelForOption,
-      readyMessageForJob,
       successMessageForJob,
+      recoveredSuccessMessageForJob,
       autoDownloadFailureMessageForJob,
       exportErrorMessageForJob,
       restoreErrorMessageForJob,
       startErrorMessageForOption,
-      downloadErrorMessageForJob,
     },
     pollDelayMs: options.pollDelayMs,
     maxPollAttempts: options.maxPollAttempts,

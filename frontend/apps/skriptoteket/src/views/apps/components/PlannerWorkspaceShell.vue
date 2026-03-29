@@ -35,11 +35,9 @@ const props = withDefaults(
     groupingExportBusy?: boolean;
     groupingExportStatusLabel?: string | null;
     groupingExportErrorMessage?: string | null;
-    canDownloadLatestGroupingExport?: boolean;
     seatingExportBusy?: boolean;
     seatingExportStatusLabel?: string | null;
     seatingExportErrorMessage?: string | null;
-    canDownloadLatestSeatingExport?: boolean;
     transitionLabel?: string | null;
     workspaceNotice?: string | null;
   }>(),
@@ -52,11 +50,9 @@ const props = withDefaults(
     groupingExportBusy: false,
     groupingExportStatusLabel: null,
     groupingExportErrorMessage: null,
-    canDownloadLatestGroupingExport: false,
     seatingExportBusy: false,
     seatingExportStatusLabel: null,
     seatingExportErrorMessage: null,
-    canDownloadLatestSeatingExport: false,
     transitionLabel: null,
     workspaceNotice: null,
   },
@@ -74,10 +70,8 @@ const emit = defineEmits<{
   (e: "delete-seating-history-draft", draftId: string): void;
   (e: "export-grouping-default"): void;
   (e: "export-grouping-option", option: GroupingExportOption): void;
-  (e: "download-latest-grouping-export"): void;
   (e: "export-seating-default"): void;
   (e: "export-seating-option", option: SeatingExportOption): void;
-  (e: "download-latest-seating-export"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-rules"): void;
   (e: "select-workspace-mode", mode: "overview" | "grouping" | "seating" | "rules"): void;

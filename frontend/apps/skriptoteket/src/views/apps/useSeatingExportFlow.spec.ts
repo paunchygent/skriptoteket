@@ -93,6 +93,7 @@ describe("useSeatingExportFlow", () => {
     exportApiMocks.getSeatingExportJob.mockReset();
     exportApiMocks.downloadSeatingExportJob.mockReset();
     toastMocks.success.mockReset();
+    window.sessionStorage.clear();
     exportApiMocks.getRecoverableSeatingExportJob.mockResolvedValue(null);
     vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:export");
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
@@ -128,11 +129,8 @@ describe("useSeatingExportFlow", () => {
     expect(plannerState.prepareForExport).toHaveBeenCalledTimes(1);
     expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "a3_landscape");
     expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
-    expect(flow.statusLabel.value).toBe(
-      "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
-    );
+    expect(flow.statusLabel.value).toBeNull();
     expect(flow.errorMessage.value).toBeNull();
-    expect(flow.canDownloadLatest.value).toBe(true);
     expect(toastMocks.success).toHaveBeenCalledWith(
       "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
     );
@@ -205,9 +203,7 @@ describe("useSeatingExportFlow", () => {
 
     expect(exportApiMocks.createSeatingExportJob).toHaveBeenCalledWith("draft-1", "xlsx");
     expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
-    expect(flow.statusLabel.value).toBe(
-      "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
-    );
+    expect(flow.statusLabel.value).toBeNull();
     expect(toastMocks.success).toHaveBeenCalledWith(
       "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
     );
@@ -312,10 +308,13 @@ describe("useSeatingExportFlow", () => {
       expect(exportApiMocks.downloadSeatingExportJob).toHaveBeenCalledWith("job-1");
     });
     expect(flow.isBusy.value).toBe(false);
-    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(flow.statusLabel.value).toBeNull();
+    expect(toastMocks.success).toHaveBeenCalledWith(
+      "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.",
+    );
   });
 
-  it("rehydrates an in-flight export after reload and preserves a later download path", async () => {
+  it("rehydrates an in-flight export after reload and announces completion in Mina filer", async () => {
     const plannerState = createPlannerState();
     exportApiMocks.getRecoverableSeatingExportJob.mockResolvedValueOnce(
       createJob({ status: "processing" }),
@@ -341,11 +340,13 @@ describe("useSeatingExportFlow", () => {
     });
 
     await vi.waitFor(() => {
-      expect(flow.statusLabel.value).toBe("PDF klar för nedladdning.");
+      expect(toastMocks.success).toHaveBeenCalledWith(
+        "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.",
+      );
     });
 
     expect(flow.isBusy.value).toBe(false);
-    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(flow.statusLabel.value).toBeNull();
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 
@@ -370,11 +371,13 @@ describe("useSeatingExportFlow", () => {
     });
 
     await vi.waitFor(() => {
-      expect(flow.statusLabel.value).toBe("PDF klar för nedladdning.");
+      expect(toastMocks.success).toHaveBeenCalledWith(
+        "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.",
+      );
     });
 
     expect(flow.isBusy.value).toBe(false);
-    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(flow.statusLabel.value).toBeNull();
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 
@@ -421,26 +424,25 @@ describe("useSeatingExportFlow", () => {
     await Promise.resolve();
 
     expect(flow.statusLabel.value).toBeNull();
-    expect(flow.canDownloadLatest.value).toBe(false);
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 
-  it("re-runs backend recovery when returning to the same seating draft", async () => {
+  it("does not re-announce the same recovered export when returning to the same seating draft", async () => {
     const plannerState = reactive(createPlannerState()) as PlannerStateMock;
+    const recoveredJob = createJob({
+      job_id: "job-8",
+      status: "succeeded",
+      vault_artifact: {
+        file_id: "file-8",
+        name: "klassrumskarta-a3.pdf",
+        bytes: 1234,
+        created_at: "2026-03-24T10:00:05Z",
+      },
+    });
     exportApiMocks.getRecoverableSeatingExportJob
+      .mockResolvedValueOnce(recoveredJob)
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(
-        createJob({
-          status: "succeeded",
-          vault_artifact: {
-            file_id: "file-8",
-            name: "klassrumskarta-a3.pdf",
-            bytes: 1234,
-            created_at: "2026-03-24T10:00:05Z",
-          },
-        }),
-      );
+      .mockResolvedValueOnce(recoveredJob);
 
     const flow = useSeatingExportFlow({
       plannerState,
@@ -450,6 +452,9 @@ describe("useSeatingExportFlow", () => {
 
     await vi.waitFor(() => {
       expect(exportApiMocks.getRecoverableSeatingExportJob).toHaveBeenCalledWith("draft-1");
+      expect(toastMocks.success).toHaveBeenCalledWith(
+        "PDF klar och sparad i Mina filer. Hämta den där igen vid behov.",
+      );
     });
 
     plannerState.draft = {
@@ -465,10 +470,10 @@ describe("useSeatingExportFlow", () => {
 
     await vi.waitFor(() => {
       expect(exportApiMocks.getRecoverableSeatingExportJob).toHaveBeenNthCalledWith(3, "draft-1");
-      expect(flow.statusLabel.value).toBe("PDF klar för nedladdning.");
     });
 
-    expect(flow.canDownloadLatest.value).toBe(true);
+    expect(flow.statusLabel.value).toBeNull();
+    expect(toastMocks.success).toHaveBeenCalledTimes(1);
     expect(exportApiMocks.downloadSeatingExportJob).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - PRD (Editor Sandbox): `docs/prd/prd-editor-sandbox-v0.1.md`
 - PRD (Tool Authoring): `docs/prd/prd-tool-authoring-v0.1.md`
 - PRD (Klassrumskartan current): `docs/prd/prd-group-seating-studio-v0.3.md`
+- Technical overview (Klassrumskartan):
+  `src/skriptoteket/application/curated_apps/classroom_planner/README.md`
 - Product direction (Klassrumskartan): `docs/reference/ref-group-seating-studio-product-direction-2026-03-21.md`
 - Workspace UI doctrine (Klassrumskartan):
   `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
@@ -140,6 +142,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Release notes: `docs/releases/`
 - ADRs: `docs/adr/`
 - Backlog: `docs/backlog/`
+
+## Guides
+
+- Klassrumskartan kom igång: `docs/guides/guide-klassrumskartan-kom-igang.md`
 
 ## Full index
 

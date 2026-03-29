@@ -2,9 +2,10 @@
 type: epic
 id: EPIC-29
 title: "Klassrumskartan — desktop-first workspace overhaul"
-status: proposed
+status: active
 owners: "agents"
 created: 2026-03-28
+updated: 2026-03-29
 outcome: "Teachers use a denser, desktop-first Klassrumskartan workspace with a canonical symbol system, compressed shell chrome, clearer task hierarchy, and intentionally reduced mobile companion layouts without changing the planner's core logic or data contracts."
 dependencies:
   [
@@ -84,3 +85,7 @@ into the `laptop` proof width.
   any conflicting story-level backlog docs should be removed rather than left around as dormant
   alternatives.
 - This epic requires review approval before implementation begins per the repo review workflow.
+
+## Implementation Summary (as of 2026-03-29)
+
+- `ST-29-02` is now implemented locally through `PR-0161`: the planner shell is compressed, grouping and seating use detached sticky workspace toolbars, low-value full-width helper/status bands are removed or localized, and recovered export completion now announces once via toast with `Mina filer` copy instead of reappearing workspace bands.

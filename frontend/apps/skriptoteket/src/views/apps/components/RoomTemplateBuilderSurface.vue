@@ -128,9 +128,6 @@ const shouldCenterSurface = computed(() => {
         <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
           Klassrumsyta
         </h3>
-        <p class="text-xs text-navy/60">
-          Anpassa vyn utan att ändra klassrummets sparade geometri.
-        </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <span

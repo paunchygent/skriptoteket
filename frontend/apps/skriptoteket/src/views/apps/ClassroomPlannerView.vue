@@ -43,11 +43,9 @@ const {
   isGroupingExportBusy,
   groupingExportStatusLabel,
   groupingExportErrorMessage,
-  canDownloadLatestGroupingExport,
   isSeatingExportBusy,
   seatingExportStatusLabel,
   seatingExportErrorMessage,
-  canDownloadLatestSeatingExport,
   workspaceTransitionLabel,
   workspaceNotice,
   isExitConfirmationOpen,
@@ -78,10 +76,8 @@ const {
   deleteSeatingHistoryDraft,
   startDefaultGroupingExport,
   startGroupingExportOption,
-  downloadLatestGroupingExport,
   startDefaultSeatingExport,
   startSeatingExportOption,
-  downloadLatestSeatingExport,
   selectPlannerWorkspaceMode,
   upsertRoster,
   removeRosterFromOverview,
@@ -170,11 +166,9 @@ const {
       :grouping-export-busy="isGroupingExportBusy"
       :grouping-export-status-label="groupingExportStatusLabel"
       :grouping-export-error-message="groupingExportErrorMessage"
-      :can-download-latest-grouping-export="canDownloadLatestGroupingExport"
       :seating-export-busy="isSeatingExportBusy"
       :seating-export-status-label="seatingExportStatusLabel"
       :seating-export-error-message="seatingExportErrorMessage"
-      :can-download-latest-seating-export="canDownloadLatestSeatingExport"
       :transition-label="workspaceTransitionLabel"
       :workspace-notice="workspaceNotice"
       @change-grouping-template="void changeGroupingTemplate($event)"
@@ -183,10 +177,8 @@ const {
       @new-seating-draft="void startNewSeatingDraft($event)"
       @export-grouping-default="void startDefaultGroupingExport()"
       @export-grouping-option="void startGroupingExportOption($event)"
-      @download-latest-grouping-export="void downloadLatestGroupingExport()"
       @export-seating-default="void startDefaultSeatingExport()"
       @export-seating-option="void startSeatingExportOption($event)"
-      @download-latest-seating-export="void downloadLatestSeatingExport()"
       @edit-roster="openSelectedRosterEdit"
       @open-grouping-history-draft="void openGroupingHistoryDraft($event)"
       @delete-grouping-history-draft="void deleteGroupingHistoryDraft($event)"
