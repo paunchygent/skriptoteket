@@ -156,16 +156,61 @@ När du är nöjd, klicka **Exportera**:
 2. Välj antal grupper med **+** och **-**.
 3. Klicka **Slumpa** -- eller dra elever manuellt till grupperna.
 
-Grupper fungerar på samma sätt som sittplatser, men du behöver inget
-klassrum. Det gör det användbart även för ämneslärare som bara vill
-skapa grupper för sitt ämne utan att blanda in någon klassrumsplacering.
+### Vad skiljer grupper från sittplatser?
 
-Export: **Excel** (förvalt) eller **PDF A4 stående**.
+Den viktigaste skillnaden är att du inte behöver något klassrum.
+Det gör grupper användbart för alla lärare -- inte bara mentorer som
+ansvarar för klassrumsplaceringar, utan även ämneslärare som bara
+vill dela in klassen för ett grupparbete.
 
-[VISA: Gå till Grupper -- öka antal -- klicka Slumpa -- elever fördelas -- exportera]
+Verktygsfältet ser i stort sett likadant ut som i sittplatser, men
+istället för att välja klassrum väljer du antal grupper med **+** och
+**-**.
 
-> TALMANUS: "Grupper funkar på samma sätt, men du behöver inget
-> klassrum. Perfekt om du bara vill dela in klassen för ett grupparbete."
+### Regler gäller även för grupper
+
+Har du skapat regler under **Regler** (se steg 5) så kan du använda
+dem här också. Slå på **Smart** i verktygsfältet, och programmet tar
+hänsyn till reglerna när det slumpar:
+
+- Elever i en **Håll isär**-regel placeras inte i samma grupp.
+- Elever i en **Håll nära**-regel har högre sannolikhet att hamna i
+  samma grupp.
+
+Historik fungerar på samma sätt som för sittplatser -- programmet
+försöker variera gruppsammansättningen över tid.
+
+### Dra och justera
+
+Du kan dra elever mellan grupper precis som du drar dem mellan
+platser i sittplatser. Vill du börja om? Klicka **Börja om** eller
+slumpa igen.
+
+### Exportera grupper
+
+Klicka **Exportera**:
+
+- **Excel** (förvalt) -- i Excel-filen finns en presentationsflik
+  och en redigeringsflik där du kan göra småjusteringar i efterhand,
+  till exempel flytta en elev till en annan grupp.
+- **PDF A4 stående** -- för utskrift eller presentation.
+
+Det är allra bäst att göra justeringarna här i appen innan du
+exporterar, men Excel-fliken finns som en extra möjlighet om det
+behövs.
+
+Du kan även redigera klassen direkt härifrån via menyn om det
+skulle behövas.
+
+[VISA: Gå till Grupper -- öka antal -- klicka Slumpa -- elever fördelas -- slå på Smart -- visa att Håll isär-elever hamnar i olika grupper -- dra en elev till annan grupp -- exportera till Excel -- visa Excel-flikarna]
+
+> TALMANUS: "Grupper funkar på samma sätt som sittplatser, men du
+> behöver inget klassrum. Perfekt för ämneslärare som bara vill dela in
+> klassen. Och det fina är att reglerna gäller här med -- har du sagt
+> att två elever ska hållas isär så hamnar de inte i samma grupp.
+> Du väljer antal grupper, slumpar, och drar om du vill justera.
+> Exportera till Excel så får du både en presentationsflik och en
+> redigeringsflik."
 
 [PAUS]
 

@@ -114,9 +114,9 @@ const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules
 });
 
 // Keep the global help panel in sync with the active planner mode.
-const { setHelpContext } = useHelp();
+const { setHelpContext, clearHelpContext } = useHelp();
 watch(workspaceModeValue, (mode) => setHelpContext(`planner_${mode}`), { immediate: true });
-onUnmounted(() => setHelpContext(null));
+onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
 const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && plannerState.template === null;
 });

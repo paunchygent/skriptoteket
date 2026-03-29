@@ -18,7 +18,7 @@ Keep this file updated so the next session can pick up work quickly.
 ## Status
 
 - `ST-07-07` is now shipped locally and live on Hemma: `src/skriptoteket/web/dishka_compat.py` is removed, HTTP DI now resolves through `request.state.dishka_container`, websocket resolution is explicit via `src/skriptoteket/web/dishka_dependencies.py`, `skriptoteket_reviewer` approved the final tree with no actionable findings, and Hemma `skriptoteket-web` / `skriptoteket-worker` are healthy again after the `2026-03-29` seating-export deploy gate.
-- Hemma is now back on published commit `1743db25` with a clean `git status --short` after the clean redeploy and seating-export gate rerun.
+- Hemma is now back on the current published `main` commit with a clean `git status --short`; the canonical deploy gate now fast-forwards a clean checkout to `origin/main` before it rebuilds.
 - EPIC-26 export baseline is in place locally:
   - grouping + seating PDF rendering is local in Skriptoteket
   - grouping + seating XLSX delivery shipped
@@ -168,7 +168,7 @@ Keep this file updated so the next session can pick up work quickly.
 - 2026-03-29 `ST-08-34` planner contextual help:
   - `pdm run fe-test -- --run src/components/help/HelpPanel.spec.ts`
   - `pdm run fe-type-check`; `pdm run docs-validate`
-  - live proof: `pdm run python - <<'PY' ... planner help live check ... PY` confirmed `Översikt` now renders `Översikt: klass och klassrum` + `Steg 1 -- Skapa din första klass`; artifact: `.artifacts/help-debug/planner-overview-help-fixed.png`
+  - live proof: `pdm run python - <<'PY' ... planner help return-cycle check ... PY` confirmed repeated `Översikt -> Grupper -> Översikt` transitions keep `Översikt: klass och klassrum` instead of falling back to the empty help index; artifacts: `.artifacts/help-debug/planner-overview-help-fixed.png`, `.artifacts/help-debug/planner-help-overview-return-fixed-local.png`
 - 2026-03-29 `PR-0161` / `ST-29-02` shell-compression feedback-contract cleanup:
   - `pnpm -C frontend --filter @skriptoteket/spa test -- src/views/apps/useGroupingExportFlow.spec.ts src/views/apps/useSeatingExportFlow.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts src/views/apps/components/PlannerGroupingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.export.spec.ts src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`
   - `pdm run fe-type-check`
@@ -190,7 +190,7 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 ```
 ## Known Issues / Risks
 
-- Hemma production is healthy again on published commit `1743db25`; for live verification, use the container healthcheck or in-container `curl`, because `skriptoteket-web` is not host-published on `127.0.0.1:8000`.
+- Hemma production is healthy again on the current published `main` commit; for live verification, use the container healthcheck or in-container `curl`, because `skriptoteket-web` is not host-published on `127.0.0.1:8000`.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:

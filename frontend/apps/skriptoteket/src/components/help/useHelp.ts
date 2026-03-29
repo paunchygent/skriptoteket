@@ -1,3 +1,11 @@
+/**
+ * Help-panel state and contextual topic resolution.
+ *
+ * This module owns the global help drawer refs that are shared across the SPA.
+ * Route-level help is resolved here, while nested shells like Klassrumskartan
+ * can temporarily override the route via `helpContext` without introducing a
+ * second help surface.
+ */
 import { ref } from "vue";
 import type { RouteRecordName } from "vue-router";
 
@@ -101,6 +109,13 @@ export function useHelp() {
     helpContext.value = ctx;
   }
 
+  function clearHelpContext(expectedContext?: string | null): void {
+    if (expectedContext && helpContext.value !== expectedContext) {
+      return;
+    }
+    helpContext.value = null;
+  }
+
   return {
     isOpen,
     activeTopic,
@@ -111,5 +126,6 @@ export function useHelp() {
     showIndex,
     showTopic,
     setHelpContext,
+    clearHelpContext,
   };
 }

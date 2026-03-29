@@ -78,4 +78,28 @@ describe("HelpPanel", () => {
 
     wrapper.unmount();
   });
+
+  it("keeps the newer planner help topic when stale shell cleanup arrives after a mode return", async () => {
+    const help = useHelp();
+    help.setHelpContext("planner_seating");
+
+    const wrapper = mount(HelpPanel, {
+      attachTo: document.body,
+    });
+
+    await flushPromises();
+    await flushPromises();
+    expect(document.body.textContent).toContain("Sittplatser");
+
+    help.setHelpContext("planner_overview");
+    help.clearHelpContext("planner_seating");
+    await flushPromises();
+    await flushPromises();
+
+    expect(document.body.textContent).toContain("Översikt: klass och klassrum");
+    expect(document.body.textContent).toContain("Steg 1 -- Skapa din första klass");
+    expect(document.body.textContent).not.toContain("Hjälpindex");
+
+    wrapper.unmount();
+  });
 });

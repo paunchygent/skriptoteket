@@ -40,8 +40,20 @@ export const plannerHelpSections: Record<string, string> = {
 <ul><li><strong>Affisch A3 liggande</strong> (förvalt) -- bra att sätta upp i klassrummet</li><li><strong>Affisch A4 liggande</strong> -- om du föredrar mindre format</li><li><strong>Excel</strong> -- om du vill ha det digitalt eller bearbeta vidare</li></ul>`,
   planner_grouping: `<h3>Steg 4 -- Skapa din första gruppering</h3>
 <ol><li>Gå till <strong>Grupper</strong> i toppmenyn.</li><li>Välj antal grupper med <strong>+</strong> och <strong>-</strong>.</li><li>Klicka <strong>Slumpa</strong> -- eller dra elever manuellt till grupperna.</li></ol>
-<p>Grupper fungerar på samma sätt som sittplatser, men du behöver inget klassrum. Det gör det användbart även för ämneslärare som bara vill skapa grupper för sitt ämne utan att blanda in någon klassrumsplacering.</p>
-<p>Export: <strong>Excel</strong> (förvalt) eller <strong>PDF A4 stående</strong>.</p>`,
+<h4>Vad skiljer grupper från sittplatser?</h4>
+<p>Den viktigaste skillnaden är att du inte behöver något klassrum. Det gör grupper användbart för alla lärare -- inte bara mentorer som ansvarar för klassrumsplaceringar, utan även ämneslärare som bara vill dela in klassen för ett grupparbete.</p>
+<p>Verktygsfältet ser i stort sett likadant ut som i sittplatser, men istället för att välja klassrum väljer du antal grupper med <strong>+</strong> och <strong>-</strong>.</p>
+<h4>Regler gäller även för grupper</h4>
+<p>Har du skapat regler under <strong>Regler</strong> (se steg 5) så kan du använda dem här också. Slå på <strong>Smart</strong> i verktygsfältet, och programmet tar hänsyn till reglerna när det slumpar:</p>
+<ul><li>Elever i en <strong>Håll isär</strong>-regel placeras inte i samma grupp.</li><li>Elever i en <strong>Håll nära</strong>-regel har högre sannolikhet att hamna i samma grupp.</li></ul>
+<p>Historik fungerar på samma sätt som för sittplatser -- programmet försöker variera gruppsammansättningen över tid.</p>
+<h4>Dra och justera</h4>
+<p>Du kan dra elever mellan grupper precis som du drar dem mellan platser i sittplatser. Vill du börja om? Klicka <strong>Börja om</strong> eller slumpa igen.</p>
+<h4>Exportera grupper</h4>
+<p>Klicka <strong>Exportera</strong>:</p>
+<ul><li><strong>Excel</strong> (förvalt) -- i Excel-filen finns en presentationsflik och en redigeringsflik där du kan göra småjusteringar i efterhand, till exempel flytta en elev till en annan grupp.</li><li><strong>PDF A4 stående</strong> -- för utskrift eller presentation.</li></ul>
+<p>Det är allra bäst att göra justeringarna här i appen innan du exporterar, men Excel-fliken finns som en extra möjlighet om det behövs.</p>
+<p>Du kan även redigera klassen direkt härifrån via menyn om det skulle behövas.</p>`,
   planner_rules: `<h3>Steg 5 -- Regler (smarta placeringar)</h3>
 <p>Regler är observationer du sparar om hur dina elever fungerar bäst. När du sedan slumpar med <strong>Smart</strong> påslaget tar programmet hänsyn till dem.</p>
 <p>Gå till <strong>Regler</strong> i toppmenyn. Där finns tre regeltyper:</p>

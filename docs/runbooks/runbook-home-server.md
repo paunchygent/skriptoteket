@@ -656,6 +656,7 @@ ssh hemma "cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 The script is intentionally fail-closed. It:
 
+- fast-forwards a clean Hemma checkout to the latest `origin/main`
 - builds/redeploys Skriptoteket with `compose.prod.yaml`
 - runs `pdm run db-upgrade` inside `skriptoteket-web`
 - runs the mandatory local seating-export smoke and fails if the export does not reach immediate

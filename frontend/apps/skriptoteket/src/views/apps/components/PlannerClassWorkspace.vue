@@ -56,9 +56,9 @@ const emit = defineEmits<{
 const workspaceMode = ref<"overview" | "grouping" | "seating" | "rules">("overview");
 
 // Keep the global help panel aware that we are in overview mode.
-const { setHelpContext } = useHelp();
+const { setHelpContext, clearHelpContext } = useHelp();
 setHelpContext("planner_overview");
-onUnmounted(() => setHelpContext(null));
+onUnmounted(() => clearHelpContext("planner_overview"));
 
 const activeRosterSummary = computed(() => props.workspaceSummary?.roster ?? null);
 const selectedRoster = computed(() => {
