@@ -11,6 +11,7 @@ Split into domain-specific providers for maintainability:
 from __future__ import annotations
 
 from dishka import make_async_container
+from starlette_dishka import StarletteProvider
 
 from skriptoteket.config import Settings
 from skriptoteket.di.catalog import CatalogProvider
@@ -54,6 +55,7 @@ __all__ = [
 def create_container(settings: Settings):
     """Create the DI container with all domain providers."""
     return make_async_container(
+        StarletteProvider(),
         InfrastructureDatabaseProvider(settings),
         InfrastructureRepositoryProvider(),
         InfrastructureRunnerProvider(),

@@ -1,5 +1,4 @@
 """HTTP routes for the Reagent Prep Chef curated app APIs.
-
 This module exposes app-specific endpoints (prep, defaults, risk draft/export/save, SDS)
 and enforces app access + CSRF at the web boundary.
 """
@@ -44,10 +43,9 @@ from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefUpdateDefaultsHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 APP_ID = "chemistry.reagent_prep_chef"
-
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 
 
@@ -59,7 +57,6 @@ def _require_app_access(*, registry: CuratedAppRegistryProtocol, user: User) -> 
 
 
 @router.get("/chemicals", response_model=ReagentPrepChefChemicalsResult)
-@inject
 async def list_chemicals(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefChemicalsHandlerProtocol],
@@ -70,7 +67,6 @@ async def list_chemicals(
 
 
 @router.post("/prep", response_model=ReagentPrepChefPrepResult)
-@inject
 async def prep(
     command: ReagentPrepChefPrepRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -83,7 +79,6 @@ async def prep(
 
 
 @router.post("/risk-assessment", response_model=ReagentPrepChefRiskAssessmentResult)
-@inject
 async def risk_assessment(
     command: ReagentPrepChefRiskAssessmentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -96,7 +91,6 @@ async def risk_assessment(
 
 
 @router.post("/export-pdf")
-@inject
 async def export_pdf(
     command: ReagentPrepChefPrepRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -114,7 +108,6 @@ async def export_pdf(
 
 
 @router.post("/export-risk-pdf")
-@inject
 async def export_risk_pdf(
     command: ReagentPrepChefRiskAssessmentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -132,7 +125,6 @@ async def export_risk_pdf(
 
 
 @router.post("/save-pdf", response_model=ReagentPrepChefSavePdfResult)
-@inject
 async def save_pdf(
     command: ReagentPrepChefSavePdfRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -145,7 +137,6 @@ async def save_pdf(
 
 
 @router.post("/save-risk-pdf", response_model=ReagentPrepChefSavePdfResult)
-@inject
 async def save_risk_pdf(
     command: ReagentPrepChefRiskAssessmentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -158,7 +149,6 @@ async def save_risk_pdf(
 
 
 @router.post("/save-defaults", response_model=ReagentPrepChefSaveDefaultsResult)
-@inject
 async def save_defaults(
     command: ReagentPrepChefSaveDefaultsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -171,7 +161,6 @@ async def save_defaults(
 
 
 @router.post("/load-defaults", response_model=ReagentPrepChefDefaultsResult)
-@inject
 async def load_defaults(
     command: ReagentPrepChefLoadDefaultsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -184,7 +173,6 @@ async def load_defaults(
 
 
 @router.get("/defaults", response_model=ReagentPrepChefDefaultsResult)
-@inject
 async def get_defaults(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ReagentPrepChefGetDefaultsHandlerProtocol],
@@ -195,7 +183,6 @@ async def get_defaults(
 
 
 @router.put("/defaults", response_model=ReagentPrepChefDefaultsResult)
-@inject
 async def update_defaults(
     command: ReagentPrepChefUpdateDefaultsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -208,7 +195,6 @@ async def update_defaults(
 
 
 @router.get("/sds/{sds_ref}")
-@inject
 async def get_sds(
     sds_ref: str,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -225,7 +211,6 @@ async def get_sds(
 
 
 @router.get("/sds/{sds_ref}/markdown", response_model=ReagentPrepChefSdsMarkdownResult)
-@inject
 async def get_sds_markdown(
     sds_ref: str,
     registry: FromDishka[CuratedAppRegistryProtocol],

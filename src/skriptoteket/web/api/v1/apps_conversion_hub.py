@@ -1,10 +1,8 @@
 """Conversion Hub curated app API routes (Skriptoteket).
-
 Purpose:
   Expose a bespoke Conversion Hub API surface under `/api/v1/apps/<app_id>/...`
   while keeping Skriptoteket as the owner of job identity, authorization, and
   artifact downloads.
-
 Relationships:
   - App registry entry: `src/skriptoteket/infrastructure/curated_apps/registry.py`
   - Application handlers: `application.curated_apps.handlers.conversion_hub_jobs`
@@ -36,12 +34,11 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
 APP_ID = "documents.conversion_hub"
 _MAX_WAIT_SECONDS = 20
-
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 
 
@@ -114,7 +111,6 @@ def _validate_route_supported(spec: ConversionHubJobSpecV2) -> None:
 def _build_v2_job_spec(*, spec: ConversionHubJobSpecV2, filename: str) -> dict[str, object]:
     if spec.output_format.value != "pdf" and spec.pdf_layout is not None:
         raise validation_error("pdf_layout is only supported for PDF outputs.")
-
     job_spec: dict[str, object] = {
         "api_version": "v2",
         "source": {
@@ -135,7 +131,6 @@ def _build_v2_job_spec(*, spec: ConversionHubJobSpecV2, filename: str) -> dict[s
         "execution": None,
         "retention": {"pin": False},
     }
-
     if spec.source_format.value == "pdf":
         # Provide safe defaults required by Sir Convert-a-Lot v2 for PDF sources.
         job_spec["pdf_options"] = {
@@ -149,12 +144,10 @@ def _build_v2_job_spec(*, spec: ConversionHubJobSpecV2, filename: str) -> dict[s
             "priority": "normal",
             "document_timeout_seconds": 1800,
         }
-
     return job_spec
 
 
 @router.get("/routes", response_model=ConversionHubListRoutesResult)
-@inject
 async def list_routes(
     registry: FromDishka[CuratedAppRegistryProtocol],
     user: User = Depends(require_user_api),
@@ -164,7 +157,6 @@ async def list_routes(
 
 
 @router.post("/jobs", response_model=ConversionHubSubmitResult)
-@inject
 async def submit_jobs(
     request: Request,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -176,27 +168,21 @@ async def submit_jobs(
     _: None = Depends(require_csrf_token),
 ) -> ConversionHubSubmitResult:
     _require_app_access(registry=registry, user=user)
-
     if wait_seconds < 0 or wait_seconds > _MAX_WAIT_SECONDS:
         raise validation_error(f"wait_seconds must be between 0 and {_MAX_WAIT_SECONDS}.")
-
     try:
         spec = ConversionHubJobSpecV2.model_validate_json(job_spec_json)
     except Exception as exc:
         raise validation_error("Invalid job_spec JSON.") from exc
-
     _validate_route_supported(spec)
-
     if not files:
         raise validation_error("At least one file must be provided.")
-
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
     uploads: list[ConversionHubUpload] = []
     for upload in files:
         if upload.filename is None or not upload.filename:
             raise validation_error("Uploaded file is missing a filename.")
-
         _build_v2_job_spec(spec=spec, filename=upload.filename)
         await upload.seek(0)
         uploads.append(
@@ -217,7 +203,6 @@ async def submit_jobs(
 
 
 @router.get("/jobs/{job_id}", response_model=ConversionHubJobStatusResult)
-@inject
 async def get_job_status(
     job_id: UUID,
     request: Request,
@@ -232,7 +217,6 @@ async def get_job_status(
 
 
 @router.get("/jobs/{job_id}/artifact")
-@inject
 async def download_artifact(
     job_id: UUID,
     request: Request,

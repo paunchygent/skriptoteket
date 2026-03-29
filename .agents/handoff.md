@@ -1,7 +1,6 @@
 # Session Handoff
 Keep this file updated so the next session can pick up work quickly.
 ## Editing Rules (do not break structure)
-
 - Keep the headings and section order exactly as-is; only fill in content.
 - Use short bullets; include key file paths (e.g., `src/...`, `docs/...`) and exact commands.
 - Do not paste large code blocks; link to files instead.
@@ -14,11 +13,12 @@ Keep this file updated so the next session can pick up work quickly.
 - Branch: `main` + local changes
 - Current sprint: Sprint 24
 - Production: Full Vue SPA
-- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`
+- Completed: `PR-0120`, `PR-0121`, `PR-0122`, `PR-0123`, `PR-0124`, `PR-0125`, `PR-0126`, `PR-0137`, `PR-0138`, `PR-0139`, `PR-0140`, `PR-0142`, `PR-0143`, `PR-0145`, `PR-0146`, `PR-0147`, `PR-0148`, `PR-0150`, `PR-0151`, `PR-0152`, `PR-0153`, `PR-0154`, `PR-0155`, `PR-0162`, `PR-0163`, `PR-0164`
 
 ## Status
 
-- Hemma checkout is Git-aligned on current `main`, but the latest redeploy exposed a production web crash loop from removed FastAPI lifecycle APIs; `skriptoteket-worker` stays healthy, production seating-export smoke succeeded inside the worker image on the new local WeasyPrint path, and the exported PDF was pulled to `.artifacts/production-pdf-check/hemma-seating-export-smoke.pdf` for logo inspection.
+- `ST-07-07` is now shipped locally and live on Hemma: `src/skriptoteket/web/dishka_compat.py` is removed, HTTP DI now resolves through `request.state.dishka_container`, websocket resolution is explicit via `src/skriptoteket/web/dishka_dependencies.py`, `skriptoteket_reviewer` approved the final tree with no actionable findings, and Hemma `skriptoteket-web` / `skriptoteket-worker` are healthy again after the `2026-03-29` seating-export deploy gate.
+- Important nuance: Hemma is no longer Git-aligned because the deploy used the local ST-07-07 diff over checkout `c1993966`; `git status --short` on `~/apps/skriptoteket` is dirty until the same code is formally published.
 - EPIC-26 export baseline is in place locally:
   - grouping + seating PDF rendering is local in Skriptoteket
   - grouping + seating XLSX delivery shipped
@@ -159,11 +159,17 @@ Keep this file updated so the next session can pick up work quickly.
   - backend semantics alignment verified with domain/application/web/repository pytest lanes plus `pdm run typecheck` and `pdm run docs-validate`
   - live proof against a fresh host backend: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002` and `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
   - artifacts under `.artifacts/st-27-03-smart-seating-semantics/summary.json`
-- 2026-03-29 compatibility sweep:
-  - `pdm run pytest tests/test_smoke.py tests/test_openapi_contracts.py tests/unit/web/test_startup_checks.py`
+- 2026-03-29 `ST-07-07` supported web DI/runtime cutover:
+  - `pdm run lint`; `pdm run docs-validate`
+  - `pdm run pytest tests/unit/web tests/test_smoke.py tests/test_openapi_contracts.py tests/unit/web/test_startup_checks.py`
+  - `pdm run pytest tests/unit/web/test_dishka_dependencies.py tests/unit/web/test_dishka_websocket_routes.py tests/unit/web/test_observability_routes.py tests/test_openapi_contracts.py`
   - `PYTHONPATH=src pdm run python -c "from skriptoteket.web.app import create_app; app=create_app(); print(app.title); print(bool(app.openapi().get('info', {}).get('title')))"`
-  - `pdm run fe-type-check`; `pdm run docs-validate`
-  - live proof: `curl -sf http://127.0.0.1:8000/healthz` and `curl -I -sf http://127.0.0.1:5173/apps/classroom.group-seating-studio`
+  - local container proof: `pdm run dev-rebuild`; `docker exec skriptoteket_web pdm run python -c "from importlib.metadata import version; print('fastapi', version('fastapi')); print('starlette', version('starlette')); print('dishka', version('dishka')); print('starlette-dishka', version('starlette-dishka'))"`; `curl -sf http://127.0.0.1:8000/healthz`; `curl -sf http://127.0.0.1:8000/metrics | head -n 20`
+  - Hemma proof: `ssh hemma "sudo docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,10p'"`; `ssh hemma "sudo docker inspect -f '{{json .State.Health}}' skriptoteket-web"`; `ssh hemma "sudo docker exec skriptoteket-web curl -sf http://127.0.0.1:8000/healthz"`; `ssh hemma "sudo docker exec skriptoteket-web curl -sf http://127.0.0.1:8000/metrics | sed -n '1,10p'"`; `ssh hemma "tail -n 120 ~/apps/skriptoteket/.artifacts/st-07-07-hemma-deploy.log"`; host-level `ssh hemma "curl -sf http://127.0.0.1:8000/healthz"` does not work there because `skriptoteket-web` is not host-published
+- 2026-03-29 classroom editor sticky-rail follow-up:
+  - `pnpm -C frontend/apps/skriptoteket exec vitest run src/views/apps/components/CreateRoomTemplateModal.spec.ts src/views/apps/components/RoomTemplateBuilderSurface.spec.ts`
+  - `pdm run fe-type-check`
+  - live proof fallback: `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173` (browser smoke passed; targeted ad hoc modal probe was not retained)
 
 ## How to Run
 ```bash
@@ -182,7 +188,7 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Known Issues / Risks
 
-- Hemma is on `c1993966` and the seating-export deploy gate passes, but the web container is still unhealthy because `/healthz` fails inside the repo-owned Dishka/FastAPI hybrid compat path with `KeyError: '___dishka_websocket'`.
+- Hemma production is healthy again, but the checkout at `~/apps/skriptoteket` is currently dirty on top of `c1993966` because the ST-07-07 cutover was deployed by syncing the same local diff to the server before formal publication.
 - The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
@@ -190,5 +196,5 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Next Steps
 
-- Take `ST-07-07` next before more feature work: `PR-0162`..`PR-0164` now define the correct global fix for retiring `src/skriptoteket/web/dishka_compat.py`, moving HTTP DI onto FastAPI `Depends` + `request.state.dishka_container`, handling websockets explicitly, and re-proving Hemma health on the locked runtime.
-- After the production DI cutover is healthy again, resume the planner lanes in order: `ST-29-02` shell compression, then the remaining `ST-29-*` workspace overhaul slices, while keeping the earlier smart-assignment/rules contracts intact.
+- Publish the current ST-07-07 diff so Hemma can return to a Git-aligned checkout instead of the temporary dirty worktree deploy.
+- With the production DI cutover healthy again, resume the planner lanes in order: `ST-29-02` shell compression, then the remaining `ST-29-*` workspace overhaul slices, while keeping the earlier smart-assignment/rules contracts intact.

@@ -15,7 +15,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import DraftLockRequest
 from .models.responses import DraftLockReleaseResponse, DraftLockResponse
@@ -24,7 +24,6 @@ router = APIRouter()
 
 
 @router.post("/tools/{tool_id}/draft-lock", response_model=DraftLockResponse)
-@inject
 async def acquire_draft_lock(
     tool_id: UUID,
     payload: DraftLockRequest,
@@ -50,7 +49,6 @@ async def acquire_draft_lock(
 
 
 @router.delete("/tools/{tool_id}/draft-lock", response_model=DraftLockReleaseResponse)
-@inject
 async def release_draft_lock(
     tool_id: UUID,
     handler: FromDishka[ReleaseDraftLockHandlerProtocol],

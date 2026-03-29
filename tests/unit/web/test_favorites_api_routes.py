@@ -9,6 +9,7 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette_dishka import setup_dishka
 
 from skriptoteket.application.favorites.commands import FavoriteStatusResult
 from skriptoteket.application.favorites.queries import FavoriteCatalogItem, ListFavoritesResult
@@ -26,7 +27,6 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
 )
 from skriptoteket.web.api.v1 import favorites as favorites_api
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_session, make_user
 

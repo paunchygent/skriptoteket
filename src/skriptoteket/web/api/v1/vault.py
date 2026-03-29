@@ -24,13 +24,12 @@ from skriptoteket.protocols.vault import (
     SaveVaultFileHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/vault", tags=["vault"])
 
 
 @router.get("/files", response_model=ListVaultFilesResult)
-@inject
 async def list_vault_files(
     handler: FromDishka[ListVaultFilesHandlerProtocol],
     user: User = Depends(require_user_api),
@@ -53,7 +52,6 @@ async def list_vault_files(
 
 
 @router.post("/files", response_model=SaveVaultFileResult)
-@inject
 async def save_vault_file(
     command: SaveVaultFileCommand,
     handler: FromDishka[SaveVaultFileHandlerProtocol],
@@ -64,7 +62,6 @@ async def save_vault_file(
 
 
 @router.post("/files/{file_id}/delete", response_model=DeleteVaultFileResult)
-@inject
 async def delete_vault_file(
     file_id: UUID,
     handler: FromDishka[DeleteVaultFileHandlerProtocol],
@@ -75,7 +72,6 @@ async def delete_vault_file(
 
 
 @router.post("/files/{file_id}/restore", response_model=RestoreVaultFileResult)
-@inject
 async def restore_vault_file(
     file_id: UUID,
     handler: FromDishka[RestoreVaultFileHandlerProtocol],
@@ -86,7 +82,6 @@ async def restore_vault_file(
 
 
 @router.get("/files/{file_id}/download")
-@inject
 async def download_vault_file(
     file_id: UUID,
     handler: FromDishka[DownloadVaultFileHandlerProtocol],

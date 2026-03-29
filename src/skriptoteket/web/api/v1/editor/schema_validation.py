@@ -6,7 +6,7 @@ from skriptoteket.application.scripting.commands import ValidateToolSchemasComma
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.scripting import ValidateToolSchemasHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api, require_csrf_token
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import ValidateToolSchemasRequest
 from .models.responses import ValidateToolSchemasResponse
@@ -15,7 +15,6 @@ router = APIRouter()
 
 
 @router.post("/tools/{tool_id}/validate-schemas", response_model=ValidateToolSchemasResponse)
-@inject
 async def validate_schemas(
     tool_id: UUID,
     payload: ValidateToolSchemasRequest,

@@ -19,7 +19,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_admin_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import AssignMaintainerRequest
 from .models.responses import MaintainerListResponse, MaintainerSummary
@@ -36,7 +36,6 @@ def _to_maintainer_summary(user: User) -> MaintainerSummary:
 
 
 @router.get("/tools/{tool_id}/maintainers", response_model=MaintainerListResponse)
-@inject
 async def list_tool_maintainers(
     tool_id: UUID,
     handler: FromDishka[ListMaintainersHandlerProtocol],
@@ -54,7 +53,6 @@ async def list_tool_maintainers(
 
 
 @router.post("/tools/{tool_id}/maintainers", response_model=MaintainerListResponse)
-@inject
 async def assign_tool_maintainer(
     tool_id: UUID,
     payload: AssignMaintainerRequest,
@@ -67,14 +65,12 @@ async def assign_tool_maintainer(
     email = payload.email.strip()
     if not email:
         raise validation_error("E-post krävs.", details={"email": payload.email})
-
     user_auth = await users.get_auth_by_email(email=email)
     if user_auth is None:
         raise validation_error(
             f"Ingen användare med e-post: {email}",
             details={"email": email},
         )
-
     await handler.handle(
         actor=user,
         command=AssignMaintainerCommand(
@@ -94,7 +90,6 @@ async def assign_tool_maintainer(
 
 
 @router.delete("/tools/{tool_id}/maintainers/{user_id}", response_model=MaintainerListResponse)
-@inject
 async def remove_tool_maintainer(
     tool_id: UUID,
     user_id: UUID,

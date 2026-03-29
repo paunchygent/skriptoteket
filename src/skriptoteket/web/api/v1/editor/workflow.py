@@ -21,7 +21,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_superuser_api,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import PublishVersionRequest, RequestChangesRequest, SubmitReviewRequest
 from .models.responses import WorkflowActionResponse
@@ -30,7 +30,6 @@ router = APIRouter()
 
 
 @router.post("/tool-versions/{version_id}/submit-review", response_model=WorkflowActionResponse)
-@inject
 async def submit_review(
     version_id: UUID,
     payload: SubmitReviewRequest,
@@ -52,7 +51,6 @@ async def submit_review(
 
 
 @router.post("/tool-versions/{version_id}/publish", response_model=WorkflowActionResponse)
-@inject
 async def publish_version(
     version_id: UUID,
     payload: PublishVersionRequest,
@@ -74,7 +72,6 @@ async def publish_version(
 
 
 @router.post("/tool-versions/{version_id}/request-changes", response_model=WorkflowActionResponse)
-@inject
 async def request_changes(
     version_id: UUID,
     payload: RequestChangesRequest,
@@ -96,7 +93,6 @@ async def request_changes(
 
 
 @router.post("/tool-versions/{version_id}/rollback", response_model=WorkflowActionResponse)
-@inject
 async def rollback_version(
     version_id: UUID,
     handler: FromDishka[RollbackVersionHandlerProtocol],

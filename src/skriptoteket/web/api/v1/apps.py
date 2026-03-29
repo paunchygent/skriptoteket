@@ -11,7 +11,7 @@ from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/apps", tags=["apps"])
 
@@ -20,7 +20,6 @@ class AppDetailResponse(BaseModel):
     """Response payload for a curated app detail lookup."""
 
     model_config = ConfigDict(frozen=True)
-
     app_id: str
     tool_id: UUID
     title: str
@@ -30,7 +29,6 @@ class AppDetailResponse(BaseModel):
 
 
 @router.get("/{app_id}", response_model=AppDetailResponse)
-@inject
 async def get_app_by_id(
     app_id: str,
     registry: FromDishka[CuratedAppRegistryProtocol],
@@ -39,9 +37,7 @@ async def get_app_by_id(
     app = registry.get_by_app_id(app_id=app_id)
     if app is None:
         raise not_found("CuratedApp", app_id)
-
     require_at_least_role(user=user, role=app.min_role)
-
     return AppDetailResponse(
         app_id=app.app_id,
         tool_id=app.tool_id,

@@ -37,7 +37,7 @@ from skriptoteket.protocols.interactive_tools import (
 )
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1")
 
@@ -69,7 +69,6 @@ def _resolve_artifact_path(
     relative_path = Path(validate_output_path(path=artifact_path).as_posix())
     run_dir = settings.ARTIFACTS_ROOT / str(run_id)
     candidate_path = (run_dir / relative_path).resolve()
-
     run_root = run_dir.resolve()
     artifacts_root = settings.ARTIFACTS_ROOT.resolve()
     if run_root not in candidate_path.parents:
@@ -84,12 +83,10 @@ def _resolve_artifact_path(
             message="Artifact path is outside artifacts root",
             details={"path": artifact_path},
         )
-
     return candidate_path, relative_path
 
 
 @router.post("/start_action", response_model=StartActionResult)
-@inject
 async def start_action(
     command: StartActionCommand,
     handler: FromDishka[StartActionHandlerProtocol],
@@ -100,7 +97,6 @@ async def start_action(
 
 
 @router.get("/tools/{tool_id}/sessions/{context}", response_model=GetSessionStateResult)
-@inject
 async def get_session_state(
     tool_id: UUID,
     context: str,
@@ -114,7 +110,6 @@ async def get_session_state(
 
 
 @router.get("/tools/{tool_id}/session-files", response_model=ListSessionFilesResult)
-@inject
 async def list_session_files(
     tool_id: UUID,
     handler: FromDishka[ListSessionFilesHandlerProtocol],
@@ -128,7 +123,6 @@ async def list_session_files(
 
 
 @router.post("/tools/{tool_id}/session-files/delete", response_model=DeleteSessionFilesResult)
-@inject
 async def delete_session_files(
     tool_id: UUID,
     payload: DeleteSessionFilesRequest,
@@ -148,7 +142,6 @@ async def delete_session_files(
 
 
 @router.get("/runs/{run_id}", response_model=GetRunResult)
-@inject
 async def get_run(
     run_id: UUID,
     handler: FromDishka[GetRunHandlerProtocol],
@@ -158,7 +151,6 @@ async def get_run(
 
 
 @router.get("/runs/{run_id}/artifacts", response_model=ListArtifactsResult)
-@inject
 async def list_artifacts(
     run_id: UUID,
     handler: FromDishka[ListArtifactsHandlerProtocol],
@@ -168,7 +160,6 @@ async def list_artifacts(
 
 
 @router.get("/runs/{run_id}/artifacts/{artifact_id}")
-@inject
 async def download_artifact(
     request: Request,
     run_id: UUID,
@@ -179,12 +170,10 @@ async def download_artifact(
 ) -> Response:
     del request
     run = await _load_production_run_for_user(runs=runs, run_id=run_id, actor=user)
-
     manifest = ArtifactsManifest.model_validate(run.artifacts_manifest)
     artifact = next((a for a in manifest.artifacts if a.artifact_id == artifact_id), None)
     if artifact is None:
         raise not_found("Artifact", artifact_id)
-
     candidate_path, relative_path = _resolve_artifact_path(
         settings=settings,
         run_id=run.id,
@@ -192,7 +181,6 @@ async def download_artifact(
     )
     if not candidate_path.is_file():
         raise not_found("ArtifactFile", str(candidate_path))
-
     return FileResponse(
         candidate_path,
         filename=relative_path.name,

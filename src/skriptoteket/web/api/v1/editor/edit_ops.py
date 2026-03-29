@@ -19,7 +19,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_session_api,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import require_tool_access
 
 from .models.common import EditorVirtualFiles
@@ -36,12 +36,10 @@ from .models.responses import (
 )
 
 router = APIRouter()
-
 _EVAL_REQUEST_HEADER = "X-Skriptoteket-Eval"
 
 
 @router.post("/edit-ops", response_model=EditorEditOpsResponse)
-@inject
 async def create_edit_ops(
     payload: EditorEditOpsRequest,
     response: Response,
@@ -61,16 +59,13 @@ async def create_edit_ops(
             )
         if user.role not in {Role.ADMIN, Role.SUPERUSER}:
             raise DomainError(code=ErrorCode.FORBIDDEN, message="Eval mode requires admin access")
-
     await require_tool_access(actor=user, tool_id=payload.tool_id, maintainers=maintainers)
-
     selection = (
         EditOpsSelection(start=payload.selection.start, end=payload.selection.end)
         if payload.selection
         else None
     )
     cursor = EditOpsCursor(pos=payload.cursor.pos) if payload.cursor else None
-
     result = await handler.handle(
         actor=user,
         command=EditOpsCommand(
@@ -83,9 +78,7 @@ async def create_edit_ops(
             allow_remote_fallback=session.allow_remote_fallback,
         ),
     )
-
     assistant_message = result.assistant_message
-
     if eval_mode == "1" and result.eval_meta is not None:
         response.headers["X-Skriptoteket-Eval-Template-Id"] = result.eval_meta.template_id or ""
         response.headers["X-Skriptoteket-Eval-Outcome"] = result.eval_meta.outcome
@@ -100,7 +93,6 @@ async def create_edit_ops(
         )
         response.headers["X-Skriptoteket-Eval-Prefix-Chars"] = str(result.eval_meta.prefix_chars)
         response.headers["X-Skriptoteket-Eval-Suffix-Chars"] = str(result.eval_meta.suffix_chars)
-
     return EditorEditOpsResponse(
         enabled=result.enabled,
         assistant_message=assistant_message,
@@ -110,7 +102,6 @@ async def create_edit_ops(
 
 
 @router.post("/edit-ops/preview", response_model=EditorEditOpsPreviewResponse)
-@inject
 async def preview_edit_ops(
     payload: EditorEditOpsPreviewRequest,
     handler: FromDishka[EditOpsPreviewHandlerProtocol],
@@ -119,14 +110,12 @@ async def preview_edit_ops(
     _: None = Depends(require_csrf_token),
 ) -> EditorEditOpsPreviewResponse:
     await require_tool_access(actor=user, tool_id=payload.tool_id, maintainers=maintainers)
-
     selection = (
         EditOpsSelection(start=payload.selection.start, end=payload.selection.end)
         if payload.selection
         else None
     )
     cursor = EditOpsCursor(pos=payload.cursor.pos) if payload.cursor else None
-
     result = await handler.handle(
         actor=user,
         command=EditOpsPreviewCommand(
@@ -138,9 +127,7 @@ async def preview_edit_ops(
             ops=[op.model_dump(exclude_none=True) for op in payload.ops],
         ),
     )
-
     errors = list(result.errors)
-
     return EditorEditOpsPreviewResponse(
         ok=result.ok,
         after_virtual_files=EditorVirtualFiles.model_validate(result.after_virtual_files),
@@ -154,7 +141,6 @@ async def preview_edit_ops(
 
 
 @router.post("/edit-ops/apply", response_model=EditorEditOpsPreviewResponse)
-@inject
 async def apply_edit_ops(
     payload: EditorEditOpsApplyRequest,
     handler: FromDishka[EditOpsApplyHandlerProtocol],
@@ -163,14 +149,12 @@ async def apply_edit_ops(
     _: None = Depends(require_csrf_token),
 ) -> EditorEditOpsPreviewResponse:
     await require_tool_access(actor=user, tool_id=payload.tool_id, maintainers=maintainers)
-
     selection = (
         EditOpsSelection(start=payload.selection.start, end=payload.selection.end)
         if payload.selection
         else None
     )
     cursor = EditOpsCursor(pos=payload.cursor.pos) if payload.cursor else None
-
     result = await handler.handle(
         actor=user,
         command=EditOpsApplyCommand(
@@ -184,9 +168,7 @@ async def apply_edit_ops(
             patch_id=payload.patch_id,
         ),
     )
-
     errors = list(result.errors)
-
     return EditorEditOpsPreviewResponse(
         ok=result.ok,
         after_virtual_files=EditorVirtualFiles.model_validate(result.after_virtual_files),

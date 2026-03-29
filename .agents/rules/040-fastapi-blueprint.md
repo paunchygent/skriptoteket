@@ -2,7 +2,7 @@
 id: "040-fastapi-blueprint"
 type: "implementation"
 created: 2025-12-13
-updated: 2026-01-22
+updated: 2026-03-29
 scope: "backend"
 ---
 
@@ -22,9 +22,9 @@ Expected shape (simplified; mirrors the real implementation):
 ```python
 from pathlib import Path
 
-from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.di import create_container
@@ -95,28 +95,49 @@ FastAPI builds OpenAPI from type hints. With postponed evaluation / ForwardRef e
 ## 4. Endpoint pattern (REQUIRED)
 
 - Web layer stays thin: validate inputs, call a handler protocol, return a boundary model.
-- Use Dishka injection via `FromDishka[...]`.
+- Use Dishka injection for HTTP handlers via
+  `skriptoteket.web.dishka_dependencies.FromDishka[...]`, which resolves through
+  FastAPI `Depends` and `request.state.dishka_container`.
 - For mutating endpoints, enforce CSRF via `require_csrf_token` and auth via `require_user_api`.
+- **FORBIDDEN**: `@inject` on HTTP handlers under `src/skriptoteket/web/**`.
+- **FORBIDDEN**: importing `FromDishka` from `dishka.integrations.fastapi` in router modules.
 
 Example (pattern only):
 
 ```python
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends
 
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListToolsHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1")
 
 @router.get("/tools")
-@inject
 async def list_tools(
     handler: FromDishka[ListToolsHandlerProtocol],
     user: User = Depends(require_user_api),
 ):
     return await handler.handle(actor=user, query=...)
+```
+
+Websocket endpoints must resolve Dishka services explicitly from websocket state.
+Do not use copied/internal FastAPI integration mechanics for websocket handlers.
+
+```python
+from fastapi import APIRouter, WebSocket
+
+from skriptoteket.protocols.realtime import RealtimeHubProtocol
+from skriptoteket.web.dishka_dependencies import resolve_from_websocket
+
+router = APIRouter()
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    await websocket.accept()
+    hub = await resolve_from_websocket(websocket, RealtimeHubProtocol)
+    await hub.handle(websocket)
 ```
 
 ## 5. OpenAPI as the contract (frontend types)

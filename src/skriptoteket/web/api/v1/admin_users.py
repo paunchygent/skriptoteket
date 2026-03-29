@@ -15,33 +15,29 @@ from skriptoteket.protocols.identity import (
 )
 from skriptoteket.protocols.login_events import ListLoginEventsHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_superuser_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1", tags=["admin-users"])
 
 
 class ListAdminUsersResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     users: list[User]
     total: int
 
 
 class AdminUserResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user: User
 
 
 class AdminUserLoginEventsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user: User
     events: list[LoginEvent]
 
 
 @router.get("/admin/users", response_model=ListAdminUsersResponse)
-@inject
 async def list_admin_users(
     handler: FromDishka[ListUsersHandlerProtocol],
     user: User = Depends(require_superuser_api),
@@ -56,7 +52,6 @@ async def list_admin_users(
 
 
 @router.get("/admin/users/{user_id}", response_model=AdminUserResponse)
-@inject
 async def get_admin_user(
     user_id: UUID,
     handler: FromDishka[GetUserHandlerProtocol],
@@ -67,7 +62,6 @@ async def get_admin_user(
 
 
 @router.get("/admin/users/{user_id}/login-events", response_model=AdminUserLoginEventsResponse)
-@inject
 async def get_admin_user_login_events(
     user_id: UUID,
     handler: FromDishka[ListLoginEventsHandlerProtocol],

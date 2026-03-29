@@ -10,6 +10,7 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
@@ -27,7 +28,6 @@ from skriptoteket.protocols.llm import (
     EditOpsPreviewResult,
 )
 from skriptoteket.web.api.v1.editor import edit_ops as edit_ops_api
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_session, make_user
 

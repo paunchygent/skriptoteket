@@ -9,13 +9,12 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_session_api,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import EditorInlineCompletionRequest
 from .models.responses import EditorInlineCompletionResponse
 
 router = APIRouter()
-
 _EVAL_REQUEST_HEADER = "X-Skriptoteket-Eval"
 
 
@@ -24,7 +23,6 @@ _EVAL_REQUEST_HEADER = "X-Skriptoteket-Eval"
     response_model=EditorInlineCompletionResponse,
     response_model_exclude_none=True,
 )
-@inject
 async def create_inline_completion(
     payload: EditorInlineCompletionRequest,
     response: Response,
@@ -43,7 +41,6 @@ async def create_inline_completion(
             )
         if user.role not in {Role.ADMIN, Role.SUPERUSER}:
             raise DomainError(code=ErrorCode.FORBIDDEN, message="Eval mode requires admin access")
-
     result = await handler.handle(
         actor=user,
         command=InlineCompletionCommand(
@@ -106,7 +103,6 @@ async def create_inline_completion(
             )
         if result.eval_meta.total_ms is not None:
             response.headers["X-Skriptoteket-Eval-Total-Ms"] = str(result.eval_meta.total_ms)
-
     return EditorInlineCompletionResponse(
         completion=result.completion,
         enabled=result.enabled,

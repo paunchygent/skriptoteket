@@ -14,21 +14,19 @@ from skriptoteket.protocols.favorites import (
     RemoveFavoriteHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/favorites", tags=["favorites"])
 
 
 class FavoriteStatusResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     is_favorite: bool
 
 
 class FavoriteToolItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     kind: Literal["tool"]
     id: UUID
     slug: str
@@ -39,7 +37,6 @@ class FavoriteToolItem(BaseModel):
 
 class FavoriteCuratedAppItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     kind: Literal["curated_app"]
     id: UUID
     app_id: str
@@ -50,12 +47,10 @@ class FavoriteCuratedAppItem(BaseModel):
 
 class ListFavoritesResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     items: list[FavoriteToolItem | FavoriteCuratedAppItem]
 
 
 @router.post("/{catalog_item_id}", response_model=FavoriteStatusResponse)
-@inject
 async def add_favorite(
     catalog_item_id: UUID,
     handler: FromDishka[AddFavoriteHandlerProtocol],
@@ -70,7 +65,6 @@ async def add_favorite(
 
 
 @router.delete("/{catalog_item_id}", response_model=FavoriteStatusResponse)
-@inject
 async def remove_favorite(
     catalog_item_id: UUID,
     handler: FromDishka[RemoveFavoriteHandlerProtocol],
@@ -85,7 +79,6 @@ async def remove_favorite(
 
 
 @router.get("", response_model=ListFavoritesResponse)
-@inject
 async def list_favorites(
     handler: FromDishka[ListFavoritesHandlerProtocol],
     user: User = Depends(require_user_api),

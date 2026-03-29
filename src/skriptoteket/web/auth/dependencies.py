@@ -1,3 +1,15 @@
+"""Auth dependency helpers for FastAPI request/session resolution.
+
+Purpose:
+    Resolve session cookies, sessions, and current-user state through the
+    supported FastAPI dependency system.
+
+Relationships:
+    - Reads request-scoped Dishka services via
+      `skriptoteket.web.dishka_dependencies.FromDishka`.
+    - Feeds higher-level route guards in `skriptoteket.web.auth.api_dependencies`.
+"""
+
 from __future__ import annotations
 
 from uuid import UUID
@@ -8,7 +20,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Session, User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import CurrentUserProviderProtocol, SessionRepositoryProtocol
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 
 def _parse_uuid(value: str | None) -> UUID | None:
@@ -20,12 +32,10 @@ def _parse_uuid(value: str | None) -> UUID | None:
         return None
 
 
-@inject
 def get_session_id(request: Request, settings: FromDishka[Settings]) -> UUID | None:
     return _parse_uuid(request.cookies.get(settings.SESSION_COOKIE_NAME))
 
 
-@inject
 async def get_current_session(
     sessions: FromDishka[SessionRepositoryProtocol],
     clock: FromDishka[ClockProtocol],
@@ -33,7 +43,6 @@ async def get_current_session(
 ) -> Session | None:
     if session_id is None:
         return None
-
     session = await sessions.get_by_id(session_id)
     if session is None or session.revoked_at is not None:
         return None
@@ -42,7 +51,6 @@ async def get_current_session(
     return session
 
 
-@inject
 async def get_current_user(
     provider: FromDishka[CurrentUserProviderProtocol],
     session_id: UUID | None = Depends(get_session_id),

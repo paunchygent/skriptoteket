@@ -50,11 +50,11 @@ def _is_class_workspace_summary_endpoint(
 
 
 def _unwrap_dishka(fn: object) -> _ClassWorkspaceSummaryEndpoint:
-    """Extract original function from Dishka-wrapped handlers."""
+    """Return the callable endpoint for both wrapped and direct handler shapes."""
 
-    unwrapped = getattr(fn, "__dishka_orig_func__", None)
-    assert _is_class_workspace_summary_endpoint(unwrapped)
-    return unwrapped
+    candidate = getattr(fn, "__dishka_orig_func__", fn)
+    assert _is_class_workspace_summary_endpoint(candidate)
+    return candidate
 
 
 @pytest.mark.unit

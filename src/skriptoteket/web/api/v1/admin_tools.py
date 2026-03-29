@@ -21,19 +21,16 @@ from skriptoteket.protocols.catalog import (
     PublishToolHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_admin_api, require_csrf_token
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1", tags=["admin-tools"])
 
 
 # --- DTOs ---
-
-
 class AdminToolItem(BaseModel):
     """Tool representation for admin list/actions (ADR-0033)."""
 
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     slug: str
     title: str
@@ -42,7 +39,6 @@ class AdminToolItem(BaseModel):
     active_version_id: UUID | None
     created_at: datetime
     updated_at: datetime
-
     # Version statistics for status enrichment (ADR-0033)
     version_count: int
     latest_version_state: str | None
@@ -51,32 +47,27 @@ class AdminToolItem(BaseModel):
 
 class ListAdminToolsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tools: list[AdminToolItem]
 
 
 class PublishToolResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tool: AdminToolItem
 
 
 class DepublishToolResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tool: AdminToolItem
 
 
 class CreateDraftToolRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     title: str
     summary: str | None = None
 
 
 class CreateDraftToolResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tool: AdminToolItem
 
 
@@ -102,7 +93,6 @@ _DEFAULT_STATS = ToolVersionStats(
     latest_version_state=None,
     has_pending_review=False,
 )
-
 # Stats for publishable tools (have at least one active version)
 _PUBLISHABLE_STATS = ToolVersionStats(
     version_count=1,  # At minimum, the active version exists
@@ -112,13 +102,10 @@ _PUBLISHABLE_STATS = ToolVersionStats(
 
 
 # --- Endpoints ---
-
-
 @router.get(
     "/admin/tools",
     response_model=ListAdminToolsResponse,
 )
-@inject
 async def list_admin_tools(
     handler: FromDishka[ListToolsForAdminHandlerProtocol],
     user: User = Depends(require_admin_api),
@@ -136,7 +123,6 @@ async def list_admin_tools(
     "/admin/tools",
     response_model=CreateDraftToolResponse,
 )
-@inject
 async def create_draft_tool(
     payload: CreateDraftToolRequest,
     handler: FromDishka[CreateDraftToolHandlerProtocol],
@@ -157,7 +143,6 @@ async def create_draft_tool(
     "/admin/tools/{tool_id}/publish",
     response_model=PublishToolResponse,
 )
-@inject
 async def publish_tool(
     tool_id: UUID,
     handler: FromDishka[PublishToolHandlerProtocol],
@@ -176,7 +161,6 @@ async def publish_tool(
     "/admin/tools/{tool_id}/depublish",
     response_model=DepublishToolResponse,
 )
-@inject
 async def depublish_tool(
     tool_id: UUID,
     handler: FromDishka[DepublishToolHandlerProtocol],

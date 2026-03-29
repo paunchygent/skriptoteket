@@ -8,12 +8,12 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.identity import RegisterUserHandlerProtocol
 from skriptoteket.web.api.v1 import auth as auth_api
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 
 

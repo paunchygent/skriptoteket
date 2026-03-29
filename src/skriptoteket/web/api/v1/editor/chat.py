@@ -21,7 +21,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_csrf_token,
     require_session_api,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import require_tool_access
 
 from .models.requests import EditorChatRequest
@@ -40,7 +40,6 @@ def _encode_sse_event(event: EditorChatStreamEvent) -> bytes:
 
 
 @router.post("/tools/{tool_id}/chat", response_class=StreamingResponse)
-@inject
 async def stream_editor_chat(
     tool_id: UUID,
     payload: EditorChatRequest,
@@ -51,7 +50,6 @@ async def stream_editor_chat(
     _: None = Depends(require_csrf_token),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
-
     command = EditorChatCommand(
         tool_id=tool_id,
         message=payload.message,
@@ -61,12 +59,10 @@ async def stream_editor_chat(
         virtual_files=payload.virtual_files.as_map() if payload.virtual_files is not None else None,
     )
     stream_iter = handler.stream(actor=user, command=command)
-
     first_event = await anext(stream_iter)
 
     async def stream() -> AsyncIterator[bytes]:
         yield _encode_sse_event(first_event)
-
         async for event in stream_iter:
             yield _encode_sse_event(event)
 
@@ -80,7 +76,6 @@ async def stream_editor_chat(
 
 
 @router.get("/tools/{tool_id}/chat", response_model=EditorChatHistoryResponse)
-@inject
 async def get_editor_chat_history(
     tool_id: UUID,
     handler: FromDishka[EditorChatHistoryHandlerProtocol],
@@ -89,7 +84,6 @@ async def get_editor_chat_history(
     limit: int = Query(60, ge=1, le=200),
 ) -> EditorChatHistoryResponse:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
-
     result = await handler.handle(
         actor=user,
         query=EditorChatHistoryQuery(tool_id=tool_id, limit=limit),
@@ -114,7 +108,6 @@ async def get_editor_chat_history(
 
 
 @router.delete("/tools/{tool_id}/chat", status_code=204)
-@inject
 async def clear_editor_chat(
     tool_id: UUID,
     handler: FromDishka[EditorChatClearHandlerProtocol],
@@ -123,7 +116,6 @@ async def clear_editor_chat(
     _: None = Depends(require_csrf_token),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
-
     await handler.handle(
         actor=user,
         command=EditorChatClearCommand(tool_id=tool_id),

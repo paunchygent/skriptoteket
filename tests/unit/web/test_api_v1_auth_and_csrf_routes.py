@@ -9,6 +9,7 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette_dishka import setup_dishka
 
 from skriptoteket.application.identity.commands import LoginResult
 from skriptoteket.application.scripting.commands import (
@@ -47,7 +48,6 @@ from skriptoteket.protocols.scripting import (
 )
 from skriptoteket.web.api.v1 import auth as api_v1_auth
 from skriptoteket.web.api.v1 import editor as editor_routes
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.routes import interactive_tools as interactive_tools_routes
 from tests.fixtures.identity_fixtures import make_session, make_user

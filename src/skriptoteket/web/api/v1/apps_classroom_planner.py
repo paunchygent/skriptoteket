@@ -1,5 +1,4 @@
 """API endpoints for the Classroom Planner curated app.
-
 This router exposes the bespoke classroom-planner contract used by the SPA. It
 keeps reusable roster and room assets separate from draft-scoped workspace
 state and only publishes the current fundamentals workflow for grouping,
@@ -68,7 +67,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner_summary import (
     serialize_class_workspace_summary,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 
 router = APIRouter(
@@ -78,7 +77,6 @@ router = APIRouter(
 
 def _assert_unique(values: list[str], *, label: str) -> None:
     """Reject duplicate identifiers in one request collection."""
-
     if len(values) != len(set(values)):
         raise ValueError(f"{label} IDs must be unique.")
 
@@ -87,7 +85,6 @@ class StudentDto(BaseModel):
     """Serialize a roster student."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     id: str
     display_name: str
 
@@ -96,7 +93,6 @@ class RoomFixtureDto(BaseModel):
     """Serialize a room fixture."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     id: str
     type: str
     x: int
@@ -110,7 +106,6 @@ class RosterDto(BaseModel):
     """Serialize a reusable roster."""
 
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     name: str
     students: list[StudentDto]
@@ -136,7 +131,6 @@ class SeatDto(BaseModel):
     """Serialize a room seat."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     id: str
     x: int
     y: int
@@ -147,7 +141,6 @@ class RoomTemplateDto(BaseModel):
     """Serialize a reusable room template."""
 
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     name: str
     grid_cols: int = Field(default=DEFAULT_ROOM_GRID_COLS, ge=1)
@@ -180,7 +173,6 @@ class DraftGroupDto(BaseModel):
     """Serialize a draft-scoped group."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     id: str
     name: str
     sort_order: int
@@ -191,7 +183,6 @@ class GroupAssignmentDto(BaseModel):
     """Serialize one student-to-group assignment."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     student_id: str
     group_id: str
 
@@ -200,7 +191,6 @@ class SeatAssignmentDto(BaseModel):
     """Serialize one student-to-seat assignment."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     student_id: str
     seat_id: str
 
@@ -209,7 +199,6 @@ class StudentPlanningMetaDto(BaseModel):
     """Serialize teacher-only student notes."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
-
     student_id: str
     notes: str | None = None
 
@@ -218,7 +207,6 @@ class StudentSeatingPreferenceDto(BaseModel):
     """Serialize per-student seating-only preferences."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
-
     student_id: str
     near_teacher: bool = False
 
@@ -227,7 +215,6 @@ class RelationshipRuleDto(BaseModel):
     """Serialize a student relationship constraint."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
-
     id: str
     kind: str
     student_ids: list[str]
@@ -237,7 +224,6 @@ class ResumablePlanDraftDto(BaseModel):
     """Serialize the latest resumable draft CTA payload."""
 
     model_config = ConfigDict(frozen=True)
-
     draft: PlanDraftDto
     roster_name: str
     template_name: str | None = None
@@ -247,7 +233,6 @@ class DraftHistoryStatusDto(BaseModel):
     """Serialize the undo/redo availability for an active draft."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
-
     can_undo: bool
     can_redo: bool
 
@@ -256,7 +241,6 @@ class DraftWorkspaceResponse(BaseModel):
     """Serialize the hydrated fundamentals planner workspace."""
 
     model_config = ConfigDict(frozen=True)
-
     draft: PlanDraftDto
     roster: RosterDto
     template: RoomTemplateDto | None = None
@@ -279,7 +263,6 @@ class UpdatePlanDraftRequest(BaseModel):
     """Deserialize mutable draft workspace patches."""
 
     model_config = ConfigDict(extra="forbid")
-
     expected_revision: int | None = None
     smart_enabled: bool | None = None
     use_history: bool | None = None
@@ -316,7 +299,6 @@ class UpdatePlanDraftRequest(BaseModel):
 
 def _serialize_roster(roster: Roster) -> RosterDto:
     """Map a roster aggregate to the public API response."""
-
     return RosterDto(
         id=roster.id,
         name=roster.name,
@@ -326,7 +308,6 @@ def _serialize_roster(roster: Roster) -> RosterDto:
 
 def _serialize_template(template: RoomTemplate) -> RoomTemplateDto:
     """Map a room template aggregate to the public API response."""
-
     return RoomTemplateDto(
         id=template.id,
         name=template.name,
@@ -339,7 +320,6 @@ def _serialize_template(template: RoomTemplate) -> RoomTemplateDto:
 
 def _serialize_resumable_plan_draft(resumable: ResumablePlanDraft) -> ResumablePlanDraftDto:
     """Map the resumable draft aggregate to the landing-page CTA response."""
-
     return ResumablePlanDraftDto(
         draft=serialize_plan_draft(resumable.draft),
         roster_name=resumable.roster_name,
@@ -349,7 +329,6 @@ def _serialize_resumable_plan_draft(resumable: ResumablePlanDraft) -> ResumableP
 
 def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspaceResponse:
     """Map the hydrated planner workspace to the public API response."""
-
     return DraftWorkspaceResponse(
         draft=serialize_plan_draft(workspace.draft),
         roster=_serialize_roster(workspace.roster),
@@ -371,7 +350,6 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
 
 
 @router.post("/drafts/{draft_id}/undo", response_model=DraftWorkspaceResponse)
-@inject
 async def undo_draft(
     draft_id: UUID,
     handler: FromDishka[UndoDraftHandler],
@@ -398,7 +376,6 @@ async def undo_draft(
 
 
 @router.post("/drafts/{draft_id}/redo", response_model=DraftWorkspaceResponse)
-@inject
 async def redo_draft(
     draft_id: UUID,
     handler: FromDishka[RedoDraftHandler],
@@ -425,7 +402,6 @@ async def redo_draft(
 
 
 @router.get("/rosters", response_model=list[RosterDto])
-@inject
 async def list_rosters(
     handler: FromDishka[ListRostersHandler],
     user: User = Depends(require_user_api),
@@ -435,7 +411,6 @@ async def list_rosters(
 
 
 @router.get("/rosters/{roster_id}", response_model=RosterDto)
-@inject
 async def get_roster(
     roster_id: UUID,
     handler: FromDishka[GetRosterHandler],
@@ -445,7 +420,6 @@ async def get_roster(
 
 
 @router.get("/rosters/{roster_id}/workspace-summary", response_model=ClassWorkspaceSummaryDto)
-@inject
 async def get_class_workspace_summary(
     roster_id: UUID,
     handler: FromDishka[GetClassWorkspaceSummaryHandler],
@@ -457,7 +431,6 @@ async def get_class_workspace_summary(
 
 
 @router.post("/rosters/import-preview", response_model=ClassListImportPreview)
-@inject
 async def import_preview(
     request: Request,
     file: UploadFile,
@@ -476,7 +449,6 @@ async def import_preview(
 
 
 @router.post("/rosters", response_model=RosterDto, status_code=status.HTTP_201_CREATED)
-@inject
 async def create_roster(
     request: CreateRosterRequest,
     handler: FromDishka[CreateRosterHandler],
@@ -490,7 +462,6 @@ async def create_roster(
 
 
 @router.put("/rosters/{roster_id}", response_model=RosterDto)
-@inject
 async def update_roster(
     roster_id: UUID,
     request: UpdateRosterRequest,
@@ -508,7 +479,6 @@ async def update_roster(
 
 
 @router.delete("/rosters/{roster_id}", status_code=status.HTTP_204_NO_CONTENT)
-@inject
 async def delete_roster(
     roster_id: UUID,
     handler: FromDishka[DeleteRosterHandler],
@@ -519,7 +489,6 @@ async def delete_roster(
 
 
 @router.get("/templates", response_model=list[RoomTemplateDto])
-@inject
 async def list_templates(
     handler: FromDishka[ListRoomTemplatesHandler],
     user: User = Depends(require_user_api),
@@ -529,7 +498,6 @@ async def list_templates(
 
 
 @router.get("/templates/{template_id}", response_model=RoomTemplateDto)
-@inject
 async def get_template(
     template_id: UUID,
     handler: FromDishka[GetRoomTemplateHandler],
@@ -539,7 +507,6 @@ async def get_template(
 
 
 @router.post("/templates", response_model=RoomTemplateDto, status_code=status.HTTP_201_CREATED)
-@inject
 async def create_template(
     request: CreateRoomTemplateRequest,
     handler: FromDishka[CreateRoomTemplateHandler],
@@ -558,7 +525,6 @@ async def create_template(
 
 
 @router.put("/templates/{template_id}", response_model=RoomTemplateDto)
-@inject
 async def update_template(
     template_id: UUID,
     request: UpdateRoomTemplateRequest,
@@ -579,7 +545,6 @@ async def update_template(
 
 
 @router.delete("/templates/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
-@inject
 async def delete_template(
     template_id: UUID,
     handler: FromDishka[DeleteRoomTemplateHandler],
@@ -590,7 +555,6 @@ async def delete_template(
 
 
 @router.post("/drafts/resolve", response_model=PlanDraftDto)
-@inject
 async def resolve_draft(
     request: ResolvePlanDraftRequest,
     handler: FromDishka[ResolveDraftHandler],
@@ -607,7 +571,6 @@ async def resolve_draft(
 
 
 @router.post("/drafts/{draft_id}/abandon", response_model=PlanDraftDto)
-@inject
 async def abandon_draft(
     draft_id: UUID,
     handler: FromDishka[AbandonDraftHandler],
@@ -618,7 +581,6 @@ async def abandon_draft(
 
 
 @router.get("/drafts/resumable", response_model=ResumablePlanDraftDto | None)
-@inject
 async def get_resumable_draft(
     handler: FromDishka[GetResumableDraftHandler],
     user: User = Depends(require_user_api),
@@ -630,7 +592,6 @@ async def get_resumable_draft(
 
 
 @router.get("/drafts/{draft_id}", response_model=PlanDraftDto)
-@inject
 async def get_draft(
     draft_id: UUID,
     handler: FromDishka[GetDraftHandler],
@@ -640,7 +601,6 @@ async def get_draft(
 
 
 @router.get("/drafts/{draft_id}/workspace", response_model=DraftWorkspaceResponse)
-@inject
 async def get_draft_workspace(
     draft_id: UUID,
     handler: FromDishka[GetDraftWorkspaceHandler],
@@ -651,7 +611,6 @@ async def get_draft_workspace(
 
 
 @router.patch("/drafts/{draft_id}", response_model=DraftWorkspaceResponse)
-@inject
 async def update_draft(
     draft_id: UUID,
     request: UpdatePlanDraftRequest,

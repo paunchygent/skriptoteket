@@ -37,7 +37,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.uploads import read_upload_files
 
 from .models.requests import StartSandboxActionRequest
@@ -109,17 +109,14 @@ def _parse_file_refs_by_field(raw: str | None) -> dict[str, list[str]]:
 def _parse_file_ref_sources(raw: list[str] | None) -> list[FileRefSource]:
     if raw is None or not raw:
         return [FileRefSource.SESSION, FileRefSource.VAULT]
-
     tokens: list[str] = []
     for item in raw:
         for part in item.split(","):
             normalized = part.strip().lower()
             if normalized:
                 tokens.append(normalized)
-
     if not tokens:
         return [FileRefSource.SESSION, FileRefSource.VAULT]
-
     sources: list[FileRefSource] = []
     seen: set[FileRefSource] = set()
     for token in tokens:
@@ -178,7 +175,6 @@ def _parse_file_fields(raw: str | None, *, expected_len: int) -> list[str]:
 
 
 @router.post("/tool-versions/{version_id}/run-sandbox", response_model=SandboxRunResponse)
-@inject
 async def run_sandbox(
     version_id: UUID,
     handler: FromDishka[RunSandboxHandlerProtocol],
@@ -197,7 +193,6 @@ async def run_sandbox(
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
-
     input_files: list[tuple[str, bytes]] = []
     if files:
         input_files = await read_upload_files(
@@ -211,7 +206,6 @@ async def run_sandbox(
         parsed_fields = _parse_file_fields(file_fields, expected_len=len(input_files))
         for entry, field in zip(input_files, parsed_fields, strict=True):
             input_files_by_field.setdefault(field, []).append(entry)
-
     input_values: dict[str, JsonValue] = {}
     if inputs is not None and inputs.strip():
         try:
@@ -227,9 +221,7 @@ async def run_sandbox(
                 message="inputs must be a JSON object",
             )
         input_values = parsed
-
     parsed_file_refs_by_field = _parse_file_refs_by_field(file_refs_by_field)
-
     try:
         snapshot_payload = SandboxSnapshotPayload.model_validate_json(snapshot)
     except ValidationError as exc:
@@ -238,7 +230,6 @@ async def run_sandbox(
             message="snapshot must be valid JSON",
             details={"errors": exc.errors()},
         ) from exc
-
     result = await handler.handle(
         actor=user,
         command=RunSandboxCommand(
@@ -269,7 +260,6 @@ async def run_sandbox(
 
 
 @router.get("/tool-versions/{version_id}/session", response_model=SandboxSessionResponse)
-@inject
 async def get_sandbox_session(
     version_id: UUID,
     versions_repo: FromDishka[ToolVersionRepositoryProtocol],
@@ -281,7 +271,6 @@ async def get_sandbox_session(
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
-
     context = _sandbox_context(snapshot_id or version_id)
     session = await sessions.get(
         tool_id=version.tool_id,
@@ -290,7 +279,6 @@ async def get_sandbox_session(
     )
     if session is None:
         raise not_found("SandboxSession", str(version_id))
-
     return SandboxSessionResponse(
         state_rev=session.state_rev,
         state=session.state,
@@ -301,7 +289,6 @@ async def get_sandbox_session(
     "/tool-versions/{version_id}/file-refs",
     response_model=ListSandboxFileRefsResult,
 )
-@inject
 async def list_sandbox_file_refs(
     version_id: UUID,
     handler: FromDishka[ListSandboxFileRefsHandlerProtocol],
@@ -324,7 +311,6 @@ async def list_sandbox_file_refs(
     "/tool-versions/{version_id}/session-files",
     response_model=ListSandboxSessionFilesResult,
 )
-@inject
 async def list_sandbox_session_files(
     version_id: UUID,
     handler: FromDishka[ListSandboxSessionFilesHandlerProtocol],
@@ -344,7 +330,6 @@ async def list_sandbox_session_files(
     "/tool-versions/{version_id}/session-files/delete",
     response_model=DeleteSandboxSessionFilesResult,
 )
-@inject
 async def delete_sandbox_session_files(
     version_id: UUID,
     payload: DeleteSandboxSessionFilesRequest,
@@ -367,7 +352,6 @@ async def delete_sandbox_session_files(
     "/tool-versions/{version_id}/start-action",
     response_model=StartSandboxActionResponse,
 )
-@inject
 async def start_sandbox_action(
     version_id: UUID,
     payload: StartSandboxActionRequest,
@@ -380,7 +364,6 @@ async def start_sandbox_action(
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
-
     from skriptoteket.application.scripting.interactive_sandbox import (
         StartSandboxActionCommand,
     )

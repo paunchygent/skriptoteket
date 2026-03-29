@@ -15,7 +15,7 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.draft_locks import DraftLockRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolVersionRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import (
     DEFAULT_ENTRYPOINT,
     STARTER_TEMPLATE,
@@ -100,7 +100,6 @@ def _resolve_editor_state(
 ]:
     if selected_version is None:
         return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, [], None, "create_draft", None, None
-
     is_draft = selected_version.state is VersionState.DRAFT
     save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"
     parent_version_id = selected_version.derived_from_version_id
@@ -135,7 +134,6 @@ def _build_editor_response(
         parent_version_id,
         create_draft_from_version_id,
     ) = _resolve_editor_state(selected_version)
-
     return EditorBootResponse(
         tool=_to_tool_summary(tool),
         versions=[_to_version_summary(v) for v in visible_versions],
@@ -154,7 +152,6 @@ def _build_editor_response(
 
 
 @router.get("/tools/{tool_id}", response_model=EditorBootResponse)
-@inject
 async def get_editor_for_tool(
     tool_id: UUID,
     tools: FromDishka[ToolRepositoryProtocol],
@@ -167,7 +164,6 @@ async def get_editor_for_tool(
     tool = await tools.get_by_id(tool_id=tool_id)
     if tool is None:
         raise not_found("Tool", str(tool_id))
-
     is_tool_maintainer = await require_tool_access(
         actor=user,
         tool_id=tool.id,
@@ -203,7 +199,6 @@ async def get_editor_for_tool(
 
 
 @router.get("/tool-versions/{version_id}", response_model=EditorBootResponse)
-@inject
 async def get_editor_for_version(
     version_id: UUID,
     tools: FromDishka[ToolRepositoryProtocol],
@@ -216,11 +211,9 @@ async def get_editor_for_version(
     version = await versions_repo.get_by_id(version_id=version_id)
     if version is None:
         raise not_found("ToolVersion", str(version_id))
-
     tool = await tools.get_by_id(tool_id=version.tool_id)
     if tool is None:
         raise not_found("Tool", str(version.tool_id))
-
     is_tool_maintainer = await require_tool_access(
         actor=user,
         tool_id=tool.id,
@@ -238,7 +231,6 @@ async def get_editor_for_version(
             message="Insufficient permissions",
             details={"tool_id": str(tool.id), "version_id": str(version.id)},
         )
-
     draft_head = _resolve_draft_head(versions)
     draft_head_id = draft_head.id if draft_head else None
     draft_lock = _to_draft_lock_response(

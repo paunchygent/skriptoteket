@@ -30,7 +30,7 @@ from skriptoteket.web.auth.dependencies import (
     get_current_user,
     get_session_id,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import (
     get_client_ip,
     get_correlation_id,
@@ -42,7 +42,6 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 class AiPolicyResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     remote_providers_enabled: bool
     completion_external_available: bool
     completion_local_available: bool
@@ -68,14 +67,12 @@ def _build_ai_policy(settings: Settings) -> AiPolicyResponse:
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     email: str
     password: str
 
 
 class LoginResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user: User
     profile: UserProfile | None = None
     csrf_token: str
@@ -84,7 +81,6 @@ class LoginResponse(BaseModel):
 
 class RegisterRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     email: str
     password: str
     first_name: str
@@ -93,7 +89,6 @@ class RegisterRequest(BaseModel):
 
 class RegisterResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user: User
     profile: UserProfile
     message: str = "Konto skapat! Kontrollera din e-post för att verifiera kontot."
@@ -101,7 +96,6 @@ class RegisterResponse(BaseModel):
 
 class MeResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     authenticated: bool
     user: User | None = None
     profile: UserProfile | None = None
@@ -110,12 +104,10 @@ class MeResponse(BaseModel):
 
 class CsrfResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     csrf_token: str
 
 
 @router.post("/login", response_model=LoginResponse)
-@inject
 async def login(
     payload: LoginRequest,
     response: Response,
@@ -132,7 +124,6 @@ async def login(
             correlation_id=get_correlation_id(request),
         )
     )
-
     response.set_cookie(
         key=settings.SESSION_COOKIE_NAME,
         value=str(result.session_id),
@@ -151,13 +142,11 @@ async def login(
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
-@inject
 async def register(
     payload: RegisterRequest,
     handler: FromDishka[RegisterUserHandlerProtocol],
 ) -> RegisterResponse:
     """Register a new user account.
-
     User must verify their email before they can login.
     """
     result = await handler.handle(
@@ -173,7 +162,6 @@ async def register(
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-@inject
 async def logout(
     response: Response,
     settings: FromDishka[Settings],
@@ -185,17 +173,14 @@ async def logout(
     if session_id is None or session is None:
         response.delete_cookie(key=settings.SESSION_COOKIE_NAME, path="/")
         return None
-
     if not csrf_token or csrf_token != session.csrf_token:
         raise DomainError(code=ErrorCode.FORBIDDEN, message="CSRF validation failed")
-
     await handler.handle(LogoutCommand(session_id=session_id, csrf_token=csrf_token))
     response.delete_cookie(key=settings.SESSION_COOKIE_NAME, path="/")
     return None
 
 
 @router.get("/me", response_model=MeResponse)
-@inject
 async def me(
     profiles: FromDishka[ProfileRepositoryProtocol],
     settings: FromDishka[Settings],
@@ -224,31 +209,26 @@ async def csrf(session: Session = Depends(require_session_api)) -> CsrfResponse:
 
 class VerifyEmailRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     token: str
 
 
 class VerifyEmailResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     message: str
     user: User
 
 
 class ResendVerificationRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     email: str
 
 
 class ResendVerificationResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     message: str
 
 
 @router.post("/verify-email", response_model=VerifyEmailResponse)
-@inject
 async def verify_email(
     payload: VerifyEmailRequest,
     handler: FromDishka[VerifyEmailHandlerProtocol],
@@ -259,13 +239,11 @@ async def verify_email(
 
 
 @router.post("/resend-verification", response_model=ResendVerificationResponse)
-@inject
 async def resend_verification(
     payload: ResendVerificationRequest,
     handler: FromDishka[ResendVerificationHandlerProtocol],
 ) -> ResendVerificationResponse:
     """Resend verification email.
-
     Always returns success for security (doesn't reveal if email exists).
     """
     result = await handler.handle(ResendVerificationCommand(email=payload.email))

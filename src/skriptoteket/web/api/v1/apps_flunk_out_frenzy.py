@@ -1,5 +1,4 @@
 """HTTP routes for the Flunk-Out Frenzy curated app.
-
 This router exposes the bespoke app-specific bootstrap contract used by the SPA
 shell. It keeps access checks in the web layer and delegates payload building
 to the application handler.
@@ -15,10 +14,9 @@ from skriptoteket.domain.identity.role_guards import require_at_least_role
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 APP_ID = "games.flunk_out_frenzy"
-
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps", "flunk-out-frenzy"])
 
 
@@ -33,7 +31,6 @@ def _require_app_access(
 
 
 @router.get("/bootstrap", response_model=FlunkOutFrenzyBootstrapResult)
-@inject
 async def get_bootstrap(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[FlunkOutFrenzyBootstrapHandlerProtocol],

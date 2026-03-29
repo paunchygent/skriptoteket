@@ -35,7 +35,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1", tags=["suggestions"])
 
@@ -45,7 +45,6 @@ router = APIRouter(prefix="/api/v1", tags=["suggestions"])
     response_model=SubmitSuggestionResponse,
     status_code=status.HTTP_201_CREATED,
 )
-@inject
 async def submit_suggestion(
     request: SubmitSuggestionRequest,
     handler: FromDishka[SubmitSuggestionHandlerProtocol],
@@ -68,7 +67,6 @@ async def submit_suggestion(
     "/admin/suggestions",
     response_model=ListSuggestionsResponse,
 )
-@inject
 async def list_suggestions_for_review(
     handler: FromDishka[ListSuggestionsForReviewHandlerProtocol],
     user: User = Depends(require_admin_api),
@@ -81,7 +79,6 @@ async def list_suggestions_for_review(
     "/admin/suggestions/{suggestion_id}",
     response_model=SuggestionDetailResponse,
 )
-@inject
 async def get_suggestion_for_review(
     suggestion_id: UUID,
     handler: FromDishka[GetSuggestionForReviewHandlerProtocol],
@@ -101,7 +98,6 @@ async def get_suggestion_for_review(
     "/admin/suggestions/{suggestion_id}/decide",
     response_model=DecideSuggestionResponse,
 )
-@inject
 async def decide_suggestion(
     suggestion_id: UUID,
     request: DecideSuggestionRequest,

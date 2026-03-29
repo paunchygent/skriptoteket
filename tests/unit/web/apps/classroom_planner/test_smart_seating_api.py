@@ -9,6 +9,7 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.classroom_planner import RunSmartSeatingHandler
 from skriptoteket.application.curated_apps.classroom_planner.handlers.smart_seating import (
@@ -38,7 +39,6 @@ from skriptoteket.protocols.identity import (
     SessionRepositoryProtocol,
 )
 from skriptoteket.web.api.v1 import apps_classroom_planner_seating as api
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_session, make_user
 

@@ -13,7 +13,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_admin_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import ToolTaxonomyRequest
 from .models.responses import ToolTaxonomyResponse
@@ -22,7 +22,6 @@ router = APIRouter()
 
 
 @router.get("/tools/{tool_id}/taxonomy", response_model=ToolTaxonomyResponse)
-@inject
 async def get_tool_taxonomy(
     tool_id: UUID,
     handler: FromDishka[ListToolTaxonomyHandlerProtocol],
@@ -40,7 +39,6 @@ async def get_tool_taxonomy(
 
 
 @router.patch("/tools/{tool_id}/taxonomy", response_model=ToolTaxonomyResponse)
-@inject
 async def update_tool_taxonomy(
     tool_id: UUID,
     payload: ToolTaxonomyRequest,

@@ -11,14 +11,13 @@ from skriptoteket.application.catalog.queries import CatalogItemKind, ListRecent
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListRecentToolsHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/me", tags=["me"])
 
 
 class RecentToolItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     kind: Literal["tool"]
     id: UUID
     slug: str
@@ -30,7 +29,6 @@ class RecentToolItem(BaseModel):
 
 class RecentCuratedAppItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     kind: Literal["curated_app"]
     id: UUID
     app_id: str
@@ -42,12 +40,10 @@ class RecentCuratedAppItem(BaseModel):
 
 class ListRecentToolsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     items: list[RecentToolItem | RecentCuratedAppItem]
 
 
 @router.get("/recent-tools", response_model=ListRecentToolsResponse)
-@inject
 async def list_recent_tools(
     handler: FromDishka[ListRecentToolsHandlerProtocol],
     user: User = Depends(require_user_api),

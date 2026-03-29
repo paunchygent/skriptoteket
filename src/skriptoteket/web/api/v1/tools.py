@@ -44,7 +44,7 @@ from skriptoteket.protocols.tool_settings import (
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.uploads import read_upload_files
 
 router = APIRouter(prefix="/api/v1/tools", tags=["tools"])
@@ -100,17 +100,14 @@ def _parse_file_refs_by_field(raw: str | None) -> dict[str, list[str]]:
 def _parse_file_ref_sources(raw: list[str] | None) -> list[FileRefSource]:
     if raw is None or not raw:
         return [FileRefSource.SESSION, FileRefSource.VAULT]
-
     tokens: list[str] = []
     for item in raw:
         for part in item.split(","):
             normalized = part.strip().lower()
             if normalized:
                 tokens.append(normalized)
-
     if not tokens:
         return [FileRefSource.SESSION, FileRefSource.VAULT]
-
     sources: list[FileRefSource] = []
     seen: set[FileRefSource] = set()
     for token in tokens:
@@ -170,7 +167,6 @@ def _parse_file_fields(raw: str | None, *, expected_len: int) -> list[str]:
 
 class UploadConstraints(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     max_files: int
     max_file_bytes: int
     max_total_bytes: int
@@ -178,7 +174,6 @@ class UploadConstraints(BaseModel):
 
 class ToolMetadataResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     slug: str
     title: str
@@ -191,13 +186,11 @@ class ToolMetadataResponse(BaseModel):
 
 class StartToolRunResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     run_id: UUID
 
 
 class ToolSettingsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tool_id: UUID
     schema_version: str | None
     settings_schema: list[UiActionField] | None
@@ -207,14 +200,12 @@ class ToolSettingsResponse(BaseModel):
 
 class UpdateToolSettingsRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     expected_state_rev: int
     values: dict[str, JsonValue]
 
 
 class MarkUsageInstructionsSeenResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tool_id: UUID
     usage_instructions_seen: bool
     state_rev: int
@@ -233,13 +224,11 @@ async def _load_runnable_tool(
         raise not_found("Tool", slug)
     if tool.active_version_id is None:
         raise not_found("Tool", slug)
-
     version = await versions.get_by_id(version_id=tool.active_version_id)
     if version is None:
         raise not_found("Tool", slug)
     if version.state is not VersionState.ACTIVE:
         raise not_found("Tool", slug)
-
     return tool, version
 
 
@@ -256,18 +245,15 @@ async def _load_runnable_tool_by_id(
         raise not_found("Tool", str(tool_id))
     if tool.active_version_id is None:
         raise not_found("Tool", str(tool_id))
-
     version = await versions.get_by_id(version_id=tool.active_version_id)
     if version is None:
         raise not_found("ToolVersion", str(tool.active_version_id))
     if version.state is not VersionState.ACTIVE:
         raise not_found("ToolVersion", str(tool.active_version_id))
-
     return tool, version
 
 
 @router.get("/{slug}", response_model=ToolMetadataResponse)
-@inject
 async def get_tool_by_slug(
     slug: str,
     uow: FromDishka[UnitOfWorkProtocol],
@@ -280,7 +266,6 @@ async def get_tool_by_slug(
 ) -> ToolMetadataResponse:
     async with uow:
         tool, version = await _load_runnable_tool(tools=tools, versions=versions, slug=slug)
-
         usage_instructions_hash = compute_usage_instructions_hash_or_none(
             usage_instructions=version.usage_instructions,
         )
@@ -297,7 +282,6 @@ async def get_tool_by_slug(
             usage_instructions_seen = (
                 isinstance(stored_hash, str) and stored_hash == usage_instructions_hash
             )
-
     return ToolMetadataResponse(
         id=tool.id,
         slug=tool.slug,
@@ -315,7 +299,6 @@ async def get_tool_by_slug(
 
 
 @router.post("/{slug}/run", response_model=StartToolRunResponse)
-@inject
 async def start_tool_run(
     slug: str,
     handler: FromDishka[RunActiveToolHandlerProtocol],
@@ -342,7 +325,6 @@ async def start_tool_run(
         parsed_fields = _parse_file_fields(file_fields, expected_len=len(input_files))
         for entry, field in zip(input_files, parsed_fields, strict=True):
             input_files_by_field.setdefault(field, []).append(entry)
-
     input_values: dict[str, JsonValue] = {}
     if inputs is not None and inputs.strip():
         try:
@@ -358,9 +340,7 @@ async def start_tool_run(
                 message="inputs must be a JSON object",
             )
         input_values = parsed
-
     parsed_file_refs_by_field = _parse_file_refs_by_field(file_refs_by_field)
-
     context = session_context.strip() if session_context is not None else ""
     result = await handler.handle(
         actor=user,
@@ -377,7 +357,6 @@ async def start_tool_run(
 
 
 @router.get("/{tool_id}/file-refs", response_model=ListToolFileRefsResult)
-@inject
 async def list_tool_file_refs(
     tool_id: UUID,
     handler: FromDishka[ListToolFileRefsHandlerProtocol],
@@ -397,7 +376,6 @@ async def list_tool_file_refs(
 
 
 @router.get("/{tool_id}/settings", response_model=ToolSettingsResponse)
-@inject
 async def get_tool_settings(
     tool_id: UUID,
     handler: FromDishka[GetToolSettingsHandlerProtocol],
@@ -415,7 +393,6 @@ async def get_tool_settings(
 
 
 @router.put("/{tool_id}/settings", response_model=ToolSettingsResponse)
-@inject
 async def update_tool_settings(
     tool_id: UUID,
     payload: UpdateToolSettingsRequest,
@@ -445,7 +422,6 @@ async def update_tool_settings(
     "/{tool_id}/usage-instructions/seen",
     response_model=MarkUsageInstructionsSeenResponse,
 )
-@inject
 async def mark_usage_instructions_seen(
     tool_id: UUID,
     uow: FromDishka[UnitOfWorkProtocol],
@@ -460,25 +436,21 @@ async def mark_usage_instructions_seen(
         tool, version = await _load_runnable_tool_by_id(
             tools=tools, versions=versions, tool_id=tool_id
         )
-
         usage_instructions_hash = compute_usage_instructions_hash_or_none(
             usage_instructions=version.usage_instructions,
         )
-
         session = await sessions.get_or_create(
             session_id=id_generator.new_uuid(),
             tool_id=tool.id,
             user_id=user.id,
             context=USAGE_INSTRUCTIONS_SESSION_CONTEXT,
         )
-
         if usage_instructions_hash is None:
             return MarkUsageInstructionsSeenResponse(
                 tool_id=tool.id,
                 usage_instructions_seen=True,
                 state_rev=session.state_rev,
             )
-
         for _attempt in range(2):
             stored_hash = session.state.get(USAGE_INSTRUCTIONS_SEEN_HASH_KEY)
             if isinstance(stored_hash, str) and stored_hash == usage_instructions_hash:
@@ -487,10 +459,8 @@ async def mark_usage_instructions_seen(
                     usage_instructions_seen=True,
                     state_rev=session.state_rev,
                 )
-
             next_state = dict(session.state)
             next_state[USAGE_INSTRUCTIONS_SEEN_HASH_KEY] = usage_instructions_hash
-
             try:
                 session = await sessions.update_state(
                     tool_id=tool.id,
@@ -514,7 +484,6 @@ async def mark_usage_instructions_seen(
                     )
                     continue
                 raise
-
         return MarkUsageInstructionsSeenResponse(
             tool_id=tool.id,
             usage_instructions_seen=True,

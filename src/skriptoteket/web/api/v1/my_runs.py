@@ -15,7 +15,7 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/my-runs", tags=["my-runs"])
 
@@ -24,7 +24,6 @@ class InputFileSummary(BaseModel):
     """Input file info for my-runs list."""
 
     model_config = ConfigDict(frozen=True)
-
     filename: str
     bytes: int
 
@@ -33,7 +32,6 @@ class OutputFileSummary(BaseModel):
     """Output artifact info for my-runs list."""
 
     model_config = ConfigDict(frozen=True)
-
     artifact_id: str
     filename: str
     download_url: str
@@ -49,7 +47,6 @@ def _build_file_summaries(run: ToolRun) -> tuple[list[InputFileSummary], list[Ou
     input_files = [
         InputFileSummary(filename=f.name, bytes=f.bytes) for f in run.input_manifest.files
     ]
-
     output_files: list[OutputFileSummary] = []
     if run.artifacts_manifest:
         manifest = ArtifactsManifest.model_validate(run.artifacts_manifest)
@@ -61,13 +58,11 @@ def _build_file_summaries(run: ToolRun) -> tuple[list[InputFileSummary], list[Ou
             )
             for a in manifest.artifacts
         ]
-
     return input_files, output_files
 
 
 class MyRunItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     run_id: UUID
     tool_id: UUID
     tool_slug: str | None
@@ -82,13 +77,11 @@ class MyRunItem(BaseModel):
 
 class ListMyRunsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     runs: list[MyRunItem]
     total_count: int
 
 
 @router.get("", response_model=ListMyRunsResponse)
-@inject
 async def list_my_runs(
     uow: FromDishka[UnitOfWorkProtocol],
     runs: FromDishka[ToolRunRepositoryProtocol],
@@ -106,7 +99,6 @@ async def list_my_runs(
             user_id=user.id,
             context=RunContext.PRODUCTION,
         )
-
         items: list[MyRunItem] = []
         for run in user_runs:
             app = curated_apps.get_by_tool_id(tool_id=run.tool_id)
@@ -121,7 +113,6 @@ async def list_my_runs(
                 else:
                     tool_slug = tool.slug
                     tool_title = tool.title
-
             input_files, output_files = _build_file_summaries(run)
             items.append(
                 MyRunItem(
@@ -137,5 +128,4 @@ async def list_my_runs(
                     output_files=output_files,
                 )
             )
-
     return ListMyRunsResponse(runs=items, total_count=total_count)

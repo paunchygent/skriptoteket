@@ -2,7 +2,7 @@
 type: story
 id: ST-07-07
 title: "Retire hybrid Dishka/FastAPI compatibility layer and restore supported web DI"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-29
 updated: 2026-03-29
@@ -58,6 +58,10 @@ supported library contracts.
   - FastAPI `Depends` for HTTP resolution from `request.state.dishka_container`
   - explicit websocket handling for websocket endpoints
 - Validation must run against the locked/containerized runtime, not only a drifting local dev venv.
+- Shipped on `2026-03-29` by removing `src/skriptoteket/web/dishka_compat.py`, moving HTTP routes/auth
+  dependencies onto `src/skriptoteket/web/dishka_dependencies.py`, adding a real websocket middleware
+  proof, and re-verifying Hemma with healthy container status plus successful in-container `/healthz` and
+  `/metrics` checks on the locked production tuple.
 
 ## References
 

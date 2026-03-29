@@ -7,6 +7,7 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.reagent_prep_chef import (
     ReagentPrepChefChemicalsResult,
@@ -48,7 +49,6 @@ from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefUpdateDefaultsHandlerProtocol,
 )
 from skriptoteket.web.api.v1 import apps_reagent_prep_chef as reagent_prep_chef_api
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.unit.web.reagent_prep_chef.test_support import (
     FixedClock,

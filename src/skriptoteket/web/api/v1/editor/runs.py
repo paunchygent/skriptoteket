@@ -12,7 +12,7 @@ from skriptoteket.domain.scripting.models import ToolRun
 from skriptoteket.infrastructure.runner.path_safety import validate_output_path
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.responses import ArtifactEntry, EditorRunDetails
 
@@ -46,7 +46,6 @@ def _resolve_artifact_path(
     relative_path = Path(validate_output_path(path=artifact_path).as_posix())
     run_dir = settings.ARTIFACTS_ROOT / str(run_id)
     candidate_path = (run_dir / relative_path).resolve()
-
     run_root = run_dir.resolve()
     artifacts_root = settings.ARTIFACTS_ROOT.resolve()
     if run_root not in candidate_path.parents:
@@ -61,7 +60,6 @@ def _resolve_artifact_path(
             message="Artifact path is outside artifacts root",
             details={"path": artifact_path},
         )
-
     return candidate_path, relative_path
 
 
@@ -85,7 +83,6 @@ def _build_run_details(*, run: ToolRun, settings: Settings) -> EditorRunDetails:
     ui_payload = None
     if run.ui_payload is not None:
         ui_payload = run.ui_payload.model_dump(mode="json")
-
     stdout_bytes = None
     stdout_max_bytes = None
     stdout_truncated = None
@@ -93,7 +90,6 @@ def _build_run_details(*, run: ToolRun, settings: Settings) -> EditorRunDetails:
         stdout_bytes = len(run.stdout.encode("utf-8"))
         stdout_max_bytes = settings.RUN_OUTPUT_MAX_STDOUT_BYTES
         stdout_truncated = stdout_bytes >= stdout_max_bytes
-
     stderr_bytes = None
     stderr_max_bytes = None
     stderr_truncated = None
@@ -101,7 +97,6 @@ def _build_run_details(*, run: ToolRun, settings: Settings) -> EditorRunDetails:
         stderr_bytes = len(run.stderr.encode("utf-8"))
         stderr_max_bytes = settings.RUN_OUTPUT_MAX_STDERR_BYTES
         stderr_truncated = stderr_bytes >= stderr_max_bytes
-
     return EditorRunDetails(
         run_id=run.id,
         version_id=run.version_id,
@@ -124,7 +119,6 @@ def _build_run_details(*, run: ToolRun, settings: Settings) -> EditorRunDetails:
 
 
 @router.get("/tool-runs/{run_id}", response_model=EditorRunDetails)
-@inject
 async def get_run(
     run_id: UUID,
     runs: FromDishka[ToolRunRepositoryProtocol],
@@ -136,7 +130,6 @@ async def get_run(
 
 
 @router.get("/tool-runs/{run_id}/artifacts/{artifact_id}")
-@inject
 async def download_artifact(
     run_id: UUID,
     artifact_id: str,
@@ -145,12 +138,10 @@ async def download_artifact(
     user: User = Depends(require_contributor_api),
 ):
     run = await _load_run_for_actor(runs=runs, run_id=run_id, actor=user)
-
     manifest = ArtifactsManifest.model_validate(run.artifacts_manifest or {"artifacts": []})
     artifact = next((a for a in manifest.artifacts if a.artifact_id == artifact_id), None)
     if artifact is None:
         raise not_found("Artifact", artifact_id)
-
     candidate_path, relative_path = _resolve_artifact_path(
         settings=settings,
         run_id=run.id,
@@ -158,7 +149,6 @@ async def download_artifact(
     )
     if not candidate_path.is_file():
         raise not_found("ArtifactFile", str(candidate_path))
-
     return FileResponse(
         candidate_path,
         filename=relative_path.name,

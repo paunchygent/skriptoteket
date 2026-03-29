@@ -15,7 +15,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import SandboxSettingsResolveRequest, SandboxSettingsSaveRequest
 from .models.responses import SandboxSettingsResponse
@@ -27,7 +27,6 @@ router = APIRouter()
     "/tool-versions/{version_id}/sandbox-settings/resolve",
     response_model=SandboxSettingsResponse,
 )
-@inject
 async def resolve_sandbox_settings(
     version_id: UUID,
     payload: SandboxSettingsResolveRequest,
@@ -56,7 +55,6 @@ async def resolve_sandbox_settings(
     "/tool-versions/{version_id}/sandbox-settings",
     response_model=SandboxSettingsResponse,
 )
-@inject
 async def save_sandbox_settings(
     version_id: UUID,
     payload: SandboxSettingsSaveRequest,

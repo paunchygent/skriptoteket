@@ -10,14 +10,13 @@ from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.catalog import ListToolsForContributorHandlerProtocol
 from skriptoteket.web.auth.api_dependencies import require_contributor_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/my-tools", tags=["my-tools"])
 
 
 class MyToolItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     slug: str
     title: str
@@ -27,7 +26,6 @@ class MyToolItem(BaseModel):
 
 class ListMyToolsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     tools: list[MyToolItem]
 
 
@@ -42,7 +40,6 @@ def to_my_tool_item(tool: Tool) -> MyToolItem:
 
 
 @router.get("", response_model=ListMyToolsResponse)
-@inject
 async def list_my_tools(
     handler: FromDishka[ListToolsForContributorHandlerProtocol],
     user: User = Depends(require_contributor_api),

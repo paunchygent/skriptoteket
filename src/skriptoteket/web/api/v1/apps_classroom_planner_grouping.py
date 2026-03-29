@@ -1,5 +1,4 @@
 """Grouping-specific classroom-planner endpoints.
-
 This router holds focused grouping lifecycle endpoints so the shared classroom
 planner API module does not keep growing. It exposes grouping-only transitions
 that the SPA uses once the teacher has already entered the grouping workspace.
@@ -37,7 +36,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner_export_job_contracts import 
     serialize_grouping_export_job,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(
     prefix="/api/v1/apps/classroom.group-seating-studio",
@@ -53,7 +52,6 @@ class CreateGroupingDraftRequest(BaseModel):
 
 
 @router.post("/drafts/grouping/new", response_model=PlanDraftDto)
-@inject
 async def create_grouping_draft(
     request: CreateGroupingDraftRequest,
     handler: FromDishka[CreateGroupingDraftHandler],
@@ -69,7 +67,6 @@ async def create_grouping_draft(
 
 
 @router.post("/drafts/grouping/{draft_id}/activate", response_model=PlanDraftDto)
-@inject
 async def activate_grouping_history_draft(
     draft_id: UUID,
     handler: FromDishka[ActivateGroupingHistoryDraftHandler],
@@ -81,7 +78,6 @@ async def activate_grouping_history_draft(
 
 
 @router.delete("/drafts/grouping/{draft_id}", status_code=status.HTTP_204_NO_CONTENT)
-@inject
 async def delete_historic_grouping_draft(
     draft_id: UUID,
     handler: FromDishka[DeleteHistoricGroupingDraftHandler],
@@ -92,7 +88,6 @@ async def delete_historic_grouping_draft(
 
 
 @router.post("/drafts/grouping/{draft_id}/exports", response_model=PreparedGroupingExportDto)
-@inject
 async def prepare_grouping_export(
     draft_id: UUID,
     request: PrepareGroupingExportRequest,
@@ -110,7 +105,6 @@ async def prepare_grouping_export(
 
 
 @router.post("/drafts/grouping/{draft_id}/exports/jobs", response_model=GroupingExportJobDto)
-@inject
 async def create_grouping_export_job(
     draft_id: UUID,
     _request: Request,
@@ -132,7 +126,6 @@ async def create_grouping_export_job(
     "/drafts/grouping/{draft_id}/exports/jobs/recover",
     response_model=GroupingExportJobDto | None,
 )
-@inject
 async def get_recoverable_grouping_export_job_for_draft(
     draft_id: UUID,
     handler: FromDishka[GetRecoverableGroupingExportJobForDraftHandler],
@@ -146,7 +139,6 @@ async def get_recoverable_grouping_export_job_for_draft(
 
 
 @router.get("/grouping/exports/jobs/{job_id}", response_model=GroupingExportJobDto)
-@inject
 async def get_grouping_export_job(
     job_id: UUID,
     handler: FromDishka[GetGroupingExportJobHandler],
@@ -160,7 +152,6 @@ async def get_grouping_export_job(
 
 
 @router.get("/grouping/exports/jobs/{job_id}/download")
-@inject
 async def download_grouping_export_job(
     job_id: UUID,
     handler: FromDishka[DownloadGroupingExportJobHandler],

@@ -17,7 +17,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_admin_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import EditorToolMetadataRequest, EditorToolSlugRequest
 from .models.responses import EditorToolMetadataResponse
@@ -26,7 +26,6 @@ router = APIRouter()
 
 
 @router.patch("/tools/{tool_id}/metadata", response_model=EditorToolMetadataResponse)
-@inject
 async def update_tool_metadata(
     tool_id: UUID,
     payload: EditorToolMetadataRequest,
@@ -41,7 +40,6 @@ async def update_tool_metadata(
         if tool is None:
             raise not_found("Tool", str(tool_id))
         summary = tool.summary
-
     result = await handler.handle(
         actor=user,
         command=UpdateToolMetadataCommand(
@@ -60,7 +58,6 @@ async def update_tool_metadata(
 
 
 @router.patch("/tools/{tool_id}/slug", response_model=EditorToolMetadataResponse)
-@inject
 async def update_tool_slug(
     tool_id: UUID,
     payload: EditorToolSlugRequest,

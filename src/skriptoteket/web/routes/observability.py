@@ -8,7 +8,6 @@ See .agents/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 
 import asyncio
 
-from dishka import FromDishka
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -21,13 +20,12 @@ from skriptoteket.observability.health import build_health_response, check_datab
 from skriptoteket.observability.metrics import get_metrics
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import SessionRepositoryProtocol, UserRepositoryProtocol
-from skriptoteket.web.dishka_compat import inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(tags=["observability"])
 
 
 @router.get("/healthz", response_class=JSONResponse)
-@inject
 async def healthz(
     engine: FromDishka[AsyncEngine],
     settings: FromDishka[Settings],
@@ -41,10 +39,8 @@ async def healthz(
     db_status, db_error = await check_database(engine)
     smtp_status = None
     smtp_error = None
-
     if settings.HEALTHZ_SMTP_CHECK_ENABLED and settings.EMAIL_PROVIDER == "smtp":
         smtp_status, smtp_error = await check_smtp(settings)
-
     payload, status_code = build_health_response(
         service_name=settings.SERVICE_NAME,
         version=settings.APP_VERSION,
@@ -54,12 +50,10 @@ async def healthz(
         smtp_status=smtp_status,
         smtp_error=smtp_error,
     )
-
     return JSONResponse(content=payload, status_code=status_code)
 
 
 @router.get("/metrics", response_class=Response)
-@inject
 async def metrics(
     settings: FromDishka[Settings],
     sessions: FromDishka[SessionRepositoryProtocol],
@@ -72,11 +66,9 @@ async def metrics(
     now = clock.now()
     active_sessions = await sessions.count_active(now=now)
     users_by_role = await users.count_active_by_role()
-
     metrics["session_files_bytes_total"].set(usage.bytes_total)
     metrics["session_files_count"].set(usage.files)
     metrics["active_sessions"].set(active_sessions)
     for role in Role:
         metrics["users_by_role"].labels(role=role.value).set(users_by_role.get(role, 0))
-
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

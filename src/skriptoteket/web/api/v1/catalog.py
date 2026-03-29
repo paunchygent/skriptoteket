@@ -24,7 +24,7 @@ from skriptoteket.protocols.catalog import (
 )
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.web.auth.api_dependencies import require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/catalog", tags=["catalog"])
 
@@ -47,7 +47,6 @@ class ProfessionItem(BaseModel):
     """Profession for API responses."""
 
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     slug: str
     label: str
@@ -58,7 +57,6 @@ class CategoryItem(BaseModel):
     """Category for API responses."""
 
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     slug: str
     label: str
@@ -68,7 +66,6 @@ class ListProfessionsResponse(BaseModel):
     """Response for listing all professions."""
 
     model_config = ConfigDict(frozen=True)
-
     professions: list[ProfessionItem]
 
 
@@ -76,7 +73,6 @@ class ListAllCategoriesResponse(BaseModel):
     """Response for listing all categories (unfiltered)."""
 
     model_config = ConfigDict(frozen=True)
-
     categories: list[CategoryItem]
 
 
@@ -84,7 +80,6 @@ class ListCategoriesResponse(BaseModel):
     """Response for listing categories within a profession."""
 
     model_config = ConfigDict(frozen=True)
-
     profession: ProfessionItem
     categories: list[CategoryItem]
 
@@ -93,7 +88,6 @@ class ToolItem(BaseModel):
     """Tool for API responses."""
 
     model_config = ConfigDict(frozen=True)
-
     id: UUID
     slug: str
     title: str
@@ -104,7 +98,6 @@ class CuratedAppItem(BaseModel):
     """Curated app for API responses."""
 
     model_config = ConfigDict(frozen=True)
-
     app_id: str
     tool_id: UUID
     title: str
@@ -116,7 +109,6 @@ class ListToolsResponse(BaseModel):
     """Response for listing tools within a profession/category."""
 
     model_config = ConfigDict(frozen=True)
-
     profession: ProfessionItem
     category: CategoryItem
     tools: list[ToolItem]
@@ -125,7 +117,6 @@ class ListToolsResponse(BaseModel):
 
 class CatalogToolItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     kind: Literal["tool"]
     id: UUID
     slug: str
@@ -136,7 +127,6 @@ class CatalogToolItem(BaseModel):
 
 class CatalogCuratedAppItem(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     kind: Literal["curated_app"]
     id: UUID
     app_id: str
@@ -147,14 +137,12 @@ class CatalogCuratedAppItem(BaseModel):
 
 class ListAllToolsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     items: list[CatalogToolItem | CatalogCuratedAppItem]
     professions: list[ProfessionItem]
     categories: list[CategoryItem]
 
 
 @router.get("/professions", response_model=ListProfessionsResponse)
-@inject
 async def list_professions(
     handler: FromDishka[ListProfessionsHandlerProtocol],
     _user: User = Depends(require_user_api),
@@ -174,7 +162,6 @@ async def list_professions(
 
 
 @router.get("/categories", response_model=ListAllCategoriesResponse)
-@inject
 async def list_all_categories(
     handler: FromDishka[ListAllCategoriesHandlerProtocol],
     _user: User = Depends(require_user_api),
@@ -196,7 +183,6 @@ async def list_all_categories(
     "/professions/{profession_slug}/categories",
     response_model=ListCategoriesResponse,
 )
-@inject
 async def list_categories(
     profession_slug: str,
     handler: FromDishka[ListCategoriesForProfessionHandlerProtocol],
@@ -225,7 +211,6 @@ async def list_categories(
     "/professions/{profession_slug}/categories/{category_slug}/tools",
     response_model=ListToolsResponse,
 )
-@inject
 async def list_tools(
     profession_slug: str,
     category_slug: str,
@@ -283,7 +268,6 @@ async def list_tools(
 
 
 @router.get("/tools", response_model=ListAllToolsResponse)
-@inject
 async def list_all_tools(
     handler: FromDishka[ListAllToolsHandlerProtocol],
     user: User = Depends(require_user_api),

@@ -17,13 +17,13 @@ from pathlib import Path
 import structlog
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.di import create_container
 from skriptoteket.observability.health import check_smtp
 from skriptoteket.observability.logging import configure_logging
 from skriptoteket.observability.tracing import init_tracing
-from skriptoteket.web.dishka_compat import setup_dishka
 from skriptoteket.web.middleware.correlation import CorrelationMiddleware
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from skriptoteket.web.middleware.metrics import metrics_middleware

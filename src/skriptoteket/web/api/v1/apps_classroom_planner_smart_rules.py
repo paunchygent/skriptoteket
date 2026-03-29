@@ -1,5 +1,4 @@
 """Roster-owned smart-rule endpoints for the Classroom Planner curated app.
-
 This router exposes the class-global smart-rule contract separately from the
 draft workspace so rule authoring no longer depends on draft autosave or the
 draft PATCH/read boundary.
@@ -26,7 +25,7 @@ from skriptoteket.web.api.v1.apps_classroom_planner import (
     _assert_unique,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(
     prefix="/api/v1/apps/classroom.group-seating-studio", tags=["apps", "classroom-planner"]
@@ -37,7 +36,6 @@ class RosterSmartRulesResponse(BaseModel):
     """Serialize roster-owned smart rules for one class."""
 
     model_config = ConfigDict(frozen=True)
-
     roster_id: UUID
     revision: int
     seating_preferences: list[StudentSeatingPreferenceDto]
@@ -48,7 +46,6 @@ class UpdateRosterSmartRulesRequest(BaseModel):
     """Deserialize roster-owned smart-rule updates."""
 
     model_config = ConfigDict(extra="forbid")
-
     expected_revision: int
     seating_preferences: list[StudentSeatingPreferenceDto] = []
     relationship_rules: list[RelationshipRuleDto] = []
@@ -65,7 +62,6 @@ class UpdateRosterSmartRulesRequest(BaseModel):
 
 def _serialize_roster_smart_rules(rules: RosterSmartRules) -> RosterSmartRulesResponse:
     """Map roster-owned smart rules to the public API response."""
-
     return RosterSmartRulesResponse(
         roster_id=rules.roster_id,
         revision=rules.revision,
@@ -80,7 +76,6 @@ def _serialize_roster_smart_rules(rules: RosterSmartRules) -> RosterSmartRulesRe
 
 
 @router.get("/rosters/{roster_id}/smart-rules", response_model=RosterSmartRulesResponse)
-@inject
 async def get_roster_smart_rules(
     roster_id: UUID,
     handler: FromDishka[GetRosterSmartRulesHandler],
@@ -92,7 +87,6 @@ async def get_roster_smart_rules(
 
 
 @router.patch("/rosters/{roster_id}/smart-rules", response_model=RosterSmartRulesResponse)
-@inject
 async def update_roster_smart_rules(
     roster_id: UUID,
     request: UpdateRosterSmartRulesRequest,

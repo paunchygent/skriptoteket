@@ -15,7 +15,7 @@ from skriptoteket.web.auth.api_dependencies import (
     require_contributor_api,
     require_csrf_token,
 )
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 from .models.requests import CreateDraftVersionRequest, SaveDraftVersionRequest
 from .models.responses import SaveResult
@@ -24,7 +24,6 @@ router = APIRouter()
 
 
 @router.post("/tools/{tool_id}/draft", response_model=SaveResult)
-@inject
 async def create_draft_version(
     tool_id: UUID,
     payload: CreateDraftVersionRequest,
@@ -56,7 +55,6 @@ async def create_draft_version(
 
 
 @router.post("/tool-versions/{version_id}/save", response_model=SaveResult)
-@inject
 async def save_draft_version(
     version_id: UUID,
     payload: SaveDraftVersionRequest,

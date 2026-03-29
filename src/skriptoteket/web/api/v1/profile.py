@@ -19,21 +19,19 @@ from skriptoteket.protocols.identity import (
     UpdateProfileHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_csrf_token, require_user_api
-from skriptoteket.web.dishka_compat import FromDishka, inject
+from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix="/api/v1/profile", tags=["profile"])
 
 
 class ProfileResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user: User
     profile: UserProfile
 
 
 class UpdateProfileRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     first_name: str | None = None
     last_name: str | None = None
     display_name: str | None = None
@@ -42,7 +40,6 @@ class UpdateProfileRequest(BaseModel):
 
 class UpdateAiSettingsRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     remote_fallback_preference: Literal["unset", "allow", "deny"] | None = None
     inline_completion_provider_preference: Literal["unset", "local", "external"] | None = None
 
@@ -58,25 +55,21 @@ class UpdateAiSettingsRequest(BaseModel):
 
 class ChangePasswordRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     current_password: str
     new_password: str
 
 
 class ChangeEmailRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     email: str
 
 
 class ChangeEmailResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user: User
 
 
 @router.get("", response_model=ProfileResponse)
-@inject
 async def get_profile(
     handler: FromDishka[GetProfileHandlerProtocol],
     user: User = Depends(require_user_api),
@@ -86,7 +79,6 @@ async def get_profile(
 
 
 @router.patch("", response_model=ProfileResponse)
-@inject
 async def update_profile(
     payload: UpdateProfileRequest,
     handler: FromDishka[UpdateProfileHandlerProtocol],
@@ -106,7 +98,6 @@ async def update_profile(
 
 
 @router.patch("/ai-settings", response_model=ProfileResponse)
-@inject
 async def update_ai_settings(
     payload: UpdateAiSettingsRequest,
     handler: FromDishka[UpdateAiSettingsHandlerProtocol],
@@ -124,7 +115,6 @@ async def update_ai_settings(
 
 
 @router.post("/password", status_code=status.HTTP_204_NO_CONTENT)
-@inject
 async def change_password(
     payload: ChangePasswordRequest,
     handler: FromDishka[ChangePasswordHandlerProtocol],
@@ -142,7 +132,6 @@ async def change_password(
 
 
 @router.patch("/email", response_model=ChangeEmailResponse)
-@inject
 async def change_email(
     payload: ChangeEmailRequest,
     handler: FromDishka[ChangeEmailHandlerProtocol],
