@@ -94,6 +94,7 @@ const pendingActionLabel = computed(() => {
 <template>
   <aside
     class="planner-tool-rail"
+    :class="'xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto'"
     aria-label="Regelverktyg"
     data-test="rules-tool-rail"
   >

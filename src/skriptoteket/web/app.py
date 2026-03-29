@@ -10,6 +10,8 @@ Relationships:
     - Mounts the shared application router and observability endpoints.
 """
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import structlog
@@ -33,6 +35,28 @@ from skriptoteket.web.startup_checks import ensure_database_revision_is_current
 logger = structlog.get_logger(__name__)
 
 
+def _build_lifespan(*, settings: Settings):
+    """Create a FastAPI lifespan context using supported startup semantics."""
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        await ensure_database_revision_is_current(settings)
+
+        status, error = await check_smtp(settings)
+        if status != "healthy":
+            logger.warning(
+                "SMTP health check failed on startup",
+                smtp_status=status,
+                smtp_error=error,
+                smtp_host=settings.EMAIL_SMTP_HOST,
+                smtp_port=settings.EMAIL_SMTP_PORT,
+            )
+
+        yield
+
+    return lifespan
+
+
 def create_app() -> FastAPI:
     settings = Settings()
     configure_logging(
@@ -50,6 +74,7 @@ def create_app() -> FastAPI:
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
         docs_url="/docs" if settings.ENABLE_DOCS else None,
+        lifespan=_build_lifespan(settings=settings),
     )
 
     # Middleware execution order:
@@ -73,24 +98,6 @@ def create_app() -> FastAPI:
 
     # Application routes
     app.include_router(web_router)
-
-    async def database_revision_startup_check() -> None:
-        await ensure_database_revision_is_current(settings)
-
-    async def smtp_startup_check() -> None:
-        status, error = await check_smtp(settings)
-        if status == "healthy":
-            return
-        logger.warning(
-            "SMTP health check failed on startup",
-            smtp_status=status,
-            smtp_error=error,
-            smtp_host=settings.EMAIL_SMTP_HOST,
-            smtp_port=settings.EMAIL_SMTP_PORT,
-        )
-
-    app.add_event_handler("startup", database_revision_startup_check)
-    app.add_event_handler("startup", smtp_startup_check)
 
     return app
 

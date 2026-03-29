@@ -18,7 +18,7 @@ Keep this file updated so the next session can pick up work quickly.
 
 ## Status
 
-- Hemma is clean and Git-aligned; `sir_convert_a_lot_prod`, `skriptoteket-web`, and `skriptoteket-worker` are healthy.
+- Hemma checkout is Git-aligned on current `main`, but the latest redeploy exposed a production web crash loop from removed FastAPI lifecycle APIs; `skriptoteket-worker` stays healthy, production seating-export smoke succeeded inside the worker image on the new local WeasyPrint path, and the exported PDF was pulled to `.artifacts/production-pdf-check/hemma-seating-export-smoke.pdf` for logo inspection.
 - EPIC-26 export baseline is in place locally:
   - grouping + seating PDF rendering is local in Skriptoteket
   - grouping + seating XLSX delivery shipped
@@ -156,17 +156,14 @@ Keep this file updated so the next session can pick up work quickly.
   - live proof: `pdm run python -m scripts.playwright_pr_0157_dense_toolbar_check --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_classroom_planner_smoke --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_vault_sort_subrail_check --base-url http://127.0.0.1:5173`, `pdm run python -m scripts.playwright_pr_0157_overview_alignment_check --base-url http://127.0.0.1:5173`, and `pdm run python -m scripts.playwright_pr_0157_group_card_alignment_check --base-url http://127.0.0.1:5173`
   - artifacts under `.artifacts/pr-0157-live-check/`, `.artifacts/classroom-planner-smoke`, `.artifacts/vault-sort-subrail-check`, and `.artifacts/pr-0157-overview-alignment-check`; proof covered planner seating/grouping dense-tool follow-ups, the planner-wide shared button-recipe sweep in modals/drawers/overview/template-editor surfaces, grouped undo/redo outer-edge `4px` corners, compact overflow, grouping count stepper, the updated grouping smoke selector for `Nytt utkast`, the quieter planner shell/header typography and chrome, the shared secondary subrail treatment across the rules map switch and Vault sort, the taller dedicated workspace mode selector for Klassrumskartan, the restored interior dividers between all segmented options, and the denser overview/student-pool/canvas surfaces without duplicate overview resume cards, with live-aligned overview panels, quieter footer actions, Vault sort/search height parity, and the shortened `Redigera` gear actions
 - 2026-03-27 `PR-0154` smart seating:
-  - backend semantics alignment + overlap-case verification:
-    - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_teacher_edge.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver_bf25_g104.py -q`
-    - `pdm run pytest tests/unit/application/apps/classroom_planner/test_smart_seating.py -q`
-    - `pdm run pytest tests/unit/web/apps/classroom_planner/test_smart_seating_api.py -q`
-    - `pdm run pytest tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py -q`
-    - `pdm run typecheck`
-    - `pdm run docs-validate`
-  - live proof against a fresh host backend:
-    - `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002`
-    - `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
-    - artifacts under `.artifacts/st-27-03-smart-seating-semantics/summary.json`
+  - backend semantics alignment verified with domain/application/web/repository pytest lanes plus `pdm run typecheck` and `pdm run docs-validate`
+  - live proof against a fresh host backend: `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 --port 8002` and `pdm run python -m scripts.live_st_27_03_smart_seating_semantics_check --base-url http://127.0.0.1:8002 --runs 120`
+  - artifacts under `.artifacts/st-27-03-smart-seating-semantics/summary.json`
+- 2026-03-29 compatibility sweep:
+  - `pdm run pytest tests/test_smoke.py tests/test_openapi_contracts.py tests/unit/web/test_startup_checks.py`
+  - `PYTHONPATH=src pdm run python -c "from skriptoteket.web.app import create_app; app=create_app(); print(app.title); print(bool(app.openapi().get('info', {}).get('title')))"`
+  - `pdm run fe-type-check`; `pdm run docs-validate`
+  - live proof: `curl -sf http://127.0.0.1:8000/healthz` and `curl -I -sf http://127.0.0.1:5173/apps/classroom.group-seating-studio`
 
 ## How to Run
 ```bash
@@ -185,8 +182,8 @@ ssh hemma 'cd ~/apps/skriptoteket && ./scripts/hemma_deploy_and_verify_seating_e
 
 ## Known Issues / Risks
 
-- Host dev export smoke now matches the local Klassrumskartan PDF boundary, but keep using the host `dev-local` lane because container-only logs can hide real planner/export failures.
-- `pdm.lock` still has local, uncommitted follow-up changes after the `pdfplumber` runtime fix; do not lose or silently overwrite that diff.
+- Hemma production web still needs a follow-up redeploy after the repo-owned compatibility fix; the failing startup pattern was `app.add_event_handler(...)` under `fastapi 0.135.2` / `starlette 1.0.0`.
+- The warnings-as-errors audit still surfaces a dependency-level Python 3.14 deprecation in `pytest-asyncio` (`asyncio.AbstractEventLoopPolicy`); repo-owned code is clean for the audited patterns, but the plugin likely needs a compatible bump.
 - Keep the `7d4c1a2b9e6f` repair migration in mind if a long-lived local DB reports Alembic head but misses the roster smart-rule root contract.
 - Smart-assignment sequencing is still strict:
   - `ST-27-04` should build on the shipped `PR-0150` geometry-based checkpoint registry, the `PR-0152` session/lane split, and the new `PR-0154` smart seating run seam, not on older planner-wide save assumptions

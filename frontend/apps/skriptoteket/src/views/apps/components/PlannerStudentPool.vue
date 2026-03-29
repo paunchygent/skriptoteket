@@ -41,7 +41,7 @@ const emit = defineEmits<{
 
 <template>
   <aside
-    class="flex flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:sticky xl:top-4 xl:max-h-[calc(100svh-6rem)]"
+    class="flex flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:sticky xl:top-20 xl:max-h-[calc(100svh-9rem)]"
     :data-test="rootTestId"
     :aria-label="title"
     @dragover="emit('pool-dragover', $event)"

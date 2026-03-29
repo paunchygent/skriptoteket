@@ -9,6 +9,7 @@ import {
   buildSandboxDebugText,
   getSandboxDebugState,
 } from "../../composables/editor/sandboxDebugHelpers";
+import { writeTextToClipboard } from "../../utils/clipboard";
 import { UiOutputRenderer } from "../ui-outputs";
 import ToolRunActions from "../tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
@@ -118,20 +119,11 @@ function formatByteMeta(bytes: number | null, maxBytes: number | null): string |
 }
 
 async function copyToClipboard(text: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
+  const copied = await writeTextToClipboard(text);
+  if (copied) {
     return;
   }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "true");
-  textarea.style.position = "absolute";
-  textarea.style.left = "-9999px";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
+  throw new Error("Clipboard API är inte tillgängligt i den här webbläsaren.");
 }
 
 async function copyDebugJson(): Promise<void> {

@@ -5,8 +5,6 @@ planner API module does not keep growing. It exposes grouping-only transitions
 that the SPA uses once the teacher has already entered the grouping workspace.
 """
 
-from __future__ import annotations
-
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status

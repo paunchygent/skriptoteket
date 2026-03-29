@@ -5,8 +5,6 @@ shell. It keeps access checks in the web layer and delegates payload building
 to the application handler.
 """
 
-from __future__ import annotations
-
 from fastapi import APIRouter, Depends
 
 from skriptoteket.application.curated_apps.flunk_out_frenzy import FlunkOutFrenzyBootstrapResult

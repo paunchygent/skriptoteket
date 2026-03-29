@@ -5,8 +5,6 @@ draft workspace so rule authoring no longer depends on draft autosave or the
 draft PATCH/read boundary.
 """
 
-from __future__ import annotations
-
 from uuid import UUID
 
 from fastapi import APIRouter, Depends

@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
+import { writeTextToClipboard } from "../../utils/clipboard";
 import ChatMessageContent from "./ChatMessageContent.vue";
 
 type ChatMessageListProps = {
@@ -48,26 +49,7 @@ function isDebugOpen(messageId: string): boolean {
 }
 
 async function copyText(text: string): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return;
-  } catch {
-    // fall back to the legacy clipboard API (best effort)
-  }
-
-  try {
-    const element = document.createElement("textarea");
-    element.value = text;
-    element.setAttribute("readonly", "true");
-    element.style.position = "absolute";
-    element.style.left = "-9999px";
-    document.body.appendChild(element);
-    element.select();
-    document.execCommand("copy");
-    document.body.removeChild(element);
-  } catch {
-    // ignore clipboard failures
-  }
+  await writeTextToClipboard(text);
 }
 </script>
 

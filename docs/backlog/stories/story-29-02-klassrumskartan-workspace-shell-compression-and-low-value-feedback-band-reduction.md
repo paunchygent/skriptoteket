@@ -29,6 +29,10 @@ workspace redesign begins.
   grouping, seating, or rules compositions yet.
 - The slice should remove or merge low-value bands before adding any new visual treatment.
 
+## Planned PR slices
+
+- [PR-0161: ST-29-02 shared sticky workspace toolbar and transient feedback cutover](../prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md)
+
 ## References
 
 - Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)

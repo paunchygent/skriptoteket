@@ -61,14 +61,14 @@ function readyMessageForJob(job: GroupingExportJob): string {
 
 function successMessageForJob(job: GroupingExportJob): string {
   return job.export_kind === "xlsx"
-    ? "Excel-filen hämtad och sparad i Mina filer."
-    : "PDF hämtad och sparad i Mina filer.";
+    ? "Excel-filen hämtad och sparad i Mina filer. Hämta den där igen vid behov."
+    : "PDF hämtad och sparad i Mina filer. Hämta den där igen vid behov.";
 }
 
 function autoDownloadFailureMessageForJob(job: GroupingExportJob): string {
   return job.export_kind === "xlsx"
-    ? "Excel-filen skapades men kunde inte laddas ned automatiskt."
-    : "PDF skapades men kunde inte laddas ned automatiskt.";
+    ? "Excel-filen skapades men kunde inte laddas ned automatiskt. Hämta den i Mina filer."
+    : "PDF skapades men kunde inte laddas ned automatiskt. Hämta den i Mina filer.";
 }
 
 function exportErrorMessageForJob(job: GroupingExportJob): string {

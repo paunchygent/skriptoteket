@@ -6,8 +6,6 @@ modules depending on each other's private helpers while preserving one public
 shape for the mutable planner draft root.
 """
 
-from __future__ import annotations
-
 from datetime import datetime
 from uuid import UUID
 

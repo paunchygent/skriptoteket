@@ -10,8 +10,6 @@ Relationships:
     - Used by the seating-specific classroom-planner API router.
 """
 
-from __future__ import annotations
-
 from datetime import datetime
 from uuid import UUID
 
@@ -38,7 +36,7 @@ class CreateSeatingExportJobRequest(BaseModel):
     paper_size: SeatingExportPaperSize | None = None
 
     @model_validator(mode="after")
-    def validate_export_shape(self) -> CreateSeatingExportJobRequest:
+    def validate_export_shape(self) -> "CreateSeatingExportJobRequest":
         """Require PDF layout inputs only for PDF exports."""
 
         if self.export_kind is SeatingExportKind.PDF:
@@ -57,7 +55,7 @@ class CreateGroupingExportJobRequest(BaseModel):
     paper_size: GroupingExportPaperSize | None = None
 
     @model_validator(mode="after")
-    def validate_export_shape(self) -> CreateGroupingExportJobRequest:
+    def validate_export_shape(self) -> "CreateGroupingExportJobRequest":
         """Require the locked A4 portrait contract only for grouping PDF exports."""
 
         if self.export_kind is GroupingExportKind.PDF:

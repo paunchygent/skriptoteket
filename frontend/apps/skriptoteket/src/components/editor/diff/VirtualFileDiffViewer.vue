@@ -8,6 +8,7 @@ import { buildUnifiedPatch, normalizeTextForPatch } from "../../../composables/e
 import type { VirtualFileId } from "../../../composables/editor/virtualFiles";
 import { virtualFileLabel, virtualFileLanguage } from "../../../composables/editor/virtualFiles";
 import { useToast } from "../../../composables/useToast";
+import { writeTextToClipboard } from "../../../utils/clipboard";
 import CodeMirrorMergeDiff from "./CodeMirrorMergeDiff.vue";
 
 type DiffViewerItem = {
@@ -117,20 +118,11 @@ function setActiveFileId(fileId: VirtualFileId): void {
 }
 
 async function copyToClipboard(text: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
+  const copied = await writeTextToClipboard(text);
+  if (copied) {
     return;
   }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "true");
-  textarea.style.position = "absolute";
-  textarea.style.left = "-9999px";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
+  throw new Error("Clipboard API är inte tillgängligt i den här webbläsaren.");
 }
 
 function downloadTextFile(filename: string, content: string, mimeType: string): void {

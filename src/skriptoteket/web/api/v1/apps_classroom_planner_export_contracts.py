@@ -12,8 +12,6 @@ Relationships:
     - Locks the PR-0118 contract shape ahead of PR-0119 rendering work.
 """
 
-from __future__ import annotations
-
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict

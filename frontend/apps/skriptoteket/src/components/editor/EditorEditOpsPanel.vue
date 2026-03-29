@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, ref } from "vue";
 
 import type { EditOpsPanelState } from "../../composables/editor/editOps/editOpsState";
+import { writeTextToClipboard } from "../../utils/clipboard";
 
 const AiVirtualFileDiffViewer = defineAsyncComponent(() => import("./diff/AiVirtualFileDiffViewer.vue"));
 
@@ -34,26 +35,7 @@ function updateConfirmationAccepted(event: Event): void {
 const showDebug = ref(false);
 
 async function copyText(text: string): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return;
-  } catch {
-    // fall back to legacy clipboard API (best effort)
-  }
-
-  try {
-    const element = document.createElement("textarea");
-    element.value = text;
-    element.setAttribute("readonly", "true");
-    element.style.position = "absolute";
-    element.style.left = "-9999px";
-    document.body.appendChild(element);
-    element.select();
-    document.execCommand("copy");
-    document.body.removeChild(element);
-  } catch {
-    // ignore clipboard failures
-  }
+  await writeTextToClipboard(text);
 }
 </script>
 
