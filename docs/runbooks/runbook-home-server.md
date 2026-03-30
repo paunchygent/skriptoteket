@@ -5,7 +5,7 @@ title: "Runbook: Home Server Operations"
 status: active
 owners: "olof"
 created: 2025-12-16
-updated: 2026-01-18
+updated: 2026-03-30
 system: "hemma.hule.education"
 ---
 
@@ -618,6 +618,11 @@ containers.
 - `SIR_CONVERT_A_LOT_V2_API_KEY`
 - `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL`
 - `BOOTSTRAP_SUPERUSER_EMAIL`
+- `ALLOWED_HOSTS`
+- `TRUST_PROXY_HEADERS`
+- `TRUSTED_PROXY_CIDRS`
+- `HEALTHZ_DETAILED_RESPONSE`
+- `METRICS_IDENTITY_GAUGES_ENABLED`
 
 Hemma reference values for Conversion Hub:
 
@@ -644,7 +649,15 @@ Validation:
 ssh hemma "sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_'"
 ssh hemma "sudo docker exec skriptoteket-worker env | grep '^SIR_CONVERT_A_LOT_V2_'"
 ssh hemma "sudo docker exec skriptoteket-web getent hosts host.docker.internal"
+ssh hemma "sudo docker exec skriptoteket-web env | grep -E '^(ALLOWED_HOSTS|TRUST_PROXY_HEADERS|TRUSTED_PROXY_CIDRS|HEALTHZ_DETAILED_RESPONSE|METRICS_IDENTITY_GAUGES_ENABLED)='"
+ssh hemma "sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy"
 ```
+
+Security-specific notes:
+
+- `TRUSTED_PROXY_CIDRS` must be the exact current `nginx-proxy` IP/CIDR on `hule-network`, not a broad private-range fallback.
+- Keep `skriptoteket_web` out of production `ALLOWED_HOSTS`; that host is for containerized dev only.
+- Reserved HuleEdu hosts (`hule.education`, `api.hule.education`, `ws.hule.education`) must be owned by the real gateway or the temporary placeholder, never by Skriptoteket fallthrough.
 
 ### Canonical Deploy + Readiness Gate
 
@@ -694,6 +707,35 @@ If migrations are needed:
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
 ```
+
+### Security hardening verification (required when edge/runtime policy changes)
+
+Run this when a deploy touches host validation, proxy trust, observability, or nginx routing:
+
+```bash
+ssh hemma /bin/bash -s <<'EOF'
+set -euo pipefail
+sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz
+printf '\n---\n'
+sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_(active_sessions|users_by_role)' || true"
+EOF
+
+curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs
+curl -sS -D - -o /dev/null https://skriptoteket.hule.education/openapi.json
+curl -sS -D - -o /dev/null https://skriptoteket.hule.education/metrics
+curl -sS https://skriptoteket.hule.education/healthz
+curl -k -sS https://hule.education
+curl -k -sS https://api.hule.education
+curl -k -sS https://ws.hule.education
+```
+
+Expected results:
+
+- public `/docs` and `/openapi.json` return `404`
+- public `/metrics` returns `403`
+- public `/healthz` returns the minimal healthy payload
+- in-container `/metrics` does not emit `skriptoteket_active_sessions` or `skriptoteket_users_by_role`
+- reserved HuleEdu hosts return the placeholder until the real edge services ship
 
 ### Deploy with Force Recreate
 

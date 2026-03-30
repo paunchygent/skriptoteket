@@ -88,6 +88,20 @@ ssh hemma "sudo docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run db-u
 
 Note: On `hemma`, systemd units may need absolute docker path (`/snap/bin/docker`) due to PATH differences.
 
+Production security baseline:
+
+- Set explicit `ALLOWED_HOSTS` in `~/apps/skriptoteket/.env`.
+- Set `TRUST_PROXY_HEADERS=true`.
+- Set `TRUSTED_PROXY_CIDRS` to the exact current `nginx-proxy` IP/CIDR on `hule-network`.
+- Keep `HEALTHZ_DETAILED_RESPONSE=false` and `METRICS_IDENTITY_GAUGES_ENABLED=false`.
+- Do not let `hule.education`, `api.hule.education`, or `ws.hule.education` fall through to Skriptoteket; use the real gateway or the placeholder owner.
+
+Discover the current proxy IP:
+
+```bash
+ssh hemma "sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy"
+```
+
 ### Background Image Builds (REQUIRED)
 Run builds in background, log to `.artifacts/`, and give the user the `tail -f` command.
 Template:
@@ -201,6 +215,34 @@ ssh hemma "sudo docker exec skriptoteket-web pdm run db-upgrade"
 # Force recreate (config changes)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"
 ```
+
+### Security hardening verification
+
+Run this after deploys that touch host validation, observability exposure, proxy trust, or nginx routing:
+
+```bash
+ssh hemma /bin/bash -s <<'EOF'
+set -euo pipefail
+sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz
+printf '\n---\n'
+sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_(active_sessions|users_by_role)' || true"
+EOF
+curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs
+curl -sS -D - -o /dev/null https://skriptoteket.hule.education/openapi.json
+curl -sS -D - -o /dev/null https://skriptoteket.hule.education/metrics
+curl -sS https://skriptoteket.hule.education/healthz
+curl -k -sS https://hule.education
+curl -k -sS https://api.hule.education
+curl -k -sS https://ws.hule.education
+```
+
+Expected results:
+
+- `/docs` and `/openapi.json` return `404`
+- public `/metrics` returns `403`
+- public `/healthz` returns the minimal healthy JSON
+- in-container `/metrics` does not emit `skriptoteket_active_sessions` or `skriptoteket_users_by_role`
+- reserved hosts do not route to Skriptoteket
 
 ### Database
 

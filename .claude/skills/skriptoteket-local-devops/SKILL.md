@@ -90,6 +90,27 @@ description: "Local dev environment setup and troubleshooting for Skriptoteket (
 - Health: `curl -sSf http://127.0.0.1:8000/healthz >/dev/null`
 - Tokenizer availability (Devstral/Tekken): `pdm run pytest -q tests/unit/infrastructure/llm/test_token_counter_resolver.py`
 
+## Production/Hemma security deploy reminders
+
+- For Hemma deploys that touch host validation, proxy trust, observability, or nginx routing, read:
+  - `.agents/rules/080-home-server-deployment.md`
+  - `docs/reference/ref-home-server-nginx-proxy.md`
+  - `docs/reference/ref-home-server-security-hardening.md`
+- Production now expects:
+  - explicit `ALLOWED_HOSTS`
+  - `TRUST_PROXY_HEADERS=true`
+  - exact `TRUSTED_PROXY_CIDRS` for the current `nginx-proxy`
+  - `HEALTHZ_DETAILED_RESPONSE=false`
+  - `METRICS_IDENTITY_GAUGES_ENABLED=false`
+- Do not copy the containerized-dev host allowance (`skriptoteket_web`) into production.
+- Public-edge verification after a hardening deploy should prove:
+  - `/docs` -> `404`
+  - `/openapi.json` -> `404`
+  - public `/metrics` -> `403`
+  - public `/healthz` -> minimal healthy JSON
+  - reserved hosts do not route to Skriptoteket
+- In-container verification should also confirm `/metrics` does not emit `skriptoteket_active_sessions` or `skriptoteket_users_by_role`.
+
 ## Local PDF export note (WeasyPrint assets)
 
 - For `HTML(string=...)`, pass `base_url` when the export HTML uses relative asset URLs such as

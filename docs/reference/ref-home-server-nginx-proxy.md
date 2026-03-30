@@ -5,13 +5,13 @@ title: "Reference: Home Server nginx-proxy"
 status: active
 owners: "olof"
 created: 2026-01-02
-updated: 2026-03-28
+updated: 2026-03-30
 topic: "nginx-proxy routing and edge hardening"
 ---
 
 Details for adding services behind nginx-proxy and maintaining edge hardening.
 
-## Current edge reality (verified 2026-03-28)
+## Current edge reality (verified 2026-03-30)
 
 Hemma's shared edge stack is:
 
@@ -25,16 +25,22 @@ Known active routed hosts on the shared proxy:
 - `convert.hule.education`
 - `projektveckor.hule.education`
 
-Reserved HuleEdu hostnames currently resolve to Hemma but do **not** have dedicated
-`server_name` blocks yet:
+Reserved HuleEdu hostnames currently resolve to Hemma and are claimed by an explicit
+placeholder service:
 
 - `hule.education`
 - `api.hule.education`
 - `ws.hule.education`
 
-Because `DEFAULT_HOST` still points at Skriptoteket, those unresolved hosts fall through
-to the Skriptoteket default vhost and currently present the
-`skriptoteket.hule.education` certificate.
+Current placeholder behavior:
+
+- service: `huleedu-reserved-host-placeholder`
+- compose overlay: `~/infrastructure/docker-compose.huleedu-placeholder.yml`
+- image: `hashicorp/http-echo:1.0.0`
+- response body: `HuleEdu reserved host placeholder`
+
+Skriptoteket-specific edge hardening now also blocks public `/metrics` at nginx while
+allowing internal Prometheus scrapes to continue directly against `skriptoteket-web:8000`.
 
 ## Add a New Service to nginx-proxy
 
@@ -68,8 +74,8 @@ Long-term intent:
 Current reality:
 
 - they resolve publicly to Hemma
-- they are not registered in `nginx-proxy`
-- they therefore inherit the Skriptoteket default cert/backend today
+- they are registered by the temporary placeholder service on `hule-network`
+- they no longer inherit the Skriptoteket default cert/backend
 
 Verification:
 
@@ -86,10 +92,52 @@ echo | openssl s_client -connect ws.hule.education:443 -servername ws.hule.educa
 ssh hemma "sudo docker exec nginx-proxy sed -n '1,260p' /etc/nginx/conf.d/default.conf"
 ```
 
-If you need the apex host to stop presenting the Skriptoteket certificate before the real
-gateway ships, add a trivial placeholder service that registers `hule.education` on
-`hule-network`. Keep the response temporary (`302`/`307`), not permanent (`301`), so the
-future gateway cutover is not sticky in browsers and caches.
+If you need to recreate the temporary ownership pattern before the real HuleEdu gateway ships,
+add a trivial placeholder service that registers `hule.education`, `api.hule.education`, and
+`ws.hule.education` on `hule-network`. Keep the response temporary and obviously non-product.
+
+Minimal pattern:
+
+```yaml
+services:
+  huleedu-reserved-host-placeholder:
+    image: hashicorp/http-echo:1.0.0
+    command: ["-text=HuleEdu reserved host placeholder"]
+    restart: unless-stopped
+    expose:
+      - "5678"
+    environment:
+      VIRTUAL_HOST: hule.education,api.hule.education,ws.hule.education
+      VIRTUAL_PORT: "5678"
+      LETSENCRYPT_HOST: hule.education,api.hule.education,ws.hule.education
+    networks:
+      - default
+```
+
+## Skriptoteket public metrics block
+
+Public `/metrics` should stay operator-only. On Hemma, the current pattern is a dedicated
+vhost snippet for `skriptoteket.hule.education`:
+
+```nginx
+location = /metrics {
+    return 403;
+}
+```
+
+Deploy/update the snippet inside `nginx-proxy`:
+
+```bash
+ssh hemma "sudo docker exec nginx-proxy sh -lc 'cat >/etc/nginx/vhost.d/skriptoteket.hule.education <<\"EOF\"
+location = /metrics {
+    return 403;
+}
+EOF
+nginx -s reload'"
+```
+
+Important: this edge block is safe because Prometheus scrapes `skriptoteket-web:8000`
+directly on `hule-network`, not through the public vhost.
 
 ## nginx-proxy edge hardening (drop probes / unknown hosts)
 
