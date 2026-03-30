@@ -105,3 +105,54 @@ async def test_session_get_nonexistent(db_session: AsyncSession) -> None:
 
     fetched = await repo.get_by_id(uuid4())
     assert fetched is None
+
+
+@pytest.mark.integration
+async def test_session_revoke_all_for_user_revokes_multiple_active_sessions(
+    db_session: AsyncSession, user_id: UUID, now: datetime
+) -> None:
+    repo = PostgreSQLSessionRepository(db_session)
+    first_session_id = uuid4()
+    second_session_id = uuid4()
+    expired_session_id = uuid4()
+
+    await repo.create(
+        session=Session(
+            id=first_session_id,
+            user_id=user_id,
+            csrf_token="csrf-1",
+            created_at=now,
+            expires_at=now + timedelta(hours=24),
+            revoked_at=None,
+        )
+    )
+    await repo.create(
+        session=Session(
+            id=second_session_id,
+            user_id=user_id,
+            csrf_token="csrf-2",
+            created_at=now,
+            expires_at=now + timedelta(hours=24),
+            revoked_at=None,
+        )
+    )
+    await repo.create(
+        session=Session(
+            id=expired_session_id,
+            user_id=user_id,
+            csrf_token="csrf-expired",
+            created_at=now - timedelta(days=2),
+            expires_at=now - timedelta(hours=1),
+            revoked_at=None,
+        )
+    )
+
+    revoked_count = await repo.revoke_all_for_user(user_id=user_id, revoked_at=now)
+
+    assert revoked_count == 2
+    first_session = await repo.get_by_id(first_session_id)
+    second_session = await repo.get_by_id(second_session_id)
+    expired_session = await repo.get_by_id(expired_session_id)
+    assert first_session is not None and first_session.revoked_at == now
+    assert second_session is not None and second_session.revoked_at == now
+    assert expired_session is not None and expired_session.revoked_at is None

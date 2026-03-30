@@ -363,6 +363,558 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Grouping Draft */
+        post: operations["create_grouping_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping_new_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Historic Grouping Draft */
+        delete: operations["delete_historic_grouping_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate Grouping History Draft */
+        post: operations["activate_grouping_history_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Grouping Export */
+        post: operations["prepare_grouping_export_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/exports/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Grouping Export Job */
+        post: operations["create_grouping_export_job_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/exports/jobs/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Recoverable Grouping Export Job For Draft */
+        get: operations["get_recoverable_grouping_export_job_for_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_jobs_recover_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/smart-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Smart Grouping */
+        post: operations["run_smart_grouping_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__smart_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve Draft */
+        post: operations["resolve_draft_api_v1_apps_classroom_group_seating_studio_drafts_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/resumable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Resumable Draft */
+        get: operations["get_resumable_draft_api_v1_apps_classroom_group_seating_studio_drafts_resumable_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/new": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Seating Draft */
+        post: operations["create_seating_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating_new_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Historic Seating Draft */
+        delete: operations["delete_historic_seating_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate Seating History Draft */
+        post: operations["activate_seating_history_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Seating Export */
+        post: operations["prepare_seating_export_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Seating Export Job */
+        post: operations["create_seating_export_job_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports/jobs/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Recoverable Seating Export Job For Draft */
+        get: operations["get_recoverable_seating_export_job_for_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_jobs_recover_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Smart Seating */
+        post: operations["run_smart_seating_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__smart_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Draft */
+        get: operations["get_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Draft */
+        patch: operations["update_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/abandon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Abandon Draft */
+        post: operations["abandon_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__abandon_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/redo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Redo Draft */
+        post: operations["redo_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__redo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo Draft */
+        post: operations["undo_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__undo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Draft Workspace */
+        get: operations["get_draft_workspace_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__workspace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/exports/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Seating Export Job */
+        get: operations["get_seating_export_job_api_v1_apps_classroom_group_seating_studio_exports_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/exports/jobs/{job_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Seating Export Job */
+        get: operations["download_seating_export_job_api_v1_apps_classroom_group_seating_studio_exports_jobs__job_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/grouping/exports/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Grouping Export Job */
+        get: operations["get_grouping_export_job_api_v1_apps_classroom_group_seating_studio_grouping_exports_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/grouping/exports/jobs/{job_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Grouping Export Job */
+        get: operations["download_grouping_export_job_api_v1_apps_classroom_group_seating_studio_grouping_exports_jobs__job_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/rosters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rosters */
+        get: operations["list_rosters_api_v1_apps_classroom_group_seating_studio_rosters_get"];
+        put?: never;
+        /** Create Roster */
+        post: operations["create_roster_api_v1_apps_classroom_group_seating_studio_rosters_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Preview */
+        post: operations["import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/rosters/{roster_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Roster */
+        get: operations["get_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__get"];
+        /** Update Roster */
+        put: operations["update_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__put"];
+        post?: never;
+        /** Delete Roster */
+        delete: operations["delete_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/rosters/{roster_id}/smart-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Roster Smart Rules */
+        get: operations["get_roster_smart_rules_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__smart_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Roster Smart Rules */
+        patch: operations["update_roster_smart_rules_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__smart_rules_patch"];
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/rosters/{roster_id}/workspace-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Class Workspace Summary */
+        get: operations["get_class_workspace_summary_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__workspace_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Templates */
+        get: operations["list_templates_api_v1_apps_classroom_group_seating_studio_templates_get"];
+        put?: never;
+        /** Create Template */
+        post: operations["create_template_api_v1_apps_classroom_group_seating_studio_templates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/classroom.group-seating-studio/templates/{template_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Template */
+        get: operations["get_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__get"];
+        /** Update Template */
+        put: operations["update_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__put"];
+        post?: never;
+        /** Delete Template */
+        delete: operations["delete_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/jobs": {
         parameters: {
             query?: never;
@@ -431,6 +983,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/games.flunk_out_frenzy/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Bootstrap */
+        get: operations["get_bootstrap_api_v1_apps_games_flunk_out_frenzy_bootstrap_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/{app_id}": {
         parameters: {
             query?: never;
@@ -459,6 +1028,23 @@ export interface paths {
         get: operations["csrf_api_v1_auth_csrf_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Forgot Password */
+        post: operations["forgot_password_api_v1_auth_forgot_password_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -528,10 +1114,25 @@ export interface paths {
         /**
          * Register
          * @description Register a new user account.
-         *
-         *     User must verify their email before they can login.
          */
         post: operations["register_api_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/register/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate Registration */
+        post: operations["validate_registration_api_v1_auth_register_validate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -550,10 +1151,26 @@ export interface paths {
         /**
          * Resend Verification
          * @description Resend verification email.
-         *
          *     Always returns success for security (doesn't reveal if email exists).
          */
         post: operations["resend_verification_api_v1_auth_resend_verification_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Password */
+        post: operations["reset_password_api_v1_auth_reset_password_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1692,6 +2309,15 @@ export interface components {
             /** Remote Providers Enabled */
             remote_providers_enabled: boolean;
         };
+        /** AmbiguousRow */
+        AmbiguousRow: {
+            /** Raw Text */
+            raw_text: string;
+            /** Reason */
+            reason?: string | null;
+            /** Row Number */
+            row_number?: number | null;
+        };
         /**
          * AppDetailResponse
          * @description Response payload for a curated app detail lookup.
@@ -1710,6 +2336,34 @@ export interface components {
              */
             tool_id: string;
             ui_mode: components["schemas"]["CuratedAppUiMode"];
+        };
+        /**
+         * AppliedSmartGroupingRunResponse
+         * @description Serialize one applied backend smart-grouping result.
+         */
+        AppliedSmartGroupingRunResponse: {
+            /** Message */
+            message: string | null;
+            /** Status */
+            status: string;
+            /** Used History */
+            used_history: boolean;
+            /** Used Live Seating */
+            used_live_seating: boolean;
+            workspace: components["schemas"]["DraftWorkspaceResponse"];
+        };
+        /**
+         * AppliedSmartSeatingRunResponse
+         * @description Serialize one applied backend smart-seating result.
+         */
+        AppliedSmartSeatingRunResponse: {
+            /** Message */
+            message: string | null;
+            /** Status */
+            status: string;
+            /** Used History */
+            used_history: boolean;
+            workspace: components["schemas"]["DraftWorkspaceResponse"];
         };
         /** ArtifactEntry */
         ArtifactEntry: {
@@ -1732,6 +2386,45 @@ export interface components {
          * @enum {string}
          */
         AuthProvider: "local" | "huleedu";
+        /**
+         * BlockedSmartGroupingRunResponse
+         * @description Serialize one blocked backend smart-grouping result.
+         */
+        BlockedSmartGroupingRunResponse: {
+            /** Message */
+            message: string;
+            /** Reason */
+            reason: string;
+            /** Status */
+            status: string;
+            /** Used History */
+            used_history: boolean;
+            /** Used Live Seating */
+            used_live_seating: boolean;
+            /** Workspace */
+            workspace?: null;
+        };
+        /**
+         * BlockedSmartSeatingRunResponse
+         * @description Serialize one blocked backend smart-seating result.
+         */
+        BlockedSmartSeatingRunResponse: {
+            /** Message */
+            message: string;
+            /** Reason */
+            reason: string;
+            /** Status */
+            status: string;
+            /** Used History */
+            used_history: boolean;
+            /** Workspace */
+            workspace?: null;
+        };
+        /** Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post */
+        Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post: {
+            /** File */
+            file: string;
+        };
         /** Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post */
         Body_run_sandbox_api_v1_editor_tool_versions__version_id__run_sandbox_post: {
             /** File Fields */
@@ -1849,12 +2542,69 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** ClassListImportPreview */
+        ClassListImportPreview: {
+            /** Ambiguous Rows */
+            ambiguous_rows?: components["schemas"]["AmbiguousRow"][];
+            /** File Name */
+            file_name: string;
+            /** Parsed Students */
+            parsed_students?: components["schemas"]["ParsedStudentRow"][];
+            /** Suggested Class Name */
+            suggested_class_name?: string | null;
+        };
+        /**
+         * ClassWorkspaceRosterSummaryDto
+         * @description Serialize compact class identity details for the workspace.
+         */
+        ClassWorkspaceRosterSummaryDto: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Student Count */
+            student_count: number;
+        };
+        /**
+         * ClassWorkspaceSummaryDto
+         * @description Serialize the class-first workspace summary.
+         */
+        ClassWorkspaceSummaryDto: {
+            active_grouping_draft?: components["schemas"]["PlanDraftSummaryDto"] | null;
+            active_seating_draft?: components["schemas"]["PlanDraftSummaryDto"] | null;
+            /** Grouping History */
+            grouping_history: components["schemas"]["PlanDraftSummaryDto"][];
+            roster: components["schemas"]["ClassWorkspaceRosterSummaryDto"];
+            /** Seating History */
+            seating_history: components["schemas"]["PlanDraftSummaryDto"][];
+            /** Task Entry Options */
+            task_entry_options: components["schemas"]["TaskEntryOptionDto"][];
+        };
+        /**
+         * ClassroomSelectionMode
+         * @description Describe how a draft kind relates to classroom selection at entry time.
+         * @enum {string}
+         */
+        ClassroomSelectionMode: "optional" | "required";
+        /**
+         * ConversionHubJobStatus
+         * @description Normalize the locally owned Conversion Hub job lifecycle.
+         * @enum {string}
+         */
+        ConversionHubJobStatus: "submitted" | "queued" | "processing" | "succeeded" | "failed" | "canceled";
         /** ConversionHubJobStatusResult */
         ConversionHubJobStatusResult: {
-            /** Job Id */
+            /** Error */
+            error?: string | null;
+            /**
+             * Job Id
+             * Format: uuid
+             */
             job_id: string;
-            /** Status */
-            status: string;
+            status: components["schemas"]["ConversionHubJobStatus"];
         };
         /** ConversionHubListRoutesResult */
         ConversionHubListRoutesResult: {
@@ -1890,17 +2640,16 @@ export interface components {
         };
         /** ConversionHubSubmittedJob */
         ConversionHubSubmittedJob: {
-            /**
-             * Idempotent Replay
-             * @default false
-             */
-            idempotent_replay: boolean;
+            /** Error */
+            error?: string | null;
             /** Input Filename */
             input_filename: string;
-            /** Job Id */
+            /**
+             * Job Id
+             * Format: uuid
+             */
             job_id: string;
-            /** Status */
-            status: string;
+            status: components["schemas"]["ConversionHubJobStatus"];
         };
         /** CreateDraftToolRequest */
         CreateDraftToolRequest: {
@@ -1932,6 +2681,84 @@ export interface components {
             source_code: string;
             /** Usage Instructions */
             usage_instructions?: string | null;
+        };
+        /**
+         * CreateGroupingDraftRequest
+         * @description Deserialize an explicit blank grouping-draft request.
+         */
+        CreateGroupingDraftRequest: {
+            /**
+             * Roster Id
+             * Format: uuid
+             */
+            roster_id: string;
+            /** Template Id */
+            template_id?: string | null;
+        };
+        /**
+         * CreateGroupingExportJobRequest
+         * @description Deserialize the public job-creation payload for grouping exports.
+         */
+        CreateGroupingExportJobRequest: {
+            export_kind: components["schemas"]["GroupingExportKind"];
+            paper_size?: components["schemas"]["GroupingExportPaperSize"] | null;
+        };
+        /**
+         * CreateRoomTemplateRequest
+         * @description Deserialize a room template create or update payload.
+         */
+        CreateRoomTemplateRequest: {
+            /** Fixtures */
+            fixtures?: components["schemas"]["RoomFixture"][];
+            /**
+             * Grid Cols
+             * @default 14
+             */
+            grid_cols: number;
+            /**
+             * Grid Rows
+             * @default 9
+             */
+            grid_rows: number;
+            /** Name */
+            name: string;
+            /** Seats */
+            seats: components["schemas"]["Seat"][];
+        };
+        /**
+         * CreateRosterRequest
+         * @description Deserialize a roster create or update payload.
+         */
+        CreateRosterRequest: {
+            /** Name */
+            name: string;
+            /** Students */
+            students: components["schemas"]["Student"][];
+        };
+        /**
+         * CreateSeatingDraftRequest
+         * @description Deserialize an explicit room-bound seating-draft request.
+         */
+        CreateSeatingDraftRequest: {
+            /**
+             * Roster Id
+             * Format: uuid
+             */
+            roster_id: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+        };
+        /**
+         * CreateSeatingExportJobRequest
+         * @description Deserialize the public job-creation payload for seating exports.
+         */
+        CreateSeatingExportJobRequest: {
+            export_kind: components["schemas"]["SeatingExportKind"];
+            layout_id?: components["schemas"]["SeatingExportLayoutId"] | null;
+            paper_size?: components["schemas"]["SeatingExportPaperSize"] | null;
         };
         /** CsrfResponse */
         CsrfResponse: {
@@ -2043,6 +2870,33 @@ export interface components {
         DepublishToolResponse: {
             tool: components["schemas"]["AdminToolItem"];
         };
+        /**
+         * DraftGroupDto
+         * @description Serialize a draft-scoped group.
+         */
+        DraftGroupDto: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Name Is Custom
+             * @default false
+             */
+            name_is_custom: boolean;
+            /** Sort Order */
+            sort_order: number;
+        };
+        /**
+         * DraftHistoryStatusDto
+         * @description Serialize the undo/redo availability for an active draft.
+         */
+        DraftHistoryStatusDto: {
+            /** Can Redo */
+            can_redo: boolean;
+            /** Can Undo */
+            can_undo: boolean;
+        };
         /** DraftLockReleaseResponse */
         DraftLockReleaseResponse: {
             /**
@@ -2088,6 +2942,24 @@ export interface components {
              * Format: uuid
              */
             tool_id: string;
+        };
+        /**
+         * DraftWorkspaceResponse
+         * @description Serialize the hydrated fundamentals planner workspace.
+         */
+        DraftWorkspaceResponse: {
+            draft: components["schemas"]["PlanDraftDto"];
+            /** Group Assignments */
+            group_assignments: components["schemas"]["GroupAssignmentDto"][];
+            /** Groups */
+            groups: components["schemas"]["DraftGroupDto"][];
+            history_status: components["schemas"]["DraftHistoryStatusDto"];
+            roster: components["schemas"]["RosterDto"];
+            /** Seat Assignments */
+            seat_assignments: components["schemas"]["SeatAssignmentDto"][];
+            /** Student Planning Meta */
+            student_planning_meta: components["schemas"]["StudentPlanningMetaDto"][];
+            template?: components["schemas"]["RoomTemplateDto"] | null;
         };
         /** EditorBootResponse */
         EditorBootResponse: {
@@ -2534,6 +3406,45 @@ export interface components {
          * @enum {string}
          */
         FileRefSource: "session" | "vault";
+        /**
+         * FlunkOutFrenzyBootstrapResult
+         * @description Serialize the initial game-shell bootstrap payload.
+         */
+        FlunkOutFrenzyBootstrapResult: {
+            /** App Id */
+            app_id: string;
+            /** App Version */
+            app_version: string;
+            feature_flags: components["schemas"]["FlunkOutFrenzyFeatureFlags"];
+            /** Ruleset Id */
+            ruleset_id: string;
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * FlunkOutFrenzyFeatureFlags
+         * @description Serialize the intentionally small app-level feature-flag surface.
+         */
+        FlunkOutFrenzyFeatureFlags: {
+            /** Audio Enabled */
+            audio_enabled: boolean;
+            /** Replay Capture Enabled */
+            replay_capture_enabled: boolean;
+            /** Score Submission Enabled */
+            score_submission_enabled: boolean;
+        };
+        /** ForgotPasswordRequest */
+        ForgotPasswordRequest: {
+            /** Email */
+            email?: string | null;
+        };
+        /** ForgotPasswordResponse */
+        ForgotPasswordResponse: {
+            /** Message */
+            message: string;
+        };
         /** GetRunResult */
         GetRunResult: {
             run: components["schemas"]["RunDetails"];
@@ -2541,6 +3452,119 @@ export interface components {
         /** GetSessionStateResult */
         GetSessionStateResult: {
             session_state: components["schemas"]["InteractiveSessionState"];
+        };
+        /**
+         * GroupAssignmentDto
+         * @description Serialize one student-to-group assignment.
+         */
+        GroupAssignmentDto: {
+            /** Group Id */
+            group_id: string;
+            /** Student Id */
+            student_id: string;
+        };
+        /**
+         * GroupingExportJobDto
+         * @description Serialize one classroom-planner grouping export job.
+         */
+        GroupingExportJobDto: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Download Url */
+            download_url?: string | null;
+            /**
+             * Draft Id
+             * Format: uuid
+             */
+            draft_id: string;
+            /** Error */
+            error?: string | null;
+            export_kind: components["schemas"]["GroupingExportKind"];
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            paper_size?: components["schemas"]["GroupingExportPaperSize"] | null;
+            status: components["schemas"]["GroupingExportJobStatus"];
+            vault_artifact?: components["schemas"]["GroupingExportVaultArtifactDto"] | null;
+        };
+        /**
+         * GroupingExportJobStatus
+         * @description Enumerate async grouping export lifecycle states surfaced by the API.
+         * @enum {string}
+         */
+        GroupingExportJobStatus: "submitted" | "processing" | "succeeded" | "failed";
+        /**
+         * GroupingExportKind
+         * @description Enumerate the teacher-facing grouping export kinds.
+         * @enum {string}
+         */
+        GroupingExportKind: "xlsx" | "pdf";
+        /**
+         * GroupingExportPaperSize
+         * @description Enumerate the supported grouping PDF page contracts.
+         * @enum {string}
+         */
+        GroupingExportPaperSize: "a4_portrait";
+        /**
+         * GroupingExportPresentationDto
+         * @description Serialize the shared grouping presentation prepared for export.
+         */
+        GroupingExportPresentationDto: {
+            /** Class Name */
+            class_name: string;
+            /** Filename Stem */
+            filename_stem: string;
+            /** Groups */
+            groups: components["schemas"]["GroupingPresentationGroupDto"][];
+            /** Title */
+            title: string;
+        };
+        /**
+         * GroupingExportVaultArtifactDto
+         * @description Serialize the teacher-facing summary for a saved grouping export artifact.
+         */
+        GroupingExportVaultArtifactDto: {
+            /** Bytes */
+            bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * GroupingPresentationGroupDto
+         * @description Serialize one teacher-facing group inside the shared presentation contract.
+         */
+        GroupingPresentationGroupDto: {
+            /** Group Label */
+            group_label: string;
+            /** Group Order */
+            group_order: number;
+            /** Members */
+            members: components["schemas"]["GroupingPresentationMemberDto"][];
+        };
+        /**
+         * GroupingPresentationMemberDto
+         * @description Serialize one ordered member inside a grouping export contract.
+         */
+        GroupingPresentationMemberDto: {
+            /** Display Name */
+            display_name: string;
+            /** Member Order */
+            member_order: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2906,6 +3930,228 @@ export interface components {
             download_url: string;
             /** Filename */
             filename: string;
+        };
+        /** ParsedStudentRow */
+        ParsedStudentRow: {
+            /** Family Name */
+            family_name?: string | null;
+            /** Full Name */
+            full_name: string;
+            /** Given Name */
+            given_name?: string | null;
+            /** Row Number */
+            row_number?: number | null;
+        };
+        /**
+         * PlanDraftDto
+         * @description Serialize the mutable draft root.
+         */
+        PlanDraftDto: {
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /**
+             * Grouping Seating Distance Enabled
+             * @default false
+             */
+            grouping_seating_distance_enabled: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Last Opened At
+             * Format: date-time
+             */
+            last_opened_at: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Roster Id
+             * Format: uuid
+             */
+            roster_id: string;
+            /**
+             * Smart Enabled
+             * @default false
+             */
+            smart_enabled: boolean;
+            /** Status */
+            status: string;
+            /** Template Id */
+            template_id?: string | null;
+            /**
+             * Use History
+             * @default false
+             */
+            use_history: boolean;
+        };
+        /**
+         * PlanDraftKind
+         * @description Enumerate the teacher-facing draft kinds.
+         * @enum {string}
+         */
+        PlanDraftKind: "grouping" | "seating";
+        /**
+         * PlanDraftStatus
+         * @description Enumerate mutable draft lifecycle states.
+         * @enum {string}
+         */
+        PlanDraftStatus: "active" | "abandoned" | "superseded";
+        /**
+         * PlanDraftSummaryDto
+         * @description Serialize a compact draft summary for class-workspace surfaces.
+         */
+        PlanDraftSummaryDto: {
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Last Opened At
+             * Format: date-time
+             */
+            last_opened_at: string;
+            /** Revision */
+            revision: number;
+            status: components["schemas"]["PlanDraftStatus"];
+            /** Template Id */
+            template_id?: string | null;
+            /** Template Name */
+            template_name?: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * PosterSceneFixtureDto
+         * @description Serialize one logical poster room marker.
+         */
+        PosterSceneFixtureDto: {
+            /** Fixture Id */
+            fixture_id: string;
+            /** Height */
+            height: number;
+            kind: components["schemas"]["PosterSceneFixtureKind"];
+            /** Label */
+            label?: string | null;
+            variant?: components["schemas"]["PosterSceneFixtureVariant"] | null;
+            wall_side?: components["schemas"]["PosterSceneWallSide"] | null;
+            /** Width */
+            width: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /**
+         * PosterSceneFixtureKind
+         * @description Enumerate fixture kinds surfaced to the poster renderer.
+         * @enum {string}
+         */
+        PosterSceneFixtureKind: "whiteboard" | "teacher_desk" | "door" | "window" | "bench" | "table";
+        /**
+         * PosterSceneFixtureVariant
+         * @description Describe optional visual variants inside one poster fixture kind.
+         * @enum {string}
+         */
+        PosterSceneFixtureVariant: "round" | "square";
+        /**
+         * PosterSceneRoomDto
+         * @description Serialize the logical room grid for the poster scene.
+         */
+        PosterSceneRoomDto: {
+            /** Grid Cols */
+            grid_cols: number;
+            /** Grid Rows */
+            grid_rows: number;
+        };
+        /**
+         * PosterSceneSeatDto
+         * @description Serialize one logical poster seat placement.
+         */
+        PosterSceneSeatDto: {
+            /** Label */
+            label?: string | null;
+            /** Seat Id */
+            seat_id: string;
+            /** Student Id */
+            student_id?: string | null;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Zone */
+            zone?: string | null;
+        };
+        /**
+         * PosterSceneWallSide
+         * @description Enumerate logical wall sides for wall-bound room markers.
+         * @enum {string}
+         */
+        PosterSceneWallSide: "top" | "right" | "bottom" | "left";
+        /**
+         * PrepareGroupingExportRequest
+         * @description Deserialize a typed grouping export-preparation request.
+         */
+        PrepareGroupingExportRequest: {
+            export_kind: components["schemas"]["GroupingExportKind"];
+            paper_size?: components["schemas"]["GroupingExportPaperSize"] | null;
+        };
+        /**
+         * PrepareSeatingExportRequest
+         * @description Deserialize a typed seating export-preparation request.
+         */
+        PrepareSeatingExportRequest: {
+            export_kind: components["schemas"]["SeatingExportKind"];
+            layout_id: components["schemas"]["SeatingExportLayoutId"];
+        };
+        /**
+         * PreparedGroupingExportDto
+         * @description Serialize the public grouping export contract.
+         */
+        PreparedGroupingExportDto: {
+            /**
+             * Draft Id
+             * Format: uuid
+             */
+            draft_id: string;
+            /** Draft Kind */
+            draft_kind: string;
+            export_kind: components["schemas"]["GroupingExportKind"];
+            paper_size?: components["schemas"]["GroupingExportPaperSize"] | null;
+            presentation: components["schemas"]["GroupingExportPresentationDto"];
+        };
+        /**
+         * PreparedSeatingExportDto
+         * @description Serialize the public seating export contract.
+         */
+        PreparedSeatingExportDto: {
+            export_kind: components["schemas"]["SeatingExportKind"];
+            layout_id: components["schemas"]["SeatingExportLayoutId"];
+            poster_scene: components["schemas"]["SeatingPosterSceneDto"];
+            /**
+             * Roster Id
+             * Format: uuid
+             */
+            roster_id: string;
+            /** Roster Name */
+            roster_name: string;
+            /**
+             * Seating Draft Id
+             * Format: uuid
+             */
+            seating_draft_id: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+            /** Template Name */
+            template_name: string;
         };
         /**
          * ProfessionItem
@@ -3322,6 +4568,25 @@ export interface components {
             profile: components["schemas"]["UserProfile"];
             user: components["schemas"]["User"];
         };
+        /** RegistrationValidationFieldResponse */
+        RegistrationValidationFieldResponse: {
+            /** Message */
+            message?: string | null;
+            /** Status */
+            status: string;
+        };
+        /**
+         * RelationshipRuleDto
+         * @description Serialize a student relationship constraint.
+         */
+        RelationshipRuleDto: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Student Ids */
+            student_ids: string[];
+        };
         /** RequestChangesRequest */
         RequestChangesRequest: {
             /** Message */
@@ -3337,15 +4602,156 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** ResetPasswordRequest */
+        ResetPasswordRequest: {
+            /** New Password */
+            new_password?: string | null;
+            /** Token */
+            token?: string | null;
+        };
+        /** ResetPasswordResponse */
+        ResetPasswordResponse: {
+            /** Message */
+            message: string;
+        };
+        /**
+         * ResolvePlanDraftRequest
+         * @description Deserialize the landing-page resolve request.
+         */
+        ResolvePlanDraftRequest: {
+            draft_kind: components["schemas"]["PlanDraftKind"];
+            /**
+             * Roster Id
+             * Format: uuid
+             */
+            roster_id: string;
+            /** Template Id */
+            template_id?: string | null;
+        };
         /** RestoreVaultFileResult */
         RestoreVaultFileResult: {
             file: components["schemas"]["VaultFileInfo"];
+        };
+        /**
+         * ResumablePlanDraftDto
+         * @description Serialize the latest resumable draft CTA payload.
+         */
+        ResumablePlanDraftDto: {
+            draft: components["schemas"]["PlanDraftDto"];
+            /** Roster Name */
+            roster_name: string;
+            /** Template Name */
+            template_name?: string | null;
         };
         /**
          * Role
          * @enum {string}
          */
         Role: "user" | "contributor" | "admin" | "superuser";
+        /**
+         * RoomFixture
+         * @description Represent one visual room fixture.
+         */
+        RoomFixture: {
+            /** Height */
+            height: number;
+            /** Id */
+            id: string;
+            /** Label */
+            label?: string | null;
+            type: components["schemas"]["RoomFixtureType"];
+            /** Width */
+            width: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /**
+         * RoomFixtureDto
+         * @description Serialize a room fixture.
+         */
+        RoomFixtureDto: {
+            /** Height */
+            height: number;
+            /** Id */
+            id: string;
+            /** Label */
+            label?: string | null;
+            /** Type */
+            type: string;
+            /** Width */
+            width: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /**
+         * RoomFixtureType
+         * @description Enumerate supported decorative room fixtures.
+         * @enum {string}
+         */
+        RoomFixtureType: "whiteboard" | "teacher_desk" | "window" | "door" | "round_table" | "square_table" | "bench";
+        /**
+         * RoomTemplateDto
+         * @description Serialize a reusable room template.
+         */
+        RoomTemplateDto: {
+            /** Fixtures */
+            fixtures: components["schemas"]["RoomFixtureDto"][];
+            /**
+             * Grid Cols
+             * @default 14
+             */
+            grid_cols: number;
+            /**
+             * Grid Rows
+             * @default 9
+             */
+            grid_rows: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Seats */
+            seats: components["schemas"]["SeatDto"][];
+        };
+        /**
+         * RosterDto
+         * @description Serialize a reusable roster.
+         */
+        RosterDto: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Students */
+            students: components["schemas"]["StudentDto"][];
+        };
+        /**
+         * RosterSmartRulesResponse
+         * @description Serialize roster-owned smart rules for one class.
+         */
+        RosterSmartRulesResponse: {
+            /** Relationship Rules */
+            relationship_rules: components["schemas"]["RelationshipRuleDto"][];
+            /** Revision */
+            revision: number;
+            /**
+             * Roster Id
+             * Format: uuid
+             */
+            roster_id: string;
+            /** Seating Preferences */
+            seating_preferences: components["schemas"]["StudentSeatingPreferenceDto"][];
+        };
         /** RunArtifact */
         RunArtifact: {
             /** Artifact Id */
@@ -3521,6 +4927,129 @@ export interface components {
             path?: string | null;
             schema: components["schemas"]["SchemaName"];
         };
+        /**
+         * Seat
+         * @description Represent one seat in a room template.
+         */
+        Seat: {
+            /** Id */
+            id: string;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Zone */
+            zone?: string | null;
+        };
+        /**
+         * SeatAssignmentDto
+         * @description Serialize one student-to-seat assignment.
+         */
+        SeatAssignmentDto: {
+            /** Seat Id */
+            seat_id: string;
+            /** Student Id */
+            student_id: string;
+        };
+        /**
+         * SeatDto
+         * @description Serialize a room seat.
+         */
+        SeatDto: {
+            /** Id */
+            id: string;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Zone */
+            zone?: string | null;
+        };
+        /**
+         * SeatingExportJobDto
+         * @description Serialize one classroom-planner seating export job.
+         */
+        SeatingExportJobDto: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Download Url */
+            download_url?: string | null;
+            /**
+             * Draft Id
+             * Format: uuid
+             */
+            draft_id: string;
+            /** Error */
+            error?: string | null;
+            export_kind: components["schemas"]["SeatingExportKind"];
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            layout_id?: components["schemas"]["SeatingExportLayoutId"] | null;
+            paper_size?: components["schemas"]["SeatingExportPaperSize"] | null;
+            status: components["schemas"]["SeatingExportJobStatus"];
+            vault_artifact?: components["schemas"]["SeatingExportVaultArtifactDto"] | null;
+        };
+        /**
+         * SeatingExportJobStatus
+         * @description Enumerate async export lifecycle states surfaced by the API.
+         * @enum {string}
+         */
+        SeatingExportJobStatus: "submitted" | "processing" | "succeeded" | "failed";
+        /**
+         * SeatingExportKind
+         * @description Enumerate the teacher-facing seating export kinds.
+         * @enum {string}
+         */
+        SeatingExportKind: "pdf" | "xlsx";
+        /**
+         * SeatingExportLayoutId
+         * @description Enumerate stable seating export layout identifiers.
+         * @enum {string}
+         */
+        SeatingExportLayoutId: "pretty_brutalist_poster";
+        /**
+         * SeatingExportPaperSize
+         * @description Enumerate the teacher-selectable paper sizes for poster export.
+         * @enum {string}
+         */
+        SeatingExportPaperSize: "a3_landscape" | "a4_landscape";
+        /**
+         * SeatingExportVaultArtifactDto
+         * @description Serialize the teacher-facing summary for a saved Vault export artifact.
+         */
+        SeatingExportVaultArtifactDto: {
+            /** Bytes */
+            bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * File Id
+             * Format: uuid
+             */
+            file_id: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * SeatingPosterSceneDto
+         * @description Serialize the standalone poster scene prepared for export.
+         */
+        SeatingPosterSceneDto: {
+            /** Fixtures */
+            fixtures: components["schemas"]["PosterSceneFixtureDto"][];
+            room: components["schemas"]["PosterSceneRoomDto"];
+            /** Seats */
+            seats: components["schemas"]["PosterSceneSeatDto"][];
+        };
         /** SessionFileInfo */
         SessionFileInfo: {
             /** Bytes */
@@ -3531,6 +5060,22 @@ export interface components {
             name: string;
             /** Ref */
             ref: string;
+        };
+        /**
+         * SmartGroupingRunRequest
+         * @description Deserialize one backend-owned grouping smart-run request.
+         */
+        SmartGroupingRunRequest: {
+            /** Expected Revision */
+            expected_revision: number;
+        };
+        /**
+         * SmartSeatingRunRequest
+         * @description Deserialize one backend-owned seating smart-run request.
+         */
+        SmartSeatingRunRequest: {
+            /** Expected Revision */
+            expected_revision: number;
         };
         /** @enum {string} */
         SourceType: "solid" | "liquid_stock";
@@ -3612,6 +5157,49 @@ export interface components {
              * Format: uuid
              */
             run_id: string;
+        };
+        /**
+         * Student
+         * @description Represent one student in a teacher-owned roster.
+         */
+        Student: {
+            /** Display Name */
+            display_name: string;
+            /** Id */
+            id: string;
+        };
+        /**
+         * StudentDto
+         * @description Serialize a roster student.
+         */
+        StudentDto: {
+            /** Display Name */
+            display_name: string;
+            /** Id */
+            id: string;
+        };
+        /**
+         * StudentPlanningMetaDto
+         * @description Serialize teacher-only student notes.
+         */
+        StudentPlanningMetaDto: {
+            /** Notes */
+            notes?: string | null;
+            /** Student Id */
+            student_id: string;
+        };
+        /**
+         * StudentSeatingPreferenceDto
+         * @description Serialize per-student seating-only preferences.
+         */
+        StudentSeatingPreferenceDto: {
+            /**
+             * Near Teacher
+             * @default false
+             */
+            near_teacher: boolean;
+            /** Student Id */
+            student_id: string;
         };
         /** SubmitReviewRequest */
         SubmitReviewRequest: {
@@ -3768,6 +5356,14 @@ export interface components {
             submitted_by_user_id: string;
             /** Title */
             title: string;
+        };
+        /**
+         * TaskEntryOptionDto
+         * @description Serialize one task-entry rule for the class workspace.
+         */
+        TaskEntryOptionDto: {
+            classroom_selection_mode: components["schemas"]["ClassroomSelectionMode"];
+            draft_kind: components["schemas"]["PlanDraftKind"];
         };
         /** ToolInputBooleanField */
         ToolInputBooleanField: {
@@ -4177,6 +5773,28 @@ export interface components {
             /** Remote Fallback Preference */
             remote_fallback_preference?: ("unset" | "allow" | "deny") | null;
         };
+        /**
+         * UpdatePlanDraftRequest
+         * @description Deserialize mutable draft workspace patches.
+         */
+        UpdatePlanDraftRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Group Assignments */
+            group_assignments?: components["schemas"]["GroupAssignmentDto"][] | null;
+            /** Grouping Seating Distance Enabled */
+            grouping_seating_distance_enabled?: boolean | null;
+            /** Groups */
+            groups?: components["schemas"]["DraftGroupDto"][] | null;
+            /** Seat Assignments */
+            seat_assignments?: components["schemas"]["SeatAssignmentDto"][] | null;
+            /** Smart Enabled */
+            smart_enabled?: boolean | null;
+            /** Student Planning Meta */
+            student_planning_meta?: components["schemas"]["StudentPlanningMetaDto"][] | null;
+            /** Use History */
+            use_history?: boolean | null;
+        };
         /** UpdateProfileRequest */
         UpdateProfileRequest: {
             /** Display Name */
@@ -4187,6 +5805,56 @@ export interface components {
             last_name?: string | null;
             /** Locale */
             locale?: string | null;
+        };
+        /**
+         * UpdateRoomTemplateRequest
+         * @description Alias for room template updates.
+         */
+        UpdateRoomTemplateRequest: {
+            /** Fixtures */
+            fixtures?: components["schemas"]["RoomFixture"][];
+            /**
+             * Grid Cols
+             * @default 14
+             */
+            grid_cols: number;
+            /**
+             * Grid Rows
+             * @default 9
+             */
+            grid_rows: number;
+            /** Name */
+            name: string;
+            /** Seats */
+            seats: components["schemas"]["Seat"][];
+        };
+        /**
+         * UpdateRosterRequest
+         * @description Alias for roster updates.
+         */
+        UpdateRosterRequest: {
+            /** Name */
+            name: string;
+            /** Students */
+            students: components["schemas"]["Student"][];
+        };
+        /**
+         * UpdateRosterSmartRulesRequest
+         * @description Deserialize roster-owned smart-rule updates.
+         */
+        UpdateRosterSmartRulesRequest: {
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Relationship Rules
+             * @default []
+             */
+            relationship_rules: components["schemas"]["RelationshipRuleDto"][];
+            /**
+             * Seating Preferences
+             * @default []
+             */
+            seating_preferences: components["schemas"]["StudentSeatingPreferenceDto"][];
         };
         /** UpdateToolSettingsRequest */
         UpdateToolSettingsRequest: {
@@ -4293,6 +5961,18 @@ export interface components {
              */
             user_id: string;
         };
+        /** ValidateRegistrationRequest */
+        ValidateRegistrationRequest: {
+            /** Email */
+            email?: string | null;
+            /** Password */
+            password?: string | null;
+        };
+        /** ValidateRegistrationResponse */
+        ValidateRegistrationResponse: {
+            email: components["schemas"]["RegistrationValidationFieldResponse"];
+            password: components["schemas"]["RegistrationValidationFieldResponse"];
+        };
         /** ValidateToolSchemasRequest */
         ValidateToolSchemasRequest: {
             input_schema?: components["schemas"]["JsonValue"] | null;
@@ -4307,6 +5987,10 @@ export interface components {
         };
         /** ValidationError */
         ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */
@@ -5122,6 +6806,1307 @@ export interface operations {
             };
         };
     };
+    create_grouping_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping_new_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupingDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_historic_grouping_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activate_grouping_history_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__activate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_grouping_export_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrepareGroupingExportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreparedGroupingExportDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_grouping_export_job_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupingExportJobRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupingExportJobDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_recoverable_grouping_export_job_for_draft_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__exports_jobs_recover_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupingExportJobDto"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_smart_grouping_api_v1_apps_classroom_group_seating_studio_drafts_grouping__draft_id__smart_run_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmartGroupingRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppliedSmartGroupingRunResponse"] | components["schemas"]["BlockedSmartGroupingRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_draft_api_v1_apps_classroom_group_seating_studio_drafts_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolvePlanDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_resumable_draft_api_v1_apps_classroom_group_seating_studio_drafts_resumable_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumablePlanDraftDto"] | null;
+                };
+            };
+        };
+    };
+    create_seating_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating_new_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSeatingDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_historic_seating_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activate_seating_history_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__activate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_seating_export_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrepareSeatingExportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreparedSeatingExportDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_seating_export_job_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSeatingExportJobRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeatingExportJobDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_recoverable_seating_export_job_for_draft_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__exports_jobs_recover_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeatingExportJobDto"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_smart_seating_api_v1_apps_classroom_group_seating_studio_drafts_seating__draft_id__smart_run_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmartSeatingRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppliedSmartSeatingRunResponse"] | components["schemas"]["BlockedSmartSeatingRunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlanDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftWorkspaceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    abandon_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__abandon_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDraftDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    redo_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__redo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftWorkspaceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    undo_draft_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__undo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftWorkspaceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_draft_workspace_api_v1_apps_classroom_group_seating_studio_drafts__draft_id__workspace_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftWorkspaceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_seating_export_job_api_v1_apps_classroom_group_seating_studio_exports_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeatingExportJobDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_seating_export_job_api_v1_apps_classroom_group_seating_studio_exports_jobs__job_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_grouping_export_job_api_v1_apps_classroom_group_seating_studio_grouping_exports_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupingExportJobDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_grouping_export_job_api_v1_apps_classroom_group_seating_studio_grouping_exports_jobs__job_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rosters_api_v1_apps_classroom_group_seating_studio_rosters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterDto"][];
+                };
+            };
+        };
+    };
+    create_roster_api_v1_apps_classroom_group_seating_studio_rosters_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRosterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassListImportPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roster_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                roster_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRosterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_roster_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                roster_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_roster_smart_rules_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__smart_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roster_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterSmartRulesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_roster_smart_rules_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__smart_rules_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                roster_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRosterSmartRulesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterSmartRulesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_class_workspace_summary_api_v1_apps_classroom_group_seating_studio_rosters__roster_id__workspace_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roster_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassWorkspaceSummaryDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_templates_api_v1_apps_classroom_group_seating_studio_templates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomTemplateDto"][];
+                };
+            };
+        };
+    };
+    create_template_api_v1_apps_classroom_group_seating_studio_templates_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRoomTemplateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomTemplateDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomTemplateDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRoomTemplateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomTemplateDto"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_template_api_v1_apps_classroom_group_seating_studio_templates__template_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+            };
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post: {
         parameters: {
             query?: never;
@@ -5239,6 +8224,26 @@ export interface operations {
             };
         };
     };
+    get_bootstrap_api_v1_apps_games_flunk_out_frenzy_bootstrap_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlunkOutFrenzyBootstrapResult"];
+                };
+            };
+        };
+    };
     get_app_by_id_api_v1_apps__app_id__get: {
         parameters: {
             query?: never;
@@ -5286,6 +8291,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CsrfResponse"];
+                };
+            };
+        };
+    };
+    forgot_password_api_v1_auth_forgot_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForgotPasswordResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -5405,6 +8443,39 @@ export interface operations {
             };
         };
     };
+    validate_registration_api_v1_auth_register_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidateRegistrationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidateRegistrationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     resend_verification_api_v1_auth_resend_verification_post: {
         parameters: {
             query?: never;
@@ -5425,6 +8496,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResendVerificationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_api_v1_auth_reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetPasswordResponse"];
                 };
             };
             /** @description Validation Error */

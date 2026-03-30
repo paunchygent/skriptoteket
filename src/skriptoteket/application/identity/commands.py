@@ -68,6 +68,33 @@ class RegisterUserResult(BaseModel):
     verification_email_sent: bool = True
 
 
+class RegistrationValidationField(BaseModel):
+    """Structured validation state for one registration form field."""
+
+    model_config = ConfigDict(frozen=True)
+
+    status: Literal["valid", "invalid", "incomplete"]
+    message: str | None = None
+
+
+class ValidateRegistrationCommand(BaseModel):
+    """Command for anonymous registration preflight validation."""
+
+    model_config = ConfigDict(frozen=True)
+
+    email: str | None = None
+    password: str | None = None
+
+
+class ValidateRegistrationResult(BaseModel):
+    """Field-level preflight validation result for the register form."""
+
+    model_config = ConfigDict(frozen=True)
+
+    email: RegistrationValidationField
+    password: RegistrationValidationField
+
+
 class GetProfileCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -165,3 +192,36 @@ class ResendVerificationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     message: str = "Om kontot finns skickas ett nytt verifieringsmail"
+
+
+class RequestPasswordResetCommand(BaseModel):
+    """Command to request a password-reset email."""
+
+    model_config = ConfigDict(frozen=True)
+
+    email: str
+
+
+class RequestPasswordResetResult(BaseModel):
+    """Result of a forgot-password request."""
+
+    model_config = ConfigDict(frozen=True)
+
+    message: str = "Om kontot kan återställas skickas en återställningslänk."
+
+
+class ResetPasswordCommand(BaseModel):
+    """Command to reset a password using a token."""
+
+    model_config = ConfigDict(frozen=True)
+
+    token: str
+    new_password: str
+
+
+class ResetPasswordResult(BaseModel):
+    """Result of a successful password reset."""
+
+    model_config = ConfigDict(frozen=True)
+
+    message: str = "Lösenordet har återställts. Logga in med ditt nya lösenord."

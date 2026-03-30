@@ -1,3 +1,10 @@
+/**
+ * SPA auth store for cookie-session bootstrap and local-account mutations.
+ *
+ * This store owns the browser-visible auth snapshot while the backend remains
+ * authoritative for session state and CSRF issuance.
+ */
+
 import { defineStore } from "pinia";
 
 import type { components } from "../api/openapi";
@@ -330,9 +337,10 @@ export const useAuthStore = defineStore("auth", {
           throw new Error(this.error);
         }
 
-        const payload: RegisterResponse = await response.json();
-        this.user = payload.user;
-        this.profile = payload.profile;
+        await response.json() as RegisterResponse;
+        this.user = null;
+        this.profile = null;
+        this.aiPolicy = null;
         this.csrfToken = null;
         this.bootstrapped = true;
         this.status = "ready";

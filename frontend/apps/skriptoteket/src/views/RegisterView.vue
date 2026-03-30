@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import AuthPasswordField from "../components/auth/AuthPasswordField.vue";
+import { useRegistrationValidation } from "../composables/auth/useRegistrationValidation";
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
@@ -15,6 +17,28 @@ const confirmPassword = ref("");
 
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
+const {
+  canSubmit,
+  confirmPasswordError,
+  emailError,
+  isChecking,
+  passwordError,
+  validationIssue,
+} = useRegistrationValidation({
+  email,
+  password,
+  confirmPassword,
+});
+
+const submitDisabled = computed(() => {
+  if (isSubmitting.value) {
+    return true;
+  }
+  if (!firstName.value.trim() || !lastName.value.trim()) {
+    return true;
+  }
+  return !canSubmit.value;
+});
 
 onMounted(async () => {
   await auth.bootstrap();
@@ -33,13 +57,33 @@ async function submit(): Promise<void> {
     return;
   }
 
-  if (password.value.length < 8) {
+  if (emailError.value) {
+    errorMessage.value = emailError.value;
+    return;
+  }
+
+  if (!validationIssue.value && email.value.trim() === "") {
+    errorMessage.value = "Ange en giltig tjänsteadress.";
+    return;
+  }
+
+  if (passwordError.value) {
+    errorMessage.value = passwordError.value;
+    return;
+  }
+
+  if (validationIssue.value && password.value.length < 8) {
     errorMessage.value = "Lösenordet måste vara minst 8 tecken.";
     return;
   }
 
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = "Lösenorden matchar inte.";
+  if (confirmPasswordError.value) {
+    errorMessage.value = confirmPasswordError.value;
+    return;
+  }
+
+  if (!canSubmit.value) {
+    errorMessage.value = "Kontrollera uppgifterna innan du skapar konto.";
     return;
   }
 
@@ -66,7 +110,9 @@ async function submit(): Promise<void> {
   <div class="max-w-xl mx-auto space-y-6">
     <header class="space-y-2">
       <h1 class="page-title">Skapa konto</h1>
-      <p class="page-description">Registrera dig för att få tillgång till verktygen i Skriptoteket.</p>
+      <p class="page-description">
+        Registrering är öppen för kommuner och enskilda huvudmän i den tidiga releasen.
+      </p>
     </header>
 
     <div
@@ -125,48 +171,64 @@ async function submit(): Promise<void> {
           type="email"
           required
           autocomplete="username"
-          class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
+          class="w-full border bg-white px-3 py-2 shadow-brutal-sm text-navy"
+          :class="emailError ? 'border-burgundy' : 'border-navy'"
           :disabled="isSubmitting"
+          :aria-invalid="emailError ? 'true' : 'false'"
+          aria-describedby="register-email-help"
         >
+        <p
+          id="register-email-help"
+          class="text-xs"
+          :class="emailError ? 'text-burgundy' : 'text-navy/60'"
+        >
+          {{
+            emailError ??
+              "Använd din tjänsteadress. Endast kommuner och enskilda huvudmän kan registrera sig just nu."
+          }}
+        </p>
       </div>
 
-      <div class="space-y-2">
-        <label
-          for="register-password"
-          class="text-sm font-semibold text-navy"
-        >Lösenord</label>
-        <input
-          id="register-password"
-          v-model="password"
-          type="password"
-          required
-          autocomplete="new-password"
-          class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-          :disabled="isSubmitting"
-        >
-        <p class="text-xs text-navy/60">Minst 8 tecken.</p>
+      <div
+        v-if="validationIssue"
+        class="p-3 border border-navy/20 bg-white shadow-brutal-sm text-sm text-navy/80"
+      >
+        {{ validationIssue }}
       </div>
 
-      <div class="space-y-2">
-        <label
-          for="register-confirm"
-          class="text-sm font-semibold text-navy"
-        >Bekräfta lösenord</label>
-        <input
-          id="register-confirm"
-          v-model="confirmPassword"
-          type="password"
-          required
-          autocomplete="new-password"
-          class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
-          :disabled="isSubmitting"
-        >
-      </div>
+      <AuthPasswordField
+        id="register-password"
+        v-model="password"
+        label="Lösenord"
+        autocomplete="new-password"
+        :required="true"
+        :disabled="isSubmitting"
+        :error="passwordError"
+        hint="Minst 8 tecken."
+      />
+
+      <AuthPasswordField
+        id="register-confirm"
+        v-model="confirmPassword"
+        label="Bekräfta lösenord"
+        autocomplete="new-password"
+        :required="true"
+        :disabled="isSubmitting"
+        :error="confirmPasswordError"
+        hint="Skriv samma lösenord en gång till."
+      />
+
+      <p
+        v-if="isChecking"
+        class="text-xs text-navy/60"
+      >
+        Kontrollerar e-postadress och lösenord…
+      </p>
 
       <button
         type="submit"
         class="btn-cta w-full"
-        :disabled="isSubmitting"
+        :disabled="submitDisabled"
       >
         {{ isSubmitting ? "Skapar konto…" : "Skapa konto" }}
       </button>

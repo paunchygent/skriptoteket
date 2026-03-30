@@ -303,6 +303,35 @@ describe("useAuthStore", () => {
     });
   });
 
+  describe("register()", () => {
+    it("keeps the client unauthenticated after successful registration", async () => {
+      const store = useAuthStore();
+      const mockUser = createTestUser({ email_verified: false });
+      const mockProfile = createTestProfile({ first_name: "Test" });
+
+      vi.mocked(fetch).mockResolvedValueOnce(
+        mockJsonResponse({
+          user: mockUser,
+          profile: mockProfile,
+        }),
+      );
+
+      await store.register({
+        email: "test@test.com",
+        password: "password-123",
+        firstName: "Test",
+        lastName: "User",
+      });
+
+      expect(store.user).toBeNull();
+      expect(store.profile).toBeNull();
+      expect(store.csrfToken).toBeNull();
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.status).toBe("ready");
+      expect(store.bootstrapped).toBe(true);
+    });
+  });
+
   describe("logout()", () => {
     it("clears state on 204 response", async () => {
       const store = useAuthStore();

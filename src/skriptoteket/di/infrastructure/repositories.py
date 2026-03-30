@@ -23,6 +23,9 @@ from skriptoteket.infrastructure.repositories.email_verification_token_repositor
 from skriptoteket.infrastructure.repositories.login_event_repository import (
     PostgreSQLLoginEventRepository,
 )
+from skriptoteket.infrastructure.repositories.password_reset_token_repository import (
+    PostgreSQLPasswordResetTokenRepository,
+)
 from skriptoteket.infrastructure.repositories.profession_repository import (
     PostgreSQLProfessionRepository,
 )
@@ -91,6 +94,7 @@ from skriptoteket.protocols.identity import (
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.login_events import LoginEventRepositoryProtocol
+from skriptoteket.protocols.password_reset import PasswordResetTokenRepositoryProtocol
 from skriptoteket.protocols.sandbox_snapshots import SandboxSnapshotRepositoryProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
@@ -211,6 +215,12 @@ class InfrastructureRepositoryProvider(Provider):
         self, session: AsyncSession
     ) -> EmailVerificationTokenRepositoryProtocol:
         return PostgreSQLEmailVerificationTokenRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def password_reset_token_repo(
+        self, session: AsyncSession
+    ) -> PasswordResetTokenRepositoryProtocol:
+        return PostgreSQLPasswordResetTokenRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def vault_file_repo(self, session: AsyncSession) -> VaultFileRepositoryProtocol:

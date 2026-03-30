@@ -127,10 +127,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`
 - Proposed auth-cutover epic:
   `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
-- Pending local password reset review:
+- Approved local password reset review:
   `docs/backlog/reviews/review-epic-02-local-password-reset-via-emailed-token.md`
 - Local password reset planning slice:
   `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
+- Home messaging + registration feedback + default bookmark slice:
+  `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -471,6 +473,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0170-st-09-07-public-edge-app-runtime-hardening.md`
 - `docs/backlog/prs/pr-0171-st-09-08-hemma-edge-observability-and-host-lockdown.md`
 - `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
+- `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`
@@ -586,6 +589,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-02-05-brute-force-lockout.md`
 - `docs/backlog/stories/story-02-06-swedish-school-domain-allowlist-registration.md`
 - `docs/backlog/stories/story-02-07-local-password-reset-via-emailed-token.md`
+- `docs/backlog/stories/story-02-08-registration-preflight-validation-and-password-visibility.md`
+- `docs/backlog/stories/story-02-09-distributed-password-reset-hardening-for-scaled-auth.md`
 - `docs/backlog/stories/story-03-01-submit-script-suggestion.md`
 - `docs/backlog/stories/story-03-02-admin-review-and-decision.md`
 - `docs/backlog/stories/story-03-03-publish-and-depublish-tools.md`
@@ -707,6 +712,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-11-21-unified-landing-page.md`
 - `docs/backlog/stories/story-11-22-remove-login-route.md`
 - `docs/backlog/stories/story-11-23-tool-owner-and-maintainer-permissions.md`
+- `docs/backlog/stories/story-11-24-home-view-messaging-reset-for-curated-library.md`
 - `docs/backlog/stories/story-12-01-multi-file-upload.md`
 - `docs/backlog/stories/story-12-02-native-pdf-output-helper.md`
 - `docs/backlog/stories/story-12-03-personalized-tool-settings.md`
@@ -766,6 +772,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-16-06-tool-card-favorites-toggle.md`
 - `docs/backlog/stories/story-16-07-home-view-favorites-and-recent.md`
 - `docs/backlog/stories/story-16-08-catalog-cleanup-and-review.md`
+- `docs/backlog/stories/story-16-09-default-klassrumskartan-bookmark.md`
 - `docs/backlog/stories/story-17-01-grafana-datasource-verification.md`
 - `docs/backlog/stories/story-17-02-http-metrics-dashboard.md`
 - `docs/backlog/stories/story-17-03-prometheus-alerting-rules.md`

@@ -2,7 +2,7 @@
 type: adr
 id: ADR-0078
 title: "Local password reset via emailed token"
-status: proposed
+status: accepted
 owners: "agents"
 deciders: ["user-lead"]
 created: 2026-03-30
@@ -36,7 +36,7 @@ The token record should include:
 
 - `id`
 - `user_id`
-- `token`
+- `token_hash`
 - `expires_at`
 - `used_at`
 - `created_at`
@@ -44,6 +44,12 @@ The token record should include:
 This remains intentionally parallel to email verification, but with its own semantics and lifecycle.
 The first slice optimizes for clarity and low-risk implementation over premature generalization into
 one generic "email action token" table.
+
+Reset tokens are higher sensitivity than email-verification links, so the reset token itself must
+not be stored in plaintext. The presented token is hashed before lookup.
+
+At most **one active reset token** may exist per user at a time. When a new reset is issued, any
+older pending reset tokens for that user are invalidated before the new token becomes active.
 
 ### 2. Add two local-auth recovery endpoints
 
@@ -58,11 +64,30 @@ Behavior:
 - a reset email is sent only for active, verified, `AuthProvider.LOCAL` users
 - unknown emails, inactive users, unverified users, and federated users still receive the same
   generic response
+- `forgot-password` returns `202 Accepted` with a stable JSON body:
+  `{ "message": "Om kontot kan återställas skickas en återställningslänk." }`
 - `reset-password` accepts `token` plus `new_password`
+- `reset-password` returns `200 OK` with a stable JSON body on success:
+  `{ "message": "Lösenordet har återställts. Logga in med ditt nya lösenord." }`
+- `reset-password` failure contract is explicit:
+  - invalid token -> `400` + `INVALID_PASSWORD_RESET_TOKEN`
+  - expired token -> `400` + `PASSWORD_RESET_TOKEN_EXPIRED`
+  - weak password / malformed body -> `400` + `VALIDATION_ERROR`
 
 No browser session or CSRF requirement is added to the anonymous request flow. These endpoints are
 public by design and rely instead on generic responses, token entropy, expiry, and request-rate
 limits.
+
+Anonymous request throttling is a defined part of the contract:
+
+- the **application layer** must enforce a normalized-email cooldown for `forgot-password`
+  submissions, regardless of whether the email belongs to a local, federated, unknown, active, or
+  inactive account
+- the first slice should use a `60` second cooldown keyed by normalized email and still return the
+  same generic `202` response when throttled
+- the **edge/ingress layer** remains the owner of coarse IP-based abuse protection outside the
+  application contract; this slice must document that operational expectation in the runbook, but
+  the repo-owned implementation contract is the normalized-email cooldown
 
 ### 3. Successful reset changes password and revokes access
 
@@ -78,6 +103,9 @@ On successful password reset:
 
 The flow does **not** auto-login the user after reset. They must explicitly log in again with the
 new password.
+
+The session-revocation contract is bulk revocation, not single-session best effort. After a
+successful reset, every active session for the user must become unusable.
 
 ### 4. Keep the scope local-account only
 

@@ -127,6 +127,16 @@ async function onSubmit(): Promise<void> {
           </form>
 
           <p class="mt-4 text-xs text-navy/70">
+            <RouterLink
+              to="/forgot-password"
+              class="text-navy underline hover:text-burgundy"
+              @click="closeModal"
+            >
+              Glömt lösenord?
+            </RouterLink>
+          </p>
+
+          <p class="mt-3 text-xs text-navy/70">
             Inget konto?
             <RouterLink
               to="/register"

@@ -5,7 +5,7 @@ title: "Catalog discovery and personalization"
 status: active
 owners: "agents"
 created: 2025-12-26
-updated: 2025-12-28
+updated: 2026-03-30
 outcome: "Teachers can discover tools via flat browsing with filters, search, and access personalized favorites/recently-used lists"
 ---
 
@@ -28,8 +28,6 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 - Tool recommendations based on usage patterns
 - Hierarchical browse redesign (retained as-is for users who prefer it)
 - Pagination (monitor and add if tool count grows)
-- Curated apps in the flat catalog list
-- Favorites for curated apps
 - Server-side “favorites only” filtering in `/api/v1/catalog/tools` (frontend may filter locally for now)
 
 ## Risks
@@ -59,6 +57,7 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 | ST-16-06 | Tool card favorites toggle (star icon) | done |
 | ST-16-07 | Home view favorites and recently used sections | done |
 | ST-16-08 | Catalog cleanup: curated-apps-only filter + final EPIC-16 review | ready |
+| ST-16-09 | Default Klassrumskartan bookmark | in_progress |
 
 ## Success criteria
 

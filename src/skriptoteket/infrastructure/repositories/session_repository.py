@@ -44,6 +44,25 @@ class PostgreSQLSessionRepository(SessionRepositoryProtocol):
             update(SessionModel).where(SessionModel.id == session_id).values(revoked_at=func.now())
         )
 
+    async def revoke_all_for_user(self, *, user_id: UUID, revoked_at: datetime) -> int:
+        active_sessions_stmt = select(func.count()).where(
+            SessionModel.user_id == user_id,
+            SessionModel.revoked_at.is_(None),
+            SessionModel.expires_at > revoked_at,
+        )
+        active_sessions = await self._session.scalar(active_sessions_stmt)
+
+        await self._session.execute(
+            update(SessionModel)
+            .where(
+                SessionModel.user_id == user_id,
+                SessionModel.revoked_at.is_(None),
+                SessionModel.expires_at > revoked_at,
+            )
+            .values(revoked_at=revoked_at)
+        )
+        return int(active_sessions or 0)
+
     async def count_active(self, *, now: datetime) -> int:
         stmt = select(func.count()).where(
             SessionModel.revoked_at.is_(None),

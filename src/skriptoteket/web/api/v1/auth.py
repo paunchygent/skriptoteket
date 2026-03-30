@@ -14,17 +14,27 @@ Relationships:
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Request, Response, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.application.identity.commands import (
     LoginCommand,
     LogoutCommand,
     RegisterUserCommand,
+    RequestPasswordResetCommand,
     ResendVerificationCommand,
+    ResetPasswordCommand,
+    ValidateRegistrationCommand,
     VerifyEmailCommand,
+)
+from skriptoteket.application.identity.handlers.request_password_reset import (
+    RequestPasswordResetHandlerProtocol,
 )
 from skriptoteket.application.identity.handlers.resend_verification import (
     ResendVerificationHandlerProtocol,
+)
+from skriptoteket.application.identity.handlers.reset_password import (
+    ResetPasswordHandlerProtocol,
 )
 from skriptoteket.application.identity.handlers.verify_email import VerifyEmailHandlerProtocol
 from skriptoteket.config import Settings
@@ -36,6 +46,7 @@ from skriptoteket.protocols.identity import (
     LogoutHandlerProtocol,
     ProfileRepositoryProtocol,
     RegisterUserHandlerProtocol,
+    ValidateRegistrationHandlerProtocol,
 )
 from skriptoteket.web.auth.api_dependencies import require_session_api
 from skriptoteket.web.auth.dependencies import (
@@ -107,6 +118,24 @@ class RegisterResponse(BaseModel):
     message: str = "Konto skapat! Kontrollera din e-post för att verifiera kontot."
 
 
+class RegistrationValidationFieldResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    status: str
+    message: str | None = None
+
+
+class ValidateRegistrationRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    email: str | None = None
+    password: str | None = None
+
+
+class ValidateRegistrationResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    email: RegistrationValidationFieldResponse
+    password: RegistrationValidationFieldResponse
+
+
 class MeResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
     authenticated: bool
@@ -159,9 +188,7 @@ async def register(
     payload: RegisterRequest,
     handler: FromDishka[RegisterUserHandlerProtocol],
 ) -> RegisterResponse:
-    """Register a new user account.
-    User must verify their email before they can login.
-    """
+    """Register a new user account."""
     result = await handler.handle(
         RegisterUserCommand(
             email=payload.email,
@@ -172,6 +199,26 @@ async def register(
     )
     # No cookie - user must verify email first
     return RegisterResponse(user=result.user, profile=result.profile)
+
+
+@router.post("/register/validate", response_model=ValidateRegistrationResponse)
+async def validate_registration(
+    payload: ValidateRegistrationRequest,
+    handler: FromDishka[ValidateRegistrationHandlerProtocol],
+) -> ValidateRegistrationResponse:
+    result = await handler.handle(
+        ValidateRegistrationCommand(email=payload.email, password=payload.password)
+    )
+    return ValidateRegistrationResponse(
+        email=RegistrationValidationFieldResponse(
+            status=result.email.status,
+            message=result.email.message,
+        ),
+        password=RegistrationValidationFieldResponse(
+            status=result.password.status,
+            message=result.password.message,
+        ),
+    )
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -241,6 +288,62 @@ class ResendVerificationResponse(BaseModel):
     message: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    email: str | None = None
+
+
+class ForgotPasswordResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    message: str
+
+
+class ResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    token: str | None = None
+    new_password: str | None = None
+
+
+class ResetPasswordResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    message: str
+
+
+def _require_non_empty_string(*, value: str | None, field_name: str) -> str:
+    if value is None:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message=f"{field_name} måste anges",
+        )
+    normalized = value.strip()
+    if normalized == "":
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message=f"{field_name} måste anges",
+        )
+    return normalized
+
+
+def _domain_error_response(
+    *,
+    request: Request,
+    error: DomainError,
+    status_code: int,
+) -> JSONResponse:
+    correlation_id = getattr(request.state, "correlation_id", None)
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "error": {
+                "code": error.code.value,
+                "message": error.message,
+                "details": error.details,
+            },
+            "correlation_id": str(correlation_id) if correlation_id else None,
+        },
+    )
+
+
 @router.post("/verify-email", response_model=VerifyEmailResponse)
 async def verify_email(
     payload: VerifyEmailRequest,
@@ -261,3 +364,44 @@ async def resend_verification(
     """
     result = await handler.handle(ResendVerificationCommand(email=payload.email))
     return ResendVerificationResponse(message=result.message)
+
+
+@router.post(
+    "/forgot-password",
+    response_model=ForgotPasswordResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def forgot_password(
+    payload: ForgotPasswordRequest,
+    handler: FromDishka[RequestPasswordResetHandlerProtocol],
+) -> ForgotPasswordResponse:
+    email = payload.email.strip() if isinstance(payload.email, str) else ""
+    result = await handler.handle(RequestPasswordResetCommand(email=email))
+    return ForgotPasswordResponse(message=result.message)
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+async def reset_password(
+    request: Request,
+    payload: ResetPasswordRequest,
+    handler: FromDishka[ResetPasswordHandlerProtocol],
+) -> ResetPasswordResponse | JSONResponse:
+    try:
+        result = await handler.handle(
+            ResetPasswordCommand(
+                token=_require_non_empty_string(value=payload.token, field_name="Token"),
+                new_password=_require_non_empty_string(
+                    value=payload.new_password,
+                    field_name="Nytt lösenord",
+                ),
+            )
+        )
+    except DomainError as error:
+        if error.code is ErrorCode.VALIDATION_ERROR:
+            return _domain_error_response(
+                request=request,
+                error=error,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        raise
+    return ResetPasswordResponse(message=result.message)

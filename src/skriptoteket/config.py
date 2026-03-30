@@ -185,6 +185,11 @@ class Settings(BaseSettings):
     EMAIL_VERIFICATION_TTL_HOURS: int = 24
     EMAIL_VERIFICATION_BASE_URL: str = "https://skriptoteket.hule.education"
 
+    # Password reset
+    PASSWORD_RESET_TTL_HOURS: int = 2
+    PASSWORD_RESET_BASE_URL: str = "https://skriptoteket.hule.education"
+    PASSWORD_RESET_REQUEST_COOLDOWN_SECONDS: int = 60
+
     # LLM API
     LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
     LLM_COMPLETION_GPT5_TEMPLATE_ID: str = "inline_completion_gpt5_v1"

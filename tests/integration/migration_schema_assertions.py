@@ -48,6 +48,8 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "7d4c1a2b9e6f",
     "3e8b5c1a7d4f",
     "4d2c6b8e1a9f",
+    "8f3d2c1b4a6e",
+    "a1e4d6c8b2f0",
 )
 
 
@@ -185,6 +187,25 @@ async def _assert_0022_email_verification_tokens(engine: AsyncEngine) -> None:
 
 async def _assert_0026_profile_ai_settings(engine: AsyncEngine) -> None:
     assert "allow_remote_fallback" in await _column_map(engine, "user_profiles")
+
+
+async def _assert_8f3d_password_reset_tokens(engine: AsyncEngine) -> None:
+    tables = await _table_names(engine)
+    assert "password_reset_tokens" in tables
+    indexes = await _index_names(engine, "password_reset_tokens")
+    assert {
+        "ix_password_reset_tokens_user_id",
+        "ix_password_reset_tokens_token_hash",
+        "ix_password_reset_tokens_expires_at",
+    }.issubset(indexes)
+    columns = await _column_map(engine, "password_reset_tokens")
+    assert {"user_id", "token_hash", "expires_at", "used_at", "created_at"}.issubset(columns)
+
+
+async def _assert_a1e4_default_klassrumskartan_favorite(engine: AsyncEngine) -> None:
+    await _assert_8f3d_password_reset_tokens(engine)
+    tables = await _table_names(engine)
+    assert "user_favorite_apps" in tables
 
 
 async def _assert_0032_user_file_vault(engine: AsyncEngine) -> None:
@@ -521,6 +542,8 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "7d4c1a2b9e6f": _assert_7d4c_roster_smart_rule_repair,
     "3e8b5c1a7d4f": _assert_3e8b_seating_export_checkpoints,
     "4d2c6b8e1a9f": _assert_4d2c_grouping_export_checkpoints,
+    "8f3d2c1b4a6e": _assert_8f3d_password_reset_tokens,
+    "a1e4d6c8b2f0": _assert_a1e4_default_klassrumskartan_favorite,
 }
 
 

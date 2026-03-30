@@ -2,9 +2,10 @@
 type: epic
 id: EPIC-11
 title: "Full Vue/Vite SPA migration"
-status: done
+status: active
 owners: "agents"
 created: 2025-12-21
+updated: 2026-03-30
 outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admin), backed by /api/v1 with generated TypeScript types, with legacy Jinja2/HTMX removed."
 ---
 
@@ -61,6 +62,7 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 - [ST-11-21: Unified landing page (auth-adaptive home view)](../stories/story-11-21-unified-landing-page.md) (done)
 - [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done)
 - [ST-11-23: Tool owner + maintainer permission hardening](../stories/story-11-23-tool-owner-and-maintainer-permissions.md) (done)
+- [ST-11-24: Home view messaging reset for curated library](../stories/story-11-24-home-view-messaging-reset-for-curated-library.md) (in_progress)
 
 ## Implementation Summary (as of 2026-01-01)
 

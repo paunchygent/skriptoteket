@@ -9,8 +9,9 @@ updated: 2026-03-30
 epic: "EPIC-02"
 acceptance_criteria:
   - "Given a visitor on the landing page or login modal, when they choose 'Glömt lösenord?', then they can request a password-reset email without being logged in."
-  - "Given a reset request for an active, verified local account, when the request is accepted, then the system creates a short-lived reset token and sends a password-reset email."
-  - "Given a reset request for an unknown email, inactive account, unverified account, or non-local auth provider, when the request is submitted, then the API still returns the same generic success response without revealing account state."
+  - "Given a reset request for an active, verified local account, when the request is accepted, then the system invalidates any older pending reset token for that user, creates exactly one new short-lived active reset token, and sends a password-reset email."
+  - "Given a reset request for an unknown email, inactive account, unverified account, or non-local auth provider, when the request is submitted, then the API still returns the same generic `202 Accepted` success response without revealing account state."
+  - "Given repeated `forgot-password` submissions for the same normalized email inside the cooldown window, when the request is submitted, then the application still returns the same generic `202 Accepted` response and does not issue a new active reset token."
   - "Given a user opens a valid reset link, when they submit a strong new password, then the password hash is replaced, lockout counters are cleared, and all active sessions for that user are revoked."
   - "Given a user submits an invalid, expired, or already-used reset token, when the reset is attempted, then the password is not changed and the UI shows a clear recovery error state."
   - "Given a password was reset successfully, when the user tries the old password, then login fails; when they try the new password, then login succeeds."
@@ -42,23 +43,27 @@ and keeps HuleEdu/federated identity out of scope.
 
 - `POST /api/v1/auth/forgot-password`
   - Request: `{ email }`
-  - Response: generic success message only
+  - Response: `202 Accepted` + `{ "message": "Om kontot kan återställas skickas en återställningslänk." }`
 - `POST /api/v1/auth/reset-password`
   - Request: `{ token, new_password }`
-  - Response: generic success message or domain error
+  - Success: `200 OK` + `{ "message": "Lösenordet har återställts. Logga in med ditt nya lösenord." }`
 
-Recommended error codes for reset execution:
+Required error codes and statuses for reset execution:
 
-- `INVALID_PASSWORD_RESET_TOKEN`
-- `PASSWORD_RESET_TOKEN_EXPIRED`
-- `VALIDATION_ERROR`
+- `400` + `INVALID_PASSWORD_RESET_TOKEN`
+- `400` + `PASSWORD_RESET_TOKEN_EXPIRED`
+- `400` + `VALIDATION_ERROR`
 
 ### Domain and application
 
 - Add `PasswordResetToken` domain model and repository protocol.
 - Add request/reset handlers in the identity application layer.
 - Keep reset-token storage separate from email-verification tokens in the first slice.
+- Store reset tokens hashed at rest; presented tokens are hashed before lookup.
 - Reuse the existing password-strength validator.
+- On request:
+  - invalidate any older pending reset tokens for the user before creating a new one
+  - guarantee that only one active reset token exists per user at a time
 - On successful reset:
   - update the password hash
   - clear lockout state
@@ -70,7 +75,11 @@ Recommended error codes for reset execution:
 - Add `reset_password.html` alongside the existing verification template.
 - Add reset-specific settings for TTL and public base URL.
 - Keep generic success semantics on request to avoid account enumeration.
-- Add lightweight resend/request throttling per user based on latest token age.
+- Define request throttling as part of the contract:
+  - application-owned `60` second cooldown keyed by normalized email for every `forgot-password`
+    request, even when the account is unknown or ineligible
+  - ingress/edge IP throttling documented as an operational hardening layer outside the
+    application-owned behavior contract
 
 ### SPA
 
@@ -91,12 +100,14 @@ Recommended error codes for reset execution:
 
 ### Verification
 
-- Unit tests for request/reset handlers, token validation, lockout reset, and session revocation.
+- Unit tests for request/reset handlers, token validation, hashed token lookup, issuance invalidation,
+  cooldown behavior, lockout reset, and session revocation.
 - Route tests for anonymous request/reset endpoints.
 - Frontend tests for forgot/reset routes and token-state UX.
 - Manual proof:
   - request reset
   - receive reset link
+  - request a second reset and confirm the first token is no longer usable
   - reset password
   - confirm old password fails and new password works
-  - confirm prior session is no longer usable
+  - confirm at least two pre-existing sessions or cookie jars are both invalid after reset

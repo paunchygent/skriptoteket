@@ -87,6 +87,7 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                     "Innehåller stöd för olika lektionslägen."
                 ),
                 min_role=Role.USER,
+                default_favorite=True,
                 placements=[
                     CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
                 ],

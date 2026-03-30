@@ -9,16 +9,23 @@ import pytest
 from skriptoteket.application.identity.commands import RegisterUserCommand
 from skriptoteket.application.identity.handlers.register_user import RegisterUserHandler
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.models import (
+    CuratedAppDefinition,
+    CuratedAppPlacement,
+    curated_app_tool_id,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.email_verification import EmailVerificationToken
-from skriptoteket.domain.identity.models import UserProfile
+from skriptoteket.domain.identity.models import Role, UserProfile
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.email import (
     EmailMessage,
     EmailSenderProtocol,
     EmailTemplateRendererProtocol,
 )
 from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
+from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     DomainValidatorProtocol,
@@ -1042,3 +1049,110 @@ async def test_register_user_enters_uow_before_user_creation(now: datetime) -> N
     domain_validator.validate_registration_email.assert_awaited_once_with("teacher@example.com")
     assert "get_auth_by_email" in events
     assert "create_user" in events
+
+
+@pytest.mark.asyncio
+async def test_register_user_adds_default_curated_app_favorite_for_new_user(now: datetime) -> None:
+    settings = Settings()
+    user_id = uuid4()
+    token_id = uuid4()
+    created_user = make_user(email="teacher@example.com", user_id=user_id).model_copy(
+        update={"created_at": now, "updated_at": now, "email_verified": False}
+    )
+
+    uow = AsyncMock(spec=UnitOfWorkProtocol)
+    uow.__aenter__.return_value = uow
+    uow.__aexit__.return_value = None
+
+    users = AsyncMock(spec=UserRepositoryProtocol)
+    users.get_auth_by_email.return_value = None
+    users.create.return_value = created_user
+
+    profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+    profiles.create.return_value = UserProfile(
+        user_id=user_id,
+        first_name="Ada",
+        last_name="Lovelace",
+        display_name=None,
+        locale="sv-SE",
+        created_at=now,
+        updated_at=now,
+    )
+
+    verification_tokens = AsyncMock(spec=EmailVerificationTokenRepositoryProtocol)
+    email_sender = AsyncMock(spec=EmailSenderProtocol)
+    email_renderer = Mock(spec=EmailTemplateRendererProtocol)
+    email_renderer.render.return_value = EmailMessage(
+        to_email="teacher@example.com",
+        subject="Verifiera din e-postadress",
+        html_body="<html>verification link</html>",
+        text_body="verification link",
+    )
+    sleeper = AsyncMock(spec=SleeperProtocol)
+    domain_validator = AsyncMock(spec=DomainValidatorProtocol)
+    password_hasher = Mock(spec=PasswordHasherProtocol)
+    password_hasher.hash.return_value = "hash"
+    clock = Mock(spec=ClockProtocol)
+    clock.now.return_value = now
+    id_generator = Mock(spec=IdGeneratorProtocol)
+    id_generator.new_uuid.side_effect = [user_id, token_id]
+    token_generator = Mock(spec=TokenGeneratorProtocol)
+    token_generator.new_token.return_value = "verification-token"
+    favorites = AsyncMock(spec=FavoritesRepositoryProtocol)
+    curated_apps = Mock(spec=CuratedAppRegistryProtocol)
+    curated_apps.list_all.return_value = [
+        CuratedAppDefinition(
+            app_id="classroom.group-seating-studio",
+            tool_id=curated_app_tool_id(app_id="classroom.group-seating-studio"),
+            app_version="app:test",
+            title="Klassrumskartan",
+            min_role=Role.USER,
+            default_favorite=True,
+            placements=[
+                CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
+            ],
+        ),
+        CuratedAppDefinition(
+            app_id="admin.only",
+            tool_id=curated_app_tool_id(app_id="admin.only"),
+            app_version="app:test",
+            title="Admin only",
+            min_role=Role.ADMIN,
+            default_favorite=True,
+            placements=[
+                CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt"),
+            ],
+        ),
+    ]
+
+    handler = RegisterUserHandler(
+        settings=settings,
+        uow=uow,
+        users=users,
+        profiles=profiles,
+        verification_tokens=verification_tokens,
+        email_sender=email_sender,
+        email_renderer=email_renderer,
+        sleeper=sleeper,
+        domain_validator=domain_validator,
+        password_hasher=password_hasher,
+        clock=clock,
+        id_generator=id_generator,
+        token_generator=token_generator,
+        favorites=favorites,
+        curated_apps=curated_apps,
+    )
+
+    await handler.handle(
+        RegisterUserCommand(
+            email="teacher@example.com",
+            password="password123",
+            first_name="Ada",
+            last_name="Lovelace",
+        )
+    )
+
+    favorites.add_app.assert_awaited_once_with(
+        user_id=user_id,
+        app_id="classroom.group-seating-studio",
+    )

@@ -10,12 +10,16 @@ from skriptoteket.infrastructure.email.sender_factory import create_email_sender
 from skriptoteket.infrastructure.email.template_renderer import Jinja2EmailTemplateRenderer
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.security.password_hasher import Argon2PasswordHasher
+from skriptoteket.infrastructure.security.password_reset_request_throttle import (
+    InMemoryPasswordResetRequestThrottle,
+)
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.token_generator import SecureTokenGenerator
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import PasswordHasherProtocol
+from skriptoteket.protocols.password_reset import PasswordResetRequestThrottleProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.token_generator import TokenGeneratorProtocol
 
@@ -42,6 +46,14 @@ class InfrastructureServicesProvider(Provider):
     @provide(scope=Scope.APP)
     def password_hasher(self) -> PasswordHasherProtocol:
         return Argon2PasswordHasher()
+
+    @provide(scope=Scope.APP)
+    def password_reset_request_throttle(
+        self, settings: Settings
+    ) -> PasswordResetRequestThrottleProtocol:
+        return InMemoryPasswordResetRequestThrottle(
+            cooldown_seconds=settings.PASSWORD_RESET_REQUEST_COOLDOWN_SECONDS
+        )
 
     @provide(scope=Scope.APP)
     def email_sender(self, settings: Settings) -> EmailSenderProtocol:

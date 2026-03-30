@@ -1,3 +1,14 @@
+"""Curated-app metadata models and deterministic identities.
+
+Purpose:
+  Define the immutable registry metadata used to discover, authorize, and
+  launch first-class curated apps inside Skriptoteket.
+
+Relationships:
+  - Shared by the in-memory curated app registry and catalog/discovery flows.
+  - Provides deterministic `tool_id` generation from stable `app_id` values.
+"""
+
 from __future__ import annotations
 
 from enum import StrEnum
@@ -53,6 +64,7 @@ class CuratedAppDefinition(BaseModel):
     title: str
     summary: str | None = None
     min_role: Role = Role.USER
+    default_favorite: bool = False
     placements: list[CuratedAppPlacement]
 
     @field_validator("app_id", "app_version", "title")

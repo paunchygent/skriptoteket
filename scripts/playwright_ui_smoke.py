@@ -1,10 +1,18 @@
+"""Canonical Playwright smoke for the shared landing page and auth shell.
+
+This smoke is the repo's broad UI gate for redeploy-style verification. It
+checks the public landing page contract, logs in through the shared protected-
+route modal flow, and then sweeps a small authenticated route set on both
+mobile and desktop viewports.
+"""
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
+from playwright.sync_api import Browser, Locator, Page, Playwright, expect, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import expect, sync_playwright
 
 from scripts._playwright_config import get_config
 
@@ -27,7 +35,7 @@ def _find_chromium_headless_shell() -> str | None:
     return None
 
 
-def _launch_chromium(playwright: object) -> object:
+def _launch_chromium(playwright: Playwright) -> Browser:
     try:
         return playwright.chromium.launch(headless=True)
     except PlaywrightError as exc:
@@ -43,19 +51,74 @@ def _launch_chromium(playwright: object) -> object:
         return playwright.chromium.launch(headless=True, executable_path=executable_path)
 
 
-def _login(page: object, *, base_url: str, email: str, password: str) -> None:
-    page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-    dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-    expect(dialog).to_be_visible()
-    dialog.get_by_label("E-post").fill(email)
-    dialog.get_by_label("Lösenord").fill(password)
-    dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+def _assert_public_landing(page: Page, *, verify_equal_cta_widths: bool = False) -> None:
+    landing_main = page.locator("main").first
     expect(
-        page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
+        page.get_by_role("heading", name=re.compile(r"^Skriptoteket$", re.IGNORECASE))
     ).to_be_visible()
+    expect(
+        landing_main.get_by_text("Professionellt appbibliotek för lärare", exact=True)
+    ).to_be_visible()
+    expect(
+        landing_main.get_by_text(
+            "Logga in och använd appar och verktyg för undervisning, planering och dokumentation.",
+            exact=True,
+        )
+    ).to_be_visible()
+    expect(landing_main.get_by_text("Professionellt appbibliotek", exact=True)).to_be_visible()
+    expect(landing_main.get_by_text("Dela med kollegor", exact=True)).to_be_visible()
+    expect(landing_main.get_by_text("GDPR-säkrad datahantering", exact=True)).to_be_visible()
+
+    hero_login = landing_main.get_by_role("button", name=re.compile(r"^Logga in$", re.IGNORECASE))
+    hero_register = landing_main.get_by_role(
+        "link", name=re.compile(r"^Skapa konto$", re.IGNORECASE)
+    )
+    expect(hero_login).to_be_visible()
+    expect(hero_register).to_be_visible()
+
+    if not verify_equal_cta_widths:
+        return
+
+    login_width = hero_login.evaluate("element => element.getBoundingClientRect().width")
+    register_width = hero_register.evaluate("element => element.getBoundingClientRect().width")
+    width_diff = abs(login_width - register_width)
+    assert width_diff <= 1.0, (
+        "Expected landing CTA buttons to keep the same width on desktop. "
+        f"Got diff={width_diff:.2f}px (login={login_width:.2f}, register={register_width:.2f})."
+    )
 
 
-def _open_help_panel(page: object) -> object | None:
+def _login(page: Page, *, base_url: str, email: str, password: str) -> None:
+    protected_destination = f"{base_url}/browse"
+    catalog_heading = page.get_by_role("heading", name=re.compile(r"^Katalog$", re.IGNORECASE))
+
+    for attempt in range(3):
+        page.goto(protected_destination, wait_until="domcontentloaded")
+        if catalog_heading.count() > 0 and catalog_heading.first.is_visible():
+            return
+
+        dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
+        if dialog.count() == 0:
+            page.wait_for_timeout(750)
+            continue
+
+        expect(dialog).to_be_visible(timeout=10_000)
+        dialog.get_by_label("E-post").fill(email)
+        dialog.get_by_label("Lösenord").fill(password)
+        dialog.get_by_role("button", name=re.compile(r"^Logga in", re.IGNORECASE)).click()
+
+        try:
+            expect(catalog_heading).to_be_visible(timeout=30_000)
+            return
+        except AssertionError:
+            if attempt == 2:
+                raise
+            page.wait_for_timeout(1_000)
+
+    raise AssertionError("Protected-route login did not reach the catalog after three attempts.")
+
+
+def _open_help_panel(page: Page) -> Locator | None:
     help_button = page.get_by_role("button", name=re.compile(r"Hjälp", re.IGNORECASE))
     if help_button.count() == 0:
         return None
@@ -69,7 +132,7 @@ def _open_help_panel(page: object) -> object | None:
     return help_panel
 
 
-def _wait_for_page_fade_in(page: object) -> None:
+def _wait_for_page_fade_in(page: Page) -> None:
     # RouterView transition uses opacity; Playwright "visible" checks do not consider opacity.
     page.wait_for_timeout(250)
 
@@ -91,6 +154,8 @@ def main() -> None:
 
         # Logged-out help panel (mobile)
         page.goto(f"{base_url}/", wait_until="domcontentloaded")
+        _assert_public_landing(page)
+        page.screenshot(path=str(artifacts_dir / "landing-mobile.png"), full_page=True)
         help_panel = _open_help_panel(page)
         if help_panel:
             page.screenshot(path=str(artifacts_dir / "help-logged-out-mobile.png"), full_page=False)
@@ -98,12 +163,8 @@ def main() -> None:
             expect(help_panel).to_be_hidden()
 
         # Login
-        page.goto(f"{base_url}/login", wait_until="domcontentloaded")
-        dialog = page.get_by_role("dialog", name=re.compile(r"Logga in", re.IGNORECASE))
-        expect(dialog).to_be_visible()
-        dialog.get_by_label("E-post").fill(email)
-        dialog.get_by_label("Lösenord").fill(password)
-        dialog.get_by_role("button", name=re.compile(r"Logga in", re.IGNORECASE)).click()
+        _login(page, base_url=base_url, email=email, password=password)
+        page.goto(f"{base_url}/", wait_until="domcontentloaded")
         expect(
             page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
         ).to_be_visible()
@@ -139,7 +200,9 @@ def main() -> None:
         page.screenshot(path=str(artifacts_dir / "browse-mobile.png"), full_page=True)
 
         page.goto(f"{base_url}/vault", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Valv", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"^Mina filer$", re.IGNORECASE))
+        ).to_be_visible()
         _wait_for_page_fade_in(page)
         page.screenshot(path=str(artifacts_dir / "vault-mobile.png"), full_page=True)
 
@@ -157,7 +220,14 @@ def main() -> None:
         context = browser.new_context(viewport={"width": 1280, "height": 720})
         page = context.new_page()
 
+        page.goto(f"{base_url}/", wait_until="domcontentloaded")
+        _assert_public_landing(page, verify_equal_cta_widths=True)
+        page.screenshot(path=str(artifacts_dir / "landing-desktop.png"), full_page=True)
         _login(page, base_url=base_url, email=email, password=password)
+        page.goto(f"{base_url}/", wait_until="domcontentloaded")
+        expect(
+            page.get_by_role("heading", name=re.compile(r"Välkommen", re.IGNORECASE))
+        ).to_be_visible()
         _wait_for_page_fade_in(page)
         help_panel = _open_help_panel(page)
         if help_panel:
@@ -172,7 +242,9 @@ def main() -> None:
         _wait_for_page_fade_in(page)
 
         page.goto(f"{base_url}/vault", wait_until="domcontentloaded")
-        expect(page.get_by_role("heading", name=re.compile(r"Valv", re.IGNORECASE))).to_be_visible()
+        expect(
+            page.get_by_role("heading", name=re.compile(r"^Mina filer$", re.IGNORECASE))
+        ).to_be_visible()
         _wait_for_page_fade_in(page)
         page.screenshot(path=str(artifacts_dir / "vault-desktop.png"), full_page=True)
 

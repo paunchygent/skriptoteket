@@ -38,6 +38,8 @@ dependencies: ["ADR-0006", "ADR-0011", "ADR-0034", "ADR-0078"]
 - [ST-02-05: Brute-force lockout](../stories/story-02-05-brute-force-lockout.md) (done)
 - [ST-02-06: Swedish school domain allowlist for registration](../stories/story-02-06-swedish-school-domain-allowlist-registration.md) (ready)
 - [ST-02-07: Local password reset via emailed token](../stories/story-02-07-local-password-reset-via-emailed-token.md) (ready)
+- [ST-02-08: Registration preflight validation and password visibility](../stories/story-02-08-registration-preflight-validation-and-password-visibility.md) (in_progress)
+- [ST-02-09: Distributed password-reset hardening for scaled auth](../stories/story-02-09-distributed-password-reset-hardening-for-scaled-auth.md) (ready)
 
 ## Dependencies
 

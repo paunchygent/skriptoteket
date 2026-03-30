@@ -30,6 +30,24 @@ const {
   adminLoading,
 } = useHomeDashboard();
 
+const publicHighlights = [
+  {
+    title: "Professionellt appbibliotek",
+    description:
+      "Skriptoteket samlar appar och verktyg för planering, dokumentation och undervisningsnära arbete.",
+  },
+  {
+    title: "Dela med kollegor",
+    description:
+      "När ett verktyg är publicerat kan det användas av fler i verksamheten.",
+  },
+  {
+    title: "GDPR-säkrad datahantering",
+    description:
+      "Databehandling sker i en miljö byggd för skolans krav, med tydliga ramar för vad som får lämna servern.",
+  },
+] as const;
+
 const isAuthenticated = computed(() => auth.isAuthenticated);
 const canSeeContributor = computed(() => auth.hasAtLeastRole("contributor"));
 const canSeeAdmin = computed(() => auth.hasAtLeastRole("admin"));
@@ -53,94 +71,52 @@ onMounted(async () => {
          ═══════════════════════════════════════════════════════════════════════ -->
     <template v-if="!isAuthenticated">
       <!-- Hero Section -->
-      <section class="py-16 text-center">
+      <section class="py-16 text-center max-w-4xl mx-auto">
         <h1
           class="font-serif text-5xl md:text-6xl font-bold text-navy tracking-tighter leading-tight"
         >
           Skriptoteket
         </h1>
-        <p class="mt-2 text-xl text-navy/80 font-medium">
-          Verktyg av lärare, för lärande
+        <p class="mt-3 text-xl text-navy/80 font-medium">
+          Professionellt appbibliotek för lärare
         </p>
-        <p class="mt-4 text-lg text-navy/70 max-w-2xl mx-auto">
-          Ta koden i egna händer. Beskriv din idé och vad du vill uppnå –
-          kodassistenten omsätter den till ett fungerande skript och plattformen sköter resten.
+        <p class="mt-5 text-lg text-navy/70 max-w-3xl mx-auto leading-relaxed">
+          Logga in och använd appar och verktyg för undervisning, planering och dokumentation.
         </p>
-        <p class="mt-10">
+        <div class="mt-10 grid w-full max-w-[37rem] gap-3 mx-auto sm:grid-cols-2">
           <button
             type="button"
-            class="btn-primary px-8 py-4 text-sm font-semibold tracking-wide"
+            class="btn-primary w-full px-8 py-4 text-sm font-semibold tracking-wide"
             @click="loginModal.open()"
           >
             Logga in
           </button>
-        </p>
+          <RouterLink
+            to="/register"
+            class="btn-cta w-full px-8 py-4 text-sm font-semibold tracking-wide no-underline"
+          >
+            Skapa konto
+          </RouterLink>
+        </div>
       </section>
 
-      <!-- Features Section -->
+      <!-- Positioning Section -->
       <section class="py-16 border-t border-navy/10">
-        <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
-          <!-- Card 1: Skriv utan tekniska hinder -->
-          <div class="relative">
+        <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div
+            v-for="(highlight, index) in publicHighlights"
+            :key="highlight.title"
+            class="relative"
+          >
             <div
               class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
             >
-              <span class="text-canvas font-bold text-sm">1</span>
+              <span class="text-canvas font-bold text-sm">{{ index + 1 }}</span>
             </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
-              <h3 class="font-semibold text-navy text-lg">Skapa utan tekniska hinder</h3>
+            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px] text-left">
+              <h2 class="font-semibold text-navy text-lg">{{ highlight.title }}</h2>
               <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Automatisera det som tar tid; skapa verktyg för dokumentation, lektionsplanering
-                eller experimentera fritt – plattformen har inga åsikter om vad du behöver.
-              </p>
-            </div>
-          </div>
-
-          <!-- Card 2: Dela inom professionen -->
-          <div class="relative">
-            <div
-              class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
-            >
-              <span class="text-canvas font-bold text-sm">2</span>
-            </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
-              <h3 class="font-semibold text-navy text-lg">Dela med dina kollegor</h3>
-              <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Publicera verktyg till kollegor och ta del av andras lösningar.
-                Varje skript granskas innan publicering. Föreslå förbättringar, diskutera idéer –
-                skripten växer tillsammans.
-              </p>
-            </div>
-          </div>
-
-          <!-- Card 3: Kör verktyg direkt -->
-          <div class="relative">
-            <div
-              class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
-            >
-              <span class="text-canvas font-bold text-sm">3</span>
-            </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
-              <h3 class="font-semibold text-navy text-lg">Kom igång direkt</h3>
-              <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                Du behöver inte kunna programmera. Har du en bra idé och kan beskriva den,
-                hjälper kodassistenten dig att bygga helt fungerande appar och verktyg.
-              </p>
-            </div>
-          </div>
-
-          <!-- Card 4: GDPR-säkrad datahantering -->
-          <div class="relative">
-            <div
-              class="absolute -top-3 -left-2 w-8 h-8 bg-burgundy border border-navy flex items-center justify-center"
-            >
-              <span class="text-canvas font-bold text-sm">4</span>
-            </div>
-            <div class="pt-6 pl-5 border-l-2 border-navy min-h-[140px]">
-              <h3 class="font-semibold text-navy text-lg">GDPR-säkrad datahantering</h3>
-              <p class="mt-2 text-sm text-navy/70 leading-relaxed">
-                All databehandling sker lokalt och ingen data kan lämna servern utan aktivt samtycke.
-                Datahanteringen följer GDPR, med tydliga regler för gallring.
+                {{ highlight.description }}
               </p>
             </div>
           </div>

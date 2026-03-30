@@ -46,3 +46,18 @@ def test_registry_hides_demo_and_in_development_apps_in_production() -> None:
         "documents.conversion_hub",
         "classroom.group-seating-studio",
     ]
+
+
+def test_registry_marks_klassrumskartan_as_default_favorite() -> None:
+    registry = InMemoryCuratedAppRegistry(
+        settings=Settings(
+            APP_VERSION="9.9.9",
+            ENVIRONMENT="development",
+            DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/test",
+        )
+    )
+
+    app = registry.get_by_app_id(app_id="classroom.group-seating-studio")
+
+    assert app is not None
+    assert app.default_favorite is True

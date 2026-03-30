@@ -11,7 +11,8 @@ stories:
 tags: ["identity", "security", "email", "backend", "frontend"]
 acceptance_criteria:
   - "Local users can request a password-reset email without revealing whether an account exists."
-  - "A valid reset token allows a strong new password to be set and revokes the user's active sessions."
+  - "Only one active password-reset token may exist per user at a time; requesting a new reset invalidates any older pending token."
+  - "A valid reset token allows a strong new password to be set and revokes all of the user's active sessions."
   - "Reset is limited to local-password identities and does not create a Skriptoteket-local recovery path for future federated users."
   - "The SPA provides clear unauthenticated forgot/reset routes that mirror the existing verification UX quality."
   - "Identity/runbook docs are updated so routine recovery no longer depends on direct database hash replacement."
@@ -60,10 +61,14 @@ Recommended first schema:
 
 - `id`
 - `user_id`
-- `token`
+- `token_hash`
 - `expires_at`
 - `used_at`
 - `created_at`
+
+Reset tokens are stored hashed at rest. Issuing a new reset request for an eligible user must
+invalidate any older pending tokens before the new token becomes active, so each user has at most
+one active reset token at a time.
 
 ### 3. Application layer
 
@@ -78,7 +83,16 @@ Recommended first schema:
 - Add `POST /api/v1/auth/forgot-password`.
 - Add `POST /api/v1/auth/reset-password`.
 - Keep request responses generic across unknown, inactive, unverified, and federated accounts.
-- Return explicit invalid/expired-token errors only from the final reset endpoint.
+- Lock the public contract to:
+  - `forgot-password` -> `202 Accepted` + `{ "message": "Om kontot kan återställas skickas en återställningslänk." }`
+  - `reset-password` success -> `200 OK` + `{ "message": "Lösenordet har återställts. Logga in med ditt nya lösenord." }`
+  - `reset-password` invalid token -> `400` + `INVALID_PASSWORD_RESET_TOKEN`
+  - `reset-password` expired token -> `400` + `PASSWORD_RESET_TOKEN_EXPIRED`
+  - `reset-password` weak password / malformed body -> `400` + `VALIDATION_ERROR`
+- Define anonymous throttling as part of the slice:
+  - application-owned `60` second cooldown keyed by normalized email, returning the same generic
+    `202` response even when throttled
+  - edge/ingress-owned coarse IP abuse throttling documented as an operational requirement
 
 ### 5. Email + config
 
@@ -105,13 +119,24 @@ Recommended first schema:
 
 - Request handler creates tokens only for eligible local verified accounts.
 - Request handler returns generic success for ineligible/unknown accounts.
+- Requesting a second reset invalidates the first token and leaves exactly one active token.
+- Request throttling returns the same generic `202` contract and does not mint a new active token
+  during the cooldown window.
 - Reset handler accepts valid token, updates hash, clears lockout, revokes sessions.
 - Reset handler rejects invalid, expired, or used tokens.
 
 ### Integration tests
 
 - Repository coverage for `password_reset_tokens`.
+- Repository coverage for hashed token lookup and issuance invalidation semantics.
+- Session-revocation coverage proves at least two active sessions for the same user are both
+  invalidated after reset.
 - Migration idempotency coverage for the new table.
+
+### Route/API tests
+
+- `forgot-password` success body/status is stable for eligible, unknown, and throttled requests.
+- `reset-password` success/error bodies and statuses match the documented contract.
 
 ### Frontend tests
 
@@ -123,8 +148,12 @@ Recommended first schema:
 
 - Run local backend + SPA.
 - Request a reset for a local verified account.
-- Use the emailed reset link.
+- Request a second reset and confirm the first token is no longer usable.
+- Use the newest emailed reset link.
 - Confirm old password fails, new password works, and prior session is invalidated.
+- Confirm at least two pre-existing sessions or cookie jars are both invalid after reset.
+- If ingress throttling is part of the environment, record the operational verification path in the
+  runbook.
 
 ## Rollback plan
 

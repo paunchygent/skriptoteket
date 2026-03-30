@@ -48,6 +48,19 @@ class StubSessionRepository(SessionRepositoryProtocol):
     async def revoke(self, *, session_id: UUID) -> None:
         self.sessions.pop(session_id, None)
 
+    async def revoke_all_for_user(self, *, user_id: UUID, revoked_at: datetime) -> int:
+        revoked = 0
+        for session in self.sessions.values():
+            if (
+                session.user_id != user_id
+                or session.revoked_at is not None
+                or session.expires_at <= revoked_at
+            ):
+                continue
+            self.sessions[session.id] = session.model_copy(update={"revoked_at": revoked_at})
+            revoked += 1
+        return revoked
+
     async def count_active(self, *, now: datetime) -> int:
         return sum(1 for session in self.sessions.values() if session.expires_at > now)
 

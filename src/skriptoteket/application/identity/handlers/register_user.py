@@ -26,10 +26,13 @@ from skriptoteket.application.identity.password_validation import validate_passw
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.email_verification import EmailVerificationToken
-from skriptoteket.domain.identity.models import Role, UserProfile
+from skriptoteket.domain.identity.models import Role, User, UserProfile
+from skriptoteket.domain.identity.role_guards import has_at_least_role
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.email import EmailSenderProtocol, EmailTemplateRendererProtocol
 from skriptoteket.protocols.email_verification import EmailVerificationTokenRepositoryProtocol
+from skriptoteket.protocols.favorites import FavoritesRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import (
     DomainValidatorProtocol,
@@ -65,6 +68,8 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         token_generator: TokenGeneratorProtocol,
+        favorites: FavoritesRepositoryProtocol | None = None,
+        curated_apps: CuratedAppRegistryProtocol | None = None,
     ) -> None:
         self._settings = settings
         self._uow = uow
@@ -79,6 +84,8 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
         self._clock = clock
         self._id_generator = id_generator
         self._token_generator = token_generator
+        self._favorites = favorites
+        self._curated_apps = curated_apps
 
     async def handle(self, command: RegisterUserCommand) -> RegisterUserResult:
         first_name = command.first_name.strip()
@@ -132,6 +139,7 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
                 updated_at=now,
             )
             created_profile = await self._profiles.create(profile=profile)
+            await self._add_default_curated_app_favorites(user=result.user)
 
             # Create verification token
             verification_token = EmailVerificationToken(
@@ -155,6 +163,16 @@ class RegisterUserHandler(RegisterUserHandlerProtocol):
             profile=created_profile,
             verification_email_sent=True,
         )
+
+    async def _add_default_curated_app_favorites(self, *, user: User) -> None:
+        """Persist default curated-app favorites for newly registered users."""
+        if self._favorites is None or self._curated_apps is None:
+            return
+
+        for app in self._curated_apps.list_all():
+            if not app.default_favorite or not has_at_least_role(user=user, role=app.min_role):
+                continue
+            await self._favorites.add_app(user_id=user.id, app_id=app.app_id)
 
     async def _send_verification_email_with_retry(
         self,

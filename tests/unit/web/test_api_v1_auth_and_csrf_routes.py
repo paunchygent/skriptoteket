@@ -132,6 +132,17 @@ class SessionRepositoryStub(SessionRepositoryProtocol):
     async def revoke(self, *, session_id: UUID) -> None:
         self.revoke_calls.append(session_id)
 
+    async def revoke_all_for_user(self, *, user_id: UUID, revoked_at: datetime) -> int:
+        matching_session_ids = [
+            session.id
+            for session in self.create_calls
+            if session.user_id == user_id
+            and session.revoked_at is None
+            and session.expires_at > revoked_at
+        ]
+        self.revoke_calls.extend(matching_session_ids)
+        return len(matching_session_ids)
+
     async def count_active(self, *, now: datetime) -> int:
         return self.count_active_result
 

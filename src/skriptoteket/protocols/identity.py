@@ -35,6 +35,8 @@ from skriptoteket.application.identity.commands import (
     UpdateAiSettingsResult,
     UpdateProfileCommand,
     UpdateProfileResult,
+    ValidateRegistrationCommand,
+    ValidateRegistrationResult,
 )
 from skriptoteket.domain.identity.models import (
     AllowedDomain,
@@ -70,6 +72,7 @@ class SessionRepositoryProtocol(Protocol):
     async def create(self, *, session: Session) -> None: ...
     async def get_by_id(self, session_id: UUID) -> Session | None: ...
     async def revoke(self, *, session_id: UUID) -> None: ...
+    async def revoke_all_for_user(self, *, user_id: UUID, revoked_at: datetime) -> int: ...
     async def count_active(self, *, now: datetime) -> int: ...
     async def sync_ai_settings_for_user(
         self,
@@ -128,6 +131,10 @@ class ProvisionLocalUserHandlerProtocol(Protocol):
 
 class RegisterUserHandlerProtocol(Protocol):
     async def handle(self, command: RegisterUserCommand) -> RegisterUserResult: ...
+
+
+class ValidateRegistrationHandlerProtocol(Protocol):
+    async def handle(self, command: ValidateRegistrationCommand) -> ValidateRegistrationResult: ...
 
 
 class GetProfileHandlerProtocol(Protocol):
