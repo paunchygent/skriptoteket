@@ -68,7 +68,7 @@ re-coupling it through one shared save contract.
 | `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Frontend session shape and transition semantics | 6 min |
 | `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md` | Seating smart lane | 5 min |
 | `docs/backlog/stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md` | Dedicated rules workspace and task-pane summary cut-over | 6 min |
-| `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md` | Grouping smart lane and seat-distance toggle | 5 min |
+| `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md` | Grouping smart lane, classroom-aware compactness, and history split | 5 min |
 | `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Explanation and rerun-messaging UX | 4 min |
 | `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Implementation-ready remediation design task | 6 min |
 | `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md` | Implementation-ready dedicated rules workspace design task | 6 min |
@@ -84,7 +84,7 @@ re-coupling it through one shared save contract.
 | Use export-backed checkpoints only, with assignment-hash dedupe | Aligns history input with current PRD/ADR direction and avoids raw-draft ambiguity | [ ] |
 | Delete old visible planner metadata semantics without migration | Cleaner reset than mixing incompatible teacher models; no real users exist yet | [ ] |
 | Keep smart grouping and smart seating in the same epic, but with separate mode toggles | Matches the shared hidden relation model while preserving separate teacher tasks | [ ] |
-| Use one explicit grouping seat-distance toggle instead of generic classroom-awareness wording | Easier for teachers to understand and control | [ ] |
+| Keep classroom-aware grouping separate from history and tie it to the classroom control | Preserves clear teacher intent without turning history into a hidden room-awareness switch | [ ] |
 | Block history-enabled runs when no eligible checkpoints exist | Prevents silent fallback and keeps teacher trust intact | [ ] |
 | Treat later grouping checkpoints as the primary grouping-history lane | Keeps grouping mode-specific while still allowing seating checkpoints as a secondary source | [ ] |
 | Mirror roster-global vs draft-local ownership in the frontend session shape | Prevents one shared planner save contract from reintroducing the same transition bugs under new names | [ ] |
@@ -120,7 +120,7 @@ re-coupling it through one shared save contract.
 - [x] Use export-backed checkpoints only, with assignment-hash dedupe
 - [x] Delete old visible planner metadata semantics without migration
 - [x] Keep smart grouping and smart seating in the same epic
-- [x] Use one explicit grouping seat-distance toggle
+- [x] Keep classroom-aware grouping separate from history and tie it to the classroom control
 - [x] Mirror roster-global vs draft-local ownership in the frontend session shape
 
 ## Post-Approval Refinements
@@ -140,7 +140,7 @@ re-coupling it through one shared save contract.
     strict separation between smart-rule hydration failure and smart-rule persistence failure
 - 2026-03-25 reviewer findings were resolved before approval:
   - common smart controls are now explicitly separate from the grouping-only
-    seat-distance toggle
+    classroom-aware lane
   - later grouping checkpoints are now the primary grouping-history lane
   - history-enabled smart runs now block with a short message when no eligible
     checkpoints exist
@@ -153,14 +153,17 @@ re-coupling it through one shared save contract.
     exact-current-arrangement view
   - `Sittplatser` and `Grupper` now keep only compact smart summaries plus a small settings-link
     affordance near `Smart`; drawers may summarize but not edit rules
-- 2026-03-29 smart-grouping precedence refinement before `ST-27-04` implementation:
-  - grouping history is now explicitly separate from live seating continuity
+- 2026-03-29/2026-03-30 smart-grouping precedence refinement before `ST-27-04` implementation:
+  - grouping history is now explicitly separate from classroom-aware compactness
   - grouping `Use history` now means label-insensitive grouping anti-repeat memory based on
     normalized student partitions and repeated co-memberships rather than raw group ids
-  - the explicit grouping seat-distance toggle now reads the active seating draft first and
-    eligible seating checkpoints second as continuity input only, never as grouping history
-  - for smart grouping, rerun diversity now sits below explicit relation rules, explicit live
-    seating continuity when enabled, and grouping-history anti-repeat memory
+  - classroom-aware grouping is now tied to the grouping classroom control rather than described
+    as a separate seat-distance toggle
+  - classroom-aware grouping now means a soft seat-topology compactness lane that reads the active
+    seating draft first and eligible seating checkpoints second, penalizing same-group spread
+    quadratically beyond a local elastic radius instead of acting like grouping history
+  - for smart grouping, rerun diversity now sits below explicit relation rules, classroom-aware
+    compactness when enabled, and grouping-history anti-repeat memory
 
 ## Suggested Approval Wording
 

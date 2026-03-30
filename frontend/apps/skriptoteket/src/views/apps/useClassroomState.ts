@@ -93,6 +93,11 @@ export const useClassroomState = defineStore("classroom-state", () => {
   const seatsById = computed(() => buildSeatMap(seats.value));
   const fixturesById = computed(() => buildFixtureMap(fixtures.value));
   const groupsById = computed(() => buildGroupMap(groups.value));
+  const hasAssignedTarget = (
+    entry: [string, string | null],
+  ): entry is [string, string] => {
+    return typeof entry[1] === "string" && entry[1].length > 0;
+  };
 
   const studentPlanningMeta = computed(() => {
     return students.value
@@ -102,14 +107,14 @@ export const useClassroomState = defineStore("classroom-state", () => {
 
   const groupAssignments = computed<GroupAssignment[]>(() => {
     return Object.entries(groupAssignmentsByStudentId.value)
-      .filter((entry) => typeof entry[1] === "string" && entry[1].length > 0)
-      .map(([studentId, groupId]) => ({ student_id: studentId, group_id: groupId as string }));
+      .filter(hasAssignedTarget)
+      .map(([studentId, groupId]) => ({ student_id: studentId, group_id: groupId }));
   });
 
   const seatAssignments = computed<SeatAssignment[]>(() => {
     return Object.entries(seatAssignmentsByStudentId.value)
-      .filter((entry) => typeof entry[1] === "string" && entry[1].length > 0)
-      .map(([studentId, seatId]) => ({ student_id: studentId, seat_id: seatId as string }));
+      .filter(hasAssignedTarget)
+      .map(([studentId, seatId]) => ({ student_id: studentId, seat_id: seatId }));
   });
 
   const ungroupedStudents = computed(() => {

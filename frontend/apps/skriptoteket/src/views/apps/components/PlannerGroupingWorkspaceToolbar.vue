@@ -140,6 +140,10 @@ const secondaryActionItems = computed(() => [
 ]);
 const isResetGroupingDialogOpen = ref(false);
 
+function isGroupingExportOption(option: PlannerExportOptionValue): option is GroupingExportOption {
+  return option === "xlsx" || option === "pdf_a4_portrait";
+}
+
 function changeGroupingTemplate(event: Event): void {
   const target = event.target;
   if (!(target instanceof HTMLSelectElement)) {
@@ -165,7 +169,10 @@ function confirmResetGroupingDraft(): void {
 }
 
 function handleExportOption(option: PlannerExportOptionValue): void {
-  emit("export-option", option as GroupingExportOption);
+  if (!isGroupingExportOption(option)) {
+    return;
+  }
+  emit("export-option", option);
 }
 
 function decrementGroupCount(): void {

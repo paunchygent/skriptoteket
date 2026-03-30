@@ -64,7 +64,7 @@ describe("RoomFixtureArtwork", () => {
 
     expect(whiteboard.text()).toContain("Whiteboard");
     expect(door.text()).toContain("Dörr");
-    expect(door.html()).toContain("writing-mode: vertical-rl;");
+    expect(door.html()).toContain("writing-mode: vertical-lr;");
     expect(teacherDesk.text()).toContain("Kateder");
     expect(teacherDesk.html()).toContain("text-white");
   });

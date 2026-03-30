@@ -26,6 +26,9 @@ function mountBoard() {
   return mount(GroupBoard, {
     props: {
       selectedStudentId: "student-2",
+      smartRuleMarkersByStudentId: {
+        "student-2": ["Isär A"],
+      },
     },
     global: {
       stubs: {
@@ -34,6 +37,7 @@ function mountBoard() {
             "group",
             "students",
             "selectedStudentId",
+            "smartRuleMarkersByStudentId",
             "disabled",
             "canMoveUp",
             "canMoveDown",
@@ -43,6 +47,7 @@ function mountBoard() {
               type="button"
               data-test="group-card"
               :data-disabled="String(disabled)"
+              :data-marker-count="String((smartRuleMarkersByStudentId?.['student-2'] ?? []).length)"
               :data-selected-student-id="selectedStudentId ?? ''"
               @click="$emit('student-selected', 'student-2')"
             >
@@ -107,5 +112,11 @@ describe("GroupBoard", () => {
 
     expect(wrapper.get('[data-test="group-card"]').attributes("data-disabled")).toBe("true");
     expect(wrapper.get('[data-test="group-card"]').attributes("data-selected-student-id")).toBe("student-2");
+  });
+
+  it("forwards smart-rule markers to the rendered group cards", () => {
+    const wrapper = mountBoard();
+
+    expect(wrapper.get('[data-test="group-card"]').attributes("data-marker-count")).toBe("1");
   });
 });

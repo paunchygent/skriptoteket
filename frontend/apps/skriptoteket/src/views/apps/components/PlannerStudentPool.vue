@@ -8,6 +8,7 @@
  */
 
 import type { Student } from "../classroomPlannerTypes";
+import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
 
 withDefaults(
   defineProps<{
@@ -75,19 +76,11 @@ const emit = defineEmits<{
             {{ student.display_name }}
           </div>
         </div>
-        <div
-          v-if="(smartRuleMarkersByStudentId[student.id] ?? []).length > 0"
-          class="flex flex-wrap justify-end gap-1"
-          :data-test="`student-pool-markers-${student.id}`"
-        >
-          <span
-            v-for="marker in smartRuleMarkersByStudentId[student.id]"
-            :key="marker"
-            class="border border-navy/20 bg-canvas px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
-          >
-            {{ marker }}
-          </span>
-        </div>
+        <PlannerStudentRuleMarkers
+          class="justify-end"
+          :markers="smartRuleMarkersByStudentId[student.id] ?? []"
+          :root-test-id="`student-pool-markers-${student.id}`"
+        />
       </button>
 
       <div

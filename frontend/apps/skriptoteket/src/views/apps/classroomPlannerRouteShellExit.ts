@@ -39,9 +39,15 @@ export function createClassroomPlannerExitFlow(options: ClassroomPlannerExitFlow
   const isExitConfirmationOpen = ref(false);
   const isExitingWithoutSave = ref(false);
 
+  function isNavigationTimingEntry(
+    entry: PerformanceEntry,
+  ): entry is PerformanceNavigationTiming {
+    return "type" in entry && typeof entry.type === "string";
+  }
+
   function readCurrentEntryOrigin(): ClassroomPlannerEntryOrigin | null {
     const navigationEntries = window.performance.getEntriesByType("navigation").filter(
-      (entry): entry is PerformanceNavigationTiming => typeof (entry as { type?: unknown }).type === "string",
+      isNavigationTimingEntry,
     );
     if (isReloadNavigation(navigationEntries)) {
       return null;

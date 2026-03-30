@@ -239,14 +239,6 @@ body.app-shell-game-mode::before {
     @apply border-navy bg-white text-navy hover:bg-canvas;
   }
 
-  .planner-tool-select-active {
-    @apply border-burgundy bg-white text-burgundy;
-  }
-
-  .planner-tool-select-idle {
-    @apply border-navy/30 bg-white;
-  }
-
   .planner-tool-rail {
     @apply border border-navy bg-white px-2 py-2 shadow-brutal-sm;
   }

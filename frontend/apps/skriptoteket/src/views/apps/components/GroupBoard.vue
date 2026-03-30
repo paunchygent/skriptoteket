@@ -14,6 +14,7 @@ import { useClassroomState } from "../useClassroomState";
 
 const props = defineProps<{
   selectedStudentId?: string | null;
+  smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>();
 
 const emit = defineEmits<{
@@ -34,6 +35,7 @@ const orderedGroups = computed(() => [...state.groups].sort((left, right) => lef
       :can-move-up="index > 0"
       :can-move-down="index < orderedGroups.length - 1"
       :selected-student-id="props.selectedStudentId"
+      :smart-rule-markers-by-student-id="props.smartRuleMarkersByStudentId"
       :disabled="state.isWorkspaceBusy"
       @student-dropped="state.assignStudentToGroup"
       @student-removed="state.removeStudentFromGroup"

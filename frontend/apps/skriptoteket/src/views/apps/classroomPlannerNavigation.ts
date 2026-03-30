@@ -16,6 +16,12 @@ const CLASSROOM_PLANNER_ENTRY_ORIGIN_KEY = "classroomPlannerEntryOrigin";
 
 export type ClassroomPlannerEntryOrigin = "dashboard" | "catalog";
 
+function hasEntryOriginCandidate(
+  historyState: object,
+): historyState is Record<typeof CLASSROOM_PLANNER_ENTRY_ORIGIN_KEY, unknown> {
+  return CLASSROOM_PLANNER_ENTRY_ORIGIN_KEY in historyState;
+}
+
 export function resolveClassroomPlannerEntryOriginFromRouteName(
   routeName: RouteRecordNameGeneric | null | undefined,
 ): ClassroomPlannerEntryOrigin | null {
@@ -55,8 +61,11 @@ export function readClassroomPlannerEntryOriginFromHistoryState(
   if (!historyState || typeof historyState !== "object") {
     return null;
   }
+  if (!hasEntryOriginCandidate(historyState)) {
+    return null;
+  }
 
-  const candidate = (historyState as Record<string, unknown>)[CLASSROOM_PLANNER_ENTRY_ORIGIN_KEY];
+  const candidate = historyState[CLASSROOM_PLANNER_ENTRY_ORIGIN_KEY];
   return candidate === "dashboard" || candidate === "catalog" ? candidate : null;
 }
 

@@ -2,6 +2,17 @@ import type { EditorState } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 import type { Diagnostic } from "@codemirror/lint";
 
+function hasFunctionDefinitionAncestor(node: ReturnType<typeof syntaxTree>["topNode"] | null): boolean {
+  let current = node;
+  while (current) {
+    if (current.name === "FunctionDefinition") {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
 function isBareYieldParseQuirk(
   state: EditorState,
   tree: ReturnType<typeof syntaxTree>,
@@ -10,23 +21,26 @@ function isBareYieldParseQuirk(
   if (errorRange.to !== errorRange.from) return false;
 
   const pos = errorRange.from;
-  if (pos <= 0) return false;
-
+  const line = state.doc.lineAt(Math.min(Math.max(pos, 1), state.doc.length));
+  if (line.text.trim() !== "yield") return false;
   if (pos < state.doc.length && state.doc.sliceString(pos, pos + 1) !== "\n") return false;
 
-  const left = tree.resolveInner(pos - 1, -1);
-  let current: typeof left | null = left;
-  while (current && current.name !== "YieldStatement") current = current.parent;
-  if (!current) return false;
-  if (current.to !== pos) return false;
-
-  const stmtText = state.doc.sliceString(current.from, current.to).trim();
-  if (stmtText !== "yield") return false;
-
-  let parent = current.parent;
-  while (parent) {
-    if (parent.name === "FunctionDefinition") return true;
-    parent = parent.parent;
+  const candidatePositions = [Math.max(pos - 1, line.from), line.from];
+  for (const candidatePos of candidatePositions) {
+    const resolvedNode = tree.resolveInner(candidatePos, -1);
+    let current = resolvedNode;
+    while (current && current.name !== "YieldStatement") {
+      current = current.parent;
+    }
+    if (!current) {
+      continue;
+    }
+    if (state.doc.sliceString(current.from, current.to).trim() !== "yield") {
+      continue;
+    }
+    if (current.to === pos && hasFunctionDefinitionAncestor(current.parent)) {
+      return true;
+    }
   }
 
   return false;

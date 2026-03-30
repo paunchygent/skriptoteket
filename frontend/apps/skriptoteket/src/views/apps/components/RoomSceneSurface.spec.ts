@@ -19,7 +19,7 @@ describe("RoomSceneSurface", () => {
 
     expect(wrapper.text()).toContain("Dörr");
     expect(wrapper.text().match(/Whiteboard/g)).toHaveLength(1);
-    expect(wrapper.html()).toContain("writing-mode: vertical-rl;");
+    expect(wrapper.html()).toContain("writing-mode: vertical-lr;");
   });
 
   it("can preserve raw fixture identities for builder editing surfaces while keeping wall annotation semantics", () => {
@@ -38,6 +38,6 @@ describe("RoomSceneSurface", () => {
 
     expect(wrapper.text().match(/Whiteboard/g)).toHaveLength(2);
     expect(wrapper.text()).toContain("Dörr");
-    expect(wrapper.html()).toContain("writing-mode: vertical-rl;");
+    expect(wrapper.html()).toContain("writing-mode: vertical-lr;");
   });
 });

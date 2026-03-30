@@ -104,4 +104,29 @@ describe("GroupCard", () => {
       expect(label.classes()).not.toContain("truncate");
     }
   });
+
+  it("shows smart-rule markers on assigned student bars", () => {
+    const wrapper = mount(GroupCard, {
+      props: {
+        group: {
+          id: "group-a",
+          name: "Grupp A",
+          sort_order: 0,
+          name_is_custom: false,
+        },
+        students: [{ id: "student-1", display_name: "Ada Lovelace" }],
+        canMoveUp: false,
+        canMoveDown: true,
+        selectedStudentId: null,
+        smartRuleMarkersByStudentId: {
+          "student-1": ["Nära läraren", "Isär A"],
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="group-student-markers-student-1"]').text()).toContain(
+      "Nära läraren",
+    );
+    expect(wrapper.get('[data-test="group-student-markers-student-1"]').text()).toContain("Isär A");
+  });
 });

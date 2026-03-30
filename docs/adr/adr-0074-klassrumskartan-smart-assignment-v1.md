@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-25
-updated: 2026-03-29
+updated: 2026-03-30
 links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25", "ST-27-06", "ST-27-07"]
 ---
 
@@ -64,6 +64,8 @@ This means:
 - a compact or collapsed task-pane drawer may summarize the current rules and mode-local smart
   toggles such as `Use history`
 - that compact drawer must not host inline rule creation or rule editing
+- redundant active-rule count pills should not appear in task toolbars when richer rule surfaces
+  already communicate the same state
 - per-student metadata drawers remain secondary and must not become the primary smart-rule editor
 
 Inside `Regler`, teachers author rules from a class-wide visual overview rather than from list
@@ -83,11 +85,14 @@ Smart seating may additionally expose one seating-only rule:
 
 - `Närmare läraren`
 
-Smart grouping may additionally expose one explicit mode-specific toggle:
+Smart grouping may additionally expose one classroom-aware control owned by the grouping classroom
+control:
 
-- `Ska hur nära de sitter räknas?`
-
-This replaces a more abstract "classroom-aware" explanation with a clearer teacher question.
+- classroom-aware grouping must stay separate from `Use history`
+- the classroom control may express this through selection alone or a composite selector/toggle
+  affordance, but it must not read like a second history toggle
+- the teacher-facing meaning is that smart grouping may use the selected classroom's seating
+  context as a soft compactness lane when usable seating context exists
 
 No visible weight sliders, planning profiles, rule-engine jargon, or per-student smart metadata
 forms are exposed in the default V1 surface.
@@ -175,9 +180,12 @@ V1 history sources are explicit export-backed checkpoints only.
   - exact and near-repeat grouping memory must compare normalized student partitions and repeated
     student co-memberships rather than raw `group_id` or group-name matches
 - Smart grouping may additionally read seating continuity through a separate non-history lane:
-  - active seating draft first when the explicit grouping seat-continuity signal is enabled
+  - active seating draft first when classroom-aware grouping is enabled through the classroom
+    control
   - eligible seating checkpoints second when no active seating draft exists
-  - this seating continuity lane is not grouping history
+  - this classroom-aware lane is not grouping history
+  - if no usable seating context exists, the run should fall back honestly instead of pretending
+    that classroom-aware grouping was used
 - When `Use history` is enabled but no eligible grouping checkpoints exist for the requested run,
   the system must not silently degrade to no-history behavior; it blocks the history-enabled run
   with a short teacher-facing message.
@@ -209,7 +217,8 @@ separate three ownership lanes:
   - `keep_apart` sets and set membership
 - draft-local workspace state:
   - per-draft smart toggle state
-  - grouping seating-distance toggle state
+  - grouping history toggle state
+  - classroom-aware grouping state tied to the classroom control
   - current seating/group arrangement state and bounded draft history
 - export-backed checkpoints:
   - roster-scoped seating checkpoints with assignment-hash deduplication
@@ -251,12 +260,17 @@ The client may keep cheap local hints, but it must not duplicate the full solver
 It acts as an explicit exception to the default teacher-distance fairness balancing.
 
 Grouping must not expose or consume that teacher-distance preference directly. Grouping may still
-use seating continuity through the explicit seat-distance toggle when:
+use seating context through the classroom-aware compactness lane when:
 
-- the seating-distance signal is enabled
+- classroom-aware grouping is enabled through the classroom control
 - usable seating context exists
-- the current seating draft may be read first as a live continuity input, with eligible seating
-  checkpoints as fallback continuity input only
+- the current seating draft may be read first as a live compactness input, with eligible seating
+  checkpoints as fallback compactness input only
+- same-group spread is penalized quadratically beyond a local elastic radius using seat-topology
+  distance rather than raw pixels
+
+The exact elastic radius and compactness weight curve should stay intentionally tunable through
+simulations and discussion of outcomes versus the desired classroom behavior.
 
 This keeps grouping honest instead of pretending teacher-distance is a shared cross-mode rule.
 
@@ -291,6 +305,13 @@ For V1:
   possible
 - `Keep near` in grouping means those students should prefer the same group whenever the rule set
   and current group structure allow it
+- when classroom-aware grouping is enabled and usable seating context exists, same-group students
+  should also prefer spatially compact local clusters rather than being split across distant parts
+  of the room
+- classroom-aware grouping is a soft compactness objective, not a brittle hard invalidation
+  threshold
+- the solver should penalize same-group spread quadratically beyond a local elastic radius rather
+  than treating every non-adjacent placement as equally bad
 - if there are fewer groups than students in one keep-apart cluster, the solver should maximize
   spread and minimize collisions rather than failing
 - if one keep-near cluster cannot fit perfectly because of conflicting rules or current group
@@ -332,8 +353,8 @@ For V1:
 
 - the primary objective remains smart quality under the teacher-authored rules
 - rerun diversity is a secondary objective, not a reason to accept obviously weaker placements
-- for smart grouping, rerun diversity sits below explicit relation rules, explicit live seating
-  continuity when enabled, and grouping-history anti-repeat memory
+- for smart grouping, rerun diversity sits below explicit relation rules, classroom-aware
+  compactness when enabled, and grouping-history anti-repeat memory
 - repeated smart runs should prefer a materially different valid assignment from the current draft
   arrangement when multiple good candidates exist
 - the backend may achieve this through randomized tie-breaking, multi-start search, or a soft
@@ -418,8 +439,8 @@ reduced to a thin composition surface, not as another expansion of one umbrella 
 - Class-global teacher intentions stay stable across drafts instead of being reauthored per draft.
 - Export-backed checkpoints align with the current PRD and ADR direction.
 - The repo avoids a spaghetti-style bridge between old visible metadata and the new smart model.
-- Grouping can benefit from seating context through an explicit, understandable toggle instead of a
-  vague "classroom-aware" label.
+- Grouping can benefit from seating context through one classroom-control-owned compactness lane
+  instead of a vague "classroom-aware" label or a hidden history synonym.
 - Frontend transition semantics now match the backend ownership boundary instead of re-coupling the
   lanes through one shared save contract.
 

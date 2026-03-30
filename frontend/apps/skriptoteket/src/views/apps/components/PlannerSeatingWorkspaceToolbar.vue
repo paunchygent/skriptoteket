@@ -63,6 +63,10 @@ const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
 const isResetSeatingDialogOpen = ref(false);
 
+function isSeatingExportOption(option: PlannerExportOptionValue): option is SeatingExportOption {
+  return option === "a3_landscape" || option === "a4_landscape" || option === "xlsx";
+}
+
 const canEditCurrentTemplate = computed(() => plannerState.template !== null);
 const canRandomizeSeating = computed(() => {
   return (
@@ -75,18 +79,6 @@ const canRandomizeSeating = computed(() => {
   );
 });
 const hasSeatingAssignments = computed(() => plannerState.seatAssignments.length > 0);
-const activeRuleCount = computed(() => {
-  const nearTeacherRuleCount = plannerState.seatingPreferences.some((preference) => preference.near_teacher)
-    ? 1
-    : 0;
-  return nearTeacherRuleCount + plannerState.relationshipRules.length;
-});
-const activeRuleLabel = computed(() => {
-  if (activeRuleCount.value === 1) {
-    return "1 regel";
-  }
-  return `${activeRuleCount.value} regler`;
-});
 const exportStatus = computed<{
   label: string;
   tone: DenseStatusTone;
@@ -211,7 +203,10 @@ function editCurrentTemplate(): void {
 }
 
 function handleExportOption(option: PlannerExportOptionValue): void {
-  emit("export-option", option as SeatingExportOption);
+  if (!isSeatingExportOption(option)) {
+    return;
+  }
+  emit("export-option", option);
 }
 </script>
 
@@ -304,12 +299,6 @@ function handleExportOption(option: PlannerExportOptionValue): void {
         :model-value="plannerState.draft?.use_history ?? false"
         :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
         @update:model-value="plannerState.setDraftUseHistoryEnabled($event)"
-      />
-      <UiDenseStatusPill
-        v-if="activeRuleCount > 0"
-        :label="activeRuleLabel"
-        :title="`${activeRuleLabel} aktiva i Regler`"
-        data-test="seating-active-rule-count"
       />
       <UiDenseActionButton
         label="Börja om"

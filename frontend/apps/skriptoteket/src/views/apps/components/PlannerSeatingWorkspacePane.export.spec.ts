@@ -111,7 +111,7 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
   });
 
-  it("renders the detached seating selector, history cluster, and compact rule pill", () => {
+  it("renders the detached seating selector and history cluster without a redundant rule pill", () => {
     const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
       props: {
         availableTemplates: [buildTemplate()],
@@ -122,7 +122,7 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     expect(wrapper.get('[data-test="seating-template-select"]').classes()).toContain("h-[28px]");
     expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="seating-active-rule-count"]').text()).toContain("2 regler");
+    expect(wrapper.find('[data-test="seating-active-rule-count"]').exists()).toBe(false);
   });
 
   it("routes seating actions through the detached toolbar controls", async () => {

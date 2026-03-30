@@ -7,10 +7,12 @@
  * extracted editor composable.
  */
 
+import { computed } from "vue";
+
 import type { BuilderTool } from "../roomTemplateEditorDomain";
 import type { RoomFixturePaletteEntry, RoomGridDimensions } from "../roomFixtureLayout";
 
-defineProps<{
+const props = defineProps<{
   name: string;
   selectedTool: BuilderTool;
   seatCount: number;
@@ -26,6 +28,43 @@ const emit = defineEmits<{
   (e: "resize-room", payload: { axis: "cols" | "rows"; delta: 1 | -1 }): void;
   (e: "clear-room"): void;
 }>();
+
+type RoomEditorToolEntry = {
+  id: BuilderTool;
+  label: string;
+  helpText: string;
+};
+
+const toolEntries = computed<RoomEditorToolEntry[]>(() => [
+  {
+    id: "seat",
+    label: "Placera plats",
+    helpText: "Klicka i rutnätet för att lägga till eller ta bort en sittplats.",
+  },
+  ...props.roomFixturePalette.map((fixture) => ({
+    id: fixture.type,
+    label: fixture.label,
+    helpText: fixture.placementKind === "wall"
+      ? "Peka mot en vägg och klicka för att placera objektet där förhandsvisningen visar."
+      : "Peka i rutnätet och klicka för att placera objektet där det får plats.",
+  })),
+  {
+    id: "erase",
+    label: "Sudda",
+    helpText: "Klicka på en sittplats eller ett objekt för att ta bort det från klassrummet.",
+  },
+]);
+const selectedToolEntry = computed<RoomEditorToolEntry>(() => {
+  return toolEntries.value.find((tool) => tool.id === props.selectedTool) ?? toolEntries.value[0]!;
+});
+
+function updateNameFromEvent(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  emit("update:name", target.value);
+}
 </script>
 
 <template>
@@ -42,7 +81,7 @@ const emit = defineEmits<{
         type="text"
         placeholder="Till exempel Sal 304"
         class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
-        @input="emit('update:name', ($event.target as HTMLInputElement).value)"
+        @input="updateNameFromEvent"
       >
     </div>
 
@@ -110,37 +149,40 @@ const emit = defineEmits<{
         </span>
       </div>
 
-      <div class="grid gap-2">
+      <div
+        class="grid gap-2"
+        data-test="room-template-tool-buttons"
+      >
         <button
+          v-for="tool in toolEntries"
+          :key="tool.id"
           type="button"
           class="btn-ghost planner-btn-ghost justify-start"
-          :class="selectedTool === 'seat' ? 'planner-tool-select-active' : 'planner-tool-select-idle'"
-          @click="emit('update:selectedTool', 'seat')"
+          :class="selectedTool === tool.id ? 'planner-choice-button-active' : 'planner-choice-button-idle'"
+          :data-test="`room-template-tool-${tool.id}`"
+          @click="emit('update:selectedTool', tool.id)"
         >
-          Placera plats
+          {{ tool.label }}
         </button>
-        <button
-          v-for="fixture in roomFixturePalette"
-          :key="fixture.type"
-          type="button"
-          class="btn-ghost planner-btn-ghost justify-start"
-          :class="selectedTool === fixture.type ? 'planner-tool-select-active' : 'planner-tool-select-idle'"
-          @click="emit('update:selectedTool', fixture.type)"
+      </div>
+
+      <div class="planner-tool-rail-section">
+        <p
+          class="planner-tool-rail-meta"
+          data-test="room-template-selected-tool-meta"
         >
-          {{ fixture.label }}
-        </button>
-        <button
-          type="button"
-          class="btn-ghost planner-btn-ghost justify-start"
-          :class="selectedTool === 'erase' ? 'planner-tool-select-active' : 'planner-tool-select-idle'"
-          @click="emit('update:selectedTool', 'erase')"
+          Aktivt verktyg · {{ selectedToolEntry.label }}
+        </p>
+        <p
+          class="mt-2 text-xs leading-relaxed text-navy/70"
+          data-test="room-template-selected-tool-help"
         >
-          Sudda
-        </button>
+          {{ selectedToolEntry.helpText }}
+        </p>
         <button
           type="button"
           data-test="builder-clear-room"
-          class="btn-ghost planner-btn-ghost justify-start"
+          class="btn-ghost planner-btn-ghost planner-btn-ghost-sm mt-2.5 w-full justify-center"
           @click="emit('clear-room')"
         >
           Rensa

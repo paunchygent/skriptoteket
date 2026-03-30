@@ -5,7 +5,7 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-29
+updated: 2026-03-30
 outcome: "Teachers use a denser, desktop-first Klassrumskartan workspace with a canonical symbol system, compressed shell chrome, clearer task hierarchy, and intentionally reduced mobile companion layouts without changing the planner's core logic or data contracts."
 dependencies:
   [
@@ -75,6 +75,7 @@ into the `laptop` proof width.
 - [ST-29-06: Rules workspace rail-map-inspector rebalance](../stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md)
 - [ST-29-07: Reduced mobile companion layouts and breakpoint cutover](../stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md)
 - [ST-29-08: Shared custom tooltip system and global hover contract](../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
+- [ST-29-09: Rule visibility and tool-feedback continuity](../stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
 
 ## Notes
 

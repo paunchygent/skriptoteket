@@ -5,7 +5,7 @@ title: "Klassrumskartan: smart grouping v1 grouping history, live seating influe
 status: ready
 owners: "agents"
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-03-30
 stories:
   - "ST-27-04"
 tags:
@@ -30,11 +30,13 @@ dependencies:
 acceptance_criteria:
   - "Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`, then grouping keeps the current local random reshuffle behavior and preserves the current group count plus teacher-defined group names."
   - "Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then the planner calls one backend-owned smart grouping run endpoint and persists the returned grouping result instead of performing a frontend-only random shuffle."
+  - "Given grouping rules are already visible through `Regler` and the student markers, when the grouping toolbar renders, then it does not show a redundant active-rule count pill."
   - "Given roster-global `Keep apart` and `Keep near` rules exist, when smart grouping runs, then the backend interprets those same visible rules at grouping level without introducing a second grouping-only rule model."
-  - "Given grouping `Use history` is enabled, when the smart run evaluates prior grouping outcomes, then it uses grouping-specific similarity history rather than treating seating continuity as grouping history."
+  - "Given grouping `Use history` is enabled, when the smart run evaluates prior grouping outcomes, then it uses grouping-specific similarity history only and does not treat classroom awareness or seating continuity as grouping history."
   - "Given grouping history contains exact or near-repeat groupings, when smart grouping runs with `Use history` enabled, then it penalizes repeated student co-memberships and not only exact repeated group ids."
-  - "Given the explicit grouping seat-continuity toggle is enabled and an active seating draft exists for the same class, when smart grouping runs, then that live seating arrangement is the first continuity source and outranks rotational diversity preferences while still respecting explicit relation rules."
-  - "Given the explicit grouping seat-continuity toggle is enabled but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may use those checkpoints as a fallback continuity source without treating them as grouping history."
+  - "Given classroom-aware grouping is enabled through the grouping classroom control and an active seating draft exists for the same class, when smart grouping runs, then that live seating arrangement becomes the first compactness source and uses seat-topology distance to penalize same-group spread quadratically beyond a local elastic radius while still respecting explicit relation rules."
+  - "Given classroom-aware grouping is enabled through the grouping classroom control but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may use those checkpoints as a fallback compactness source without treating them as grouping history."
+  - "Given classroom-aware grouping is enabled but no usable seating context exists, when smart grouping runs, then it falls back honestly to rules plus any enabled history lane instead of pretending the classroom-aware lane was used."
   - "Given `Use history` is enabled but no eligible grouping checkpoints exist, when the teacher tries to run smart grouping, then the run is blocked with a short teacher-facing explanation and the draft assignments stay unchanged."
 ---
 
@@ -48,11 +50,12 @@ The clarified teacher model is:
 
 - grouping history must be distinct from seating continuity
 - `Keep apart` and `Keep near` remain one shared visible rule model across seating and grouping
-- grouping may optionally be influenced by the current seating arrangement to reduce transition
-  disorder during class-to-group work
-- that seating continuity signal is not the same thing as grouping history
-- when live seating continuity is explicitly enabled and a current seating draft exists, it should
-  outrank rotational anti-repeat pressure rather than behaving like one more soft historical hint
+- `Smart` decides backend smart grouping vs local random
+- classroom-aware grouping is a separate compactness lane tied to the classroom control
+- `Use history` is a separate anti-repeat lane and is not a synonym for classroom awareness
+- classroom-aware grouping may use the current seating arrangement to reduce transition disorder and
+  avoid groups whose members are visibly split across the room
+- classroom-aware compactness should be a soft objective rather than a brittle hard failure rule
 
 Without this explicit split, the implementation will either:
 
@@ -66,12 +69,14 @@ Ship one implementation-ready smart-grouping slice that makes the source-of-trut
 before code lands:
 
 - `Use history` means grouping anti-repeat memory
-- `Ska hur nära de sitter räknas?` means seating-continuity input
+- classroom-aware grouping is tied to the grouping classroom control rather than hidden inside
+  `Use history`
 - shared relation rules remain roster-global and mode-shared
 - the backend owns smart grouping orchestration and scoring
 - grouping history is label-insensitive and similarity-aware
-- live seating continuity can read the active seating draft as a current input without redefining
-  that live draft as history
+- classroom-aware grouping uses seat-topology distance and a soft compactness penalty
+- live seating continuity can read the active seating draft as a current compactness input without
+  redefining that live draft as history
 
 ## Non-goals
 
@@ -79,10 +84,10 @@ before code lands:
 - Replacing the current `Regler` workspace or reopening drawer-first rule editing.
 - Treating autosave, undo/redo, or abandoned grouping drafts as grouping history.
 - Treating `Närmare läraren` as a grouping rule.
-- Adding a new teacher-facing "rotation strength" or "continuity weight" control.
+- Adding a new teacher-facing "rotation strength" or "compactness weight" control.
 - Building a teacher-facing checkpoint browser in this slice.
-- Redefining the grouping workspace around seating-first behavior when the explicit seat-continuity
-  toggle is off.
+- Redefining the grouping workspace around seating-first behavior when classroom-aware grouping is
+  off.
 
 ## Precedence Rules
 
@@ -98,29 +103,28 @@ The smart grouping solver and handler must use this precedence model:
    - Preserve current teacher-defined group names and order.
    - Do not let smart grouping silently create/remove groups or rename them.
 
-3. Live seating continuity is the first optional continuity source.
-   - This source is enabled only by the explicit grouping seat-continuity toggle.
+3. Classroom-aware compactness is the first optional spatial source.
+   - This source is enabled through the grouping classroom control.
    - If an active seating draft exists for the same class, use that draft first.
-   - This live seating signal outranks grouping-history anti-repeat and rerun-diversity pressure.
-   - This live seating signal does not override explicit relation rules.
+   - If no active seating draft exists, use the latest eligible seating checkpoint as fallback.
+   - This lane uses seat-topology distance and penalizes same-group spread quadratically beyond a
+     local elastic radius.
+   - This lane outranks grouping-history anti-repeat and rerun-diversity pressure.
+   - This lane does not override explicit relation rules.
+   - The exact radius and weight curve stay intentionally tunable through simulations and review of
+     outcomes versus the desired classroom behavior.
 
-4. Grouping history is separate and comes after live seating continuity.
+4. Grouping history is separate and comes after classroom-aware compactness.
    - This source is enabled only by grouping `Use history`.
    - Grouping history penalizes exact and near-repeat groupings.
    - Grouping history must compare normalized student partitions and repeated student
      co-memberships, not raw `group_id` or group-name matches.
+   - History must not be widened into classroom awareness by accident.
 
-5. Seating checkpoints are fallback continuity input only.
-   - If the explicit grouping seat-continuity toggle is enabled and no active seating draft exists,
-     the solver may consume the latest eligible seating checkpoint data as a fallback continuity
-     source.
-   - Those seating checkpoints are not grouping history and must not satisfy the grouping-history
-     lane by themselves.
-
-6. Rerun diversity is last.
+5. Rerun diversity is last.
    - Prefer a materially different strong candidate from the current grouping assignment when the
      valid search space allows it.
-   - Diversity must not override stronger explicit rules, live seating continuity, or grouping
+   - Diversity must not override stronger explicit rules, classroom-aware compactness, or grouping
      history constraints.
 
 ## Source-Of-Truth Rules
@@ -133,18 +137,20 @@ The implementation should treat the inputs as four distinct lanes:
 - Draft-local grouping controls:
   - `Smart`
   - `Use history`
-  - `grouping_seating_distance_enabled`
+  - classroom-aware grouping state tied to the classroom control
 - Grouping-history lane:
   - dedicated grouping checkpoints or equivalent export-backed grouping-history records
   - similarity-aware, label-insensitive
-- Live seating-continuity lane:
+- Classroom-aware compactness lane:
   - active seating draft first
   - latest eligible seating checkpoint second
+  - seat-topology distance and elastic quadratic spread penalties when usable seating context exists
 
 The critical rule is:
 
-- active seating draft may be a live grouping input
+- active seating draft may be a live classroom-aware grouping input
 - active seating draft is not grouping history
+- no usable seating context means honest fallback, not fake classroom-aware success
 
 ## Doc Adjustments Before Code
 
@@ -152,14 +158,14 @@ Before implementation begins, update the approved docs so the slice stays explic
 relying on verbal context:
 
 - `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
-  - clarify that grouping history is separate from live seating continuity
-  - clarify that the active seating draft may be consumed as a current input when the explicit
-    grouping seat-continuity toggle is enabled
+  - clarify that grouping history is separate from classroom-aware compactness
+  - clarify that the active seating draft may be consumed as a current compactness input when the
+    classroom control enables classroom-aware grouping
   - clarify the precedence order listed in this PR doc
 - `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`
-  - add the grouping-history vs live-seating split to the acceptance criteria/notes
+  - add the `Smart` vs classroom-aware vs history split to the acceptance criteria/notes
   - state that grouping history is label-insensitive and similarity-aware
-  - state that live seating continuity outranks rotational diversity when explicitly enabled
+  - state that classroom-aware compactness outranks rotational diversity when enabled
 - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
   - append a post-approval refinement note so the final implementation review has an audit trail
     for this clarified precedence model
@@ -179,16 +185,20 @@ relying on verbal context:
    - Persist grouping-history records from successful explicit grouping exports so history stays
      checkpoint-backed.
 
-3. Add the live seating-continuity read seam.
-   - Read the active seating draft for the same class when the explicit grouping seat-continuity
-     toggle is enabled and the teacher has one.
+3. Add the classroom-aware compactness input seam.
+   - Read the active seating draft for the same class when classroom-aware grouping is enabled
+     through the grouping classroom control.
    - Fall back to the latest eligible seating checkpoint when no active seating draft exists.
+   - Derive seat-topology distance from that seating context and penalize same-group spread
+     quadratically beyond one local elastic radius.
    - Keep this lane separate from grouping `Use history`.
+   - Keep the exact radius and weight curve intentionally tunable through simulations and outcome
+     review instead of freezing them in prose.
 
 4. Add the backend-owned smart grouping run.
    - Introduce one pure smart-grouping domain module that scores:
      - shared relation rules
-     - live seating continuity
+     - classroom-aware compactness
      - grouping-history anti-repeat
      - rerun diversity
    - Add one application handler that loads:
@@ -221,10 +231,12 @@ relying on verbal context:
    - Branch grouping `Slumpa`:
      - `Smart` off -> current local random behavior
      - `Smart` on -> backend smart grouping run
-   - Add the missing draft-local setter and autosave serialization for
-     `grouping_seating_distance_enabled`.
-   - Show the explicit grouping seat-continuity toggle in the grouping toolbar.
-   - Keep `Use history` semantically separate from that toggle.
+   - Keep `Use history` explicit in the grouping toolbar with the same teacher-facing meaning as in
+     seating, but scoped to grouping anti-repeat rotation only.
+   - Make the grouping classroom control own classroom-aware state; do not hide that state inside
+     `Use history`.
+   - Remove the redundant grouping active-rule count pill from the toolbar.
+   - Keep smart-run feedback honest when classroom-aware grouping had no usable seating context.
 
 ## Exact Files To Change
 
@@ -266,6 +278,8 @@ relying on verbal context:
 
 - Tests:
   - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver.py`
+  - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_g20_sa24d.py`
+  - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_bf25_g104.py`
   - `tests/unit/application/apps/classroom_planner/test_smart_grouping.py`
   - `tests/unit/web/apps/classroom_planner/test_smart_grouping_api.py`
   - `tests/unit/infrastructure/repositories/test_classroom_planner_grouping_export_checkpoints.py`
@@ -280,7 +294,7 @@ relying on verbal context:
   - `pdm run docs-validate`
 
 - Backend:
-  - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver.py tests/unit/application/apps/classroom_planner/test_smart_grouping.py tests/unit/web/apps/classroom_planner/test_smart_grouping_api.py tests/unit/infrastructure/repositories/test_classroom_planner_grouping_export_checkpoints.py -q`
+  - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_g20_sa24d.py tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_bf25_g104.py tests/unit/application/apps/classroom_planner/test_smart_grouping.py tests/unit/web/apps/classroom_planner/test_smart_grouping_api.py tests/unit/infrastructure/repositories/test_classroom_planner_grouping_export_checkpoints.py -q`
   - `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[<new_revision>]' -q`
   - `pdm run typecheck`
 
@@ -296,6 +310,6 @@ relying on verbal context:
 
 - Revert the smart-grouping backend endpoint, frontend branch, and grouping-history persistence as
   one slice while keeping `PR-0151`, `PR-0152`, `PR-0154`, and `PR-0155` intact.
-- If live seating continuity proves too ambiguous, keep the dedicated grouping-history lane and
-  temporarily disable only the grouping seat-continuity toggle while preserving the backend
-  grouping smart-run contract.
+- If classroom-aware compactness proves too ambiguous or too weakly tuned at first, keep the
+  dedicated grouping-history lane and temporarily disable only the classroom-aware grouping lane
+  while preserving the backend grouping smart-run contract.

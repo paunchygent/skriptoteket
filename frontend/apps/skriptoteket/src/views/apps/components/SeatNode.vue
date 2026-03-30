@@ -59,8 +59,14 @@ function onDragStart(event: DragEvent): void {
   // Browsers capture drag images before applying ancestor transforms,
   // producing a mispositioned or blank ghost. Fix: clone the element
   // outside the transform context and use it as the explicit drag image.
-  const el = event.currentTarget as HTMLElement;
-  const clone = el.cloneNode(true) as HTMLElement;
+  const el = event.currentTarget;
+  if (!(el instanceof HTMLElement)) {
+    return;
+  }
+  const clone = el.cloneNode(true);
+  if (!(clone instanceof HTMLElement)) {
+    return;
+  }
   Object.assign(clone.style, {
     position: "fixed",
     top: "-9999px",

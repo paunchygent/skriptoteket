@@ -101,6 +101,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
 - ST-29-02 shell compression + sticky shared toolbar cutover:
   `docs/backlog/prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md`
+- ST-29-09 rule visibility + tool-feedback continuity:
+  `docs/backlog/prs/pr-0177-st-29-09-rule-visibility-and-tool-feedback-continuity.md`
 - Dishka/FastAPI public-API cutover foundation:
   `docs/backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md`
 - Hemma kernel lane recovery + `6.14` freeze / `6.17` cutover task:
@@ -366,6 +368,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-29-06-klassrumskartan-rules-workspace-rail-map-inspector-rebalance.md`
 - `docs/backlog/stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md`
 - `docs/backlog/stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md`
+- `docs/backlog/stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md`
 - `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md`
 - `docs/backlog/stories/story-30-02-adopt-transition-continuity-across-editor-and-selector-shells.md`
 
@@ -484,6 +487,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
 - `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
 - `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
+- `docs/backlog/prs/pr-0177-st-29-09-rule-visibility-and-tool-feedback-continuity.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

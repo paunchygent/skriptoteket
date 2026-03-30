@@ -310,7 +310,7 @@ watch(
 );
 
 watch(
-  () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null] as const,
+  () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null],
   () => {
     currentView.value = resolvePlannerView(currentView.value);
     openHistoryDrawerKind.value = null;

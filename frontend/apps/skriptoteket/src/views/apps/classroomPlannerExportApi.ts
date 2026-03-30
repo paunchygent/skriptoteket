@@ -88,10 +88,10 @@ type CreateGroupingExportJobRequest =
   | CreateGroupingPdfExportJobRequest
   | CreateGroupingXlsxExportJobRequest;
 
-const PDF_EXPORT_KIND = "pdf" as const;
-const XLSX_EXPORT_KIND = "xlsx" as const;
-const LAYOUT_ID = "pretty_brutalist_poster" as const;
-const GROUPING_PDF_PAPER_SIZE = "a4_portrait" as const;
+const PDF_EXPORT_KIND = "pdf";
+const XLSX_EXPORT_KIND = "xlsx";
+const LAYOUT_ID = "pretty_brutalist_poster";
+const GROUPING_PDF_PAPER_SIZE = "a4_portrait";
 
 export async function createSeatingExportJob(
   draftId: string,

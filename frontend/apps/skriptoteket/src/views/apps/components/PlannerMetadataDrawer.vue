@@ -36,6 +36,17 @@ const currentMeta = computed(() => {
   }
   return state.studentPlanningMetaByStudentId[props.selectedStudentId] ?? emptyStudentPlanningMeta(props.selectedStudentId);
 });
+
+function updateNotesFromEvent(event: Event): void {
+  if (!selectedStudent.value) {
+    return;
+  }
+  const target = event.target;
+  if (!(target instanceof HTMLTextAreaElement)) {
+    return;
+  }
+  state.setStudentPlanningMeta(selectedStudent.value.id, { notes: target.value || null });
+}
 </script>
 
 <template>
@@ -94,7 +105,7 @@ const currentMeta = computed(() => {
               :value="currentMeta.notes ?? ''"
               rows="4"
               class="w-full border border-navy/30 bg-white px-3 py-2 text-sm text-navy"
-              @input="state.setStudentPlanningMeta(selectedStudent.id, { notes: ($event.target as HTMLTextAreaElement).value || null })"
+              @input="updateNotesFromEvent"
             />
           </label>
 

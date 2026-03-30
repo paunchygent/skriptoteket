@@ -27,6 +27,8 @@ type PlannerStateMock = {
   clearWorkspace: ReturnType<typeof vi.fn>;
   prepareForPlannerExit: ReturnType<typeof vi.fn>;
   prepareForWorkspaceSwitch: ReturnType<typeof vi.fn>;
+  replaceCurrentRoster: ReturnType<typeof vi.fn>;
+  replaceCurrentTemplate: ReturnType<typeof vi.fn>;
   getClassWorkspaceSummary: ReturnType<typeof vi.fn>;
   resolveDraft: ReturnType<typeof vi.fn>;
   startNewGroupingDraft: ReturnType<typeof vi.fn>;
@@ -54,6 +56,8 @@ const stateMocks = vi.hoisted(() => ({
     clearWorkspace: vi.fn(),
     prepareForPlannerExit: vi.fn(),
     prepareForWorkspaceSwitch: vi.fn(),
+    replaceCurrentRoster: vi.fn(),
+    replaceCurrentTemplate: vi.fn(),
     getClassWorkspaceSummary: vi.fn(),
     resolveDraft: vi.fn(),
     startNewGroupingDraft: vi.fn(),
@@ -120,6 +124,8 @@ describe("ClassroomPlannerView", () => {
     stateMocks.plannerState.deleteSeatingHistoryDraft.mockReset();
     stateMocks.plannerState.prepareForPlannerExit.mockReset();
     stateMocks.plannerState.prepareForWorkspaceSwitch.mockReset();
+    stateMocks.plannerState.replaceCurrentRoster.mockReset();
+    stateMocks.plannerState.replaceCurrentTemplate.mockReset();
     stateMocks.plannerState.getClassWorkspaceSummary.mockReset();
     stateMocks.plannerState.loadWorkspace.mockReset();
     stateMocks.plannerState.resolveDraft.mockReset();

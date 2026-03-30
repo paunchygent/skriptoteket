@@ -385,7 +385,7 @@ async def reset_password(
     request: Request,
     payload: ResetPasswordRequest,
     handler: FromDishka[ResetPasswordHandlerProtocol],
-) -> ResetPasswordResponse | JSONResponse:
+) -> object:
     try:
         result = await handler.handle(
             ResetPasswordCommand(

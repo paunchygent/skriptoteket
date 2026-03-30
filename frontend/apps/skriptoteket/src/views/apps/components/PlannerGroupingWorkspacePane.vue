@@ -9,6 +9,9 @@
  * work area.
  */
 
+import { computed } from "vue";
+
+import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import GroupBoard from "./GroupBoard.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import { useClassroomState } from "../useClassroomState";
@@ -27,6 +30,13 @@ const emit = defineEmits<{
 }>();
 
 const state = useClassroomState();
+const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
+  return buildSmartRuleMarkersByStudentId(
+    state.seatingPreferences,
+    state.relationshipRules,
+  );
+});
+
 function onDragStart(event: DragEvent, studentId: string): void {
   if (state.isWorkspaceBusy) {
     return;
@@ -86,6 +96,7 @@ function onDragOver(event: DragEvent): void {
         title="Ej grupperade"
         :students="state.ungroupedStudents"
         :selected-student-id="selectedStudentId"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
         :disabled="state.isWorkspaceBusy"
         empty-label="Alla elever ligger i grupp"
         root-test-id="grouping-student-pool"
@@ -97,6 +108,7 @@ function onDragOver(event: DragEvent): void {
 
       <GroupBoard
         :selected-student-id="selectedStudentId"
+        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
         @student-selected="emit('student-selected', $event)"
       />
     </div>

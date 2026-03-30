@@ -12,6 +12,7 @@ import { ref, watch } from "vue";
 
 import { IconTrash, IconX } from "../../../components/icons";
 import type { DraftGroup, Student } from "../classroomPlannerTypes";
+import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
 
 const props = defineProps<{
   group: DraftGroup;
@@ -19,6 +20,7 @@ const props = defineProps<{
   canMoveUp: boolean;
   canMoveDown: boolean;
   selectedStudentId?: string | null;
+  smartRuleMarkersByStudentId?: Record<string, string[]>;
   disabled?: boolean;
 }>();
 
@@ -150,11 +152,17 @@ function commitName(): void {
           :disabled="props.disabled"
           @click="emit('student-selected', student.id)"
         >
-          <div
-            data-test="group-student-name"
-            class="break-words text-sm font-semibold leading-snug"
-          >
-            {{ student.display_name }}
+          <div class="space-y-1">
+            <div
+              data-test="group-student-name"
+              class="break-words text-sm font-semibold leading-snug"
+            >
+              {{ student.display_name }}
+            </div>
+            <PlannerStudentRuleMarkers
+              :markers="props.smartRuleMarkersByStudentId?.[student.id] ?? []"
+              :root-test-id="`group-student-markers-${student.id}`"
+            />
           </div>
         </button>
         <button

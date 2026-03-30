@@ -36,16 +36,26 @@ export function buildGroupMap(groups: DraftGroup[]): Record<string, DraftGroup> 
   return Object.fromEntries(groups.map((group) => [group.id, group]));
 }
 
-export function normalizeAssignments<T extends GroupAssignment | SeatAssignment>(
-  assignments: T[],
+export function normalizeAssignments(
+  assignments: GroupAssignment[],
+  key: "group_id",
+): Record<string, string | null>;
+export function normalizeAssignments(
+  assignments: SeatAssignment[],
+  key: "seat_id",
+): Record<string, string | null>;
+export function normalizeAssignments(
+  assignments: Array<GroupAssignment | SeatAssignment>,
   key: "group_id" | "seat_id",
 ): Record<string, string | null> {
   return Object.fromEntries(
     assignments.map((assignment) => [
       assignment.student_id,
-      key === "group_id"
-        ? (assignment as GroupAssignment).group_id
-        : (assignment as SeatAssignment).seat_id,
+      key === "group_id" && "group_id" in assignment
+        ? assignment.group_id
+        : "seat_id" in assignment
+          ? assignment.seat_id
+          : null,
     ]),
   );
 }
