@@ -73,6 +73,41 @@ describe("ForgotPasswordView", () => {
     );
   });
 
+  it("offers resend-verification after a reset request using the same email address", async () => {
+    apiPostMock
+      .mockResolvedValueOnce({
+        message: "Om kontot kan återställas skickas en återställningslänk.",
+      })
+      .mockResolvedValueOnce({
+        message: "Om kontot finns skickas ett nytt verifieringsmail",
+      });
+
+    const wrapper = mount(ForgotPasswordView, {
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get("#forgot-password-email").setValue("olof.larsson@harryda.se");
+    await wrapper.get("form").trigger("submit.prevent");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Inte verifierat än?");
+
+    await wrapper.get("button[type='button']").trigger("click");
+    await flushPromises();
+
+    expect(apiPostMock).toHaveBeenNthCalledWith(2, "/api/v1/auth/resend-verification", {
+      email: "olof.larsson@harryda.se",
+    });
+    expect(wrapper.text()).toContain("Om kontot finns skickas ett nytt verifieringsmail");
+  });
+
   it("redirects authenticated users away from the anonymous reset request route", async () => {
     if (!routerMocks.auth) {
       throw new Error("Expected auth store stub.");

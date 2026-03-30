@@ -6,11 +6,12 @@
  * authoritative for eligibility, throttling, and generic success semantics.
  */
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { apiPost } from "../api/client";
 import SystemMessage from "../components/ui/SystemMessage.vue";
+import { useVerificationResend } from "../composables/auth/useVerificationResend";
 import { useAuthStore } from "../stores/auth";
 
 type ForgotPasswordResponse = {
@@ -24,6 +25,19 @@ const email = ref("");
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
+const hasSubmittedReset = ref(false);
+
+const {
+  canResend: canResendVerification,
+  clearMessages: clearVerificationMessages,
+  cooldownRemainingSeconds: verificationCooldownRemainingSeconds,
+  errorMessage: verificationErrorMessage,
+  isSubmitting: isVerificationSubmitting,
+  resend: resendVerificationEmail,
+  successMessage: verificationSuccessMessage,
+} = useVerificationResend();
+
+const canOfferVerificationResend = computed(() => hasSubmittedReset.value && email.value.trim() !== "");
 
 onMounted(async () => {
   await auth.bootstrap();
@@ -45,6 +59,7 @@ async function submit(): Promise<void> {
 
   errorMessage.value = null;
   successMessage.value = null;
+  clearVerificationMessages();
   isSubmitting.value = true;
 
   try {
@@ -52,12 +67,17 @@ async function submit(): Promise<void> {
       email: normalizedEmail,
     });
     successMessage.value = response.message;
+    hasSubmittedReset.value = true;
   } catch (error: unknown) {
     errorMessage.value =
       error instanceof Error ? error.message : "Det gick inte att begära en återställningslänk.";
   } finally {
     isSubmitting.value = false;
   }
+}
+
+async function resendVerification(): Promise<void> {
+  await resendVerificationEmail(email.value);
 }
 </script>
 
@@ -77,6 +97,15 @@ async function submit(): Promise<void> {
     />
     <SystemMessage
       v-model="successMessage"
+      variant="success"
+      :dismissible="false"
+    />
+    <SystemMessage
+      v-model="verificationErrorMessage"
+      variant="error"
+    />
+    <SystemMessage
+      v-model="verificationSuccessMessage"
       variant="success"
       :dismissible="false"
     />
@@ -119,5 +148,35 @@ async function submit(): Promise<void> {
         Logga in
       </RouterLink>
     </p>
+
+    <section
+      v-if="canOfferVerificationResend"
+      class="space-y-3 border border-navy bg-canvas px-4 py-4 shadow-brutal-sm"
+    >
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-navy">
+        Inte verifierat än?
+      </h2>
+      <p class="text-sm text-navy/70">
+        Om kontot ännu inte är verifierat kan du be om ett nytt verifieringsmejl till samma
+        adress.
+      </p>
+      <button
+        type="button"
+        class="btn-secondary w-full"
+        :disabled="!canResendVerification"
+        @click="resendVerification"
+      >
+        {{
+          isVerificationSubmitting
+            ? "Skickar verifieringsmejl…"
+            : verificationCooldownRemainingSeconds > 0
+              ? `Försök igen om ${verificationCooldownRemainingSeconds}s`
+              : "Skicka nytt verifieringsmejl"
+        }}
+      </button>
+      <p class="text-xs text-navy/60">
+        Kontrollera också skräppost om inget mejl från `noreply@hule.education` syns i inkorgen.
+      </p>
+    </section>
   </div>
 </template>

@@ -40,6 +40,7 @@ dependencies: ["ADR-0006", "ADR-0011", "ADR-0034", "ADR-0078"]
 - [ST-02-07: Local password reset via emailed token](../stories/story-02-07-local-password-reset-via-emailed-token.md) (ready)
 - [ST-02-08: Registration preflight validation and password visibility](../stories/story-02-08-registration-preflight-validation-and-password-visibility.md) (in_progress)
 - [ST-02-09: Distributed password-reset hardening for scaled auth](../stories/story-02-09-distributed-password-reset-hardening-for-scaled-auth.md) (ready)
+- [ST-02-10: Recovery email hardening and verification resend discoverability](../stories/story-02-10-recovery-email-hardening-and-verification-resend-discoverability.md) (in_progress)
 
 ## Dependencies
 

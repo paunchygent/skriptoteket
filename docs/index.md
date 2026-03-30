@@ -133,6 +133,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
 - Home messaging + registration feedback + default bookmark slice:
   `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
+- Recovery email hardening + resend-discoverability slice:
+  `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:

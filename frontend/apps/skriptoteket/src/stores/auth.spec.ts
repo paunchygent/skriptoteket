@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useAuthStore } from "./auth";
+import { ApiError } from "../api/client";
 import type { components } from "../api/openapi";
 
 type ApiUser = components["schemas"]["User"];
@@ -300,6 +301,36 @@ describe("useAuthStore", () => {
       expect(store.status).toBe("error");
       expect(store.error).toBe("Invalid email or password");
       expect(store.user).toBeNull();
+    });
+
+    it("preserves api error codes for unverified email login failures", async () => {
+      const store = useAuthStore();
+
+      vi.mocked(fetch).mockResolvedValueOnce(
+        mockJsonResponse(
+          {
+            error: {
+              code: "EMAIL_NOT_VERIFIED",
+              message: "Verifiera din e-postadress innan du loggar in",
+            },
+            correlation_id: "corr-123",
+          },
+          400,
+          "Bad Request",
+        ),
+      );
+
+      await expect(store.login({ email: "test@test.com", password: "password" })).rejects.toEqual(
+        expect.objectContaining<ApiError>({
+          code: "EMAIL_NOT_VERIFIED",
+          message: "Verifiera din e-postadress innan du loggar in",
+          correlationId: "corr-123",
+          status: 400,
+        }),
+      );
+
+      expect(store.status).toBe("error");
+      expect(store.error).toBe("Verifiera din e-postadress innan du loggar in");
     });
   });
 

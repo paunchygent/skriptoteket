@@ -14,7 +14,8 @@ const { showIndex } = useHelp();
       <li>Logga in för att komma till startsidan.</li>
       <li>Använd din skol-/arbets-e-post.</li>
       <li>Om det inte går: kontrollera stavning och Caps Lock.</li>
-      <li>Glömt lösenord? Kontakta en admin (ingen återställning i systemet än).</li>
+      <li>Glömt lösenord? Använd länken i inloggningen för att begära en återställningslänk.</li>
+      <li>Har du inte verifierat kontot än kan du begära ett nytt verifieringsmejl.</li>
     </ul>
   </HelpTopicLayout>
 </template>

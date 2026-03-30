@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import { isApiError } from "../../api/client";
+import { useVerificationResend } from "../../composables/auth/useVerificationResend";
 import SystemMessage from "../ui/SystemMessage.vue";
 import { useAuthStore } from "../../stores/auth";
 
@@ -18,25 +20,46 @@ const auth = useAuthStore();
 const email = ref("");
 const password = ref("");
 const submitError = ref<string | null>(null);
+const showVerificationResend = ref(false);
 const isSubmitting = computed(() => auth.status === "loading");
+const {
+  canResend: canResendVerification,
+  clearMessages: clearVerificationMessages,
+  cooldownRemainingSeconds: verificationCooldownRemainingSeconds,
+  errorMessage: verificationErrorMessage,
+  isSubmitting: isVerificationSubmitting,
+  resend: resendVerificationEmail,
+  successMessage: verificationSuccessMessage,
+} = useVerificationResend();
 
 function closeModal(): void {
   email.value = "";
   password.value = "";
   submitError.value = null;
+  showVerificationResend.value = false;
+  clearVerificationMessages();
   emit("close");
 }
 
 async function onSubmit(): Promise<void> {
   submitError.value = null;
+  showVerificationResend.value = false;
+  clearVerificationMessages();
   try {
     await auth.login({ email: email.value, password: password.value });
     emit("success");
     closeModal();
   } catch (error: unknown) {
+    if (isApiError(error) && error.code === "EMAIL_NOT_VERIFIED") {
+      showVerificationResend.value = true;
+    }
     submitError.value =
       error instanceof Error ? error.message : "Inloggningen misslyckades";
   }
+}
+
+async function resendVerification(): Promise<void> {
+  await resendVerificationEmail(email.value);
 }
 </script>
 
@@ -75,6 +98,17 @@ async function onSubmit(): Promise<void> {
             v-model="submitError"
             class="mt-4"
             variant="error"
+          />
+          <SystemMessage
+            v-model="verificationErrorMessage"
+            class="mt-4"
+            variant="error"
+          />
+          <SystemMessage
+            v-model="verificationSuccessMessage"
+            class="mt-4"
+            variant="success"
+            :dismissible="false"
           />
 
           <form
@@ -125,6 +159,33 @@ async function onSubmit(): Promise<void> {
               {{ isSubmitting ? "Loggar in…" : "Logga in" }}
             </button>
           </form>
+
+          <div
+            v-if="showVerificationResend"
+            class="mt-4 space-y-3 border border-navy bg-white p-4 shadow-brutal-sm"
+          >
+            <p class="text-sm text-navy/70">
+              Behöver du ett nytt verifieringsmejl till den här adressen?
+            </p>
+            <button
+              type="button"
+              class="btn-secondary w-full"
+              :disabled="!canResendVerification"
+              @click="resendVerification"
+            >
+              {{
+                isVerificationSubmitting
+                  ? "Skickar verifieringsmejl…"
+                  : verificationCooldownRemainingSeconds > 0
+                    ? `Försök igen om ${verificationCooldownRemainingSeconds}s`
+                    : "Skicka nytt verifieringsmejl"
+              }}
+            </button>
+            <p class="text-xs text-navy/60">
+              Kontrollera även skräppost om inget mejl från `noreply@hule.education` syns i
+              inkorgen.
+            </p>
+          </div>
 
           <p class="mt-4 text-xs text-navy/70">
             <RouterLink

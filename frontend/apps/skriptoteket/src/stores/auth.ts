@@ -7,6 +7,7 @@
 
 import { defineStore } from "pinia";
 
+import { ApiError } from "../api/client";
 import type { components } from "../api/openapi";
 
 type ApiRole = components["schemas"]["Role"];
@@ -61,6 +62,41 @@ function hasAtLeastRole(params: { actual: ApiRole; minRole: ApiRole }): boolean 
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+async function readAuthError(response: Response): Promise<Error> {
+  const contentType = response.headers.get("content-type") ?? "";
+  const fallbackMessage = response.statusText || `Request failed (${response.status})`;
+
+  if (contentType.includes("application/json")) {
+    const payload: unknown = await response.json().catch(() => null);
+
+    if (isRecord(payload)) {
+      const error = payload.error;
+      if (isRecord(error) && typeof error.code === "string" && typeof error.message === "string") {
+        return new ApiError({
+          code: error.code,
+          message: error.message,
+          details: error.details ?? null,
+          correlationId:
+            typeof payload.correlation_id === "string" ? payload.correlation_id : null,
+          status: response.status,
+        });
+      }
+
+      if ("detail" in payload && payload.detail) {
+        return new ApiError({
+          code: "VALIDATION_ERROR",
+          message: "Validation error",
+          details: payload.detail,
+          correlationId: null,
+          status: response.status,
+        });
+      }
+    }
+  }
+
+  return new Error(fallbackMessage);
 }
 
 async function readErrorMessage(response: Response): Promise<string> {
@@ -282,8 +318,9 @@ export const useAuthStore = defineStore("auth", {
 
         if (!response.ok) {
           this.status = "error";
-          this.error = await readErrorMessage(response);
-          throw new Error(this.error);
+          const error = await readAuthError(response);
+          this.error = error.message;
+          throw error;
         }
 
         const payload: LoginResponse = await response.json();
