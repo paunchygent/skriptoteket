@@ -71,3 +71,10 @@ credentials for an account that still is not verified.
     the generic success guidance appears
   - trigger `EMAIL_NOT_VERIFIED` in the login modal and confirm the resend affordance appears and
     can be used
+
+## Linked tasks
+
+- Primary implementation slice:
+  `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
+- Review remediation:
+  `docs/backlog/prs/pr-0176-review-remediation-for-recovery-email-hardening-and-resend-verification-ux.md`

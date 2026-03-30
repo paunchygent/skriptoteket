@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useAuthStore } from "./auth";
-import { ApiError } from "../api/client";
 import type { components } from "../api/openapi";
 
 type ApiUser = components["schemas"]["User"];
@@ -321,7 +320,7 @@ describe("useAuthStore", () => {
       );
 
       await expect(store.login({ email: "test@test.com", password: "password" })).rejects.toEqual(
-        expect.objectContaining<ApiError>({
+        expect.objectContaining({
           code: "EMAIL_NOT_VERIFIED",
           message: "Verifiera din e-postadress innan du loggar in",
           correlationId: "corr-123",

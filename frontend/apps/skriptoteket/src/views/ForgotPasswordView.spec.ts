@@ -73,10 +73,13 @@ describe("ForgotPasswordView", () => {
     );
   });
 
-  it("offers resend-verification after a reset request using the same email address", async () => {
+  it("allows resend-verification for a different email in the same surface without cooldown drift", async () => {
     apiPostMock
       .mockResolvedValueOnce({
         message: "Om kontot kan återställas skickas en återställningslänk.",
+      })
+      .mockResolvedValueOnce({
+        message: "Om kontot finns skickas ett nytt verifieringsmail",
       })
       .mockResolvedValueOnce({
         message: "Om kontot finns skickas ett nytt verifieringsmail",
@@ -106,6 +109,15 @@ describe("ForgotPasswordView", () => {
       email: "olof.larsson@harryda.se",
     });
     expect(wrapper.text()).toContain("Om kontot finns skickas ett nytt verifieringsmail");
+    expect(wrapper.text()).not.toContain("Försök igen om");
+
+    await wrapper.get("#forgot-password-email").setValue("ada.lovelace@mail.harryda.se");
+    await wrapper.get("button[type='button']").trigger("click");
+    await flushPromises();
+
+    expect(apiPostMock).toHaveBeenNthCalledWith(3, "/api/v1/auth/resend-verification", {
+      email: "ada.lovelace@mail.harryda.se",
+    });
   });
 
   it("redirects authenticated users away from the anonymous reset request route", async () => {

@@ -67,6 +67,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0136-klassrumskartan-seat-drag-preview-and-room-editor-same-tool-toggle-removal.md`
 - Class-list import remediation follow-up:
   `docs/backlog/prs/pr-0137-klassrumskartan-class-list-import-remediation-example-corpus-and-overview-reconciliation.md`
+- Class-list import drag/drop affordance follow-up:
+  `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
 - Seating export single-key/runtime remediation follow-up:
   `docs/backlog/prs/pr-0138-seating-export-single-canonical-sir-convert-v2-key-and-runtime-wiring.md`
 - Local export runtime parity/schema remediation follow-up:
@@ -135,6 +137,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
 - Recovery email hardening + resend-discoverability slice:
   `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
+- Recovery email review-remediation slice:
+  `docs/backlog/prs/pr-0176-review-remediation-for-recovery-email-hardening-and-resend-verification-ux.md`
+- Klassrumskartan class-list import drag/drop slice:
+  `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -476,6 +482,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0171-st-09-08-hemma-edge-observability-and-host-lockdown.md`
 - `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`
 - `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
+- `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
+- `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`
 - `docs/backlog/prs/pr-0003-gate-submit-review-help-surfaces.md`

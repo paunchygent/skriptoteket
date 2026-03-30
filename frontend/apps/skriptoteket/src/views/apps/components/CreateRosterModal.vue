@@ -32,11 +32,21 @@ const isDeleting = ref(false);
 const formError = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 const ambiguousRows = ref<AmbiguousRow[]>([]);
+const isImportDropActive = ref(false);
 
 const { isUploading, preview, error: importError, uploadFile, cancel: resetImportState } =
   useClassListImportFlow();
 
 const isEditing = computed(() => Boolean(props.roster));
+const importDropZoneClass = computed(() => {
+  if (isUploading.value) {
+    return "border-navy/20 bg-navy/5 text-navy/45";
+  }
+  if (isImportDropActive.value) {
+    return "border-burgundy bg-white text-navy shadow-brutal-sm";
+  }
+  return "border-navy/25 bg-white/80 text-navy/70";
+});
 
 function buildStudentsForSubmit(lines: string[], existingStudents: Student[]): Student[] {
   const availableIdsByName = new Map<string, string[]>();
@@ -64,6 +74,7 @@ watch(
     rawStudents.value = roster?.students.map((student) => student.display_name).join("\n") ?? "";
     formError.value = null;
     ambiguousRows.value = [];
+    isImportDropActive.value = false;
     resetImportState();
   },
   { immediate: true },
@@ -147,6 +158,27 @@ function triggerFileInput(): void {
   fileInput.value?.click();
 }
 
+function isFileDragEvent(event: DragEvent): boolean {
+  const dataTransfer = event.dataTransfer;
+  if (!dataTransfer) {
+    return false;
+  }
+  if (dataTransfer.files.length > 0) {
+    return true;
+  }
+  return Array.from(dataTransfer.types ?? []).includes("Files");
+}
+
+async function handleImportFile(file: File): Promise<void> {
+  if (isUploading.value) {
+    return;
+  }
+
+  isImportDropActive.value = false;
+  importError.value = null;
+  await uploadFile(file);
+}
+
 async function onFileSelected(event: Event): Promise<void> {
   const target = event.target;
   if (!(target instanceof HTMLInputElement)) {
@@ -158,8 +190,70 @@ async function onFileSelected(event: Event): Promise<void> {
     return;
   }
 
-  await uploadFile(file);
+  await handleImportFile(file);
   target.value = "";
+}
+
+function onImportDragEnter(event: DragEvent): void {
+  if (!isFileDragEvent(event) || isUploading.value) {
+    return;
+  }
+
+  event.preventDefault();
+  isImportDropActive.value = true;
+}
+
+function onImportDragOver(event: DragEvent): void {
+  if (!isFileDragEvent(event) || isUploading.value) {
+    return;
+  }
+
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "copy";
+  }
+  isImportDropActive.value = true;
+}
+
+function onImportDragLeave(event: DragEvent): void {
+  const currentTarget = event.currentTarget;
+  const relatedTarget = event.relatedTarget;
+  if (
+    currentTarget instanceof HTMLElement
+    && relatedTarget instanceof Node
+    && currentTarget.contains(relatedTarget)
+  ) {
+    return;
+  }
+
+  isImportDropActive.value = false;
+}
+
+async function onImportDrop(event: DragEvent): Promise<void> {
+  event.preventDefault();
+  isImportDropActive.value = false;
+
+  if (isUploading.value) {
+    return;
+  }
+
+  const files = event.dataTransfer?.files;
+  if (!files || files.length === 0) {
+    importError.value = "Ingen fil hittades i släppningen.";
+    return;
+  }
+  if (files.length > 1) {
+    importError.value = "Släpp en fil i taget.";
+    return;
+  }
+
+  const [file] = Array.from(files);
+  if (!file) {
+    importError.value = "Ingen fil hittades i släppningen.";
+    return;
+  }
+
+  await handleImportFile(file);
 }
 
 function appendAmbiguousRow(index: number): void {
@@ -178,6 +272,7 @@ function dismissAmbiguousRow(index: number): void {
 }
 
 function closeModal(): void {
+  isImportDropActive.value = false;
   resetImportState();
   emit("close");
 }
@@ -231,16 +326,32 @@ function closeModal(): void {
                 @change="onFileSelected"
               >
 
-              <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div class="space-y-1">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-                    Importera från fil
-                  </p>
-                  <p class="text-sm leading-relaxed text-navy/75">
-                    Börja gärna med en Skola24-klasslista eller grupplista i Excel
-                    (`.xls`), PDF eller text (`.txt`). Även `.csv` och `.tsv` stöds.
-                  </p>
-                </div>
+              <div class="space-y-1">
+                <p class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+                  Importera från fil
+                </p>
+                <p class="text-sm leading-relaxed text-navy/75">
+                  Börja gärna med en Skola24-klasslista eller grupplista i Excel
+                  (`.xls`), PDF eller text (`.txt`). Även `.csv` och `.tsv` stöds.
+                </p>
+              </div>
+
+              <div
+                class="flex flex-col items-center gap-3 border border-dashed px-4 py-5 text-center transition-colors"
+                :class="importDropZoneClass"
+                :aria-busy="isUploading ? 'true' : 'false'"
+                data-test="roster-modal-import-dropzone"
+                @dragenter="onImportDragEnter"
+                @dragover="onImportDragOver"
+                @dragleave="onImportDragLeave"
+                @drop="onImportDrop"
+              >
+                <p class="text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)]">
+                  {{ isImportDropActive ? "Släpp filen här" : "Dra och släpp filen här" }}
+                </p>
+                <p class="max-w-md text-sm leading-relaxed">
+                  Dra och släpp filen här, eller klicka på knappen för att välja fil.
+                </p>
                 <button
                   type="button"
                   class="btn-primary shrink-0"
@@ -280,8 +391,8 @@ function closeModal(): void {
                   </div>
                 </div>
                 <p class="text-sm text-navy/70">
-                  Klassnamn och elevlista har fyllts i automatiskt nedan. Justera bara om parsern
-                  har missat något.
+                  Klassens namn och elever är ifyllda nedan. Kontrollera att allt stämmer och ändra
+                  vid behov.
                 </p>
               </div>
             </section>

@@ -95,3 +95,8 @@ Ship one focused auth/email polish slice that:
 - Revert the template edits if an unexpected mail-client regression appears.
 - The existing backend resend-verification and password-reset logic remain unchanged, so rollback is
   limited to presentation/template content for this slice.
+
+## Review follow-up
+
+- Ruthless review remediation is tracked in
+  `docs/backlog/prs/pr-0176-review-remediation-for-recovery-email-hardening-and-resend-verification-ux.md`.

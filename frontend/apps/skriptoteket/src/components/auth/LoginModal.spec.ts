@@ -54,7 +54,7 @@ describe("LoginModal", () => {
     expect(wrapper.html()).toContain('href="/forgot-password"');
   });
 
-  it("offers resend-verification when login fails because the email is not verified", async () => {
+  it("keeps resend-verification available without a client cooldown after EMAIL_NOT_VERIFIED", async () => {
     authState.login.mockRejectedValue(
       new ApiError({
         code: "EMAIL_NOT_VERIFIED",
@@ -62,9 +62,13 @@ describe("LoginModal", () => {
         status: 400,
       }),
     );
-    apiPostMock.mockResolvedValue({
-      message: "Om kontot finns skickas ett nytt verifieringsmail",
-    });
+    apiPostMock
+      .mockResolvedValueOnce({
+        message: "Om kontot finns skickas ett nytt verifieringsmail",
+      })
+      .mockResolvedValueOnce({
+        message: "Om kontot finns skickas ett nytt verifieringsmail",
+      });
 
     const wrapper = mount(LoginModal, {
       props: { isOpen: true },
@@ -94,5 +98,13 @@ describe("LoginModal", () => {
       email: "olof.larsson@harryda.se",
     });
     expect(wrapper.text()).toContain("Om kontot finns skickas ett nytt verifieringsmail");
+    expect(wrapper.text()).not.toContain("Försök igen om");
+
+    await wrapper.get("button.btn-secondary").trigger("click");
+    await flushPromises();
+
+    expect(apiPostMock).toHaveBeenNthCalledWith(2, "/api/v1/auth/resend-verification", {
+      email: "olof.larsson@harryda.se",
+    });
   });
 });

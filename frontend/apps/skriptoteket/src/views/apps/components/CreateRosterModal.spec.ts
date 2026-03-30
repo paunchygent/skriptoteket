@@ -28,6 +28,32 @@ describe("CreateRosterModal", () => {
     clientMocks.apiPut.mockReset();
   });
 
+  function createImportFile(name = "sa24d_klasslista.excel.xls"): File {
+    return new File(["ignored"], name, {
+      type: "application/vnd.ms-excel",
+    });
+  }
+
+  function buildImportPreview(
+    overrides: Partial<{
+      file_name: string;
+      suggested_class_name: string;
+      parsed_students: Array<{ full_name: string; row_number: number }>;
+      ambiguous_rows: Array<{ raw_text: string; row_number: number; reason: string }>;
+    }> = {},
+  ) {
+    return {
+      file_name: "sa24d_klasslista.excel.xls",
+      suggested_class_name: "SA24D",
+      parsed_students: [
+        { full_name: "Kerstin Aitman", row_number: 1 },
+        { full_name: "Edith Winlund Strandler", row_number: 2 },
+      ],
+      ambiguous_rows: [],
+      ...overrides,
+    };
+  }
+
   async function flushPromises(): Promise<void> {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       await Promise.resolve();
@@ -37,9 +63,7 @@ describe("CreateRosterModal", () => {
 
   async function uploadImportFile(wrapper: ReturnType<typeof mount>): Promise<void> {
     const input = wrapper.get("input[type='file']");
-    const file = new File(["ignored"], "sa24d_klasslista.excel.xls", {
-      type: "application/vnd.ms-excel",
-    });
+    const file = createImportFile();
     Object.defineProperty(input.element, "files", {
       configurable: true,
       value: [file],
@@ -48,17 +72,21 @@ describe("CreateRosterModal", () => {
     await flushPromises();
   }
 
+  async function dropImportFile(wrapper: ReturnType<typeof mount>, file = createImportFile()): Promise<void> {
+    const dropzone = wrapper.get("[data-test='roster-modal-import-dropzone']");
+    const dataTransfer = { files: [file], types: ["Files"], dropEffect: "copy" };
+    await dropzone.trigger("dragover", { dataTransfer });
+    await dropzone.trigger("drop", { dataTransfer });
+    await flushPromises();
+  }
+
   it("imports a parsed class list directly into the create modal before save", async () => {
     clientMocks.apiPost
-      .mockResolvedValueOnce({
-        file_name: "sa24d_klasslista.excel.xls",
-        suggested_class_name: "SA24D",
-        parsed_students: [
-          { full_name: "Kerstin Aitman", row_number: 1 },
-          { full_name: "Edith Winlund Strandler", row_number: 2 },
-        ],
-        ambiguous_rows: [{ raw_text: "Osäker Rad", row_number: 3, reason: "ambiguous" }],
-      })
+      .mockResolvedValueOnce(
+        buildImportPreview({
+          ambiguous_rows: [{ raw_text: "Osäker Rad", row_number: 3, reason: "ambiguous" }],
+        }),
+      )
       .mockResolvedValueOnce({
         id: "roster-1",
         name: "SA24D",
@@ -114,21 +142,55 @@ describe("CreateRosterModal", () => {
     expect(wrapper.emitted("saved")).toHaveLength(1);
   });
 
+  it("imports a dropped file through the same preview flow", async () => {
+    clientMocks.apiPost.mockResolvedValueOnce(buildImportPreview());
+
+    const wrapper = mount(CreateRosterModal);
+
+    await dropImportFile(wrapper);
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/rosters/import-preview",
+      expect.any(FormData),
+    );
+    expect((wrapper.get("input[type='text']").element as HTMLInputElement).value).toBe("SA24D");
+    expect((wrapper.get("textarea").element as HTMLTextAreaElement).value).toBe(
+      "Kerstin Aitman\nEdith Winlund Strandler",
+    );
+    expect(wrapper.get("[data-test='roster-import-summary']").text()).toContain(
+      "sa24d_klasslista.excel.xls",
+    );
+  });
+
+  it("shows drag-active styling only while a file is over the drop zone", async () => {
+    const wrapper = mount(CreateRosterModal);
+    const dropzone = wrapper.get("[data-test='roster-modal-import-dropzone']");
+
+    expect(dropzone.classes()).not.toContain("border-burgundy");
+
+    await dropzone.trigger("dragover", {
+      dataTransfer: { files: [], types: ["Files"], dropEffect: "copy" },
+    });
+    expect(dropzone.classes()).toContain("border-burgundy");
+
+    await dropzone.trigger("dragleave", { relatedTarget: null });
+    expect(dropzone.classes()).not.toContain("border-burgundy");
+  });
+
   it("matches edit-mode student ids by name instead of reusing ids by row position", async () => {
     const randomUuidSpy = vi
       .spyOn(globalThis.crypto, "randomUUID")
       .mockReturnValueOnce("11111111-1111-4111-8111-111111111111")
       .mockReturnValueOnce("22222222-2222-4222-8222-222222222222");
-    clientMocks.apiPost.mockResolvedValueOnce({
-      file_name: "sa24d_klasslista.excel.xls",
-      suggested_class_name: "SA24D",
-      parsed_students: [
-        { full_name: "Nytt Namn", row_number: 1 },
-        { full_name: "Bea Befintlig", row_number: 2 },
-        { full_name: "Annat Namn", row_number: 3 },
-      ],
-      ambiguous_rows: [],
-    });
+    clientMocks.apiPost.mockResolvedValueOnce(
+      buildImportPreview({
+        parsed_students: [
+          { full_name: "Nytt Namn", row_number: 1 },
+          { full_name: "Bea Befintlig", row_number: 2 },
+          { full_name: "Annat Namn", row_number: 3 },
+        ],
+      }),
+    );
     clientMocks.apiPut.mockResolvedValueOnce({
       id: "roster-1",
       name: "SA24D",

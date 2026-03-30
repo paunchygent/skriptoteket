@@ -23,9 +23,7 @@ const submitError = ref<string | null>(null);
 const showVerificationResend = ref(false);
 const isSubmitting = computed(() => auth.status === "loading");
 const {
-  canResend: canResendVerification,
   clearMessages: clearVerificationMessages,
-  cooldownRemainingSeconds: verificationCooldownRemainingSeconds,
   errorMessage: verificationErrorMessage,
   isSubmitting: isVerificationSubmitting,
   resend: resendVerificationEmail,
@@ -170,15 +168,13 @@ async function resendVerification(): Promise<void> {
             <button
               type="button"
               class="btn-secondary w-full"
-              :disabled="!canResendVerification"
+              :disabled="isVerificationSubmitting"
               @click="resendVerification"
             >
               {{
                 isVerificationSubmitting
                   ? "Skickar verifieringsmejl…"
-                  : verificationCooldownRemainingSeconds > 0
-                    ? `Försök igen om ${verificationCooldownRemainingSeconds}s`
-                    : "Skicka nytt verifieringsmejl"
+                  : "Skicka nytt verifieringsmejl"
               }}
             </button>
             <p class="text-xs text-navy/60">
