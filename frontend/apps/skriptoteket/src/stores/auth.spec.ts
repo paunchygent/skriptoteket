@@ -314,8 +314,8 @@ describe("useAuthStore", () => {
             },
             correlation_id: "corr-123",
           },
-          400,
-          "Bad Request",
+          401,
+          "Unauthorized",
         ),
       );
 
@@ -324,7 +324,7 @@ describe("useAuthStore", () => {
           code: "EMAIL_NOT_VERIFIED",
           message: "Verifiera din e-postadress innan du loggar in",
           correlationId: "corr-123",
-          status: 400,
+          status: 401,
         }),
       );
 

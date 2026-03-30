@@ -22,7 +22,7 @@ from skriptoteket.application.scripting.draft_locks import (
 )
 from skriptoteket.application.scripting.interactive_tools import StartActionResult
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import ErrorCode
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, Session, User, UserProfile
 from skriptoteket.domain.scripting.models import (
     ToolVersion,
@@ -74,11 +74,14 @@ class AsyncResultStub(Generic[ResultT]):
     def __init__(self) -> None:
         self.calls: list[_Call] = []
         self.result: ResultT | None = None
+        self.raised_error: Exception | None = None
 
     def _record(self, *args: object, **kwargs: object) -> None:
         self.calls.append((args, kwargs))
 
     def _get_result(self, *, error: str) -> ResultT:
+        if self.raised_error is not None:
+            raise self.raised_error
         assert self.result is not None, error
         return self.result
 
@@ -510,6 +513,28 @@ async def test_api_v1_auth_login_sets_cookie_and_returns_user_and_csrf(
 
     set_cookie = response.headers.get("set-cookie", "")
     assert f"{settings.SESSION_COOKIE_NAME}=" in set_cookie
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_api_v1_auth_login_returns_401_for_unverified_email(
+    client: httpx.AsyncClient,
+    login_handler: LoginHandlerStub,
+) -> None:
+    login_handler.raised_error = DomainError(
+        code=ErrorCode.EMAIL_NOT_VERIFIED,
+        message="Verifiera din e-postadress innan du loggar in",
+    )
+
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "teacher@example.com", "password": "pw"},
+    )
+
+    assert response.status_code == 401
+    payload = response.json()
+    assert payload["error"]["code"] == ErrorCode.EMAIL_NOT_VERIFIED.value
+    assert payload["error"]["message"] == "Verifiera din e-postadress innan du loggar in"
 
 
 @pytest.mark.unit

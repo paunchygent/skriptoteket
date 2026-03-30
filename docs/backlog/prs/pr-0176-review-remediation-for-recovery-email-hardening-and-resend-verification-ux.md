@@ -13,6 +13,7 @@ acceptance_criteria:
   - "The resend-verification affordance no longer introduces a frontend-only cooldown contract that can drift from backend truth across emails or surfaces."
   - "Frontend regression coverage proves the resend flow does not block a different email in the same surface and does not rely on a per-surface cooldown to enforce backend semantics."
   - "The auth-recovery live-proof recorded in docs/handoff is rerunnable as an exact command or named script, with artifact output path documented."
+  - "Login failures that raise `EMAIL_NOT_VERIFIED` no longer fall through to a generic `500`; the web layer normalizes that code to the intended auth status and a route-level regression test proves it."
   - "ST-02-10 and PR-0174 link this remediation task so the ruthless review findings remain traceable inside EPIC-02."
 ---
 
@@ -26,8 +27,13 @@ issues:
 2. the handoff verification trail records the auth-recovery browser proof as an abbreviated heredoc
    placeholder instead of an exact rerunnable command.
 
-Both issues are small, but they weaken the claim that the slice preserves the backend-owned resend
-contract and that the verification trail is reproducible for the next session.
+During the rerunnable auth-recovery proof, a third issue also surfaced: login failures that raise
+`EMAIL_NOT_VERIFIED` currently return a JSON payload with that error code but fall through to HTTP
+`500` because the web-layer error mapping does not normalize the code.
+
+These issues are small, but they weaken the claim that the slice preserves the backend-owned resend
+contract, that the verification trail is reproducible for the next session, and that the auth web
+layer maps known identity errors truthfully.
 
 ## Goal
 
@@ -35,7 +41,8 @@ Ship the narrow remediation that:
 
 1. restores backend authority over resend cooldown semantics,
 2. tightens regression coverage around resend behavior, and
-3. records the live auth-recovery proof as an exact rerunnable command or script.
+3. records the live auth-recovery proof as an exact rerunnable command or script, and
+4. normalizes `EMAIL_NOT_VERIFIED` to the intended auth status in the web layer.
 
 ## Non-goals
 
@@ -65,6 +72,13 @@ Ship the narrow remediation that:
   exact command or a named script path plus artifact location.
 - Keep the handoff within the enforced line budget.
 
+### 4. Web-layer status normalization
+
+- Add the missing `EMAIL_NOT_VERIFIED` status mapping in the web error mapper instead of letting it
+  fall through to the generic `500` fallback.
+- Add a route-level regression test for `POST /api/v1/auth/login` so the handler+middleware path
+  proves the normalized status and error code together.
+
 ## Execution notes
 
 - Frontend remediation is intentionally minimal:
@@ -81,6 +95,11 @@ Ship the narrow remediation that:
 - Live-proof reproducibility now uses a named Playwright entrypoint:
   - `scripts/playwright_pr_0176_auth_recovery_check.py`
   - artifacts: `.artifacts/pr-0176-auth-recovery-check/`
+- Web-layer follow-up stays narrow:
+  - `src/skriptoteket/web/error_mapping.py` now maps `ErrorCode.EMAIL_NOT_VERIFIED` to the auth
+    failure status instead of falling back to `500`.
+  - `tests/unit/web/test_api_v1_auth_and_csrf_routes.py` proves the login route returns the
+    normalized status and error payload for that code.
 
 ## Test plan
 
@@ -91,6 +110,10 @@ Ship the narrow remediation that:
 ### Docs
 
 - `pdm run docs-validate`
+
+### Backend
+
+- `pdm run pytest tests/unit/web/test_api_v1_auth_and_csrf_routes.py tests/unit/web/test_error_handler_middleware.py -q`
 
 ### Manual proof
 

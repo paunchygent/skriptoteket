@@ -59,7 +59,7 @@ describe("LoginModal", () => {
       new ApiError({
         code: "EMAIL_NOT_VERIFIED",
         message: "Verifiera din e-postadress innan du loggar in",
-        status: 400,
+        status: 401,
       }),
     );
     apiPostMock

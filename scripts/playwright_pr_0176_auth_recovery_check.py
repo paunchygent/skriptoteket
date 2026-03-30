@@ -148,6 +148,10 @@ def main() -> None:
         ) as login_info:
             dialog.get_by_role("button", name=re.compile(r"^Logga in", re.IGNORECASE)).click()
         login_payload = login_info.value.json()
+        assert login_info.value.status == 401, (
+            "Expected unverified-user login to normalize to HTTP 401, "
+            f"got {login_info.value.status}: {login_info.value.text()}"
+        )
         assert login_payload.get("error", {}).get("code") == "EMAIL_NOT_VERIFIED", (
             "Expected unverified-user login to surface EMAIL_NOT_VERIFIED, "
             f"got {login_info.value.status}: {login_info.value.text()}"
