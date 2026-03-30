@@ -313,16 +313,18 @@ describe("useAuthStore", () => {
         mockJsonResponse({
           user: mockUser,
           profile: mockProfile,
+          message: "Konto skapat! Kontrollera din e-post för att verifiera kontot.",
         }),
       );
 
-      await store.register({
+      const result = await store.register({
         email: "test@test.com",
         password: "password-123",
         firstName: "Test",
         lastName: "User",
       });
 
+      expect(result.message).toBe("Konto skapat! Kontrollera din e-post för att verifiera kontot.");
       expect(store.user).toBeNull();
       expect(store.profile).toBeNull();
       expect(store.csrfToken).toBeNull();

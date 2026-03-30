@@ -28,8 +28,8 @@ from skriptoteket.protocols.identity import (
 )
 
 _REGISTRATION_DOMAIN_MESSAGE = (
-    "Endast kommuner och enskilda huvudmän kan registrera sig just nu. "
-    "Använd din tjänsteadress från kommunen eller huvudmannen."
+    "Endast anställda hos kommuner och enskilda huvudmän kan registrera sig just nu. "
+    "Använd din e-postadress från kommun eller enskild huvudman."
 )
 
 

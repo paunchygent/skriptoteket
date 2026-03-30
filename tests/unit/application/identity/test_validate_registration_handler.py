@@ -98,8 +98,8 @@ async def test_validate_registration_maps_disallowed_domain_to_helpful_message()
 
     assert result.email.status == "invalid"
     assert result.email.message == (
-        "Endast kommuner och enskilda huvudmän kan registrera sig just nu. "
-        "Använd din tjänsteadress från kommunen eller huvudmannen."
+        "Endast anställda hos kommuner och enskilda huvudmän kan registrera sig just nu. "
+        "Använd din e-postadress från kommun eller enskild huvudman."
     )
 
 

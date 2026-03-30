@@ -307,7 +307,7 @@ export const useAuthStore = defineStore("auth", {
       password: string;
       firstName: string;
       lastName: string;
-    }): Promise<void> {
+    }): Promise<RegisterResponse> {
       this.status = "loading";
       this.error = null;
 
@@ -337,7 +337,7 @@ export const useAuthStore = defineStore("auth", {
           throw new Error(this.error);
         }
 
-        await response.json() as RegisterResponse;
+        const payload = await response.json() as RegisterResponse;
         this.user = null;
         this.profile = null;
         this.aiPolicy = null;
@@ -345,6 +345,7 @@ export const useAuthStore = defineStore("auth", {
         this.bootstrapped = true;
         this.status = "ready";
         this.error = null;
+        return payload;
       } catch (error: unknown) {
         if (!this.error) {
           this.error = error instanceof Error ? error.message : "Registration failed";

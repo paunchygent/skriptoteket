@@ -27,6 +27,10 @@ const apiMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("vue-router", () => ({
+  RouterLink: {
+    props: ["to"],
+    template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
+  },
   useRouter: () => routerMocks,
 }));
 
@@ -48,7 +52,9 @@ describe("RegisterView", () => {
     authState.bootstrap.mockReset();
     authState.bootstrap.mockResolvedValue(undefined);
     authState.register.mockReset();
-    authState.register.mockResolvedValue(undefined);
+    authState.register.mockResolvedValue({
+      message: "Konto skapat! Kontrollera din e-post för att verifiera kontot.",
+    });
     apiMocks.apiPost.mockReset();
     apiMocks.isApiError.mockReset();
     apiMocks.isApiError.mockReturnValue(false);
@@ -63,7 +69,7 @@ describe("RegisterView", () => {
       email: {
         status: "invalid",
         message:
-          "Endast kommuner och enskilda huvudmän kan registrera sig just nu. Använd din tjänsteadress från kommunen eller huvudmannen.",
+          "Endast anställda hos kommuner och enskilda huvudmän kan registrera sig just nu. Använd din e-postadress från kommun eller enskild huvudman.",
       },
       password: {
         status: "incomplete",
@@ -79,7 +85,7 @@ describe("RegisterView", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain(
-      "Endast kommuner och enskilda huvudmän kan registrera sig just nu.",
+      "Endast anställda hos kommuner och enskilda huvudmän kan registrera sig just nu.",
     );
   });
 
@@ -95,7 +101,7 @@ describe("RegisterView", () => {
     expect(wrapper.get("#register-password").attributes("type")).toBe("text");
   });
 
-  it("submits once names, email, and password validation pass", async () => {
+  it("shows verification guidance after successful registration", async () => {
     apiMocks.apiPost.mockResolvedValue({
       email: {
         status: "valid",
@@ -126,6 +132,13 @@ describe("RegisterView", () => {
       firstName: "Ada",
       lastName: "Lovelace",
     });
-    expect(routerMocks.push).toHaveBeenCalledWith("/");
+    expect(routerMocks.push).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Kontrollera din e-post");
+    expect(wrapper.text()).toContain(
+      "Konto skapat! Kontrollera din e-post för att verifiera kontot.",
+    );
+    expect(wrapper.text()).toContain(
+      "Om du inte ser något mejl från noreply@hule.education i din inkorg, kontrollera din skräppost.",
+    );
   });
 });

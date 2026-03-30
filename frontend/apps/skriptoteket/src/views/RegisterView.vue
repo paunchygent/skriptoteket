@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 
 import AuthPasswordField from "../components/auth/AuthPasswordField.vue";
+import { IconCheck } from "../components/icons";
 import { useRegistrationValidation } from "../composables/auth/useRegistrationValidation";
 import { useAuthStore } from "../stores/auth";
 
@@ -17,6 +18,7 @@ const confirmPassword = ref("");
 
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
+const registrationMessage = ref<string | null>(null);
 const {
   canSubmit,
   confirmPasswordError,
@@ -51,6 +53,7 @@ async function submit(): Promise<void> {
   if (isSubmitting.value) return;
 
   errorMessage.value = null;
+  registrationMessage.value = null;
 
   if (!firstName.value.trim() || !lastName.value.trim()) {
     errorMessage.value = "Förnamn och efternamn måste anges.";
@@ -90,13 +93,13 @@ async function submit(): Promise<void> {
   isSubmitting.value = true;
 
   try {
-    await auth.register({
+    const result = await auth.register({
       email: email.value,
       password: password.value,
       firstName: firstName.value,
       lastName: lastName.value,
     });
-    await router.push("/");
+    registrationMessage.value = result.message;
   } catch (error: unknown) {
     errorMessage.value =
       error instanceof Error ? error.message : "Kunde inte skapa konto.";
@@ -116,13 +119,39 @@ async function submit(): Promise<void> {
     </header>
 
     <div
-      v-if="errorMessage"
+      v-if="registrationMessage"
+      class="space-y-4 border border-navy bg-white p-6 shadow-brutal"
+    >
+      <div class="flex items-center gap-3 text-navy">
+        <IconCheck :size="24" />
+        <h2 class="text-lg font-semibold">
+          Kontrollera din e-post
+        </h2>
+      </div>
+      <p class="text-sm leading-relaxed text-navy/80">
+        {{ registrationMessage }}
+      </p>
+      <p class="text-sm leading-relaxed text-navy/80">
+        Om du inte ser något mejl från <strong>noreply@hule.education</strong> i din inkorg,
+        kontrollera din skräppost.
+      </p>
+      <RouterLink
+        to="/"
+        class="inline-flex text-sm font-semibold text-navy underline hover:text-burgundy"
+      >
+        Till startsidan
+      </RouterLink>
+    </div>
+
+    <div
+      v-else-if="errorMessage"
       class="p-3 border border-burgundy bg-white shadow-brutal-sm text-burgundy text-sm"
     >
       {{ errorMessage }}
     </div>
 
     <form
+      v-if="!registrationMessage"
       class="space-y-4"
       @submit.prevent="submit"
     >
@@ -184,7 +213,7 @@ async function submit(): Promise<void> {
         >
           {{
             emailError ??
-              "Använd din tjänsteadress. Endast kommuner och enskilda huvudmän kan registrera sig just nu."
+              "Endast anställda hos kommuner och enskilda huvudmän kan registrera sig just nu. Använd din e-postadress från kommun eller enskild huvudman."
           }}
         </p>
       </div>
