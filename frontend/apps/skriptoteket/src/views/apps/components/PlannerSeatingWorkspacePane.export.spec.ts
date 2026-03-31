@@ -123,6 +123,9 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(false);
+    expect(wrapper.get('[data-zone="primary"]').find('[data-test="seating-history-cluster"]').exists()).toBe(true);
+    expect(wrapper.get('[data-zone="context"]').find('[data-test="seating-workspace-setup"]').exists()).toBe(true);
+    expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-actions-menu"]').exists()).toBe(true);
     expect(wrapper.get('[data-test="seating-open-settings"]').attributes("aria-label")).toBe(
       "Smart-inställningar",
     );
@@ -155,6 +158,7 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
 
     expect(wrapper.find('[data-test="seating-export-status-bar"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="seating-export-status-pill"]').text()).toContain("Exportproblem");
+    expect(wrapper.get('[data-zone="secondary"]').find('[data-test="seating-export-group"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="seating-export-default"]').trigger("click");
     expect(wrapper.emitted("export-default")).toEqual([[]]);

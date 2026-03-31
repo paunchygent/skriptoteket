@@ -20,6 +20,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports import (
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.pdf_branding import (
     HORIZONTAL_LOGO_PNG_PATH,
     HORIZONTAL_LOGO_SVG_PATH,
+    build_pdf_brand_footer_css,
+    build_pdf_brand_footer_margin_box_css,
+    render_pdf_brand_footer_markup,
     resolve_local_horizontal_logo_base_dir,
     resolve_local_horizontal_logo_filename,
 )
@@ -67,10 +70,10 @@ def _build_html(
     </style>
   </head>
   <body>
+    {render_pdf_brand_footer_markup()}
     <main class="page">
       <header class="letterhead">
         <div class="letterhead__copy">
-          <p class="letterhead__eyebrow">Skriptoteket</p>
           <h1>{escape(view_model.title)}</h1>
           <p class="letterhead__meta">{escape(view_model.class_name)}</p>
           <p class="letterhead__stamp">{escape(view_model.generated_label)}</p>
@@ -143,10 +146,14 @@ def _render_card(*, card: grouping_pdf_view_model.GroupingPdfCard) -> str:
 def _build_css() -> str:
     """Build the dedicated A4 portrait handout stylesheet."""
 
-    return """
+    return (
+        """
       @page {
         size: A4 portrait;
         margin: 14mm 12mm 16mm 12mm;
+"""
+        + build_pdf_brand_footer_margin_box_css()
+        + """
       }
 
       :root {
@@ -201,15 +208,6 @@ def _build_css() -> str:
         background: #4d1521;
       }
 
-      .letterhead__eyebrow {
-        margin: 0 0 2.2mm;
-        color: #475569;
-        font-size: 8pt;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-
       .letterhead h1 {
         margin: 0 0 1.8mm;
         color: #1c2e4a;
@@ -242,21 +240,21 @@ def _build_css() -> str:
       }
 
       .letterhead__brand {
-        flex: 0 0 48mm;
+        flex: 0 0 42mm;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: flex-end;
         margin-left: auto;
-        margin-top: 4.2mm;
-        width: 48mm;
-        height: 10.6mm;
+        margin-top: 1mm;
+        width: 42mm;
+        height: 9.25mm;
       }
 
       .letterhead__brand img {
         display: block;
         width: 100%;
-        max-width: 48mm;
-        max-height: 10.6mm;
+        max-width: 42mm;
+        max-height: 9.25mm;
         object-fit: contain;
         object-position: center right;
       }
@@ -336,4 +334,6 @@ def _build_css() -> str:
         font-weight: 700;
         white-space: nowrap;
       }
-    """
+"""
+        + build_pdf_brand_footer_css()
+    )

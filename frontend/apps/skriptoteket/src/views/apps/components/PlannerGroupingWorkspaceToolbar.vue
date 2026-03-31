@@ -195,7 +195,7 @@ function incrementGroupCount(): void {
 <template>
   <div class="space-y-3">
     <PlannerWorkspaceActionBar>
-      <template #leading>
+      <template #primary>
         <div
           class="flex items-center [&>*+*]:-ml-px"
           data-test="grouping-history-cluster"
@@ -315,49 +315,56 @@ function incrementGroupCount(): void {
         </div>
       </template>
 
-      <label
+      <template
         v-if="availableRosters.length > 0"
-        class="block w-[8rem]"
-        data-test="grouping-roster-control"
+        #context
       >
-        <select
-          aria-label="Klass"
-          :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
-          :value="selectedRosterValue"
-          data-test="grouping-roster-select"
-          @change="changeGroupingRoster"
+        <label
+          class="block w-[8rem]"
+          data-test="grouping-roster-control"
         >
-          <option
-            v-for="roster in availableRosters"
-            :key="roster.id"
-            :value="roster.id"
+          <select
+            aria-label="Klass"
+            :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
+            :value="selectedRosterValue"
+            data-test="grouping-roster-select"
+            @change="changeGroupingRoster"
           >
-            {{ roster.name }}
-          </option>
-        </select>
-      </label>
-      <PlannerExportActionGroup
-        :busy="exportBusy"
-        :options="exportOptions"
-        group-test-id="grouping-export-group"
-        default-button-test-id="grouping-export-default"
-        menu-trigger-test-id="grouping-export-menu-trigger"
-        option-test-id-prefix="grouping-export-option"
-        @export-default="emit('export-default')"
-        @export-option="handleExportOption"
-      />
-      <UiDenseStatusPill
-        v-if="exportStatus"
-        :label="exportStatus.label"
-        :tone="exportStatus.tone"
-        :title="exportStatus.title"
-        data-test="grouping-export-status-pill"
-      />
-      <PlannerToolbarOverflowMenu
-        label="Fler gruppåtgärder"
-        :items="secondaryActionItems"
-        test-id="grouping-actions-menu"
-      />
+            <option
+              v-for="roster in availableRosters"
+              :key="roster.id"
+              :value="roster.id"
+            >
+              {{ roster.name }}
+            </option>
+          </select>
+        </label>
+      </template>
+
+      <template #secondary>
+        <PlannerExportActionGroup
+          :busy="exportBusy"
+          :options="exportOptions"
+          group-test-id="grouping-export-group"
+          default-button-test-id="grouping-export-default"
+          menu-trigger-test-id="grouping-export-menu-trigger"
+          option-test-id-prefix="grouping-export-option"
+          @export-default="emit('export-default')"
+          @export-option="handleExportOption"
+        />
+        <UiDenseStatusPill
+          v-if="exportStatus"
+          :label="exportStatus.label"
+          :tone="exportStatus.tone"
+          :title="exportStatus.title"
+          data-test="grouping-export-status-pill"
+        />
+        <PlannerToolbarOverflowMenu
+          label="Fler gruppåtgärder"
+          :items="secondaryActionItems"
+          test-id="grouping-actions-menu"
+        />
+      </template>
     </PlannerWorkspaceActionBar>
 
     <PlannerConfirmationDialog

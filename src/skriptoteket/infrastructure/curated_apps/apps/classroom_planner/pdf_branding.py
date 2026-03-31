@@ -13,11 +13,14 @@ Relationships:
 
 from __future__ import annotations
 
+from html import escape
 from pathlib import Path
 
 PDF_BRANDING_ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 HORIZONTAL_LOGO_SVG_PATH = PDF_BRANDING_ASSETS_DIR / "logo-horizontal.svg"
 HORIZONTAL_LOGO_PNG_PATH = PDF_BRANDING_ASSETS_DIR / "logo-horizontal.png"
+PDF_BRAND_FOOTER_LABEL = "skriptoteket.hule.education"
+PDF_BRAND_FOOTER_URL = "https://skriptoteket.hule.education"
 
 
 def resolve_local_horizontal_logo_filename() -> str | None:
@@ -58,3 +61,43 @@ def resolve_bundled_horizontal_logo_filename() -> str | None:
     if HORIZONTAL_LOGO_SVG_PATH.exists():
         return HORIZONTAL_LOGO_SVG_PATH.name
     return None
+
+
+def build_pdf_brand_footer_margin_box_css() -> str:
+    """Return the WeasyPrint margin-box rule for the shared footer watermark."""
+
+    return """
+        @bottom-right {
+          content: element(pdf-brand-footer);
+          vertical-align: bottom;
+        }
+    """
+
+
+def build_pdf_brand_footer_css() -> str:
+    """Return the shared footer watermark CSS used by classroom-planner PDFs."""
+
+    return """
+      .pdf-brand-footer {
+        position: running(pdf-brand-footer);
+      }
+
+      .pdf-brand-footer a {
+        color: #64748b;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 7.5pt;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+    """
+
+
+def render_pdf_brand_footer_markup() -> str:
+    """Return the shared footer watermark markup for running page elements."""
+
+    return (
+        '<div class="pdf-brand-footer" aria-hidden="true">'
+        f'<a href="{escape(PDF_BRAND_FOOTER_URL)}">{escape(PDF_BRAND_FOOTER_LABEL)}</a>'
+        "</div>"
+    )

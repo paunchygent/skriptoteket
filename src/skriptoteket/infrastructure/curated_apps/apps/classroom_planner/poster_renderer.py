@@ -32,6 +32,9 @@ from skriptoteket.application.curated_apps.classroom_planner.exports.rendering i
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.pdf_branding import (
     HORIZONTAL_LOGO_PNG_PATH,
     HORIZONTAL_LOGO_SVG_PATH,
+    build_pdf_brand_footer_css,
+    build_pdf_brand_footer_margin_box_css,
+    render_pdf_brand_footer_markup,
     resolve_bundled_horizontal_logo_filename,
 )
 from skriptoteket.protocols.classroom_planner_exports import SeatingPosterRendererProtocol
@@ -73,8 +76,9 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
   </head>
   <body
     class="paper-{paper_token}"
-    style="--page-width-mm:{layout.page_width_mm};--page-height-mm:{layout.page_height_mm};"
+    style="--page-width-mm:{layout.page_width_mm};--page-height-mm:{layout.page_height_mm};--page-margin-mm:{layout.page_margin_mm};"
   >
+    {render_pdf_brand_footer_markup()}
     <main
       class="poster"
       style="
@@ -95,7 +99,6 @@ class BrutalistPosterRenderer(SeatingPosterRendererProtocol):
     >
       <header class="poster__header">
         <div class="poster__header-copy">
-          <p class="poster__eyebrow">Skriptoteket</p>
           <h1>{escape(request.roster_name)}</h1>
           <p class="poster__meta">{escape(request.template_name)}</p>
         </div>
@@ -372,7 +375,8 @@ def _build_css(
     )
     return f"""@page {{
   size: {page_size};
-  margin: 0;
+  margin: {layout.page_margin_mm}mm;
+{build_pdf_brand_footer_margin_box_css()}
 }}
 :root {{
   --ink: #111111;
@@ -392,21 +396,14 @@ body {{
   color: var(--ink);
   background: var(--paper);
   font-family: \"Helvetica Neue\", Arial, sans-serif;
-  width: calc(var(--page-width-mm) * 1mm);
-  height: calc(var(--page-height-mm) * 1mm);
-}}
-body {{
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }}
 .poster {{
+  position: relative;
   display: grid;
   width: calc(var(--poster-content-width-mm) * 1mm);
   height: calc(var(--poster-content-height-mm) * 1mm);
   grid-template-rows: calc(var(--poster-header-height-mm) * 1mm) 1fr;
   gap: calc(var(--poster-gap-mm) * 1mm);
-  overflow: hidden;
 }}
 .poster__header {{
   position: relative;
@@ -431,7 +428,7 @@ body {{
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 18mm;
+  width: 0mm;
   height: 0.95mm;
   background: var(--brand-burgundy);
 }}
@@ -441,13 +438,6 @@ body {{
   align-content: start;
   flex: 1 1 0;
   min-width: 0;
-}}
-.poster__eyebrow {{
-  margin: 0;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 9pt;
 }}
 .poster__header h1,
 .poster__meta,
@@ -469,10 +459,10 @@ body {{
 .poster__header-brand {{
   flex: 0 0 42mm;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-end;
   margin-left: auto;
-  margin-top: 4.2mm;
+  margin-top: 1mm;
 }}
 .poster__header-brand {{
   width: 42mm;
@@ -606,4 +596,5 @@ body {{
   transform: translate(-50%, -50%) rotate(-90deg);
   transform-origin: center;
 }}
+{build_pdf_brand_footer_css()}
 """

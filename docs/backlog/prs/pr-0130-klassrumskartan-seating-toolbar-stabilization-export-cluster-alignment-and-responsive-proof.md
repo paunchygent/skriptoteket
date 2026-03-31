@@ -2,10 +2,10 @@
 type: pr
 id: PR-0130
 title: "Klassrumskartan: seating toolbar stabilization, export-cluster alignment, and responsive proof"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-03-31
 stories:
   - "ST-29-03"
 tags: ["frontend", "ux", "klassrumskartan", "toolbar", "export", "playwright"]
@@ -33,6 +33,16 @@ Without a stable zoning model, that mix risks feeling improvised as widths tight
 
 Apply the zoned planner toolbar to seating in a way that keeps the explicit export cluster usable
 and intentional.
+
+## Status note (2026-03-31)
+
+This slice is effectively implemented in practice through the later planner toolbar cutovers:
+
+- [PlannerSeatingWorkspaceToolbar.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue) already keeps the classroom selector, primary seating actions, export cluster, and overflow actions in a stable compact row.
+- The later live proof trail in [.agents/handoff.md](../../../.agents/handoff.md) and [scripts/playwright_pr_0167_smart_grouping_cutover_check.py](../../../scripts/playwright_pr_0167_smart_grouping_cutover_check.py) already verifies that shipped user-facing seating toolbar behavior.
+
+The remaining `ST-29-03` gap is the reusable shared zoning contract beneath that toolbar, tracked
+under `PR-0129`, not the seating toolbar behavior itself.
 
 ## Locked design decisions
 

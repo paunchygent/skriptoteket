@@ -215,7 +215,7 @@ function handleExportOption(option: PlannerExportOptionValue): void {
 <template>
   <div class="space-y-3">
     <PlannerWorkspaceActionBar>
-      <template #leading>
+      <template #primary>
         <div
           class="flex items-center [&>*+*]:-ml-px"
           data-test="seating-history-cluster"
@@ -296,53 +296,58 @@ function handleExportOption(option: PlannerExportOptionValue): void {
         </UiDenseActionButton>
       </template>
 
-      <label
-        class="block w-[11rem] shrink-0"
-        data-test="seating-workspace-setup"
-      >
-        <select
-          ref="seatingTemplateSelect"
-          data-test="seating-template-select"
-          aria-label="Klassrum"
-          :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
-          :value="selectedTemplateId ?? ''"
-          @change="changeSeatingTemplateFromEvent"
+      <template #context>
+        <label
+          class="block w-[11rem] shrink-0"
+          data-test="seating-workspace-setup"
         >
-          <option value="">
-            Välj klassrum
-          </option>
-          <option
-            v-for="template in availableTemplates"
-            :key="template.id"
-            :value="template.id"
+          <select
+            ref="seatingTemplateSelect"
+            data-test="seating-template-select"
+            aria-label="Klassrum"
+            :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
+            :value="selectedTemplateId ?? ''"
+            @change="changeSeatingTemplateFromEvent"
           >
-            {{ template.name }} · {{ template.seats.length }} platser
-          </option>
-        </select>
-        <p
-          v-if="showSeatingTemplateRequiredHint"
-          class="mt-1 text-xs font-semibold text-burgundy"
-        >
-          Välj klassrum innan du startar ett nytt sittschema.
-        </p>
-      </label>
-      <PlannerExportActionGroup
-        :busy="exportBusy"
-        @export-default="emit('export-default')"
-        @export-option="handleExportOption"
-      />
-      <UiDenseStatusPill
-        v-if="exportStatus"
-        :label="exportStatus.label"
-        :tone="exportStatus.tone"
-        :title="exportStatus.title"
-        data-test="seating-export-status-pill"
-      />
-      <PlannerToolbarOverflowMenu
-        label="Fler sittplatsåtgärder"
-        :items="secondaryActionItems"
-        test-id="seating-actions-menu"
-      />
+            <option value="">
+              Välj klassrum
+            </option>
+            <option
+              v-for="template in availableTemplates"
+              :key="template.id"
+              :value="template.id"
+            >
+              {{ template.name }} · {{ template.seats.length }} platser
+            </option>
+          </select>
+          <p
+            v-if="showSeatingTemplateRequiredHint"
+            class="mt-1 text-xs font-semibold text-burgundy"
+          >
+            Välj klassrum innan du startar ett nytt sittschema.
+          </p>
+        </label>
+      </template>
+
+      <template #secondary>
+        <PlannerExportActionGroup
+          :busy="exportBusy"
+          @export-default="emit('export-default')"
+          @export-option="handleExportOption"
+        />
+        <UiDenseStatusPill
+          v-if="exportStatus"
+          :label="exportStatus.label"
+          :tone="exportStatus.tone"
+          :title="exportStatus.title"
+          data-test="seating-export-status-pill"
+        />
+        <PlannerToolbarOverflowMenu
+          label="Fler sittplatsåtgärder"
+          :items="secondaryActionItems"
+          test-id="seating-actions-menu"
+        />
+      </template>
     </PlannerWorkspaceActionBar>
 
     <PlannerConfirmationDialog

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0128
 title: "Klassrumskartan: grouping and seating student-pool split-pane scrolling"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-03-31
 stories:
   - "ST-29-03"
 tags: ["frontend", "ux", "klassrumskartan", "scrolling", "playwright"]
@@ -30,6 +30,16 @@ lower seating rows or lower grouping targets.
 
 Turn grouping and seating into true bounded split panes on desktop so the student pool becomes a
 usable local working region rather than a page-flow side column.
+
+## Status note (2026-03-31)
+
+This slice is effectively implemented in practice through the current planner layout:
+
+- [PlannerStudentPool.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue) now keeps a fixed header with an independently scrolling list body inside a sticky bounded sidebar.
+- [PlannerGroupingWorkspacePane.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue) and [PlannerSeatingWorkspacePane.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue) now render the teacher workspace as a desktop split pane rather than as one long page-flow stack.
+
+The remaining `ST-29-03` gap is no longer this local-scroll behavior; it is the reusable shared
+action-bar zoning contract tracked under `PR-0129`.
 
 ## Locked design decisions
 

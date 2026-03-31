@@ -108,10 +108,10 @@ def test_grouping_pdf_renderer_outputs_a4_pdf_with_expected_teacher_facing_text(
 
     text = first_page.extract_text()
     assert text is not None
-    assert "SKRIPTOTEKET" in text
     assert "Gruppindelning" in text
     assert "SA24D" in text
     assert "Skapad 2026-03-26 12:34" in text
+    assert "skriptoteket.hule.education" in text
     assert "Grupp 1" in text
     assert "Grupp 2" in text
     assert "Grupp 3" in text
@@ -140,6 +140,8 @@ def test_grouping_pdf_renderer_html_references_bundled_logo_asset():
         else _GROUPING_PDF_LOGO_PNG_PATH.name
     )
     assert f'<img src="{expected_logo_filename}" alt="" />' in html
+    assert 'class="pdf-brand-footer"' in html
+    assert 'href="https://skriptoteket.hule.education"' in html
 
 
 @pytest.mark.unit

@@ -57,9 +57,9 @@ def test_seating_pdf_renderer_outputs_pdf_with_expected_teacher_facing_text():
     reader = PdfReader(BytesIO(pdf_bytes))
     text = reader.pages[0].extract_text()
     assert text is not None
-    assert "SKRIPTOTEKET" in text
     assert "Klass 7A" in text
     assert "Sal A" in text
+    assert "skriptoteket.hule.education" in text
 
 
 @pytest.mark.unit

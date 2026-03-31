@@ -85,7 +85,9 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert [resource.filename for resource in bundle.resource_files] == [expected_logo_filename]
     assert "@page" in bundle.css_content
     assert "A3 landscape" in bundle.css_content
-    assert "margin: 0;" in bundle.css_content
+    assert "margin: 10.0mm;" in bundle.css_content
+    assert "@bottom-right" in bundle.css_content
+    assert "position: running(pdf-brand-footer);" in bundle.css_content
     assert "rotate(-90deg)" in bundle.css_content
     assert "writing-mode: vertical-rl" not in bundle.css_content
     assert "--side-wall-band-mm:12.0" in bundle.html_content
@@ -94,6 +96,10 @@ def test_renderer_outputs_html_linked_to_poster_css_and_seat_labels():
     assert "justify-content: center;" in bundle.css_content
     assert "font-family: var(--heading-serif);" in bundle.css_content
     assert "background: var(--brand-burgundy);" in bundle.css_content
+    assert 'class="pdf-brand-footer"' in bundle.html_content
+    assert 'href="https://skriptoteket.hule.education"' in bundle.html_content
+    assert "poster__watermark" not in bundle.html_content
+    assert ".poster__watermark" not in bundle.css_content
 
 
 @pytest.mark.unit

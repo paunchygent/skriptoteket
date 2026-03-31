@@ -1,14 +1,17 @@
 <script setup lang="ts">
 /**
- * Shared layout wrapper for planner action rows.
+ * Shared zoned layout wrapper for planner action rows.
  *
- * This component keeps the grouping and seating toolbars visually consistent
- * without forcing their task-specific actions into one schema-driven control.
+ * Relationships:
+ * - semantic shell for grouping, seating, and future planner workspaces
+ * - owns the stable `primary`, `context`, and `secondary` zone wrappers
+ * - keeps toolbar-specific control composition inside the consuming toolbars
  */
 
 defineSlots<{
-  leading?: () => unknown;
-  default?: () => unknown;
+  primary?: () => unknown;
+  context?: () => unknown;
+  secondary?: () => unknown;
 }>();
 </script>
 
@@ -17,11 +20,26 @@ defineSlots<{
     class="flex items-center gap-3 overflow-visible border border-navy bg-white px-3 py-2 shadow-brutal-sm"
     data-ui="planner-workspace-action-bar"
   >
-    <div class="flex shrink-0 items-center gap-1.5">
-      <slot name="leading" />
+    <div
+      v-if="$slots.primary"
+      class="flex shrink-0 items-center gap-1.5"
+      data-zone="primary"
+    >
+      <slot name="primary" />
     </div>
-    <div class="ml-auto flex shrink-0 items-center gap-1.5">
-      <slot />
+    <div
+      v-if="$slots.context"
+      class="flex shrink-0 items-center gap-1.5"
+      data-zone="context"
+    >
+      <slot name="context" />
+    </div>
+    <div
+      v-if="$slots.secondary"
+      class="ml-auto flex shrink-0 items-center gap-1.5"
+      data-zone="secondary"
+    >
+      <slot name="secondary" />
     </div>
   </div>
 </template>

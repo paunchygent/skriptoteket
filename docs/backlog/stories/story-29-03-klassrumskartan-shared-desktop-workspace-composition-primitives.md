@@ -2,9 +2,10 @@
 type: story
 id: ST-29-03
 title: "Klassrumskartan — Shared desktop workspace composition primitives"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
+updated: 2026-03-31
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -28,12 +29,21 @@ the shared desktop composition seams that later workspace-specific slices can re
 - This story absorbs the grouping/seating scroll-region and action-zoning execution scope from the
   older export-era redesign drafts and is now the only canonical planning surface for that work.
 - The goal is reusable desktop composition discipline, not visual polish in isolation.
+- Current state in practice:
+  - `PR-0128` is effectively shipped through the current split-pane/local-scroll student-pool layout.
+  - `PR-0129` is now implemented locally through the shared zoned `PlannerWorkspaceActionBar`
+    contract and the grouping/seating remap onto `primary`, `context`, and `secondary` zones.
+  - `PR-0130` remains effectively shipped in user-facing behavior through the later detached
+    seating-toolbar cutovers and proof.
+
+## Planned PR slices
+
+- [PR-0128: Klassrumskartan: grouping and seating student-pool split-pane scrolling](../prs/pr-0128-klassrumskartan-grouping-and-seating-student-pool-split-pane-scrolling.md) — `done in practice`
+- [PR-0129: Klassrumskartan: shared planner action-bar zoning contract and grouping/seating remap](../prs/pr-0129-klassrumskartan-shared-planner-action-bar-zoning-and-grouping-toolbar-stabilization.md) — `done`
+- [PR-0130: Klassrumskartan: seating toolbar stabilization, export-cluster alignment, and responsive proof](../prs/pr-0130-klassrumskartan-seating-toolbar-stabilization-export-cluster-alignment-and-responsive-proof.md) — `done in practice`
 
 ## References
 
 - Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
-- Related task slice: [PR-0128](../prs/pr-0128-klassrumskartan-grouping-and-seating-student-pool-split-pane-scrolling.md)
-- Related task slice: [PR-0129](../prs/pr-0129-klassrumskartan-shared-planner-action-bar-zoning-and-grouping-toolbar-stabilization.md)
-- Related task slice: [PR-0130](../prs/pr-0130-klassrumskartan-seating-toolbar-stabilization-export-cluster-alignment-and-responsive-proof.md)
 - Planner shell decomposition: [PR-0114](../prs/pr-0114-klassrumskartan-planner-shell-decomposition-and-shared-ui-primitives.md)
 - Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)

@@ -151,6 +151,14 @@ CMD ["pdm", "run", "serve"]
 
 FROM production AS development
 
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    libcairo2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
     pdm install --frozen-lockfile -G monorepo-tools -G dev -G llm --no-editable --no-self
 
