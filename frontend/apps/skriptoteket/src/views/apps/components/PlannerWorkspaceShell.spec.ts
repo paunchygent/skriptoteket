@@ -23,6 +23,7 @@ type PlannerStateMock = {
   draft: Pick<PlanDraft, "id" | "draft_kind" | "revision"> & {
     smart_enabled?: boolean;
     use_history?: boolean;
+    grouping_seating_distance_enabled?: boolean;
   };
   students: Roster["students"];
   ungroupedStudents: Roster["students"];
@@ -36,6 +37,8 @@ type PlannerStateMock = {
   relationshipRules: Array<{ id: string; kind: "keep_near" | "keep_apart"; student_ids: string[] }>;
   pendingRelationshipStudentIds: string[];
   smartRuleFeedbackMessage: string | null;
+  smartGroupingRunMessage: string | null;
+  smartGroupingRunTone: "neutral" | "success" | "warning";
   smartSeatingRunMessage: string | null;
   smartSeatingRunTone: "neutral" | "success" | "warning";
   canCommitPendingRelationshipRule: boolean;
@@ -44,6 +47,7 @@ type PlannerStateMock = {
   plannerStatusTone: "neutral" | "success" | "warning" | "danger";
   plannerConflictMessage: string | null;
   isWorkspaceBusy: boolean;
+  isRunningSmartGrouping: boolean;
   isRunningSmartSeating: boolean;
   canEditSeatingSmartRules: boolean;
   canUndo: boolean;
@@ -56,10 +60,11 @@ type PlannerStateMock = {
   deleteRelationshipRule: ReturnType<typeof vi.fn>;
   setDraftSmartEnabled: ReturnType<typeof vi.fn>;
   setDraftUseHistoryEnabled: ReturnType<typeof vi.fn>;
+  setDraftGroupingSeatingDistanceEnabled: ReturnType<typeof vi.fn>;
   reloadActiveWorkspace: ReturnType<typeof vi.fn>;
   undoGroupingDraft: ReturnType<typeof vi.fn>;
   redoGroupingDraft: ReturnType<typeof vi.fn>;
-  randomizeGroups: ReturnType<typeof vi.fn>;
+  runGroupingShuffle: ReturnType<typeof vi.fn>;
   clearGroupingAssignments: ReturnType<typeof vi.fn>;
   addGroup: ReturnType<typeof vi.fn>;
   assignStudentToGroup: ReturnType<typeof vi.fn>;
@@ -103,6 +108,8 @@ const stateMocks = vi.hoisted(() => ({
     relationshipRules: [],
     pendingRelationshipStudentIds: [],
     smartRuleFeedbackMessage: null,
+    smartGroupingRunMessage: null,
+    smartGroupingRunTone: "neutral",
     smartSeatingRunMessage: null,
     smartSeatingRunTone: "neutral",
     canCommitPendingRelationshipRule: false,
@@ -111,6 +118,7 @@ const stateMocks = vi.hoisted(() => ({
     plannerStatusTone: "success",
     plannerConflictMessage: null,
     isWorkspaceBusy: false,
+    isRunningSmartGrouping: false,
     isRunningSmartSeating: false,
     canEditSeatingSmartRules: true,
     canUndo: false,
@@ -123,10 +131,11 @@ const stateMocks = vi.hoisted(() => ({
     deleteRelationshipRule: vi.fn(),
     setDraftSmartEnabled: vi.fn(),
     setDraftUseHistoryEnabled: vi.fn(),
+    setDraftGroupingSeatingDistanceEnabled: vi.fn(),
     reloadActiveWorkspace: vi.fn(),
     undoGroupingDraft: vi.fn(),
     redoGroupingDraft: vi.fn(),
-    randomizeGroups: vi.fn(),
+    runGroupingShuffle: vi.fn(),
     clearGroupingAssignments: vi.fn(),
     addGroup: vi.fn(),
     assignStudentToGroup: vi.fn(),
@@ -204,6 +213,13 @@ function buildWorkspaceSummary(): ClassWorkspaceSummary {
   };
 }
 
+function buildRosters(): Roster[] {
+  return [
+    { id: "roster-1", name: "SA24D", students: [] },
+    { id: "roster-2", name: "SA24E", students: [] },
+  ];
+}
+
 describe("PlannerWorkspaceShell", () => {
   beforeEach(() => {
     toastMocks.info.mockReset();
@@ -212,7 +228,7 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.reloadActiveWorkspace.mockReset();
     stateMocks.plannerState.undoGroupingDraft.mockReset();
     stateMocks.plannerState.redoGroupingDraft.mockReset();
-    stateMocks.plannerState.randomizeGroups.mockReset();
+    stateMocks.plannerState.runGroupingShuffle.mockReset();
     stateMocks.plannerState.clearGroupingAssignments.mockReset();
     stateMocks.plannerState.addGroup.mockReset();
     stateMocks.plannerState.assignStudentToGroup.mockReset();
@@ -249,10 +265,13 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.relationshipRules = [];
     stateMocks.plannerState.pendingRelationshipStudentIds = [];
     stateMocks.plannerState.smartRuleFeedbackMessage = null;
+    stateMocks.plannerState.smartGroupingRunMessage = null;
+    stateMocks.plannerState.smartGroupingRunTone = "neutral";
     stateMocks.plannerState.smartSeatingRunMessage = null;
     stateMocks.plannerState.smartSeatingRunTone = "neutral";
     stateMocks.plannerState.canCommitPendingRelationshipRule = false;
     stateMocks.plannerState.isWorkspaceBusy = false;
+    stateMocks.plannerState.isRunningSmartGrouping = false;
     stateMocks.plannerState.canEditSeatingSmartRules = true;
     stateMocks.plannerState.canUndo = false;
     stateMocks.plannerState.canRedo = false;
@@ -266,6 +285,7 @@ describe("PlannerWorkspaceShell", () => {
     stateMocks.plannerState.deleteRelationshipRule.mockReset();
     stateMocks.plannerState.setDraftSmartEnabled.mockReset();
     stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
+    stateMocks.plannerState.setDraftGroupingSeatingDistanceEnabled.mockReset();
     stateMocks.plannerState.draft = {
       id: "draft-1",
       draft_kind: "grouping",
@@ -451,11 +471,20 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
-  it("keeps classroom-aware grouping as an optional in-workspace picker", async () => {
+  it("keeps the grouping toolbar focused on actions and moves Smart tuning into the drawer", async () => {
     stateMocks.plannerState.template = null;
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "grouping",
+      revision: 3,
+      grouping_seating_distance_enabled: false,
+      use_history: false,
+    };
     const wrapper = mount(PlannerWorkspaceShell, {
       props: {
+        availableRosters: buildRosters(),
         availableTemplates: [{ id: "template-2", name: "Sal 202", seats: [], fixtures: [] }],
+        selectedRosterId: "roster-1",
         workspaceSummary: buildWorkspaceSummary(),
       },
       global: {
@@ -471,13 +500,74 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.find("[data-test='group-board']").exists()).toBe(true);
-    expect(wrapper.get('[data-test="grouping-template-select"]').attributes("aria-label")).toBe("Klassrum (valfritt)");
-    expect(wrapper.text()).toContain("Arbeta utan klassrum");
+    expect(wrapper.get('[data-test="grouping-roster-select"]').attributes("aria-label")).toBe("Klass");
+    expect(wrapper.get('[data-test="grouping-roster-select"]').element).toBeInstanceOf(HTMLSelectElement);
+    expect(wrapper.find('[data-test="grouping-template-select"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-use-history-toggle"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="grouping-active-rule-count"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="grouping-open-settings"]').attributes("aria-label")).toBe(
+      "Smart-inställningar",
+    );
 
-    await wrapper.get('[data-test="grouping-template-select"]').setValue("template-2");
+    await wrapper.get('[data-test="grouping-open-settings"]').trigger("click");
+
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Smart-inställningar");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Historik");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Klassrum");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Sittning");
+
+    await wrapper.get('[data-test="grouping-settings-template-select"]').setValue("template-2");
 
     expect(wrapper.emitted("change-grouping-template")).toEqual([[{ templateId: "template-2" }]]);
-    expect((wrapper.get('[data-test="grouping-template-select"]').element as HTMLSelectElement).value).toBe("template-2");
+    expect((wrapper.get('[data-test="grouping-settings-template-select"]').element as HTMLSelectElement).value).toBe("template-2");
+
+    await wrapper.get('[data-test="grouping-settings-open-rules"]').trigger("click");
+    expect(wrapper.emitted("open-rules")).toEqual([[]]);
+  });
+
+  it("keeps the seating toolbar focused on actions and moves Smart tuning into the drawer", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+      smart_enabled: true,
+      use_history: true,
+    };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-2", name: "Sal 202", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="seating-template-select"]').attributes("aria-label")).toBe("Klassrum");
+    expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="seating-open-settings"]').attributes("aria-label")).toBe(
+      "Smart-inställningar",
+    );
+
+    await wrapper.get('[data-test="seating-open-settings"]').trigger("click");
+
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Smart-inställningar");
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Historik");
+
+    await wrapper.get('[data-test="seating-settings-history-toggle"]').trigger("click");
+    expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);
+
+    await wrapper.get('[data-test="seating-settings-open-rules"]').trigger("click");
+    expect(wrapper.emitted("open-rules")).toEqual([[]]);
   });
 
   it("forwards the explicit new grouping draft action with the current grouping context", async () => {
@@ -506,6 +596,30 @@ describe("PlannerWorkspaceShell", () => {
     await wrapper.get("[data-test='new-grouping-draft']").trigger("click");
 
     expect(wrapper.emitted("new-grouping-draft")).toEqual([[{ templateId: "template-2" }]]);
+  });
+
+  it("forwards grouping class changes from the toolbar selector", async () => {
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableRosters: buildRosters(),
+        selectedRosterId: "roster-1",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[data-test="grouping-roster-select"]').setValue("roster-2");
+
+    expect(wrapper.emitted("change-grouping-roster")).toEqual([[{ rosterId: "roster-2" }]]);
   });
 
   it("keeps the seating workspace open even before a classroom has been selected", async () => {

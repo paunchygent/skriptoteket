@@ -60,9 +60,10 @@ their task panes are not the home for rule creation or rule editing.
 This means:
 
 - rule creation and rule editing route through `Regler`
-- a small settings affordance beside `Smart` opens `Regler`
-- a compact or collapsed task-pane drawer may summarize the current rules and mode-local smart
-  toggles such as `Use history`
+- a small settings affordance beside `Smart` opens mode-local Smart settings rather than routing
+  directly away from the workspace
+- that Smart settings drawer may summarize rules and host secondary mode-local controls such as
+  `Historik`, `Klassrum`, and `Sittning`
 - that compact drawer must not host inline rule creation or rule editing
 - redundant active-rule count pills should not appear in task toolbars when richer rule surfaces
   already communicate the same state
@@ -85,12 +86,12 @@ Smart seating may additionally expose one seating-only rule:
 
 - `Närmare läraren`
 
-Smart grouping may additionally expose one classroom-aware control owned by the grouping classroom
-control:
+Smart grouping may additionally expose classroom-aware tuning inside Smart settings:
 
 - classroom-aware grouping must stay separate from `Use history`
-- the classroom control may express this through selection alone or a composite selector/toggle
-  affordance, but it must not read like a second history toggle
+- the first-row grouping toolbar may keep one compact class selector, but not a second classroom
+  context band or abstract helper labels
+- `Klassrum` and `Sittning` belong in Smart settings, not in the command row
 - the teacher-facing meaning is that smart grouping may use the selected classroom's seating
   context as a soft compactness lane when usable seating context exists
 
@@ -218,7 +219,7 @@ separate three ownership lanes:
 - draft-local workspace state:
   - per-draft smart toggle state
   - grouping history toggle state
-  - classroom-aware grouping state tied to the classroom control
+  - classroom-aware grouping state tied to `Klassrum` + `Sittning` in Smart-inställningar
   - current seating/group arrangement state and bounded draft history
 - export-backed checkpoints:
   - roster-scoped seating checkpoints with assignment-hash deduplication
@@ -262,7 +263,7 @@ It acts as an explicit exception to the default teacher-distance fairness balanc
 Grouping must not expose or consume that teacher-distance preference directly. Grouping may still
 use seating context through the classroom-aware compactness lane when:
 
-- classroom-aware grouping is enabled through the classroom control
+- classroom-aware grouping is enabled through `Klassrum` + `Sittning` in Smart-inställningar
 - usable seating context exists
 - the current seating draft may be read first as a live compactness input, with eligible seating
   checkpoints as fallback compactness input only

@@ -15,6 +15,9 @@ from datetime import datetime, timedelta, timezone
 from unicodedata import normalize
 from uuid import uuid4
 
+from skriptoteket.domain.curated_apps.classroom_planner.checkpoints import (
+    SeatingRoomContextSnapshot,
+)
 from skriptoteket.domain.curated_apps.classroom_planner.grouping_checkpoints import (
     GroupingExportCheckpoint,
     NormalizedGroupingGroup,
@@ -168,8 +171,32 @@ def build_live_seating_input(
         )
         next_seat_index += 3
     return LiveSeatingContinuityInput(
-        seats=list(template.seats),
+        room_context=build_room_context(template=template),
         seat_assignments=seat_assignments,
+    )
+
+
+def build_room_context(*, template: RoomTemplate) -> SeatingRoomContextSnapshot:
+    """Build one normalized room context snapshot from the canonical template."""
+
+    return SeatingRoomContextSnapshot(
+        grid_cols=template.grid_cols,
+        grid_rows=template.grid_rows,
+        seats=[
+            {"id": seat.id, "x": seat.x, "y": seat.y, "zone": seat.zone} for seat in template.seats
+        ],
+        fixtures=[
+            {
+                "id": fixture.id,
+                "type": fixture.type,
+                "x": fixture.x,
+                "y": fixture.y,
+                "width": fixture.width,
+                "height": fixture.height,
+                "label": fixture.label,
+            }
+            for fixture in template.fixtures
+        ],
     )
 
 

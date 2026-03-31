@@ -224,6 +224,7 @@ export function useClassroomPlannerRouteShell() {
     openGroupingWorkspace: workspaceFlow.openGroupingWorkspace,
     openSeatingWorkspace: workspaceFlow.openSeatingWorkspace,
     openRulesWorkspace: workspaceFlow.openRulesWorkspace,
+    changeGroupingRoster: workspaceFlow.changeGroupingRoster,
     changeGroupingTemplate: workspaceFlow.changeGroupingTemplate,
     changeSeatingTemplate: workspaceFlow.changeSeatingTemplate,
     startNewGroupingDraft: workspaceFlow.startNewGroupingDraft,

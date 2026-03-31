@@ -7,6 +7,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.classroom_planner.handlers.smart_grouping import (
+    NO_CLASSROOM_SIGNAL_MESSAGE,
     NO_HISTORY_BLOCK_MESSAGE,
     RunSmartGroupingHandler,
     SmartGroupingAppliedResult,
@@ -301,6 +302,7 @@ async def test_run_smart_grouping_uses_active_seating_draft_before_diversity() -
     assert result.status == "applied"
     assert result.used_history is False
     assert result.used_live_seating is True
+    assert result.message == "Smart gruppindelning klar med stöd från klassens sittning."
     assignments_by_student = {
         assignment.student_id: assignment.group_id
         for assignment in result.workspace.group_assignments
@@ -360,6 +362,7 @@ async def test_run_smart_grouping_falls_back_to_latest_seating_checkpoint() -> N
 
     assert isinstance(result, SmartGroupingAppliedResult)
     assert result.used_live_seating is True
+    assert result.message == "Smart gruppindelning klar med stöd från klassens sittning."
     assignments_by_student = {
         assignment.student_id: assignment.group_id
         for assignment in result.workspace.group_assignments
@@ -367,6 +370,57 @@ async def test_run_smart_grouping_falls_back_to_latest_seating_checkpoint() -> N
     assert assignments_by_student["ada"] == assignments_by_student["alan"]
     assert assignments_by_student["bea"] == assignments_by_student["cai"]
     seating_checkpoints.get_latest_for_roster_and_room_context.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_run_smart_grouping_reports_honest_fallback_without_usable_seating_context() -> None:
+    owner_user_id = uuid4()
+    roster = _roster(owner_user_id=owner_user_id)
+    template = _template(owner_user_id=owner_user_id)
+    workspace = _grouping_workspace(
+        owner_user_id=owner_user_id,
+        roster_id=roster.id,
+        template_id=template.id,
+        grouping_seating_distance_enabled=True,
+    )
+    persisted_workspace = workspace.model_copy(
+        update={
+            "draft": workspace.draft.model_copy(
+                update={
+                    "revision": workspace.draft.revision + 1,
+                    "updated_at": datetime(2026, 3, 29, 12, 0, tzinfo=timezone.utc),
+                }
+            ),
+        }
+    )
+    drafts = AsyncMock()
+    drafts.get_workspace.side_effect = [workspace, persisted_workspace]
+    drafts.get_active_by_roster_and_kind.return_value = None
+    seating_checkpoints = AsyncMock(
+        get_latest_for_roster_and_room_context=AsyncMock(return_value=None)
+    )
+    handler = RunSmartGroupingHandler(
+        uow=AsyncMock(),
+        drafts=drafts,
+        rosters=AsyncMock(get_by_id=AsyncMock(return_value=roster)),
+        templates=AsyncMock(get_by_id=AsyncMock(return_value=template)),
+        smart_rules=AsyncMock(
+            get_by_roster_id=AsyncMock(return_value=RosterSmartRules(roster_id=roster.id))
+        ),
+        grouping_checkpoints=AsyncMock(list_recent_for_roster=AsyncMock(return_value=[])),
+        seating_checkpoints=seating_checkpoints,
+        clock=_Clock(datetime(2026, 3, 29, 12, 0, tzinfo=timezone.utc)),
+    )
+
+    result = await handler.handle(
+        draft_id=workspace.draft.id,
+        owner_user_id=owner_user_id,
+        expected_revision=workspace.draft.revision,
+    )
+
+    assert isinstance(result, SmartGroupingAppliedResult)
+    assert result.used_live_seating is False
+    assert result.message == f"Smart gruppindelning klar. {NO_CLASSROOM_SIGNAL_MESSAGE}"
 
 
 @pytest.mark.asyncio

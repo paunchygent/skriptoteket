@@ -138,6 +138,16 @@ and worked topologies.
 - App-specific composition may vary, but shared primitives must not drift by app.
 - If an operation is ambiguous, app-specific, destructive, or high-commitment, visible text stays
   present even when an icon is used.
+- Dense toolbar labels must describe teacher-facing operations, not internal product concepts or
+  implementation structure. Abstract helper labels such as `Klassrumsstöd` must not ship as visible
+  standalone toolbar copy.
+- Dense toolbar labels also should not narrate the verb that clicking performs when the control is
+  already visibly interactive. Name the concept or tool (`Historik`), then express on/off through
+  state feedback and explain the behavior in tooltip/help copy.
+- When a binary option depends on an adjacent selector or context picker, the first-choice pattern
+  is one grouped logical unit: selector on the left, explicit on/off affordance on the right,
+  with active state shown directly and explanation carried by tooltip/accessibility copy rather
+  than by a new verbose toolbar label.
 - Editor and planner must not keep alternate glyph paths for the same frozen operation. For
   example, undo/redo should converge on the canonical icon components rather than mixing icon
   components and unicode arrows.
@@ -212,7 +222,7 @@ Together, these axes let us describe a page without inventing ad hoc language fo
 | `command toolbar` | a grouped row of contextual workspace commands | seating action row |
 | `icon button` | a compact direct-action button for canonical repeated operations | undo, redo, zoom |
 | `command button` | a text or icon-led button used for explicit state-changing commands | `Slumpa`, `Nytt sittschema` |
-| `switch toggle` | a binary control that expresses an on/off state | `Smart`, `Använd historik` |
+| `switch toggle` | a binary control that expresses an on/off state | `Smart`, `Historik` |
 | `compound control` | a compact composition of related primitives presented as one operational cluster | `Smart` toggle + configure child |
 | `split button` | a compound action with a default command plus an adjacent disclosure for variants | `Exportera` + format disclosure |
 | `menu button` | a trigger that reveals secondary contextual actions in a menu | overflow / more actions |
@@ -368,7 +378,7 @@ supporting mode into an oversized toolbar drawer just because its entry point is
 | `Ladda ned igen` | `command button` | `local_feedback_surface` | `action / secondary_action` | `direct` | `shared_primitive` | immediate follow-up action inside local feedback |
 | `Stäng exportstatus` | `icon button` | `local_feedback_surface` | `action / toolbar_action` | `direct` | `shared_primitive` | dismisses the feedback surface locally |
 | smart-rules summary header/count | `summary strip` | `summary_surface` | `information` | — | `shared_composition` | compact supporting context in the main mode |
-| `Använd historik` | `switch toggle` | `summary_surface` | `action` | `toggle` | `shared_primitive` | lightweight policy toggle kept near the feature summary |
+| `Historik` | `switch toggle` | `summary_surface` | `action` | `toggle` | `shared_primitive` | lightweight concept toggle kept near the feature summary; behavior is explained in tooltip/help |
 | smart-rules helper text / empty state | `summary strip` + `empty state` | `summary_surface` | `information` | — | `mode_local_instance` | points to `Regler` instead of expanding inline complexity |
 | student pool panel | `support_surface` containing `entity tokens` | `support_surface` | `work_surface` | — | `shared_composition` | secondary working region beside the main canvas |
 | student count badge | count/status affordance inside support panel | `support_surface` | `information` | — | `shared_primitive` | compact quantitative context |

@@ -176,6 +176,27 @@ export type SmartSeatingRunResponse =
   | AppliedSmartSeatingRunResponse
   | BlockedSmartSeatingRunResponse;
 
+export type AppliedSmartGroupingRunResponse = {
+  status: "applied";
+  workspace: DraftWorkspaceResponse;
+  used_history: boolean;
+  used_live_seating: boolean;
+  message?: string | null;
+};
+
+export type BlockedSmartGroupingRunResponse = {
+  status: "blocked";
+  reason: "no_history";
+  workspace: null;
+  used_history: false;
+  used_live_seating: boolean;
+  message: string;
+};
+
+export type SmartGroupingRunResponse =
+  | AppliedSmartGroupingRunResponse
+  | BlockedSmartGroupingRunResponse;
+
 export type RosterSmartRulesResponse = {
   roster_id: string;
   revision: number;

@@ -453,6 +453,72 @@ describe("useClassroomState", () => {
     expect(state.smartSeatingRunTone).toBe("success");
   });
 
+  it("keeps Slumpa local when smart grouping is off", async () => {
+    const state = seedWorkspace();
+    const randomSpy = vi.spyOn(Math, "random");
+    randomSpy
+      .mockReturnValueOnce(0.85)
+      .mockReturnValueOnce(0.1);
+    state.draft = {
+      ...createDraft("template-1", "grouping"),
+      smart_enabled: false,
+      use_history: true,
+      grouping_seating_distance_enabled: true,
+    };
+
+    await state.runGroupingShuffle();
+
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
+    expect(Object.values(state.groupAssignmentsByStudentId).filter(Boolean)).toHaveLength(3);
+    expect(state.smartGroupingRunMessage).toBeNull();
+    randomSpy.mockRestore();
+  });
+
+  it("calls the backend smart-run endpoint when smart grouping is on", async () => {
+    const state = seedWorkspace();
+    state.draft = {
+      ...createDraft("template-1", "grouping"),
+      smart_enabled: true,
+      use_history: true,
+      grouping_seating_distance_enabled: true,
+    };
+    clientMocks.apiPost.mockResolvedValue({
+      status: "applied",
+      workspace: {
+        ...createWorkspaceResponse("template-1", "grouping"),
+        draft: {
+          ...createDraft("template-1", "grouping"),
+          smart_enabled: true,
+          use_history: true,
+          grouping_seating_distance_enabled: true,
+          revision: 5,
+        },
+        group_assignments: [
+          { student_id: "s1", group_id: "group-b" },
+          { student_id: "s2", group_id: "group-a" },
+        ],
+      },
+      used_history: true,
+      used_live_seating: true,
+      message: "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+    });
+
+    await state.runGroupingShuffle();
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/draft-1/smart-run",
+      { expected_revision: 4 },
+    );
+    expect(state.groupAssignmentsByStudentId).toEqual({
+      s1: "group-b",
+      s2: "group-a",
+    });
+    expect(state.smartGroupingRunMessage).toBe(
+      "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+    );
+    expect(state.smartGroupingRunTone).toBe("success");
+  });
+
   it("clears grouping assignments in place without touching group structure or metadata", () => {
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "grouping");

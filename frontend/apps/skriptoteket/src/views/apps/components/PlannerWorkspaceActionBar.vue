@@ -14,13 +14,13 @@ defineSlots<{
 
 <template>
   <div
-    class="flex flex-wrap items-center gap-x-3 gap-y-2 border border-navy bg-white px-3 py-2 shadow-brutal-sm"
+    class="flex items-center gap-3 overflow-visible border border-navy bg-white px-3 py-2 shadow-brutal-sm"
     data-ui="planner-workspace-action-bar"
   >
-    <div class="flex-none">
+    <div class="flex shrink-0 items-center gap-1.5">
       <slot name="leading" />
     </div>
-    <div class="ml-auto flex flex-wrap items-center gap-1.5">
+    <div class="ml-auto flex shrink-0 items-center gap-1.5">
       <slot />
     </div>
   </div>

@@ -182,6 +182,15 @@ Notes:
 - Workspace-heavy tools should maintain a canonical symbol language for repeated operations; do not
   default to long text labels for undo/redo/history/settings/export/zoom-class controls when the
   symbol is well-established.
+- Dense toolbars must not introduce new visible labels for abstract, internal, or app-structure
+  concepts that the teacher would not naturally say. Labels such as `Klassrumsstöd` are forbidden
+  in the command row even when the underlying behavior is valid.
+- Dense toolbar labels should name the tool, mode, or concept itself, not narrate the click action.
+  Prefer `Historik` over `Använd historik`; teach the behavior through state feedback, tooltip copy,
+  and help, not through instructional button prose.
+- When a control only makes sense in the context of an adjacent selector or mode, attach it as a
+  compact grouped affordance to that selector or mode control instead of minting another free-
+  standing toolbar button with explanatory prose.
 - Use `REF-shared-tool-control-language-v1` as the first source of truth for repeated tool controls.
   If an operation already exists there, reuse its semantic role and symbol contract rather than
   inventing a new local variant.

@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PR-0167 Grouping Layout Snapshot</title>
+    <style>
+      :root {
+        --canvas: #fafaf6;
+        --ink: #1c2e4a;
+        --ink-soft: #5f6f8a;
+        --accent: #4d1521;
+        --border: #cfd6e2;
+        --panel: #ffffff;
+        --muted: #eef2f7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "IBM Plex Sans", "Inter", sans-serif;
+        background:
+          linear-gradient(rgba(28, 46, 74, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(28, 46, 74, 0.06) 1px, transparent 1px),
+          var(--canvas);
+        background-size: 34px 34px, 34px 34px, auto;
+        color: var(--ink);
+      }
+
+      .page {
+        width: 1440px;
+        margin: 0 auto;
+        padding: 28px 24px 48px;
+      }
+
+      .artifact-title {
+        margin: 0 0 18px;
+        font-family: "Iowan Old Style", "Georgia", serif;
+        font-size: 26px;
+        font-weight: 600;
+      }
+
+      .artboard {
+        background: var(--panel);
+        border: 2px solid var(--ink);
+        box-shadow: 4px 4px 0 rgba(28, 46, 74, 0.08);
+        padding: 18px 18px 20px;
+        margin: 0 0 28px;
+      }
+
+      .artboard + .artboard {
+        margin-top: 28px;
+      }
+
+      .shell-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .shell-title {
+        display: grid;
+        gap: 4px;
+      }
+
+      .shell-title h2 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Georgia", serif;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .shell-title p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ink-soft);
+      }
+
+      .exit-button,
+      .tool-button,
+      .tool-icon,
+      .split-main,
+      .split-side,
+      .toolbar-value,
+      .mode-option,
+      .context-field,
+      .smart-main,
+      .smart-side,
+      .drawer-link {
+        height: 40px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .exit-button {
+        min-width: 114px;
+      }
+
+      .mode-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        margin: 18px 0 14px;
+        border: 1px solid var(--border);
+      }
+
+      .mode-option {
+        border: 0;
+        border-right: 1px solid var(--border);
+        background: var(--panel);
+      }
+
+      .mode-option:last-child {
+        border-right: 0;
+      }
+
+      .mode-option.active {
+        background: var(--ink);
+        color: var(--canvas);
+      }
+
+      .context-band {
+        margin: 14px 0 16px;
+        padding: 12px;
+        border: 2px solid var(--ink);
+        background: var(--panel);
+      }
+
+      .context-strip {
+        display: grid;
+        grid-template-columns: repeat(2, 360px);
+        width: fit-content;
+        margin: 0;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+
+      .context-field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 24px;
+        align-items: center;
+        gap: 12px;
+        padding: 0 14px;
+        width: 360px;
+        border: 0;
+        border-right: 1px solid var(--border);
+      }
+
+      .context-field:last-child {
+        border-right: 0;
+      }
+
+      .context-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .chevron {
+        font-size: 16px;
+        line-height: 1;
+        text-align: center;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        border: 2px solid var(--ink);
+        background: var(--panel);
+      }
+
+      .toolbar-left,
+      .toolbar-center,
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .toolbar-center {
+        flex: 1 1 auto;
+      }
+
+      .tool-icon {
+        width: 40px;
+        padding: 0;
+      }
+
+      .tool-button {
+        padding: 0 14px;
+        white-space: nowrap;
+      }
+
+      .split-group,
+      .smart-group,
+      .stepper {
+        display: inline-flex;
+        align-items: stretch;
+      }
+
+      .split-main,
+      .smart-main {
+        padding: 0 14px;
+        border-right: 0;
+        border-radius: 4px 0 0 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .split-side,
+      .smart-side,
+      .tool-icon.end,
+      .toolbar-value.end {
+        border-radius: 0 4px 4px 0;
+      }
+
+      .split-side,
+      .smart-side {
+        width: 40px;
+        padding: 0;
+      }
+
+      .smart-main {
+        background: var(--ink);
+        color: var(--canvas);
+      }
+
+      .toolbar-value {
+        min-width: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .stepper .tool-icon.start {
+        border-radius: 4px 0 0 4px;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 240px 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .pool,
+      .group-card,
+      .drawer {
+        border: 2px solid var(--ink);
+        background: var(--panel);
+      }
+
+      .pool-header,
+      .group-header,
+      .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 14px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .pool-header h3,
+      .group-title,
+      .drawer-header h3 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Georgia", serif;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .count-chip {
+        min-width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .student-list,
+      .group-grid {
+        padding: 12px;
+      }
+
+      .student-chip {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        border: 1px solid var(--ink);
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .group-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .group-card {
+        min-height: 188px;
+      }
+
+      .group-header {
+        gap: 12px;
+      }
+
+      .group-name {
+        flex: 1 1 auto;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .group-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .mini-action {
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--border);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .dropzone {
+        margin: 10px 12px 12px;
+        min-height: 92px;
+        border: 1px dashed var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #99a5b8;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .drawer-layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .drawer {
+        padding: 0;
+      }
+
+      .drawer-body {
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .setting-row {
+        display: grid;
+        gap: 6px;
+      }
+
+      .setting-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .setting-head strong,
+      .setting-row strong {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .setting-row p,
+      .caption,
+      .status-strip {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.45;
+        color: var(--ink-soft);
+      }
+
+      .drawer-link {
+        width: fit-content;
+        padding: 0 14px;
+      }
+
+      .smart-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .smart-note {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+
+      .status-strip {
+        padding-left: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1 class="artifact-title">PR-0167 grouping layout snapshot</h1>
+
+      <section class="artboard" id="selected">
+        <div class="shell-head">
+          <div class="shell-title">
+            <h2>PR0167 Klass d59552</h2>
+            <p>PR0167 Sal d59552</p>
+          </div>
+          <button class="exit-button">Avsluta</button>
+        </div>
+
+        <div class="mode-row">
+          <button class="mode-option">Översikt</button>
+          <button class="mode-option active">Grupper</button>
+          <button class="mode-option">Sittplatser</button>
+          <button class="mode-option">Regler</button>
+        </div>
+
+        <div class="context-band">
+          <div class="context-strip">
+            <div class="context-field">
+              <span class="context-text">PR0167 Klass d59552</span>
+              <span class="chevron">⌄</span>
+            </div>
+            <div class="context-field">
+              <span class="context-text">PR0167 Sal d59552 · 4 platser</span>
+              <span class="chevron">⌄</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="tool-icon">↶</button>
+            <button class="tool-icon">↷</button>
+          </div>
+          <div class="toolbar-center">
+            <button class="tool-button">Nytt utkast</button>
+            <button class="tool-button">Slumpa</button>
+            <div class="smart-group">
+              <button class="smart-main">Smart</button>
+              <button class="smart-side">≡</button>
+            </div>
+            <button class="tool-button">Börja om</button>
+            <div class="stepper">
+              <button class="tool-icon start">−</button>
+              <div class="toolbar-value">6</div>
+              <button class="tool-icon end">+</button>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <div class="split-group">
+              <button class="split-main">Exportera</button>
+              <button class="split-side">⌄</button>
+            </div>
+            <button class="tool-icon">⋮</button>
+          </div>
+        </div>
+
+        <div class="workspace">
+          <aside class="pool">
+            <div class="pool-header">
+              <h3>Ej grupperade</h3>
+              <div class="count-chip">4</div>
+            </div>
+            <div class="student-list">
+              <div class="student-chip">Ada Lovelace</div>
+              <div class="student-chip">Alan Turing</div>
+              <div class="student-chip">Bea Example</div>
+              <div class="student-chip">Cai Example</div>
+            </div>
+          </aside>
+
+          <div class="group-grid" style="grid-column: span 2;">
+            <div class="group-card">
+              <div class="group-header">
+                <div class="group-name">Grupp 1</div>
+                <div class="group-actions">
+                  <div class="mini-action">↑</div>
+                  <div class="mini-action">↓</div>
+                  <div class="mini-action">🗑</div>
+                </div>
+              </div>
+              <div class="dropzone">Släpp elever här</div>
+            </div>
+            <div class="group-card">
+              <div class="group-header">
+                <div class="group-name">Grupp 2</div>
+                <div class="group-actions">
+                  <div class="mini-action">↑</div>
+                  <div class="mini-action">↓</div>
+                  <div class="mini-action">🗑</div>
+                </div>
+              </div>
+              <div class="dropzone">Släpp elever här</div>
+            </div>
+            <div class="group-card">
+              <div class="group-header">
+                <div class="group-name">Grupp 3</div>
+                <div class="group-actions">
+                  <div class="mini-action">↑</div>
+                  <div class="mini-action">↓</div>
+                  <div class="mini-action">🗑</div>
+                </div>
+              </div>
+              <div class="dropzone">Släpp elever här</div>
+            </div>
+            <div class="group-card">
+              <div class="group-header">
+                <div class="group-name">Grupp 4</div>
+                <div class="group-actions">
+                  <div class="mini-action">↑</div>
+                  <div class="mini-action">↓</div>
+                  <div class="mini-action">🗑</div>
+                </div>
+              </div>
+              <div class="dropzone">Släpp elever här</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="artboard" id="no-classroom">
+        <div class="shell-head">
+          <div class="shell-title">
+            <h2>PR0167 Klass d59552</h2>
+            <p>Grupper utan klassrumskontext</p>
+          </div>
+          <button class="exit-button">Avsluta</button>
+        </div>
+
+        <div class="mode-row">
+          <button class="mode-option">Översikt</button>
+          <button class="mode-option active">Grupper</button>
+          <button class="mode-option">Sittplatser</button>
+          <button class="mode-option">Regler</button>
+        </div>
+
+        <div class="context-band">
+          <div class="context-strip">
+            <div class="context-field">
+              <span class="context-text">PR0167 Klass d59552</span>
+              <span class="chevron">⌄</span>
+            </div>
+            <div class="context-field">
+              <span class="context-text">Utan klassrum</span>
+              <span class="chevron">⌄</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="tool-icon">↶</button>
+            <button class="tool-icon">↷</button>
+          </div>
+          <div class="toolbar-center">
+            <button class="tool-button">Nytt utkast</button>
+            <button class="tool-button">Slumpa</button>
+            <div class="smart-group">
+              <button class="smart-main">Smart</button>
+              <button class="smart-side">≡</button>
+            </div>
+            <button class="tool-button">Börja om</button>
+          </div>
+          <div class="toolbar-right">
+            <div class="split-group">
+              <button class="split-main">Exportera</button>
+              <button class="split-side">⌄</button>
+            </div>
+            <button class="tool-icon">⋮</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="artboard" id="smart-settings">
+        <div class="shell-head">
+          <div class="shell-title">
+            <h2>PR0167 Klass d59552</h2>
+            <p>Smart-inställningar från grupperingsläget</p>
+          </div>
+          <button class="exit-button">Avsluta</button>
+        </div>
+
+        <div class="mode-row">
+          <button class="mode-option">Översikt</button>
+          <button class="mode-option active">Grupper</button>
+          <button class="mode-option">Sittplatser</button>
+          <button class="mode-option">Regler</button>
+        </div>
+
+        <div class="drawer-layout">
+          <div>
+            <div class="context-band">
+              <div class="context-strip">
+                <div class="context-field">
+                  <span class="context-text">PR0167 Klass d59552</span>
+                  <span class="chevron">⌄</span>
+                </div>
+                <div class="context-field">
+                  <span class="context-text">PR0167 Sal d59552 · 4 platser</span>
+                  <span class="chevron">⌄</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="toolbar-left">
+                <button class="tool-icon">↶</button>
+                <button class="tool-icon">↷</button>
+              </div>
+              <div class="toolbar-center">
+                <button class="tool-button">Nytt utkast</button>
+                <button class="tool-button">Slumpa</button>
+                <div class="smart-group">
+                  <button class="smart-main">Smart</button>
+                  <button class="smart-side">≡</button>
+                </div>
+              </div>
+              <div class="toolbar-right">
+                <div class="split-group">
+                  <button class="split-main">Exportera</button>
+                  <button class="split-side">⌄</button>
+                </div>
+                <button class="tool-icon">⋮</button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="drawer">
+            <div class="drawer-header">
+              <h3>Smart-inställningar</h3>
+              <div class="smart-note">Grupper</div>
+            </div>
+            <div class="drawer-body">
+              <div class="setting-row">
+                <div class="setting-head">
+                  <strong>Historik</strong>
+                  <div class="smart-pill">
+                    <button class="tool-button" style="height: 32px; padding: 0 12px;">På</button>
+                  </div>
+                </div>
+                <p>Låt Smart undvika att upprepa samma gruppindelningar över tid.</p>
+              </div>
+
+              <div class="setting-row">
+                <strong>Klassrum</strong>
+                <p>PR0167 Sal d59552</p>
+                <p>När ett klassrum är valt använder Smart sittningen automatiskt som rumslig hänsyn.</p>
+              </div>
+
+              <div class="setting-row">
+                <strong>Regler</strong>
+                <p>Regler redigeras i arbetsytan Regler, inte i verktygsraden.</p>
+                <button class="drawer-link">Gå till Regler</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

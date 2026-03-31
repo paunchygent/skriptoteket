@@ -111,7 +111,7 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     stateMocks.plannerState.setDraftUseHistoryEnabled.mockReset();
   });
 
-  it("renders the detached seating selector and history cluster without a redundant rule pill", () => {
+  it("renders the detached seating selector and smart-settings trigger without a redundant rule pill", () => {
     const wrapper = mount(PlannerSeatingWorkspaceToolbar, {
       props: {
         availableTemplates: [buildTemplate()],
@@ -121,7 +121,11 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
 
     expect(wrapper.get('[data-test="seating-template-select"]').classes()).toContain("h-[28px]");
     expect(wrapper.find('[data-test="seating-history-cluster"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="seating-use-history-toggle"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="seating-open-rules"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="seating-open-settings"]').attributes("aria-label")).toBe(
+      "Smart-inställningar",
+    );
     expect(wrapper.find('[data-test="seating-active-rule-count"]').exists()).toBe(false);
   });
 
@@ -134,12 +138,10 @@ describe("PlannerSeatingWorkspaceToolbar", () => {
     });
 
     await wrapper.get('[data-test="randomize-seating"]').trigger("click");
-    await wrapper.get('[data-test="seating-use-history-toggle"]').trigger("click");
-    await wrapper.get('[data-test="seating-open-rules"]').trigger("click");
+    await wrapper.get('[data-test="seating-open-settings"]').trigger("click");
 
     expect(stateMocks.plannerState.runSeatingShuffle).toHaveBeenCalledTimes(1);
-    expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);
-    expect(wrapper.emitted("open-rules")).toEqual([[]]);
+    expect(wrapper.emitted("open-settings")).toEqual([[]]);
   });
 
   it("keeps export feedback compact and forwards seating export actions", async () => {

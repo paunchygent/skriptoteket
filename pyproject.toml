@@ -109,6 +109,8 @@ dev = [
     "selenium",
     "requests",
     "beautifulsoup4",
+    "rlPyCairo>=0.4.0",
+    "cairocffi>=1.7.1",
 ]
 
 analysis = [

@@ -2,7 +2,14 @@ import type { EditorState } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 import type { Diagnostic } from "@codemirror/lint";
 
-function hasFunctionDefinitionAncestor(node: ReturnType<typeof syntaxTree>["topNode"] | null): boolean {
+type SyntaxTreeNode = {
+  name: string;
+  from: number;
+  to: number;
+  parent: SyntaxTreeNode | null;
+};
+
+function hasFunctionDefinitionAncestor(node: SyntaxTreeNode | null): boolean {
   let current = node;
   while (current) {
     if (current.name === "FunctionDefinition") {
@@ -27,10 +34,10 @@ function isBareYieldParseQuirk(
 
   const candidatePositions = [Math.max(pos - 1, line.from), line.from];
   for (const candidatePos of candidatePositions) {
-    const resolvedNode = tree.resolveInner(candidatePos, -1);
-    let current = resolvedNode;
+    const resolvedNode = tree.resolveInner(candidatePos, -1) as SyntaxTreeNode;
+    let current: SyntaxTreeNode | null = resolvedNode;
     while (current && current.name !== "YieldStatement") {
-      current = current.parent;
+      current = current.parent ?? null;
     }
     if (!current) {
       continue;

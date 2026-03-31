@@ -3,9 +3,9 @@
  * Detached seating workspace toolbar.
  *
  * This component owns the seating-only command row after ST-29-02 moved the
- * toolbar into the shared planner shell. It keeps export, history, smart-rule,
- * and classroom actions adjacent to the live canvas while removing the old
- * full-width interstitial status bands.
+ * toolbar into the shared planner shell. It keeps the first row focused on
+ * immediate actions plus the active classroom selector, while Smart tuning
+ * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
 import { computed, nextTick, ref } from "vue";
@@ -14,7 +14,7 @@ import { IconAdjustments, IconHistory, IconRedo, IconShuffle, IconUndo } from ".
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
-  UiDenseCompoundToggle,
+  UiDenseIconButton,
   UiDenseStatusPill,
   UiDenseToggle,
   type DenseStatusTone,
@@ -32,6 +32,7 @@ const props = withDefaults(
   defineProps<{
     availableTemplates?: RoomTemplate[];
     selectedTemplateId?: string | null;
+    smartSettingsOpen?: boolean;
     seatingLifecycleBusy?: boolean;
     exportBusy?: boolean;
     exportStatusLabel?: string | null;
@@ -40,6 +41,7 @@ const props = withDefaults(
   {
     availableTemplates: () => [],
     selectedTemplateId: null,
+    smartSettingsOpen: false,
     seatingLifecycleBusy: false,
     exportBusy: false,
     exportStatusLabel: null,
@@ -53,7 +55,7 @@ const emit = defineEmits<{
   (e: "edit-roster"): void;
   (e: "edit-current-template", template: RoomTemplate): void;
   (e: "open-history"): void;
-  (e: "open-rules"): void;
+  (e: "open-settings"): void;
   (e: "export-default"): void;
   (e: "export-option", option: SeatingExportOption): void;
 }>();
@@ -214,107 +216,116 @@ function handleExportOption(option: PlannerExportOptionValue): void {
   <div class="space-y-3">
     <PlannerWorkspaceActionBar>
       <template #leading>
-        <label
-          class="block w-[12rem]"
-          data-test="seating-workspace-setup"
+        <div
+          class="flex items-center [&>*+*]:-ml-px"
+          data-test="seating-history-cluster"
         >
-          <select
-            ref="seatingTemplateSelect"
-            data-test="seating-template-select"
-            aria-label="Klassrum"
-            :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
-            :value="selectedTemplateId ?? ''"
-            @change="changeSeatingTemplateFromEvent"
+          <PlannerToolbarIconButton
+            label="Ångra"
+            size="utility"
+            group-position="start"
+            data-test="undo-seating-draft"
+            :disabled="!plannerState.canUndo || seatingLifecycleBusy"
+            @click="void undoSeatingDraft()"
           >
-            <option value="">
-              Välj klassrum
-            </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.id"
-              :value="template.id"
-            >
-              {{ template.name }} · {{ template.seats.length }} platser
-            </option>
-          </select>
-          <p
-            v-if="showSeatingTemplateRequiredHint"
-            class="mt-1 text-xs font-semibold text-burgundy"
+            <IconUndo :size="16" />
+          </PlannerToolbarIconButton>
+          <PlannerToolbarIconButton
+            label="Gör om"
+            size="utility"
+            group-position="end"
+            data-test="redo-seating-draft"
+            :disabled="!plannerState.canRedo || seatingLifecycleBusy"
+            @click="void redoSeatingDraft()"
           >
-            Välj klassrum innan du startar ett nytt sittschema.
-          </p>
-        </label>
+            <IconRedo :size="16" />
+          </PlannerToolbarIconButton>
+        </div>
+        <UiDenseActionButton
+          label="Nytt sittschema"
+          data-test="new-seating-draft"
+          :disabled="seatingLifecycleBusy"
+          @click="void startNewSeatingDraft()"
+        />
+        <UiDenseActionButton
+          label="Slumpa"
+          data-test="randomize-seating"
+          :disabled="!canRandomizeSeating"
+          @click="void randomizeCurrentSeatingDraft()"
+        >
+          <template #leading>
+            <IconShuffle :size="16" />
+          </template>
+        </UiDenseActionButton>
+        <div
+          class="flex items-center [&>*+*]:-ml-px"
+          data-test="seating-smart-cluster"
+        >
+          <UiDenseToggle
+            data-test="seating-smart-toggle"
+            label="Smart"
+            group-position="start"
+            :model-value="plannerState.draft?.smart_enabled ?? false"
+            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+            @update:model-value="plannerState.setDraftSmartEnabled($event)"
+          />
+          <UiDenseIconButton
+            data-test="seating-open-settings"
+            label="Smart-inställningar"
+            aria-label="Smart-inställningar"
+            title="Öppna Smart-inställningar"
+            size="utility"
+            group-position="end"
+            :active="smartSettingsOpen"
+            :expanded="smartSettingsOpen"
+            has-popup="dialog"
+            :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
+            @click="emit('open-settings')"
+          >
+            <IconAdjustments :size="14" />
+          </UiDenseIconButton>
+        </div>
+        <UiDenseActionButton
+          label="Börja om"
+          data-test="reset-seating-draft"
+          :disabled="seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
+          tone="danger"
+          @click="openResetSeatingDialog"
+        >
+          Börja om
+        </UiDenseActionButton>
       </template>
 
-      <div
-        class="flex items-center [&>*+*]:-ml-px"
-        data-test="seating-history-cluster"
+      <label
+        class="block w-[11rem] shrink-0"
+        data-test="seating-workspace-setup"
       >
-        <PlannerToolbarIconButton
-          label="Ångra"
-          size="utility"
-          group-position="start"
-          data-test="undo-seating-draft"
-          :disabled="!plannerState.canUndo || seatingLifecycleBusy"
-          @click="void undoSeatingDraft()"
+        <select
+          ref="seatingTemplateSelect"
+          data-test="seating-template-select"
+          aria-label="Klassrum"
+          :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
+          :value="selectedTemplateId ?? ''"
+          @change="changeSeatingTemplateFromEvent"
         >
-          <IconUndo :size="16" />
-        </PlannerToolbarIconButton>
-        <PlannerToolbarIconButton
-          label="Gör om"
-          size="utility"
-          group-position="end"
-          data-test="redo-seating-draft"
-          :disabled="!plannerState.canRedo || seatingLifecycleBusy"
-          @click="void redoSeatingDraft()"
+          <option value="">
+            Välj klassrum
+          </option>
+          <option
+            v-for="template in availableTemplates"
+            :key="template.id"
+            :value="template.id"
+          >
+            {{ template.name }} · {{ template.seats.length }} platser
+          </option>
+        </select>
+        <p
+          v-if="showSeatingTemplateRequiredHint"
+          class="mt-1 text-xs font-semibold text-burgundy"
         >
-          <IconRedo :size="16" />
-        </PlannerToolbarIconButton>
-      </div>
-      <UiDenseActionButton
-        label="Slumpa"
-        data-test="randomize-seating"
-        :disabled="!canRandomizeSeating"
-        @click="void randomizeCurrentSeatingDraft()"
-      >
-        <template #leading>
-          <IconShuffle :size="16" />
-        </template>
-      </UiDenseActionButton>
-      <UiDenseCompoundToggle
-        root-test-id="seating-smart-toggle"
-        label="Smart"
-        :model-value="plannerState.draft?.smart_enabled ?? false"
-        :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-        action-label="Regler"
-        action-title="Öppna regler"
-        :action-disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-        action-test-id="seating-open-rules"
-        @update:model-value="plannerState.setDraftSmartEnabled($event)"
-        @action="emit('open-rules')"
-      />
-      <UiDenseToggle
-        data-test="seating-use-history-toggle"
-        label="Använd historik"
-        :model-value="plannerState.draft?.use_history ?? false"
-        :disabled="plannerState.isWorkspaceBusy || seatingLifecycleBusy"
-        @update:model-value="plannerState.setDraftUseHistoryEnabled($event)"
-      />
-      <UiDenseActionButton
-        label="Börja om"
-        data-test="reset-seating-draft"
-        :disabled="seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments"
-        tone="danger"
-        @click="openResetSeatingDialog"
-      >
-        Börja om
-      </UiDenseActionButton>
-      <UiDenseActionButton
-        label="Nytt sittschema"
-        data-test="new-seating-draft"
-        :disabled="seatingLifecycleBusy"
-        @click="void startNewSeatingDraft()"
-      />
+          Välj klassrum innan du startar ett nytt sittschema.
+        </p>
+      </label>
       <PlannerExportActionGroup
         :busy="exportBusy"
         @export-default="emit('export-default')"

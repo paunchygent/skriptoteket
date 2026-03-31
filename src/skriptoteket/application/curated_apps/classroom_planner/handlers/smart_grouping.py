@@ -29,7 +29,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraftKind,
     RoomTemplate,
     Roster,
-    Seat,
     SeatAssignment,
 )
 from skriptoteket.domain.curated_apps.classroom_planner.smart_grouping import (
@@ -54,6 +53,7 @@ from .workspace_builders import ensure_active_draft
 NO_HISTORY_BLOCK_MESSAGE = (
     "För att använda historik behöver du först exportera en gruppindelning för den här klassen."
 )
+NO_CLASSROOM_SIGNAL_MESSAGE = "Ingen användbar sittning fanns för valt klassrum."
 
 
 @dataclass(frozen=True)
@@ -137,6 +137,9 @@ class RunSmartGroupingHandler:
         if not roster or roster.owner_user_id != owner_user_id:
             raise not_found("Roster", str(workspace.draft.roster_id))
 
+        classroom_awareness_requested = (
+            workspace.draft.grouping_seating_distance_enabled and template is not None
+        )
         smart_rules = await self._smart_rules.get_by_roster_id(roster_id=workspace.draft.roster_id)
         history = await self._load_history_window(
             roster_id=workspace.draft.roster_id,
@@ -179,6 +182,7 @@ class RunSmartGroupingHandler:
             used_history=bool(history),
             used_live_seating=live_seating is not None,
             message=_build_run_message(
+                requested_live_seating=classroom_awareness_requested,
                 used_history=bool(history),
                 used_live_seating=live_seating is not None,
                 has_tradeoffs=smart_result.has_tradeoffs,
@@ -208,7 +212,7 @@ class RunSmartGroupingHandler:
         template: RoomTemplate | None,
         enabled: bool,
     ) -> LiveSeatingContinuityInput | None:
-        if not enabled:
+        if not enabled or template is None:
             return None
         active_seating = await self._drafts.get_active_by_roster_and_kind(
             owner_user_id=owner_user_id,
@@ -219,6 +223,7 @@ class RunSmartGroupingHandler:
             active_workspace = await self._drafts.get_workspace(draft_id=active_seating.id)
             if (
                 active_workspace is not None
+                and active_workspace.draft.template_id == template.id
                 and active_workspace.draft.template_id is not None
                 and active_workspace.seat_assignments
             ):
@@ -227,7 +232,7 @@ class RunSmartGroupingHandler:
                 )
                 if template is not None and template.owner_user_id == owner_user_id:
                     return LiveSeatingContinuityInput(
-                        seats=list(template.seats),
+                        room_context=_build_room_context_snapshot(template=template),
                         seat_assignments=list(active_workspace.seat_assignments),
                     )
 
@@ -243,10 +248,7 @@ class RunSmartGroupingHandler:
         if latest_checkpoint is None:
             return None
         return LiveSeatingContinuityInput(
-            seats=[
-                Seat(id=seat.id, x=seat.x, y=seat.y, zone=seat.zone)
-                for seat in latest_checkpoint.room_context.seats
-            ],
+            room_context=latest_checkpoint.room_context,
             seat_assignments=[
                 SeatAssignment(student_id=placement.student_id, seat_id=placement.seat_id)
                 for placement in latest_checkpoint.seating_snapshot.placed_assignments
@@ -300,19 +302,24 @@ class RunSmartGroupingHandler:
 
 def _build_run_message(
     *,
+    requested_live_seating: bool,
     used_history: bool,
     used_live_seating: bool,
     has_tradeoffs: bool,
 ) -> str:
     if has_tradeoffs:
-        return "Smart gruppindelning klar med bästa möjliga kompromiss."
-    if used_history and used_live_seating:
-        return "Smart gruppindelning klar med historik och aktuell sittning som stöd."
-    if used_history:
-        return "Smart gruppindelning klar med stöd av tidigare gruppindelningar."
-    if used_live_seating:
-        return "Smart gruppindelning klar med stöd av aktuell sittning."
-    return "Smart gruppindelning klar."
+        base_message = "Smart gruppindelning klar med bästa möjliga kompromiss."
+    elif used_history and used_live_seating:
+        base_message = "Smart gruppindelning klar med historik och stöd från klassens sittning."
+    elif used_history:
+        base_message = "Smart gruppindelning klar med stöd av tidigare gruppindelningar."
+    elif used_live_seating:
+        base_message = "Smart gruppindelning klar med stöd från klassens sittning."
+    else:
+        base_message = "Smart gruppindelning klar."
+    if requested_live_seating and not used_live_seating:
+        return f"{base_message} {NO_CLASSROOM_SIGNAL_MESSAGE}"
+    return base_message
 
 
 def _build_room_context_snapshot(*, template: RoomTemplate) -> SeatingRoomContextSnapshot:

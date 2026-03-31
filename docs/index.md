@@ -93,6 +93,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
 - Smart grouping v1 implementation slice:
   `docs/backlog/prs/pr-0167-st-27-04-smart-grouping-v1-grouping-history-and-live-seating-influence.md`
+- Smart grouping compactness simulation + overlay tuning slice:
+  `docs/backlog/prs/pr-0178-st-27-04-smart-grouping-compactness-simulation-and-overlay-tuning.md`
 - ST-29-01 docs/codemap foundation:
   `docs/backlog/prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md`
 - ST-29-01 shared primitive implementation:

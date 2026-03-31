@@ -3,24 +3,33 @@
  * Detached grouping workspace toolbar.
  *
  * This component owns the grouping-only command row after ST-29-02 moved the
- * toolbar into the shared planner shell. It keeps grouping workflow actions
- * and compact local status attached to the live workspace without reintroducing
- * full-width helper or success bands above the board.
+ * toolbar into the shared planner shell. It keeps first-row controls limited
+ * to immediate actions plus the active class selector, while Smart tuning
+ * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
 import { computed, ref } from "vue";
 
-import { IconAdjustments, IconHistory, IconMinus, IconPlus, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
+import {
+  IconAdjustments,
+  IconHistory,
+  IconMinus,
+  IconPlus,
+  IconRedo,
+  IconShuffle,
+  IconUndo,
+} from "../../../components/icons";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
-  UiDenseCompoundToggle,
+  UiDenseIconButton,
   UiDenseStatusPill,
+  UiDenseToggle,
   denseActionValueClass,
   type DenseStatusTone,
 } from "../../../components/ui";
 import type { GroupingExportOption } from "../classroomPlannerExportApi";
-import type { RoomTemplate } from "../classroomPlannerTypes";
+import type { Roster } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerExportActionGroup, {
   type PlannerExportOption,
@@ -33,15 +42,17 @@ import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(
   defineProps<{
-    availableTemplates?: RoomTemplate[];
-    selectedTemplateId?: string | null;
+    availableRosters?: Roster[];
+    selectedRosterId?: string | null;
+    smartSettingsOpen?: boolean;
     exportBusy?: boolean;
     exportStatusLabel?: string | null;
     exportErrorMessage?: string | null;
   }>(),
   {
-    availableTemplates: () => [],
-    selectedTemplateId: null,
+    availableRosters: () => [],
+    selectedRosterId: null,
+    smartSettingsOpen: false,
     exportBusy: false,
     exportStatusLabel: null,
     exportErrorMessage: null,
@@ -49,10 +60,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: "change-grouping-template", templateId: string | null): void;
+  (e: "change-grouping-roster", rosterId: string): void;
   (e: "new-grouping-draft"): void;
+  (e: "open-settings"): void;
   (e: "open-history"): void;
-  (e: "open-rules"): void;
   (e: "edit-roster"): void;
   (e: "export-default"): void;
   (e: "export-option", option: GroupingExportOption): void;
@@ -61,23 +72,14 @@ const emit = defineEmits<{
 const state = useClassroomState();
 const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
 const groupCount = computed(() => state.groups.length);
+const selectedRosterValue = computed(() => {
+  return props.selectedRosterId ?? props.availableRosters[0]?.id ?? "";
+});
 const removableGroupId = computed(() => {
   if (state.groups.length <= 1) {
     return null;
   }
   return [...state.groups].sort((left, right) => left.sort_order - right.sort_order).at(-1)?.id ?? null;
-});
-const activeRuleCount = computed(() => {
-  const nearTeacherRuleCount = state.seatingPreferences.some((preference) => preference.near_teacher)
-    ? 1
-    : 0;
-  return nearTeacherRuleCount + state.relationshipRules.length;
-});
-const activeRuleLabel = computed(() => {
-  if (activeRuleCount.value === 1) {
-    return "1 regel";
-  }
-  return `${activeRuleCount.value} regler`;
 });
 const exportStatus = computed<{
   label: string;
@@ -144,12 +146,12 @@ function isGroupingExportOption(option: PlannerExportOptionValue): option is Gro
   return option === "xlsx" || option === "pdf_a4_portrait";
 }
 
-function changeGroupingTemplate(event: Event): void {
+function changeGroupingRoster(event: Event): void {
   const target = event.target;
-  if (!(target instanceof HTMLSelectElement)) {
+  if (!(target instanceof HTMLSelectElement) || !target.value) {
     return;
   }
-  emit("change-grouping-template", target.value || null);
+  emit("change-grouping-roster", target.value);
 }
 
 function openResetGroupingDialog(): void {
@@ -193,139 +195,147 @@ function incrementGroupCount(): void {
 <template>
   <div class="space-y-3">
     <PlannerWorkspaceActionBar>
-      <template
-        v-if="availableTemplates.length > 0"
-        #leading
-      >
-        <label class="block w-[12rem]">
-          <select
-            aria-label="Klassrum (valfritt)"
-            :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
-            :value="selectedTemplateId ?? ''"
-            data-test="grouping-template-select"
-            @change="changeGroupingTemplate"
-          >
-            <option value="">
-              Arbeta utan klassrum
-            </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.id"
-              :value="template.id"
-            >
-              {{ template.name }} · {{ template.seats.length }} platser
-            </option>
-          </select>
-        </label>
-      </template>
-
-      <div
-        class="flex items-center [&>*+*]:-ml-px"
-        data-test="grouping-history-cluster"
-      >
-        <PlannerToolbarIconButton
-          label="Ångra"
-          size="utility"
-          group-position="start"
-          data-test="undo-grouping"
-          :disabled="!state.canUndo"
-          @mousedown.prevent
-          @click="void state.undoGroupingDraft()"
+      <template #leading>
+        <div
+          class="flex items-center [&>*+*]:-ml-px"
+          data-test="grouping-history-cluster"
         >
-          <IconUndo :size="16" />
-        </PlannerToolbarIconButton>
-        <PlannerToolbarIconButton
-          label="Gör om"
-          size="utility"
-          group-position="end"
-          data-test="redo-grouping"
-          :disabled="!state.canRedo"
-          @mousedown.prevent
-          @click="void state.redoGroupingDraft()"
-        >
-          <IconRedo :size="16" />
-        </PlannerToolbarIconButton>
-      </div>
-      <UiDenseActionButton
-        label="Nytt utkast"
-        title="Nytt grupputkast"
-        data-test="new-grouping-draft"
-        :disabled="state.isWorkspaceBusy"
-        @click="emit('new-grouping-draft')"
-      />
-      <UiDenseActionButton
-        label="Slumpa"
-        data-test="randomize-groups"
-        :disabled="state.isWorkspaceBusy"
-        @click="state.randomizeGroups()"
-      >
-        <template #leading>
-          <IconShuffle :size="16" />
-        </template>
-      </UiDenseActionButton>
-      <UiDenseCompoundToggle
-        root-test-id="grouping-smart-toggle"
-        label="Smart"
-        :model-value="state.draft?.smart_enabled ?? false"
-        :disabled="state.isWorkspaceBusy"
-        action-label="Regler"
-        action-title="Öppna regler"
-        :action-disabled="state.isWorkspaceBusy"
-        action-test-id="grouping-open-rules"
-        @update:model-value="state.setDraftSmartEnabled($event)"
-        @action="emit('open-rules')"
-      />
-      <UiDenseStatusPill
-        v-if="activeRuleCount > 0"
-        :label="activeRuleLabel"
-        :title="`${activeRuleLabel} aktiva i Regler`"
-        data-test="grouping-active-rule-count"
-      />
-      <UiDenseActionButton
-        label="Börja om"
-        data-test="reset-grouping-draft"
-        :disabled="state.isWorkspaceBusy || !hasGroupingAssignments"
-        tone="danger"
-        @click="openResetGroupingDialog"
-      >
-        Börja om
-      </UiDenseActionButton>
-      <div
-        class="flex items-center"
-        data-test="grouping-group-count-control"
-      >
-        <div class="flex items-center [&>*+*]:-ml-px">
           <PlannerToolbarIconButton
-            label="Minska antal grupper"
-            title="Ta bort sista gruppen"
+            label="Ångra"
             size="utility"
             group-position="start"
-            data-test="decrement-group-count"
-            :disabled="state.isWorkspaceBusy || removableGroupId === null"
-            @click="decrementGroupCount"
+            data-test="undo-grouping"
+            :disabled="!state.canUndo"
+            @mousedown.prevent
+            @click="void state.undoGroupingDraft()"
           >
-            <IconMinus :size="16" />
+            <IconUndo :size="16" />
           </PlannerToolbarIconButton>
-          <span
-            :class="denseActionValueClass({ groupPosition: 'middle' })"
-            data-test="group-count-value"
-            title="Antal grupper"
-          >
-            {{ groupCount }}
-          </span>
           <PlannerToolbarIconButton
-            label="Öka antal grupper"
-            title="Lägg till grupp"
+            label="Gör om"
             size="utility"
             group-position="end"
-            data-test="increment-group-count"
-            :disabled="state.isWorkspaceBusy"
-            @click="incrementGroupCount"
+            data-test="redo-grouping"
+            :disabled="!state.canRedo"
+            @mousedown.prevent
+            @click="void state.redoGroupingDraft()"
           >
-            <IconPlus :size="16" />
+            <IconRedo :size="16" />
           </PlannerToolbarIconButton>
         </div>
-      </div>
+        <UiDenseActionButton
+          label="Nytt utkast"
+          title="Nytt grupputkast"
+          data-test="new-grouping-draft"
+          :disabled="state.isWorkspaceBusy"
+          @click="emit('new-grouping-draft')"
+        />
+        <UiDenseActionButton
+          label="Slumpa"
+          data-test="randomize-groups"
+          :disabled="state.isWorkspaceBusy"
+          @click="void state.runGroupingShuffle()"
+        >
+          <template #leading>
+            <IconShuffle :size="16" />
+          </template>
+        </UiDenseActionButton>
+        <div
+          class="flex items-center [&>*+*]:-ml-px"
+          data-test="grouping-smart-cluster"
+        >
+          <UiDenseToggle
+            data-test="grouping-smart-toggle"
+            label="Smart"
+            group-position="start"
+            :model-value="state.draft?.smart_enabled ?? false"
+            :disabled="state.isWorkspaceBusy"
+            @update:model-value="state.setDraftSmartEnabled($event)"
+          />
+          <UiDenseIconButton
+            data-test="grouping-open-settings"
+            label="Smart-inställningar"
+            aria-label="Smart-inställningar"
+            title="Öppna Smart-inställningar"
+            size="utility"
+            group-position="end"
+            :active="smartSettingsOpen"
+            :expanded="smartSettingsOpen"
+            has-popup="dialog"
+            :disabled="state.isWorkspaceBusy"
+            @click="emit('open-settings')"
+          >
+            <IconAdjustments :size="14" />
+          </UiDenseIconButton>
+        </div>
+        <UiDenseActionButton
+          label="Börja om"
+          data-test="reset-grouping-draft"
+          :disabled="state.isWorkspaceBusy || !hasGroupingAssignments"
+          tone="danger"
+          @click="openResetGroupingDialog"
+        >
+          Börja om
+        </UiDenseActionButton>
+        <div
+          class="flex items-center"
+          data-test="grouping-group-count-control"
+        >
+          <div class="flex items-center [&>*+*]:-ml-px">
+            <PlannerToolbarIconButton
+              label="Minska antal grupper"
+              title="Ta bort sista gruppen"
+              size="utility"
+              group-position="start"
+              data-test="decrement-group-count"
+              :disabled="state.isWorkspaceBusy || removableGroupId === null"
+              @click="decrementGroupCount"
+            >
+              <IconMinus :size="16" />
+            </PlannerToolbarIconButton>
+            <span
+              :class="denseActionValueClass({ groupPosition: 'middle' })"
+              data-test="group-count-value"
+              title="Antal grupper"
+            >
+              {{ groupCount }}
+            </span>
+            <PlannerToolbarIconButton
+              label="Öka antal grupper"
+              title="Lägg till grupp"
+              size="utility"
+              group-position="end"
+              data-test="increment-group-count"
+              :disabled="state.isWorkspaceBusy"
+              @click="incrementGroupCount"
+            >
+              <IconPlus :size="16" />
+            </PlannerToolbarIconButton>
+          </div>
+        </div>
+      </template>
+
+      <label
+        v-if="availableRosters.length > 0"
+        class="block w-[8rem]"
+        data-test="grouping-roster-control"
+      >
+        <select
+          aria-label="Klass"
+          :class="[DENSE_FORM_INPUT_CLASS, 'pr-8']"
+          :value="selectedRosterValue"
+          data-test="grouping-roster-select"
+          @change="changeGroupingRoster"
+        >
+          <option
+            v-for="roster in availableRosters"
+            :key="roster.id"
+            :value="roster.id"
+          >
+            {{ roster.name }}
+          </option>
+        </select>
+      </label>
       <PlannerExportActionGroup
         :busy="exportBusy"
         :options="exportOptions"

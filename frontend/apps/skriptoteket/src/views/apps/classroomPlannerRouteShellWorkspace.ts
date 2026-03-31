@@ -60,6 +60,10 @@ type StartSeatingDraftPayload = {
   templateId: string;
 };
 
+type ChangeGroupingRosterPayload = {
+  rosterId: string;
+};
+
 function activeDraftId(
   summary: ClassWorkspaceSummary | null,
   draftKind: "grouping" | "seating",
@@ -271,6 +275,50 @@ export function createClassroomPlannerWorkspaceFlow(
     });
   }
 
+  async function changeGroupingRoster(payload: ChangeGroupingRosterPayload): Promise<void> {
+    const nextRosterId = payload.rosterId;
+    const currentRosterId = plannerState.roster?.id ?? state.selectedRosterId.value;
+    if (!nextRosterId || nextRosterId === currentRosterId) {
+      return;
+    }
+
+    state.plannerActionError.value = null;
+    state.workspaceTransitionLabel.value = "Byter klass...";
+    try {
+      const result = await flushPlannerRouteShellSave(plannerState, {
+        conflictMessage: "Lös sparkonflikten innan du byter klass.",
+        fallbackMessage: "Kunde inte spara ändringarna innan klassen byttes.",
+      });
+      if (result.status === "blocked") {
+        state.plannerActionError.value = result.message;
+        return;
+      }
+
+      state.selectedRosterId.value = nextRosterId;
+      await actions.loadClassWorkspaceSummary(nextRosterId);
+
+      const nextGroupingDraftId = activeDraftId(state.classWorkspaceSummary.value, "grouping");
+      if (nextGroupingDraftId) {
+        await plannerState.loadWorkspace(nextGroupingDraftId);
+      } else {
+        await plannerState.resolveDraft(nextRosterId, null, "grouping");
+      }
+
+      await actions.refreshClassWorkspaceSummaryForSelectedRoster();
+      actions.syncWorkspaceTemplateSelection();
+      state.plannerInitialView.value = "groups";
+      state.currentScreen.value = "planner";
+      state.workspaceNotice.value = null;
+    } catch (error: unknown) {
+      state.plannerActionError.value = normalizeClassroomPlannerUiError(
+        error,
+        "Kunde inte byta klass i grupper just nu.",
+      );
+    } finally {
+      state.workspaceTransitionLabel.value = null;
+    }
+  }
+
   async function changeSeatingTemplate(payload: OpenWorkspacePayload): Promise<void> {
     await changeWorkspaceTemplate(payload, "seating", "seats", {
       conflictMessage: "Lös sparkonflikten innan du byter klassrum.",
@@ -468,6 +516,7 @@ export function createClassroomPlannerWorkspaceFlow(
     openGroupingWorkspace,
     openSeatingWorkspace,
     openRulesWorkspace,
+    changeGroupingRoster,
     changeGroupingTemplate,
     changeSeatingTemplate,
     startNewGroupingDraft,

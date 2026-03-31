@@ -26,6 +26,7 @@ export type DraftLanePatchPayload = {
   expected_revision: number | null;
   smart_enabled: boolean;
   use_history: boolean;
+  grouping_seating_distance_enabled: boolean;
   groups: DraftWorkspaceResponse["groups"];
   group_assignments: DraftWorkspaceResponse["group_assignments"];
   seat_assignments: DraftWorkspaceResponse["seat_assignments"];

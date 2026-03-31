@@ -52,7 +52,7 @@ export function createClassroomPlannerSmartRuleActions(
   options: CreateClassroomPlannerSmartRuleActionsOptions,
 ) {
   function setDraftBooleanFlag(
-    key: "smart_enabled" | "use_history",
+    key: "smart_enabled" | "use_history" | "grouping_seating_distance_enabled",
     enabled: boolean,
   ): void {
     if (!options.draft.value || options.isWorkspaceBusy.value) {
@@ -75,6 +75,10 @@ export function createClassroomPlannerSmartRuleActions(
 
   function setDraftUseHistoryEnabled(enabled: boolean): void {
     setDraftBooleanFlag("use_history", enabled);
+  }
+
+  function setDraftGroupingSeatingDistanceEnabled(enabled: boolean): void {
+    setDraftBooleanFlag("grouping_seating_distance_enabled", enabled);
   }
 
   function isStudentMarkedNearTeacher(studentId: string): boolean {
@@ -330,6 +334,7 @@ export function createClassroomPlannerSmartRuleActions(
   return {
     setDraftSmartEnabled,
     setDraftUseHistoryEnabled,
+    setDraftGroupingSeatingDistanceEnabled,
     isStudentMarkedNearTeacher,
     setStudentNearTeacherEnabled,
     replaceNearTeacherPreference,

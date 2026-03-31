@@ -84,7 +84,7 @@ re-coupling it through one shared save contract.
 | Use export-backed checkpoints only, with assignment-hash dedupe | Aligns history input with current PRD/ADR direction and avoids raw-draft ambiguity | [ ] |
 | Delete old visible planner metadata semantics without migration | Cleaner reset than mixing incompatible teacher models; no real users exist yet | [ ] |
 | Keep smart grouping and smart seating in the same epic, but with separate mode toggles | Matches the shared hidden relation model while preserving separate teacher tasks | [ ] |
-| Keep classroom-aware grouping separate from history and tie it to the classroom control | Preserves clear teacher intent without turning history into a hidden room-awareness switch | [ ] |
+| Keep classroom-aware grouping separate from history and expose it through `Klassrum` + `Sittning` in Smart-inställningar | Preserves clear teacher intent without turning history into a hidden room-awareness switch | [ ] |
 | Block history-enabled runs when no eligible checkpoints exist | Prevents silent fallback and keeps teacher trust intact | [ ] |
 | Treat later grouping checkpoints as the primary grouping-history lane | Keeps grouping mode-specific while still allowing seating checkpoints as a secondary source | [ ] |
 | Mirror roster-global vs draft-local ownership in the frontend session shape | Prevents one shared planner save contract from reintroducing the same transition bugs under new names | [ ] |
@@ -120,7 +120,7 @@ re-coupling it through one shared save contract.
 - [x] Use export-backed checkpoints only, with assignment-hash dedupe
 - [x] Delete old visible planner metadata semantics without migration
 - [x] Keep smart grouping and smart seating in the same epic
-- [x] Keep classroom-aware grouping separate from history and tie it to the classroom control
+- [x] Keep classroom-aware grouping separate from history and expose it through `Klassrum` + `Sittning` in Smart-inställningar
 - [x] Mirror roster-global vs draft-local ownership in the frontend session shape
 
 ## Post-Approval Refinements
@@ -157,13 +157,21 @@ re-coupling it through one shared save contract.
   - grouping history is now explicitly separate from classroom-aware compactness
   - grouping `Use history` now means label-insensitive grouping anti-repeat memory based on
     normalized student partitions and repeated co-memberships rather than raw group ids
-  - classroom-aware grouping is now tied to the grouping classroom control rather than described
-    as a separate seat-distance toggle
+  - classroom-aware grouping is now exposed through `Klassrum` + `Sittning` in Smart-inställningar
+    rather than described as a separate seat-distance toggle
   - classroom-aware grouping now means a soft seat-topology compactness lane that reads the active
     seating draft first and eligible seating checkpoints second, penalizing same-group spread
     quadratically beyond a local elastic radius instead of acting like grouping history
   - for smart grouping, rerun diversity now sits below explicit relation rules, classroom-aware
     compactness when enabled, and grouping-history anti-repeat memory
+- 2026-03-30 compactness-tuning simulation follow-up under `ST-27-04`:
+  - the first tuning lane should evaluate whole-class seating projections rather than sparse
+    continuity hints
+  - the primary operator artifact is now a rough seating-map overlay with group-colored student
+    squares plus disconnected component boxes so local clusters, splashes, and islands remain
+    visible
+  - compactness tuning should be reviewed from both metrics and overlays, not from prose or raw
+    scores alone
 
 ## Suggested Approval Wording
 

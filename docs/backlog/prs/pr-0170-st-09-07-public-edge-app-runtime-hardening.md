@@ -50,7 +50,7 @@ repo-owned drill findings and preserves local developer workflows.
 4. Keep `/healthz` public-safe and `/metrics` identity-safe through the existing
    observability route/config seam.
 5. Cover the slice with focused unit tests plus a live local login proof through
-   `http://127.0.0.1:5174`.
+   `http://127.0.0.1:5173`.
 
 ## Test plan
 
@@ -58,8 +58,8 @@ repo-owned drill findings and preserves local developer workflows.
 - `pdm run ruff check src/skriptoteket/config.py src/skriptoteket/web/request_metadata.py src/skriptoteket/web/api/v1/auth.py src/skriptoteket/observability/health.py src/skriptoteket/observability/metrics.py src/skriptoteket/web/routes/observability.py tests/unit/test_config.py tests/unit/web/test_request_metadata.py tests/unit/web/test_observability_routes.py tests/unit/web/test_app_security_hardening.py`
 - `docker compose -f compose.prod.yaml config >/dev/null`
 - Live functional check:
-  - `curl -sS -o /tmp/skriptoteket-login-wrong.out -w '%{http_code}\n' -H 'Content-Type: application/json' -d '{"email":"superuser@local.dev","password":"wrong-password"}' http://127.0.0.1:5174/api/v1/auth/login`
-  - bootstrap-superuser login through `http://127.0.0.1:5174/api/v1/auth/login`
+  - `curl -sS -o /tmp/skriptoteket-login-wrong.out -w '%{http_code}\n' -H 'Content-Type: application/json' -d '{"email":"superuser@local.dev","password":"wrong-password"}' http://127.0.0.1:5173/api/v1/auth/login`
+  - bootstrap-superuser login through `http://127.0.0.1:5173/api/v1/auth/login`
   - frontend-container request with `Host: skriptoteket_web:8000`
 
 ## Rollback plan

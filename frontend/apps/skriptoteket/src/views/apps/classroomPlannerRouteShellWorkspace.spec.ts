@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
 
 import { createClassroomPlannerWorkspaceFlow } from "./classroomPlannerRouteShellWorkspace";
+import type { ClassWorkspaceSummary } from "./classroomPlannerTypes";
 
 function createDeferred() {
   let resolvePromise!: () => void;
@@ -33,7 +34,7 @@ describe("createClassroomPlannerWorkspaceFlow", () => {
     const currentScreen = ref<"class-workspace" | "planner">("class-workspace");
     const plannerInitialView = ref<"groups" | "seats" | "rules">("groups");
     const plannerActionError = ref<string | null>(null);
-    const classWorkspaceSummary = ref({
+    const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>({
       roster: { id: "roster-1", name: "SA24D", student_count: 28 },
       task_entry_options: [
         { draft_kind: "grouping" as const, classroom_selection_mode: "optional" as const },
@@ -123,7 +124,7 @@ describe("createClassroomPlannerWorkspaceFlow", () => {
     const currentScreen = ref<"class-workspace" | "planner">("planner");
     const plannerInitialView = ref<"groups" | "seats" | "rules">("groups");
     const plannerActionError = ref<string | null>(null);
-    const classWorkspaceSummary = ref({
+    const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>({
       roster: { id: "roster-1", name: "SA24D", student_count: 28 },
       task_entry_options: [
         { draft_kind: "grouping" as const, classroom_selection_mode: "optional" as const },
@@ -202,6 +203,120 @@ describe("createClassroomPlannerWorkspaceFlow", () => {
 
     expect(loadClassWorkspaceSummary).toHaveBeenCalledWith("roster-1");
     expect(syncWorkspaceTemplateSelection).toHaveBeenCalledOnce();
+    expect(workspaceTransitionLabel.value).toBeNull();
+    expect(plannerActionError.value).toBeNull();
+  });
+
+  it("switches grouping class from the toolbar selector after flushing the current draft", async () => {
+    const selectedRosterId = ref("roster-1");
+    const selectedWorkspaceTemplateId = ref<string | null>("template-overview-1");
+    const currentScreen = ref<"class-workspace" | "planner">("planner");
+    const plannerInitialView = ref<"groups" | "seats" | "rules">("groups");
+    const plannerActionError = ref<string | null>(null);
+    const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>({
+      roster: { id: "roster-1", name: "SA24D", student_count: 28 },
+      task_entry_options: [
+        { draft_kind: "grouping" as const, classroom_selection_mode: "optional" as const },
+        { draft_kind: "seating" as const, classroom_selection_mode: "optional" as const },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    });
+    const isSeatingLifecycleBusy = ref(false);
+    const busySeatingHistoryDraftId = ref<string | null>(null);
+    const workspaceTransitionLabel = ref<string | null>(null);
+    const workspaceNotice = ref<string | null>(null);
+    const loadClassWorkspaceSummary = vi.fn().mockImplementation(async (rosterId: string) => {
+      classWorkspaceSummary.value = {
+        roster: {
+          id: rosterId,
+          name: rosterId === "roster-2" ? "SA24E" : "SA24D",
+          student_count: 24,
+        },
+        task_entry_options: [
+          { draft_kind: "grouping" as const, classroom_selection_mode: "optional" as const },
+          { draft_kind: "seating" as const, classroom_selection_mode: "optional" as const },
+        ],
+        active_grouping_draft: {
+          id: "grouping-active-2",
+          draft_kind: "grouping" as const,
+          template_id: null,
+          template_name: null,
+          status: "active" as const,
+          revision: 7,
+          last_opened_at: "2026-03-30T09:00:00Z",
+          updated_at: "2026-03-30T09:15:00Z",
+        },
+        active_seating_draft: null,
+        grouping_history: [],
+        seating_history: [],
+      };
+    });
+    const refreshClassWorkspaceSummaryForSelectedRoster = vi.fn().mockResolvedValue(undefined);
+    const syncWorkspaceTemplateSelection = vi.fn();
+
+    const plannerState = {
+      draft: {
+        id: "draft-1",
+        roster_id: "roster-1",
+        draft_kind: "grouping" as const,
+        status: "active" as const,
+        revision: 4,
+        last_opened_at: "2026-03-30T08:00:00Z",
+      },
+      roster: { id: "roster-1" },
+      template: null,
+      prepareForPlannerExit: vi.fn().mockResolvedValue({ status: "saved" }),
+      prepareForWorkspaceSwitch: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      loadWorkspace: vi.fn().mockResolvedValue(undefined),
+      resolveDraft: vi.fn(),
+      clearWorkspace: vi.fn(),
+      startNewGroupingDraft: vi.fn(),
+      startNewSeatingDraft: vi.fn(),
+      activateGroupingHistoryDraft: vi.fn(),
+      activateSeatingHistoryDraft: vi.fn(),
+      deleteGroupingHistoryDraft: vi.fn(),
+      deleteSeatingHistoryDraft: vi.fn(),
+    };
+
+    const flow = createClassroomPlannerWorkspaceFlow(
+      {
+        selectedRosterId,
+        selectedWorkspaceTemplateId,
+        currentScreen,
+        plannerInitialView,
+        plannerActionError,
+        classWorkspaceSummary,
+        isSeatingLifecycleBusy,
+        busySeatingHistoryDraftId,
+        workspaceTransitionLabel,
+        workspaceNotice,
+      },
+      {
+        loadClassWorkspaceSummary,
+        refreshClassWorkspaceSummaryForSelectedRoster,
+        openInitialHomeWorkspace: vi.fn(),
+        syncWorkspaceTemplateSelection,
+      },
+      plannerState,
+    );
+
+    const changeRosterPromise = flow.changeGroupingRoster({ rosterId: "roster-2" });
+
+    expect(workspaceTransitionLabel.value).toBe("Byter klass...");
+
+    await changeRosterPromise;
+
+    expect(loadClassWorkspaceSummary).toHaveBeenCalledWith("roster-2");
+    expect(plannerState.loadWorkspace).toHaveBeenCalledWith("grouping-active-2");
+    expect(plannerState.resolveDraft).not.toHaveBeenCalled();
+    expect(refreshClassWorkspaceSummaryForSelectedRoster).toHaveBeenCalledOnce();
+    expect(syncWorkspaceTemplateSelection).toHaveBeenCalledOnce();
+    expect(selectedRosterId.value).toBe("roster-2");
+    expect(plannerInitialView.value).toBe("groups");
+    expect(currentScreen.value).toBe("planner");
     expect(workspaceTransitionLabel.value).toBeNull();
     expect(plannerActionError.value).toBeNull();
   });

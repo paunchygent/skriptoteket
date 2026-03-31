@@ -66,6 +66,7 @@ const {
   openGroupingWorkspace,
   openSeatingWorkspace,
   openRulesWorkspace,
+  changeGroupingRoster,
   changeGroupingTemplate,
   changeSeatingTemplate,
   startNewGroupingDraft,
@@ -161,7 +162,9 @@ const {
         <PlannerWorkspaceShell
           v-else-if="!isBootstrapping && !bootstrapError && currentScreen === 'planner'"
           key="planner"
+          :available-rosters="availableRosters"
           :available-templates="availableTemplates"
+          :selected-roster-id="selectedRosterId"
           :initial-view="plannerInitialView"
           :workspace-summary="classWorkspaceSummary"
           :seating-lifecycle-busy="isSeatingLifecycleBusy"
@@ -174,6 +177,7 @@ const {
           :seating-export-error-message="seatingExportErrorMessage"
           :transition-label="workspaceTransitionLabel"
           :workspace-notice="workspaceNotice"
+          @change-grouping-roster="void changeGroupingRoster($event)"
           @change-grouping-template="void changeGroupingTemplate($event)"
           @change-seating-template="void changeSeatingTemplate($event)"
           @new-grouping-draft="void startNewGroupingDraft($event)"

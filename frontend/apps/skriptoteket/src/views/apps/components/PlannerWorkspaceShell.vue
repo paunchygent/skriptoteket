@@ -10,12 +10,14 @@
 
 import { computed, onUnmounted, ref, watch } from "vue";
 
-import type { ClassWorkspaceSummary, RoomTemplate } from "../classroomPlannerTypes";
+import type { ClassWorkspaceSummary, RoomTemplate, Roster } from "../classroomPlannerTypes";
 import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
+import PlannerGroupingSettingsDrawer from "./PlannerGroupingSettingsDrawer.vue";
 import PlannerGroupingWorkspaceToolbar from "./PlannerGroupingWorkspaceToolbar.vue";
 import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
 import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerRulesWorkspacePane from "./PlannerRulesWorkspacePane.vue";
+import PlannerSeatingSettingsDrawer from "./PlannerSeatingSettingsDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
 import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
@@ -29,7 +31,9 @@ type PlannerStatusTone = "neutral" | "success" | "warning" | "danger";
 
 const props = withDefaults(
   defineProps<{
+    availableRosters?: Roster[];
     availableTemplates?: RoomTemplate[];
+    selectedRosterId?: string | null;
     initialView?: PlannerView;
     workspaceSummary?: ClassWorkspaceSummary | null;
     seatingLifecycleBusy?: boolean;
@@ -44,7 +48,9 @@ const props = withDefaults(
     workspaceNotice?: string | null;
   }>(),
   {
+    availableRosters: () => [],
     availableTemplates: () => [],
+    selectedRosterId: null,
     initialView: "groups",
     workspaceSummary: null,
     seatingLifecycleBusy: false,
@@ -61,6 +67,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
+  (e: "change-grouping-roster", payload: { rosterId: string }): void;
   (e: "change-grouping-template", payload: { templateId: string | null }): void;
   (e: "change-seating-template", payload: { templateId: string | null }): void;
   (e: "new-grouping-draft", payload: { templateId: string | null }): void;
@@ -100,6 +107,8 @@ function resolvePlannerView(requestedView: PlannerView): PlannerView {
 const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
 const selectedStudentId = ref<string | null>(null);
 const isMetadataDrawerOpen = ref(false);
+const isGroupingSettingsDrawerOpen = ref(false);
+const isSeatingSettingsDrawerOpen = ref(false);
 const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
 const pendingGroupingTemplateId = ref(plannerState.template?.id ?? "");
 const pendingSeatingTemplateId = ref(plannerState.template?.id ?? "");
@@ -180,7 +189,8 @@ const displayedStatusMessage = ref<string | null>(plannerState.plannerStatusMess
 const displayedStatusTone = ref<PlannerStatusTone>(plannerState.plannerStatusTone);
 const isTransitioningBetweenWorkspaces = computed(() => Boolean(props.transitionLabel));
 const lastWorkspaceNotice = ref<string | null>(null);
-const lastSmartRunToast = ref<string | null>(null);
+const lastGroupingSmartRunToast = ref<string | null>(null);
+const lastSeatingSmartRunToast = ref<string | null>(null);
 
 watch(
   [
@@ -244,12 +254,32 @@ function changeGroupingTemplate(templateId: string | null): void {
   emit("change-grouping-template", { templateId });
 }
 
+function changeGroupingRoster(rosterId: string): void {
+  emit("change-grouping-roster", { rosterId });
+}
+
 function startNewGroupingDraft(): void {
   emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
 }
 
 function openGroupingHistoryDrawer(): void {
   openHistoryDrawerKind.value = "grouping";
+}
+
+function openGroupingSettingsDrawer(): void {
+  isGroupingSettingsDrawerOpen.value = true;
+}
+
+function closeGroupingSettingsDrawer(): void {
+  isGroupingSettingsDrawerOpen.value = false;
+}
+
+function openSeatingSettingsDrawer(): void {
+  isSeatingSettingsDrawerOpen.value = true;
+}
+
+function closeSeatingSettingsDrawer(): void {
+  isSeatingSettingsDrawerOpen.value = false;
 }
 
 function openSeatingHistoryDrawer(): void {
@@ -303,6 +333,8 @@ watch(
   () => props.initialView,
   (nextView) => {
     currentView.value = resolvePlannerView(nextView);
+    isGroupingSettingsDrawerOpen.value = false;
+    isSeatingSettingsDrawerOpen.value = false;
     openHistoryDrawerKind.value = null;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
@@ -313,6 +345,8 @@ watch(
   () => [plannerState.draft?.draft_kind ?? null, plannerState.template?.id ?? null],
   () => {
     currentView.value = resolvePlannerView(currentView.value);
+    isGroupingSettingsDrawerOpen.value = false;
+    isSeatingSettingsDrawerOpen.value = false;
     openHistoryDrawerKind.value = null;
     isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
@@ -338,30 +372,57 @@ watch(
   { immediate: true },
 );
 
+function showSmartRunToast(options: {
+  message: string | null;
+  tone: "neutral" | "success" | "warning";
+  lastToastRef: { value: string | null };
+}): void {
+  const { message, tone, lastToastRef } = options;
+  if (!message) {
+    lastToastRef.value = null;
+    return;
+  }
+
+  const toastKey = `${tone}:${message}`;
+  if (toastKey === lastToastRef.value) {
+    return;
+  }
+
+  if (tone === "success") {
+    toast.success(message);
+  } else if (tone === "warning") {
+    toast.warning(message);
+  } else {
+    toast.info(message);
+  }
+  lastToastRef.value = toastKey;
+}
+
+watch(
+  () => ({
+    message: plannerState.smartGroupingRunMessage,
+    tone: plannerState.smartGroupingRunTone,
+  }),
+  ({ message, tone }) => {
+    showSmartRunToast({
+      message,
+      tone,
+      lastToastRef: lastGroupingSmartRunToast,
+    });
+  },
+);
+
 watch(
   () => ({
     message: plannerState.smartSeatingRunMessage,
     tone: plannerState.smartSeatingRunTone,
   }),
   ({ message, tone }) => {
-    if (!message) {
-      lastSmartRunToast.value = null;
-      return;
-    }
-
-    const toastKey = `${tone}:${message}`;
-    if (toastKey === lastSmartRunToast.value) {
-      return;
-    }
-
-    if (tone === "success") {
-      toast.success(message);
-    } else if (tone === "warning") {
-      toast.warning(message);
-    } else {
-      toast.info(message);
-    }
-    lastSmartRunToast.value = toastKey;
+    showSmartRunToast({
+      message,
+      tone,
+      lastToastRef: lastSeatingSmartRunToast,
+    });
   },
 );
 
@@ -409,13 +470,15 @@ watch(
       <PlannerGroupingWorkspaceToolbar
         v-if="currentView === 'groups'"
         class="sticky top-3 z-20"
-        :available-templates="availableTemplates"
-        :selected-template-id="pendingGroupingTemplateId"
+        :available-rosters="availableRosters"
+        :selected-roster-id="selectedRosterId"
+        :smart-settings-open="isGroupingSettingsDrawerOpen"
         :export-busy="groupingExportBusy"
         :export-status-label="groupingExportStatusLabel"
         :export-error-message="groupingExportErrorMessage"
-        @change-grouping-template="changeGroupingTemplate($event)"
+        @change-grouping-roster="changeGroupingRoster($event)"
         @new-grouping-draft="startNewGroupingDraft"
+        @open-settings="openGroupingSettingsDrawer"
         @open-history="openGroupingHistoryDrawer"
         @open-rules="emit('open-rules')"
         @edit-roster="emit('edit-roster')"
@@ -428,6 +491,7 @@ watch(
         class="sticky top-3 z-20"
         :available-templates="availableTemplates"
         :selected-template-id="pendingSeatingTemplateId"
+        :smart-settings-open="isSeatingSettingsDrawerOpen"
         :seating-lifecycle-busy="seatingLifecycleBusy"
         :export-busy="seatingExportBusy"
         :export-status-label="seatingExportStatusLabel"
@@ -438,7 +502,7 @@ watch(
         @export-option="emit('export-seating-option', $event)"
         @edit-roster="emit('edit-roster')"
         @edit-current-template="editCurrentTemplate"
-        @open-rules="emit('open-rules')"
+        @open-settings="openSeatingSettingsDrawer"
         @open-history="openSeatingHistoryDrawer"
       />
 
@@ -464,6 +528,21 @@ watch(
         :selected-student-id="selectedStudentId"
         :open="isMetadataDrawerOpen"
         @close="isMetadataDrawerOpen = false"
+      />
+
+      <PlannerGroupingSettingsDrawer
+        :open="currentView === 'groups' && isGroupingSettingsDrawerOpen"
+        :available-templates="availableTemplates"
+        :selected-template-id="pendingGroupingTemplateId"
+        @close="closeGroupingSettingsDrawer"
+        @change-grouping-template="changeGroupingTemplate($event)"
+        @open-rules="emit('open-rules')"
+      />
+
+      <PlannerSeatingSettingsDrawer
+        :open="currentView === 'seats' && isSeatingSettingsDrawerOpen"
+        @close="closeSeatingSettingsDrawer"
+        @open-rules="emit('open-rules')"
       />
 
       <PlannerHistoryDrawer

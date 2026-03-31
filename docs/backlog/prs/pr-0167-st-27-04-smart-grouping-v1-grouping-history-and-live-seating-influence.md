@@ -30,14 +30,19 @@ dependencies:
 acceptance_criteria:
   - "Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`, then grouping keeps the current local random reshuffle behavior and preserves the current group count plus teacher-defined group names."
   - "Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then the planner calls one backend-owned smart grouping run endpoint and persists the returned grouping result instead of performing a frontend-only random shuffle."
+  - "Given the grouping toolbar renders, when the teacher works in `Grupper`, then the command row stays single-height and organized into a left action cluster plus a right class/export cluster."
+  - "Given the grouping toolbar renders, when the teacher scans the right side, then the compact class selector sits between the group-count stepper and export instead of in a separate context band."
   - "Given grouping rules are already visible through `Regler` and the student markers, when the grouping toolbar renders, then it does not show a redundant active-rule count pill."
   - "Given roster-global `Keep apart` and `Keep near` rules exist, when smart grouping runs, then the backend interprets those same visible rules at grouping level without introducing a second grouping-only rule model."
-  - "Given grouping `Use history` is enabled, when the smart run evaluates prior grouping outcomes, then it uses grouping-specific similarity history only and does not treat classroom awareness or seating continuity as grouping history."
+  - "Given the teacher tunes smart grouping behavior, when they open `Smart-inställningar`, then `Historik`, `Klassrum`, and `Sittning` are available there rather than as first-row toolbar controls."
+  - "Given grouping `Historik` is enabled inside `Smart-inställningar`, when the smart run evaluates prior grouping outcomes, then it uses grouping-specific similarity history only and does not treat classroom awareness or seating continuity as grouping history."
   - "Given grouping history contains exact or near-repeat groupings, when smart grouping runs with `Use history` enabled, then it penalizes repeated student co-memberships and not only exact repeated group ids."
-  - "Given classroom-aware grouping is enabled through the grouping classroom control and an active seating draft exists for the same class, when smart grouping runs, then that live seating arrangement becomes the first compactness source and uses seat-topology distance to penalize same-group spread quadratically beyond a local elastic radius while still respecting explicit relation rules."
-  - "Given classroom-aware grouping is enabled through the grouping classroom control but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may use those checkpoints as a fallback compactness source without treating them as grouping history."
-  - "Given classroom-aware grouping is enabled but no usable seating context exists, when smart grouping runs, then it falls back honestly to rules plus any enabled history lane instead of pretending the classroom-aware lane was used."
+  - "Given `Klassrum` is selected and `Sittning` is enabled inside `Smart-inställningar`, when an active seating draft exists for the same class, then that live seating arrangement becomes the first compactness source and uses seat-topology distance to penalize same-group spread quadratically beyond a local elastic radius while still respecting explicit relation rules."
+  - "Given `Klassrum` is selected and `Sittning` is enabled inside `Smart-inställningar` but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may use those checkpoints as a fallback compactness source without treating them as grouping history."
+  - "Given `Klassrum` is selected and `Sittning` is enabled but no usable seating context exists, when smart grouping runs, then it falls back honestly to rules plus any enabled history lane instead of pretending the classroom-aware lane was used."
   - "Given `Use history` is enabled but no eligible grouping checkpoints exist, when the teacher tries to run smart grouping, then the run is blocked with a short teacher-facing explanation and the draft assignments stay unchanged."
+  - "Given the teacher needs to adjust rules, when they navigate to `Regler`, then rules remain a workspace-level setting surface and do not appear as a duplicate toolbar shortcut in `Grupper`."
+  - "Given the teacher switches between `Grupper` and `Sittplatser`, when they scan the first row, then both workspaces follow the same single-row action grammar with a right-side selector/export cluster and Smart tuning moved into `Smart-inställningar`."
 ---
 
 ## Problem
@@ -50,9 +55,13 @@ The clarified teacher model is:
 
 - grouping history must be distinct from seating continuity
 - `Keep apart` and `Keep near` remain one shared visible rule model across seating and grouping
+- the grouping toolbar may include one compact class switch, but not a second context band
 - `Smart` decides backend smart grouping vs local random
-- classroom-aware grouping is a separate compactness lane tied to the classroom control
-- `Use history` is a separate anti-repeat lane and is not a synonym for classroom awareness
+- classroom-aware grouping is a separate compactness lane configured through `Klassrum` +
+  `Sittning` inside Smart-inställningar
+- `Historik` is a separate anti-repeat lane inside smart settings and is not a synonym for
+  classroom awareness
+- `Regler` is workspace navigation, not a toolbar action shortcut
 - classroom-aware grouping may use the current seating arrangement to reduce transition disorder and
   avoid groups whose members are visibly split across the room
 - classroom-aware compactness should be a soft objective rather than a brittle hard failure rule
@@ -68,15 +77,94 @@ Without this explicit split, the implementation will either:
 Ship one implementation-ready smart-grouping slice that makes the source-of-truth lanes explicit
 before code lands:
 
-- `Use history` means grouping anti-repeat memory
-- classroom-aware grouping is tied to the grouping classroom control rather than hidden inside
-  `Use history`
+- `Historik` means grouping anti-repeat memory and belongs to smart settings, not to the first-row
+  action toolbar
+- classroom-aware grouping is tuned through `Klassrum` + `Sittning` in Smart-inställningar
+- the teacher-facing grouping shell separates first-row actions from secondary Smart settings
+  clearly
 - shared relation rules remain roster-global and mode-shared
 - the backend owns smart grouping orchestration and scoring
 - grouping history is label-insensitive and similarity-aware
 - classroom-aware grouping uses seat-topology distance and a soft compactness penalty
 - live seating continuity can read the active seating draft as a current compactness input without
   redefining that live draft as history
+
+## Approved UI Snapshot (2026-03-30)
+
+This section freezes the approved desktop-first grouping control ownership before more UI
+implementation lands. It supersedes the earlier shared context-row proposal, the verbose
+classroom-helper experiments, the first-row history toggle, and the duplicate `Regler` toolbar
+shortcut.
+
+Artifacts:
+
+- `docs/reference/reports/artifacts/pr-0167-grouping-layout-exploration-v2/toolbar-class-settings.png`
+- `docs/reference/reports/artifacts/pr-0167-grouping-layout-exploration-v2/all-overflow-settings.png`
+
+Approved layout:
+
+```text
++--------------------------------------------------------------------------------------------------+
+| PR0167 Klass d59552                                                                  [Avsluta]   |
+| [ ÖVERSIKT ] [ GRUPPER ] [ SITTPLATSER ] [ REGLER ]                                              |
+|--------------------------------------------------------------------------------------------------|
+| [↶] [↷] [Nytt utkast] [Slumpa] [Smart|settings] [Börja om] [ - | 6 | + ]     [Klass v] [Exportera▼] [⋮] |
++--------------------------------------------------------------------------------------------------+
+
++--------------------------------------------------------------------------------------------------+
+| Ej grupperade                         | Grupp 1                    | Grupp 2                     |
+| student list                          |                            |                             |
+|                                       | Grupp 3                    | Grupp 4                     |
++--------------------------------------------------------------------------------------------------+
+```
+
+Smart settings ownership:
+
+```text
++---------------------------------------------+
+| Smart-inställningar                         |
+|---------------------------------------------|
+| Historik   [på/av]                          |
+| Undvik att samma elever hamnar i samma      |
+| grupp gång på gång.                         |
+|                                             |
+| Klassrum                                    |
+| [ PR0167 Sal d59552 · 4 platser          v ]|
+|                                             |
+| Sittning   [på/av]                          |
+| När klassens sittning matchar valt          |
+| klassrum väger Smart in den.                |
+|                                             |
+| Regler                                      |
+| Regler redigeras i arbetsytan Regler.       |
+| [Öppna Regler]                              |
++---------------------------------------------+
+```
+
+Ownership rationale:
+
+- `Översikt` owns class-list and classroom resource management.
+- The grouping toolbar owns immediate actions plus one compact class switch on the right.
+- `Sittplatser` follows the same first-row grammar, but keeps its compact classroom selector on the right.
+- The first row must stay a single-height desktop command strip with a left action cluster and a
+  right class/export cluster.
+- `Historik` is a smart-behavior setting, not a first-row grouping tool.
+- `Klassrum` and `Sittning` are Smart settings, not command-row clutter.
+- `Regler` is workspace navigation and rule tuning, not a grouping-toolbar action.
+- `Klassrum` without `Sittning` is just stored context.
+- `Klassrum` plus enabled `Sittning` turns on the classroom-aware compactness lane.
+
+Implementation guardrails from this snapshot:
+
+- Keep the class selector compact and place it in the grouping toolbar's right cluster.
+- Do not place classroom selection in the first-row grouping toolbar.
+- Do not place `Historik` in the first-row grouping toolbar.
+- Do not duplicate `Regler` as both a workspace mode and a grouping-toolbar shortcut.
+- Do not add explanatory/instructional button labels for settings behavior in the toolbar.
+- Mirror the same first-row grammar in `Sittplatser`; do not leave one workspace on the older stacked toolbar pattern.
+- Keep rows level and single-height on the desktop shell:
+  - no accidental second row for one stray control
+  - no uneven vertical alignment between selector, toolbar actions, steppers, and export cluster
 
 ## Non-goals
 
@@ -104,7 +192,7 @@ The smart grouping solver and handler must use this precedence model:
    - Do not let smart grouping silently create/remove groups or rename them.
 
 3. Classroom-aware compactness is the first optional spatial source.
-   - This source is enabled through the grouping classroom control.
+   - This source is enabled when `Klassrum` is selected and `Sittning` is on in Smart-inställningar.
    - If an active seating draft exists for the same class, use that draft first.
    - If no active seating draft exists, use the latest eligible seating checkpoint as fallback.
    - This lane uses seat-topology distance and penalizes same-group spread quadratically beyond a
@@ -136,8 +224,8 @@ The implementation should treat the inputs as four distinct lanes:
   - `Keep near`
 - Draft-local grouping controls:
   - `Smart`
-  - `Use history`
-  - classroom-aware grouping state tied to the classroom control
+  - smart settings such as `Historik`
+  - selected classroom context plus the `Sittning` switch in Smart-inställningar
 - Grouping-history lane:
   - dedicated grouping checkpoints or equivalent export-backed grouping-history records
   - similarity-aware, label-insensitive
@@ -160,7 +248,7 @@ relying on verbal context:
 - `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
   - clarify that grouping history is separate from classroom-aware compactness
   - clarify that the active seating draft may be consumed as a current compactness input when the
-    classroom control enables classroom-aware grouping
+    Smart settings drawer enables classroom-aware grouping
   - clarify the precedence order listed in this PR doc
 - `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`
   - add the `Smart` vs classroom-aware vs history split to the acceptance criteria/notes
@@ -187,7 +275,7 @@ relying on verbal context:
 
 3. Add the classroom-aware compactness input seam.
    - Read the active seating draft for the same class when classroom-aware grouping is enabled
-     through the grouping classroom control.
+     through `Klassrum` + `Sittning` in Smart-inställningar.
    - Fall back to the latest eligible seating checkpoint when no active seating draft exists.
    - Derive seat-topology distance from that seating context and penalize same-group spread
      quadratically beyond one local elastic radius.
@@ -231,10 +319,13 @@ relying on verbal context:
    - Branch grouping `Slumpa`:
      - `Smart` off -> current local random behavior
      - `Smart` on -> backend smart grouping run
-   - Keep `Use history` explicit in the grouping toolbar with the same teacher-facing meaning as in
-     seating, but scoped to grouping anti-repeat rotation only.
-   - Make the grouping classroom control own classroom-aware state; do not hide that state inside
-     `Use history`.
+   - Keep one compact class selector in the grouping toolbar's right cluster near export.
+   - Move `Klassrum`, `Sittning`, and `Historik` into the `Smart` settings drawer instead of the
+     first-row toolbar.
+   - Keep `Smart` plus the adjacent settings trigger as the only first-row grouping intelligence
+     controls.
+   - Keep `Regler` only in workspace navigation and rules tuning, not as a duplicate toolbar
+     shortcut in `Grupper`.
    - Remove the redundant grouping active-rule count pill from the toolbar.
    - Keep smart-run feedback honest when classroom-aware grouping had no usable seating context.
 
@@ -268,6 +359,8 @@ relying on verbal context:
   - `migrations/versions/<new_revision>_classroom_planner_grouping_export_checkpoints.py`
 
 - Frontend:
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue`
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
   - `frontend/apps/skriptoteket/src/views/apps/useSmartGroupingRun.ts`
   - `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSmartRuleActions.ts`
@@ -275,6 +368,7 @@ relying on verbal context:
   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts`
   - `frontend/apps/skriptoteket/src/views/apps/useDraftPersistenceLane.ts`
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue`
+  - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue`
 
 - Tests:
   - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver.py`

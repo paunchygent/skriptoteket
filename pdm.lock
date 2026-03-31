@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:70958c7e46d0335929701ba68122740e13a79eb16af3dd5870d2005e87540a7b"
+content_hash = "sha256:1f19da9c438d70a6800d1d5b8482867944162a30b2c1e813c9ccc891b4fa8a48"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -289,6 +289,20 @@ files = [
 ]
 
 [[package]]
+name = "cairocffi"
+version = "1.7.1"
+requires_python = ">=3.8"
+summary = "cffi-based cairo bindings for Python"
+groups = ["dev"]
+dependencies = [
+    "cffi>=1.1.0",
+]
+files = [
+    {file = "cairocffi-1.7.1-py3-none-any.whl", hash = "sha256:9803a0e11f6c962f3b0ae2ec8ba6ae45e957a146a004697a1ac1bbf16b073b3f"},
+    {file = "cairocffi-1.7.1.tar.gz", hash = "sha256:2e48ee864884ec4a3a34bfa8c9ab9999f688286eb714a15a43ec9d068c36557b"},
+]
+
+[[package]]
 name = "certifi"
 version = "2026.2.25"
 requires_python = ">=3.7"
@@ -304,7 +318,7 @@ name = "cffi"
 version = "2.0.0"
 requires_python = ">=3.9"
 summary = "Foreign Function Interface for Python calling C code."
-groups = ["default", "llm", "monorepo-tools"]
+groups = ["default", "dev", "llm", "monorepo-tools"]
 dependencies = [
     "pycparser; implementation_name != \"PyPy\"",
 ]
@@ -708,6 +722,17 @@ files = [
     {file = "fonttools-4.62.1-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5f37df1cac61d906e7b836abe356bc2f34c99d4477467755c216b72aa3dc748b"},
     {file = "fonttools-4.62.1-py3-none-any.whl", hash = "sha256:7487782e2113861f4ddcc07c3436450659e3caa5e470b27dc2177cade2d8e7fd"},
     {file = "fonttools-4.62.1.tar.gz", hash = "sha256:e54c75fd6041f1122476776880f7c3c3295ffa31962dc6ebe2543c00dca58b5d"},
+]
+
+[[package]]
+name = "freetype-py"
+version = "2.5.1"
+requires_python = ">=3.7"
+summary = "Freetype python bindings"
+groups = ["dev"]
+files = [
+    {file = "freetype-py-2.5.1.zip", hash = "sha256:cfe2686a174d0dd3d71a9d8ee9bf6a2c23f5872385cf8ce9f24af83d076e2fbd"},
+    {file = "freetype_py-2.5.1-py3-none-macosx_10_9_universal2.whl", hash = "sha256:d01ded2557694f06aa0413f3400c0c0b2b5ebcaabeef7aaf3d756be44f51e90b"},
 ]
 
 [[package]]
@@ -1973,6 +1998,16 @@ files = [
 ]
 
 [[package]]
+name = "pycairo"
+version = "1.29.0"
+requires_python = ">=3.10"
+summary = "Python interface for cairo"
+groups = ["dev"]
+files = [
+    {file = "pycairo-1.29.0.tar.gz", hash = "sha256:f3f7fde97325cae80224c09f12564ef58d0d0f655da0e3b040f5807bd5bd3142"},
+]
+
+[[package]]
 name = "pycountry"
 version = "26.2.16"
 requires_python = ">=3.10"
@@ -1988,7 +2023,7 @@ name = "pycparser"
 version = "3.0"
 requires_python = ">=3.10"
 summary = "C parser in Python"
-groups = ["default", "llm", "monorepo-tools"]
+groups = ["default", "dev", "llm", "monorepo-tools"]
 marker = "implementation_name != \"PyPy\""
 files = [
     {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
@@ -2491,6 +2526,21 @@ dependencies = [
 files = [
     {file = "rich-14.3.3-py3-none-any.whl", hash = "sha256:793431c1f8619afa7d3b52b2cdec859562b950ea0d4b6b505397612db8d5362d"},
     {file = "rich-14.3.3.tar.gz", hash = "sha256:b8daa0b9e4eef54dd8cf7c86c03713f53241884e814f4e2f5fb342fe520f639b"},
+]
+
+[[package]]
+name = "rlpycairo"
+version = "0.4.0"
+requires_python = ">=3.7"
+summary = "Plugin backend renderer for reportlab.graphics.renderPM"
+groups = ["dev"]
+dependencies = [
+    "freetype-py>=2.3",
+    "pycairo>=1.20.0",
+]
+files = [
+    {file = "rlpycairo-0.4.0-py3-none-any.whl", hash = "sha256:3ce83825d5761c03bc3571c7db12a336ad51417e63189e3512d11b8922576aa9"},
+    {file = "rlpycairo-0.4.0.tar.gz", hash = "sha256:07c2c3c47828e83d9c09657a54ecbcd1a97aac9dc199780234456d3473faadc7"},
 ]
 
 [[package]]

@@ -70,7 +70,7 @@ outcome: "Skriptoteket is hardened against common internet threats with defense-
   - the follow-up also repaired the Docker-based local dev login path by making
     `skriptoteket_web` a non-production-only allowed host
   - verification included focused pytest/ruff coverage, `compose.prod.yaml`
-    validation, bootstrap-superuser login proof through `http://127.0.0.1:5174`,
+    validation, bootstrap-superuser login proof through `http://127.0.0.1:5173`,
     and an approved final `skriptoteket_reviewer` pass after one
     `skriptoteket_implementation_specialist` iteration
 - ST-09-08 is planned as the remaining Hemma/nginx follow-through:
