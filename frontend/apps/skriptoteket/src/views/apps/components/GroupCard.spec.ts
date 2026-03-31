@@ -23,7 +23,6 @@ describe("GroupCard", () => {
         students: [],
         canMoveUp: false,
         canMoveDown: true,
-        selectedStudentId: null,
       },
     });
 
@@ -46,7 +45,6 @@ describe("GroupCard", () => {
         students: [],
         canMoveUp: false,
         canMoveDown: true,
-        selectedStudentId: null,
       },
     });
 
@@ -67,7 +65,6 @@ describe("GroupCard", () => {
         students: buildStudents(2),
         canMoveUp: true,
         canMoveDown: false,
-        selectedStudentId: null,
       },
     });
 
@@ -91,7 +88,6 @@ describe("GroupCard", () => {
         students: buildStudents(8),
         canMoveUp: false,
         canMoveDown: true,
-        selectedStudentId: null,
       },
     });
 
@@ -103,6 +99,31 @@ describe("GroupCard", () => {
       expect(label.classes()).toContain("break-words");
       expect(label.classes()).not.toContain("truncate");
     }
+  });
+
+  it("keeps assigned student rows hover-only without a persistent selected hue", () => {
+    const wrapper = mount(GroupCard, {
+      props: {
+        group: {
+          id: "group-a",
+          name: "Grupp A",
+          sort_order: 0,
+          name_is_custom: false,
+        },
+        students: [{ id: "student-1", display_name: "Ada Lovelace" }],
+        canMoveUp: false,
+        canMoveDown: true,
+      },
+    });
+
+    const row = wrapper.get('[data-test="group-student-row-student-1"]');
+
+    expect(row.classes()).toContain("border-navy");
+    expect(row.classes()).toContain("bg-white");
+    expect(row.classes()).toContain("hover:bg-canvas");
+    expect(row.classes()).not.toContain("border-burgundy");
+    expect(row.classes()).not.toContain("bg-burgundy/10");
+    expect(row.classes()).not.toContain("text-burgundy");
   });
 
   it("shows smart-rule markers on assigned student bars", () => {
@@ -117,7 +138,6 @@ describe("GroupCard", () => {
         students: [{ id: "student-1", display_name: "Ada Lovelace" }],
         canMoveUp: false,
         canMoveDown: true,
-        selectedStudentId: null,
         smartRuleMarkersByStudentId: {
           "student-1": ["Nära läraren", "Isär A"],
         },

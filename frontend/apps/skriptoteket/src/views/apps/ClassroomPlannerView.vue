@@ -95,7 +95,10 @@ const {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[90rem] space-y-6 px-4 py-4 md:px-6">
+  <div
+    class="mx-auto max-w-[90rem] px-4 py-4 md:px-6"
+    :class="currentScreen === 'planner' ? 'flex min-h-full flex-col gap-6' : 'space-y-6'"
+  >
     <header class="border-b border-navy pb-4">
       <div>
         <h1 class="page-title">
@@ -129,7 +132,10 @@ const {
       </div>
     </div>
 
-    <div class="relative">
+    <div
+      class="relative"
+      :class="currentScreen === 'planner' ? 'flex min-h-0 flex-1 flex-col' : undefined"
+    >
       <Transition name="planner-shell-swap">
         <PlannerClassWorkspace
           v-if="!isBootstrapping && !bootstrapError && currentScreen === 'class-workspace'"
@@ -162,6 +168,7 @@ const {
         <PlannerWorkspaceShell
           v-else-if="!isBootstrapping && !bootstrapError && currentScreen === 'planner'"
           key="planner"
+          class="flex-1 min-h-0"
           :available-rosters="availableRosters"
           :available-templates="availableTemplates"
           :selected-roster-id="selectedRosterId"

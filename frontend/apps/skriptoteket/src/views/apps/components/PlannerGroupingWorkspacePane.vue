@@ -16,19 +16,6 @@ import GroupBoard from "./GroupBoard.vue";
 import PlannerStudentPool from "./PlannerStudentPool.vue";
 import { useClassroomState } from "../useClassroomState";
 
-withDefaults(
-  defineProps<{
-    selectedStudentId?: string | null;
-  }>(),
-  {
-    selectedStudentId: null,
-  },
-);
-
-const emit = defineEmits<{
-  (e: "student-selected", studentId: string): void;
-}>();
-
 const state = useClassroomState();
 const smartRuleMarkersByStudentId = computed<Record<string, string[]>>(() => {
   return buildSmartRuleMarkersByStudentId(
@@ -70,7 +57,7 @@ function onDragOver(event: DragEvent): void {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-3 xl:min-h-0">
     <div
       v-if="state.smartRuleHydrationStatus === 'error'"
       class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
@@ -91,26 +78,29 @@ function onDragOver(event: DragEvent): void {
       </div>
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-stretch">
-      <PlannerStudentPool
-        title="Ej grupperade"
-        :students="state.ungroupedStudents"
-        :selected-student-id="selectedStudentId"
-        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-        :disabled="state.isWorkspaceBusy"
-        empty-label="Alla elever ligger i grupp"
-        root-test-id="grouping-student-pool"
-        @student-selected="emit('student-selected', $event)"
-        @student-dragstart="onDragStart($event.event, $event.studentId)"
-        @pool-dragover="onDragOver"
-        @pool-drop="onDropToPool"
-      />
+    <div class="flex flex-col gap-3 xl:min-h-0 xl:flex-row xl:items-stretch">
+      <div class="xl:flex xl:min-h-0 xl:w-[240px] xl:flex-none xl:self-stretch xl:[contain:size]">
+        <PlannerStudentPool
+          title="Ej grupperade"
+          :students="state.ungroupedStudents"
+          :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+          :disabled="state.isWorkspaceBusy"
+          empty-label="Alla elever ligger i grupp"
+          root-test-id="grouping-student-pool"
+          @student-dragstart="onDragStart($event.event, $event.studentId)"
+          @pool-dragover="onDragOver"
+          @pool-drop="onDropToPool"
+        />
+      </div>
 
-      <GroupBoard
-        :selected-student-id="selectedStudentId"
-        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-        @student-selected="emit('student-selected', $event)"
-      />
+      <div
+        class="min-w-0 flex-1"
+        data-test="grouping-board-lane"
+      >
+        <GroupBoard
+          :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+        />
+      </div>
     </div>
   </div>
 </template>

@@ -157,8 +157,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0181-st-27-04-smart-settings-sittschemat-wording-fix.md`
 - Klassrumskartan first-run workspace gating story:
   `docs/backlog/stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md`
+- Klassrumskartan ST-29-06 no-classroom rules fallback slice:
+  `docs/backlog/prs/pr-0185-st-29-06-rules-no-classroom-fallback-and-organized-off-map-roster.md`
 - Klassrumskartan ST-29-10 mockup:
   `docs/mockups/st-29-10-first-run-workspace-gating/index.html`
+- Klassrumskartan ST-29-06 mockup:
+  `docs/mockups/st-29-06-rules-no-classroom-fallback/index.html`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:

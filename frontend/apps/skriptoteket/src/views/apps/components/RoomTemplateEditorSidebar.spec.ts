@@ -41,7 +41,7 @@ describe("RoomTemplateEditorSidebar", () => {
       "Aktivt verktyg",
     );
     expect(wrapper.get('[data-test="room-template-selected-tool-meta"]').text()).toContain(
-      "Placera plats",
+      "Sittplats",
     );
     expect(wrapper.get('[data-test="room-template-tool-seat"]').classes()).toContain(
       "planner-choice-button-active",

@@ -191,7 +191,7 @@ const currentViewHint = computed(() => {
     return "Välj eller byt klassrum direkt här i sittschemat.";
   }
   if (currentView.value === "groups") {
-    return "Dra elever mellan grupperna tills grupparbetet sitter.";
+    return "Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.";
   }
   if (currentView.value === "rules") {
     return "Här ställer du in regler som påverkar hur sittschemat skapas.";
@@ -243,11 +243,16 @@ watch(
 );
 
 function selectStudent(studentId: string): void {
-  if (
-    currentView.value === "rules"
-    && plannerState.activeSeatingSmartTool
-    && plannerState.handleSeatingSmartToolStudentSelection(studentId)
-  ) {
+  if (currentView.value === "groups") {
+    selectedStudentId.value = null;
+    isMetadataDrawerOpen.value = false;
+    return;
+  }
+
+  if (currentView.value === "rules") {
+    if (plannerState.activeSeatingSmartTool) {
+      plannerState.handleSeatingSmartToolStudentSelection(studentId);
+    }
     selectedStudentId.value = null;
     isMetadataDrawerOpen.value = false;
     return;
@@ -446,7 +451,7 @@ watch(
 </script>
 
 <template>
-  <section class="space-y-4">
+  <section class="space-y-4 xl:flex xl:min-h-0 xl:flex-col">
     <div
       v-if="plannerState.plannerConflictMessage"
       class="system-message system-message-warning"
@@ -487,60 +492,86 @@ watch(
     </div>
 
     <template v-if="!isTransitioningBetweenWorkspaces">
-      <PlannerGroupingWorkspaceToolbar
+      <div
         v-if="currentView === 'groups'"
-        class="sticky top-0 z-20 md:-top-4"
-        :available-rosters="availableRosters"
-        :selected-roster-id="selectedRosterId"
-        :smart-settings-open="isGroupingSettingsDrawerOpen"
-        :export-busy="groupingExportBusy"
-        :export-status-label="groupingExportStatusLabel"
-        :export-error-message="groupingExportErrorMessage"
-        @change-grouping-roster="changeGroupingRoster($event)"
-        @new-grouping-draft="startNewGroupingDraft"
-        @open-settings="openGroupingSettingsDrawer"
-        @open-history="openGroupingHistoryDrawer"
-        @open-rules="emit('open-rules')"
-        @edit-roster="emit('edit-roster')"
-        @export-default="emit('export-grouping-default')"
-        @export-option="emit('export-grouping-option', $event)"
-      />
+        class="flex flex-col gap-4 xl:min-h-0 xl:flex-1"
+      >
+        <div
+          class="sticky top-0 z-20 md:-top-4"
+          data-ui="planner-workspace-toolbar-shell"
+          data-view="groups"
+        >
+          <PlannerGroupingWorkspaceToolbar
+            :available-rosters="availableRosters"
+            :selected-roster-id="selectedRosterId"
+            :smart-settings-open="isGroupingSettingsDrawerOpen"
+            :export-busy="groupingExportBusy"
+            :export-status-label="groupingExportStatusLabel"
+            :export-error-message="groupingExportErrorMessage"
+            @change-grouping-roster="changeGroupingRoster($event)"
+            @new-grouping-draft="startNewGroupingDraft"
+            @open-settings="openGroupingSettingsDrawer"
+            @open-history="openGroupingHistoryDrawer"
+            @open-rules="emit('open-rules')"
+            @edit-roster="emit('edit-roster')"
+            @export-default="emit('export-grouping-default')"
+            @export-option="emit('export-grouping-option', $event)"
+          />
+        </div>
 
-      <PlannerSeatingWorkspaceToolbar
+        <div
+          class="xl:min-h-0 xl:max-h-full xl:overflow-y-auto"
+          data-ui="planner-workspace-pane-shell"
+          data-view="groups"
+        >
+          <PlannerGroupingWorkspacePane />
+        </div>
+      </div>
+
+      <div
         v-if="currentView === 'seats'"
-        class="sticky top-0 z-20 md:-top-4"
-        :available-templates="availableTemplates"
-        :selected-template-id="pendingSeatingTemplateId"
-        :smart-settings-open="isSeatingSettingsDrawerOpen"
-        :seating-lifecycle-busy="seatingLifecycleBusy"
-        :export-busy="seatingExportBusy"
-        :export-status-label="seatingExportStatusLabel"
-        :export-error-message="seatingExportErrorMessage"
-        @change-seating-template="changeSeatingTemplate($event)"
-        @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
-        @export-default="emit('export-seating-default')"
-        @export-option="emit('export-seating-option', $event)"
-        @edit-roster="emit('edit-roster')"
-        @edit-current-template="editCurrentTemplate"
-        @open-settings="openSeatingSettingsDrawer"
-        @open-history="openSeatingHistoryDrawer"
-      />
+        class="flex flex-col gap-4 xl:min-h-0 xl:flex-1"
+      >
+        <div
+          class="sticky top-0 z-20 md:-top-4"
+          data-ui="planner-workspace-toolbar-shell"
+          data-view="seats"
+        >
+          <PlannerSeatingWorkspaceToolbar
+            :available-templates="availableTemplates"
+            :selected-template-id="pendingSeatingTemplateId"
+            :smart-settings-open="isSeatingSettingsDrawerOpen"
+            :seating-lifecycle-busy="seatingLifecycleBusy"
+            :export-busy="seatingExportBusy"
+            :export-status-label="seatingExportStatusLabel"
+            :export-error-message="seatingExportErrorMessage"
+            @change-seating-template="changeSeatingTemplate($event)"
+            @new-seating-draft="emit('new-seating-draft', { templateId: $event })"
+            @export-default="emit('export-seating-default')"
+            @export-option="emit('export-seating-option', $event)"
+            @edit-roster="emit('edit-roster')"
+            @edit-current-template="editCurrentTemplate"
+            @open-settings="openSeatingSettingsDrawer"
+            @open-history="openSeatingHistoryDrawer"
+          />
+        </div>
+
+        <div
+          class="xl:min-h-0 xl:max-h-full xl:overflow-y-auto"
+          data-ui="planner-workspace-pane-shell"
+          data-view="seats"
+        >
+          <PlannerSeatingWorkspacePane
+            :selected-student-id="selectedStudentId"
+            :selected-template-id="pendingSeatingTemplateId"
+            @student-selected="selectStudent"
+          />
+        </div>
+      </div>
 
       <PlannerRulesWorkspacePane
         v-if="currentView === 'rules'"
         :selected-student-id="selectedStudentId"
-        @student-selected="selectStudent"
-      />
-
-      <PlannerGroupingWorkspacePane
-        v-if="currentView === 'groups'"
-        :selected-student-id="selectedStudentId"
-        @student-selected="selectStudent"
-      />
-      <PlannerSeatingWorkspacePane
-        v-if="currentView === 'seats'"
-        :selected-student-id="selectedStudentId"
-        :selected-template-id="pendingSeatingTemplateId"
         @student-selected="selectStudent"
       />
 

@@ -60,7 +60,7 @@ Nu behöver du ett klassrum att placera eleverna i.
 
 När du skapar ditt klassrum har du en verktygsmeny till vänster:
 
-- **Placera plats** -- sätter ut stolar. Det här är det enda du
+- **Sittplats** -- sätter ut stolar. Det här är det enda du
   *måste* använda.
 - **Möbler** -- kateder, whiteboard, bord, bänk, fönster, dörr.
   Valfritt, men gör det lättare att se hur rummet är möblerat.

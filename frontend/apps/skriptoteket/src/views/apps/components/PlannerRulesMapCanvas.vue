@@ -102,7 +102,12 @@ const unplacedStudents = computed(() => {
   }
 
   const placedStudentIds = new Set(props.seatAssignments.map((assignment) => assignment.student_id));
-  return props.students.filter((student) => !placedStudentIds.has(student.id));
+  return sortStudentsAlphabetically(
+    props.students.filter((student) => !placedStudentIds.has(student.id)),
+  );
+});
+const selectedUnplacedStudentsCount = computed(() => {
+  return unplacedStudents.value.filter((student) => isStudentSelected(student.id)).length;
 });
 const shouldCenterSurface = computed(() => {
   const scaledWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0");
@@ -246,7 +251,8 @@ function updateMapView(value: string): void {
             class="mt-3 border border-dashed border-navy/30 bg-canvas px-5 py-6 text-center text-sm leading-relaxed text-navy/70"
             data-test="rules-map-empty-state"
           >
-            Välj ett klassrum i sittplatser om du vill arbeta med regler direkt på klassrummets geometri.
+            Välj ett klassrum i arbetsytan Sittplatser och placera ut eleverna om du vill arbeta
+            med regler direkt utifrån klassrummets möblering.
           </div>
 
           <div
@@ -307,27 +313,57 @@ function updateMapView(value: string): void {
 
           <div
             v-if="unplacedStudents.length > 0"
-            class="mt-3 border border-navy/20 bg-canvas px-3 py-2.5"
+            class="rules-unplaced-panel mt-3 border border-navy/20 bg-canvas px-3 py-3"
             data-test="rules-map-unplaced"
           >
-            <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-              Ej på kartan
-            </p>
-            <div class="mt-2 flex flex-wrap gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-navy/15 pb-2">
+              <div class="space-y-1">
+                <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+                  Ej på karta
+                </p>
+                <p
+                  class="text-[11px] font-medium text-navy/55"
+                  data-test="rules-map-unplaced-count"
+                >
+                  {{ unplacedStudents.length }} elever
+                </p>
+              </div>
+              <p
+                v-if="selectedUnplacedStudentsCount > 0"
+                class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-burgundy"
+                data-test="rules-map-unplaced-selected-count"
+              >
+                {{ selectedUnplacedStudentsCount }} valda
+              </p>
+            </div>
+            <div
+              class="rules-unplaced-grid mt-3"
+              data-test="rules-map-unplaced-grid"
+            >
               <button
                 v-for="student in unplacedStudents"
                 :key="student.id"
                 type="button"
-                class="border px-2 py-1 text-[11px] font-semibold"
+                class="rules-unplaced-student border text-left"
                 :class="
                   isStudentSelected(student.id)
-                    ? 'planner-choice-button-active'
-                    : 'planner-choice-button-idle-muted'
+                    ? 'planner-choice-button-active-raised'
+                    : 'planner-choice-button-idle'
                 "
                 :data-test="`rules-unplaced-student-${student.id}`"
+                :aria-pressed="isStudentSelected(student.id) ? 'true' : 'false'"
                 @click="emit('student-selected', student.id)"
               >
-                {{ student.display_name }}
+                <span class="rules-unplaced-student-name">
+                  {{ student.display_name }}
+                </span>
+                <span
+                  v-if="selectionOrder(student.id)"
+                  class="rules-unplaced-student-order"
+                  :data-test="`rules-unplaced-student-order-${student.id}`"
+                >
+                  {{ selectionOrder(student.id) }}
+                </span>
               </button>
             </div>
           </div>
@@ -357,6 +393,44 @@ function updateMapView(value: string): void {
   inset: 0;
   width: 100%;
   pointer-events: none;
+}
+
+.rules-unplaced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.65rem;
+}
+
+.rules-unplaced-student {
+  display: flex;
+  min-height: 3.25rem;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.rules-unplaced-student-name {
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.rules-unplaced-student-order {
+  display: inline-flex;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

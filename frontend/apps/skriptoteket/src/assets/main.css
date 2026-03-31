@@ -261,11 +261,11 @@ body.app-shell-game-mode::before {
   }
 
   .planner-rules-summary-panel {
-    @apply min-h-[7.5rem] border border-navy bg-white px-3 py-2.5 shadow-brutal-sm;
+    @apply min-h-[11.5rem] border border-navy bg-white px-3 py-2.5 shadow-brutal-sm;
   }
 
   .planner-rules-summary-cards {
-    @apply mt-2.5 flex max-h-[8.25rem] flex-wrap gap-2 overflow-y-auto pr-1;
+    @apply mt-2.5 flex min-h-[7.25rem] max-h-[8.25rem] flex-wrap content-start gap-2 overflow-y-auto pr-1;
   }
 
   .planner-rules-summary-card {

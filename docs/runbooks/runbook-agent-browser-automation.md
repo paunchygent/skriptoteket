@@ -5,7 +5,7 @@ title: "Runbook: Agent browser automation (MCP Chrome + Playwright)"
 status: active
 owners: "agents"
 created: 2026-03-26
-updated: 2026-03-26
+updated: 2026-03-31
 system: "skriptoteket-dev"
 ---
 
@@ -30,6 +30,10 @@ the same browser profile or when automation targets a regular human browsing pro
 - Never point automation at the user's normal Chrome `User Data` directory.
 - Never share one fixed `user-data-dir` across concurrent agent/browser sessions.
 - The safe default is a unique temporary profile per session, then cleanup on close.
+- Pin Playwright MCP output files to a stable writable directory outside the repo, for example
+  `/Users/olofs_mba/.codex/playwright-mcp`.
+- Do not rely on the MCP server's current working directory for page snapshots, console logs, or related output files.
+  If cwd drifts to `/`, the server can fail with `ENOENT: no such file or directory, mkdir '/.playwright-mcp'`.
 
 ### 3. Attach mode rules
 

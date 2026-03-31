@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ST-29-06 mockup — Regler utan klassrum och organiserad ej-på-karta-yta</title>
+    <style>
+      :root {
+        --canvas: #f4f1e8;
+        --paper: #ffffff;
+        --navy: #1d2340;
+        --navy-soft: rgba(29, 35, 64, 0.7);
+        --navy-faint: rgba(29, 35, 64, 0.16);
+        --navy-muted: rgba(29, 35, 64, 0.08);
+        --accent: #d84f34;
+        --accent-soft: rgba(216, 79, 52, 0.12);
+        --disabled-text: rgba(29, 35, 64, 0.34);
+        --shadow: 4px 4px 0 rgba(29, 35, 64, 0.92);
+        --border: 2px solid var(--navy);
+        --border-soft: 2px solid rgba(29, 35, 64, 0.16);
+        --radius: 18px;
+        --transition: 160ms ease;
+        font-family:
+          "IBM Plex Sans",
+          "Avenir Next",
+          "Segoe UI",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(216, 79, 52, 0.08), transparent 30rem),
+          linear-gradient(180deg, #fbf8f0 0%, var(--canvas) 100%);
+        color: var(--navy);
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .page {
+        width: min(1440px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0 48px;
+      }
+
+      .control-strip,
+      .planner-shell,
+      .surface,
+      .workspace-panel {
+        border: var(--border);
+        background: var(--paper);
+        box-shadow: var(--shadow);
+      }
+
+      .control-strip {
+        padding: 18px 20px;
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--navy-soft);
+      }
+
+      .control-strip h1 {
+        margin: 0 0 10px;
+        font-size: 1.55rem;
+        line-height: 1.1;
+      }
+
+      .control-strip p {
+        margin: 0;
+        max-width: 76ch;
+        color: var(--navy-soft);
+        font-size: 0.98rem;
+        line-height: 1.5;
+      }
+
+      .scenario-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .scenario-button {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform var(--transition),
+          background var(--transition),
+          color var(--transition);
+      }
+
+      .scenario-button:hover {
+        transform: translate(-1px, -1px);
+      }
+
+      .scenario-button.is-active {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .planner-shell {
+        padding: 22px;
+      }
+
+      .shell-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--navy-faint);
+      }
+
+      .shell-title {
+        margin: 0;
+        font-size: 1.85rem;
+        line-height: 1.05;
+      }
+
+      .shell-context {
+        margin: 8px 0 0;
+        color: var(--navy-soft);
+        font-size: 0.98rem;
+      }
+
+      .ghost-button {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        padding: 10px 14px;
+        font-weight: 700;
+      }
+
+      .workspace-toggle {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .workspace-option {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        min-height: 52px;
+        padding: 12px 10px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        line-height: 1.1;
+        text-transform: uppercase;
+      }
+
+      .workspace-option.is-active {
+        background: var(--navy);
+        color: #fff;
+      }
+
+      .status-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(29, 35, 64, 0.18);
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: rgba(29, 35, 64, 0.05);
+        color: var(--navy-soft);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .status-pill::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .workspace-hint {
+        color: var(--navy-soft);
+        font-size: 0.95rem;
+      }
+
+      .workspace-body {
+        margin-top: 16px;
+      }
+
+      .rules-summary {
+        padding: 16px 18px;
+      }
+
+      .rules-summary p {
+        margin: 0;
+        color: var(--navy-soft);
+        font-size: 0.98rem;
+      }
+
+      .rules-summary-empty {
+        margin-top: 12px;
+        border: 2px dashed rgba(29, 35, 64, 0.14);
+        padding: 20px 18px;
+        color: rgba(29, 35, 64, 0.48);
+        font-size: 1rem;
+      }
+
+      .rules-layout {
+        display: grid;
+        grid-template-columns: 204px minmax(0, 1fr);
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .tool-rail {
+        padding: 12px;
+      }
+
+      .tool-rail-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .tool-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        border: var(--border-soft);
+        background: #fff;
+        padding: 10px 12px;
+        font-weight: 700;
+      }
+
+      .tool-button.is-active {
+        border-color: rgba(216, 79, 52, 0.44);
+        background: var(--accent-soft);
+        color: #8a2412;
+      }
+
+      .tool-icon {
+        display: inline-flex;
+        width: 18px;
+        justify-content: center;
+        font-size: 1rem;
+      }
+
+      .tool-rail-section {
+        margin-top: 12px;
+        border-top: 2px solid var(--navy-faint);
+        padding-top: 12px;
+      }
+
+      .tool-rail-meta {
+        margin: 0;
+        color: rgba(29, 35, 64, 0.62);
+        font-size: 0.94rem;
+        font-weight: 600;
+      }
+
+      .pending-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .pending-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border: var(--border-soft);
+        background: #fff;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .pending-order {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: var(--border-soft);
+        background: var(--accent-soft);
+        color: #8a2412;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .rail-button {
+        min-height: 48px;
+        border: var(--border-soft);
+        background: var(--canvas);
+        color: var(--navy-soft);
+        padding: 10px 12px;
+        font-size: 0.98rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .rail-button.is-disabled {
+        color: var(--disabled-text);
+      }
+
+      .map-panel {
+        padding: 14px 16px 16px;
+      }
+
+      .map-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--navy-faint);
+      }
+
+      .segmented-control {
+        display: inline-grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+        border: var(--border-soft);
+        background: var(--canvas);
+        padding: 2px;
+      }
+
+      .segment {
+        border: 0;
+        background: transparent;
+        padding: 12px 18px;
+        color: rgba(29, 35, 64, 0.42);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .segment.is-active {
+        background: var(--navy);
+        color: #fff;
+      }
+
+      .segment.is-disabled {
+        color: rgba(29, 35, 64, 0.32);
+      }
+
+      .zoom-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .zoom-value,
+      .zoom-button {
+        min-width: 46px;
+        min-height: 36px;
+        border: var(--border-soft);
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .map-stage {
+        margin-top: 14px;
+      }
+
+      .empty-map {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 104px;
+        border: 2px dashed rgba(29, 35, 64, 0.14);
+        background: rgba(255, 255, 255, 0.78);
+        padding: 24px 28px;
+        text-align: center;
+        color: var(--navy-soft);
+        font-size: 1.02rem;
+        line-height: 1.55;
+      }
+
+      .off-map-surface {
+        margin-top: 14px;
+        border: var(--border-soft);
+        background: linear-gradient(180deg, #ffffff 0%, #fcfbf7 100%);
+        padding: 14px;
+      }
+
+      .off-map-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: baseline;
+      }
+
+      .off-map-eyebrow {
+        margin: 0;
+        color: rgba(29, 35, 64, 0.56);
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .off-map-help {
+        margin: 0;
+        color: rgba(29, 35, 64, 0.54);
+        font-size: 0.92rem;
+      }
+
+      .off-map-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .student-button {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        border: var(--border-soft);
+        background: #fff;
+        padding: 8px 10px;
+        color: var(--navy);
+        text-align: left;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .student-button:hover {
+        background: #faf7ef;
+      }
+
+      .student-button.is-selected {
+        border-color: rgba(216, 79, 52, 0.42);
+        background: var(--accent-soft);
+        color: #8a2412;
+      }
+
+      .student-order {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border: var(--border-soft);
+        background: rgba(29, 35, 64, 0.04);
+        color: rgba(29, 35, 64, 0.42);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .student-button.is-selected .student-order {
+        background: #fff;
+        color: #8a2412;
+      }
+
+      .groups-panel {
+        padding: 18px;
+      }
+
+      .groups-placeholder {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .group-card {
+        min-height: 220px;
+        border: var(--border-soft);
+        background: #fff;
+        padding: 14px;
+      }
+
+      .group-card h3 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+      }
+
+      .group-student {
+        margin-top: 8px;
+        border: var(--border-soft);
+        background: #faf7ef;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .scene {
+        display: none;
+      }
+
+      .scene.is-visible {
+        display: block;
+      }
+
+      @media (max-width: 980px) {
+        .rules-layout,
+        .groups-placeholder {
+          grid-template-columns: 1fr;
+        }
+
+        .workspace-toggle {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="control-strip">
+        <p class="eyebrow">ST-29-06 mockup</p>
+        <h1>Regler utan klassrum som ett lugnt rules-first-läge</h1>
+        <p>
+          Idén här är att behålla <strong>Regler</strong> som en giltig arbetsyta även innan ett
+          klassrum är valt. Kartytan förklarar det frivilliga nästa steget, medan eleverna som ännu
+          inte kan visas på kartan presenteras i en organiserad, klickbar roster i stället för i ett
+          löst pillmoln.
+        </p>
+        <div class="scenario-row">
+          <button class="scenario-button is-active" data-scenario-target="rules-idle">
+            Regler · utan klassrum
+          </button>
+          <button class="scenario-button" data-scenario-target="rules-selection">
+            Regler · pågående regel
+          </button>
+          <button class="scenario-button" data-scenario-target="groups-hint">
+            Grupper · hjälprad
+          </button>
+        </div>
+      </section>
+
+      <section class="planner-shell">
+        <div class="shell-header">
+          <div>
+            <h2 class="shell-title">Klassrumskartan</h2>
+            <p class="shell-context">SA24C · Planering</p>
+          </div>
+          <button class="ghost-button" type="button">Avsluta</button>
+        </div>
+
+        <div class="workspace-toggle">
+          <button class="workspace-option" type="button">Översikt</button>
+          <button class="workspace-option" type="button">Grupper</button>
+          <button class="workspace-option" type="button">Sittplatser</button>
+          <button class="workspace-option is-active" type="button">Regler</button>
+        </div>
+
+        <div class="status-line">
+          <span class="status-pill">Ingen ändring</span>
+          <span class="workspace-hint" data-role="workspace-hint">
+            Här ställer du in regler som påverkar hur sittschemat skapas.
+          </span>
+        </div>
+
+        <div class="workspace-body">
+          <section class="scene is-visible" data-scenario="rules-idle">
+            <div class="rules-summary surface">
+              <p>Reglerna gäller hela klassen och sparas gemensamt.</p>
+              <div class="rules-summary-empty">Inga smarta regler ännu.</div>
+            </div>
+
+            <div class="rules-layout">
+              <aside class="tool-rail workspace-panel">
+                <div class="tool-rail-stack">
+                  <button class="tool-button is-active" type="button">
+                    <span class="tool-icon">⌂</span>
+                    <span>Nära läraren</span>
+                  </button>
+                  <button class="tool-button" type="button">
+                    <span class="tool-icon">⊘</span>
+                    <span>Håll isär</span>
+                  </button>
+                  <button class="tool-button" type="button">
+                    <span class="tool-icon">⛓</span>
+                    <span>Håll nära</span>
+                  </button>
+                </div>
+
+                <div class="tool-rail-section">
+                  <p class="tool-rail-meta">0 valda</p>
+                  <button class="rail-button is-disabled" type="button">Rensa markering</button>
+                </div>
+              </aside>
+
+              <section class="map-panel workspace-panel">
+                <div class="map-toolbar">
+                  <div class="segmented-control">
+                    <button class="segment is-active" type="button">Planeringskarta</button>
+                    <button class="segment is-disabled" type="button">Sittschema</button>
+                  </div>
+
+                  <div class="zoom-tools">
+                    <span class="zoom-value">100%</span>
+                    <button class="zoom-button" type="button">−</button>
+                    <button class="zoom-button" type="button">+</button>
+                    <button class="zoom-button" type="button">Anpassa</button>
+                  </div>
+                </div>
+
+                <div class="map-stage">
+                  <div class="empty-map">
+                    Välj ett klassrum i arbetsytan Sittplatser och placera ut eleverna om du vill
+                    arbeta med regler direkt utifrån klassrummets möblering.
+                  </div>
+
+                  <div class="off-map-surface">
+                    <div class="off-map-header">
+                      <p class="off-map-eyebrow">Ej på karta</p>
+                      <p class="off-map-help">Välj elever här tills kartvyn har ett klassrum att arbeta mot.</p>
+                    </div>
+
+                    <div class="off-map-grid">
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Agnes Leandersson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Alexander Klemets</span></button>
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Alma Winald</span></button>
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Alva Andblad</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Edith Winlund Strandler</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Ella Kjellman</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Ellen Odenman</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Elliot Antonsson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">F</span><span>Freja Essle</span></button>
+                      <button class="student-button" type="button"><span class="student-order">H</span><span>Hilda Grahn</span></button>
+                      <button class="student-button" type="button"><span class="student-order">I</span><span>Inger Isfeldt</span></button>
+                      <button class="student-button" type="button"><span class="student-order">J</span><span>Julia Axelsson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">J</span><span>Julia Post</span></button>
+                      <button class="student-button" type="button"><span class="student-order">K</span><span>Kerstin Aitman</span></button>
+                      <button class="student-button" type="button"><span class="student-order">L</span><span>Leo Svartling</span></button>
+                      <button class="student-button" type="button"><span class="student-order">L</span><span>Liam Vesterberg</span></button>
+                      <button class="student-button" type="button"><span class="student-order">L</span><span>Lily Sandahl</span></button>
+                      <button class="student-button" type="button"><span class="student-order">L</span><span>Linnea Walfridson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">L</span><span>Lucas Kristiansson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">M</span><span>Mary Parsons</span></button>
+                      <button class="student-button" type="button"><span class="student-order">M</span><span>Moa Svensson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">M</span><span>Molly Neijlind</span></button>
+                      <button class="student-button" type="button"><span class="student-order">N</span><span>Nellie Jonson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">N</span><span>Nora Johansson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">N</span><span>Nora Schneider</span></button>
+                      <button class="student-button" type="button"><span class="student-order">O</span><span>Otilia Olofsson Reijer</span></button>
+                      <button class="student-button" type="button"><span class="student-order">P</span><span>Petter Odéhn</span></button>
+                      <button class="student-button" type="button"><span class="student-order">S</span><span>Sofia Andersson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">V</span><span>Viktor Thornblad</span></button>
+                      <button class="student-button" type="button"><span class="student-order">V</span><span>Vilma Ossner</span></button>
+                      <button class="student-button" type="button"><span class="student-order">V</span><span>Vincent Strandberg Gunnarsson</span></button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="scene" data-scenario="rules-selection">
+            <div class="rules-summary surface">
+              <p>Reglerna gäller hela klassen och sparas gemensamt.</p>
+              <div class="rules-summary-empty">Inga smarta regler ännu.</div>
+            </div>
+
+            <div class="rules-layout">
+              <aside class="tool-rail workspace-panel">
+                <div class="tool-rail-stack">
+                  <button class="tool-button" type="button">
+                    <span class="tool-icon">⌂</span>
+                    <span>Nära läraren</span>
+                  </button>
+                  <button class="tool-button" type="button">
+                    <span class="tool-icon">⊘</span>
+                    <span>Håll isär</span>
+                  </button>
+                  <button class="tool-button is-active" type="button">
+                    <span class="tool-icon">⛓</span>
+                    <span>Håll nära</span>
+                  </button>
+                </div>
+
+                <div class="tool-rail-section">
+                  <p class="tool-rail-meta">Pågående regel · 2 valda</p>
+                  <div class="pending-panel">
+                    <div class="pending-chip"><span>Agnes Leandersson</span><span class="pending-order">1</span></div>
+                    <div class="pending-chip"><span>Ella Kjellman</span><span class="pending-order">2</span></div>
+                    <button class="rail-button" type="button">Skapa regel</button>
+                  </div>
+                  <button class="rail-button" style="margin-top: 10px;" type="button">Rensa markering</button>
+                </div>
+              </aside>
+
+              <section class="map-panel workspace-panel">
+                <div class="map-toolbar">
+                  <div class="segmented-control">
+                    <button class="segment is-active" type="button">Planeringskarta</button>
+                    <button class="segment is-disabled" type="button">Sittschema</button>
+                  </div>
+
+                  <div class="zoom-tools">
+                    <span class="zoom-value">100%</span>
+                    <button class="zoom-button" type="button">−</button>
+                    <button class="zoom-button" type="button">+</button>
+                    <button class="zoom-button" type="button">Anpassa</button>
+                  </div>
+                </div>
+
+                <div class="map-stage">
+                  <div class="empty-map">
+                    Välj ett klassrum i arbetsytan Sittplatser och placera ut eleverna om du vill
+                    arbeta med regler direkt utifrån klassrummets möblering.
+                  </div>
+
+                  <div class="off-map-surface">
+                    <div class="off-map-header">
+                      <p class="off-map-eyebrow">Ej på karta</p>
+                      <p class="off-map-help">Markeringen hålls ihop även innan ett klassrum är valt.</p>
+                    </div>
+
+                    <div class="off-map-grid">
+                      <button class="student-button is-selected" type="button"><span class="student-order">1</span><span>Agnes Leandersson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Alexander Klemets</span></button>
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Alma Winald</span></button>
+                      <button class="student-button" type="button"><span class="student-order">A</span><span>Alva Andblad</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Edith Winlund Strandler</span></button>
+                      <button class="student-button is-selected" type="button"><span class="student-order">2</span><span>Ella Kjellman</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Ellen Odenman</span></button>
+                      <button class="student-button" type="button"><span class="student-order">E</span><span>Elliot Antonsson</span></button>
+                      <button class="student-button" type="button"><span class="student-order">F</span><span>Freja Essle</span></button>
+                      <button class="student-button" type="button"><span class="student-order">H</span><span>Hilda Grahn</span></button>
+                      <button class="student-button" type="button"><span class="student-order">I</span><span>Inger Isfeldt</span></button>
+                      <button class="student-button" type="button"><span class="student-order">J</span><span>Julia Axelsson</span></button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="scene" data-scenario="groups-hint">
+            <div class="groups-panel surface">
+              <div class="status-line" style="margin-top: 0;">
+                <span class="status-pill">Ingen ändring</span>
+                <span class="workspace-hint">
+                  Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.
+                </span>
+              </div>
+
+              <div class="groups-placeholder">
+                <article class="group-card">
+                  <h3>Grupp 1</h3>
+                  <div class="group-student">Agnes Leandersson</div>
+                  <div class="group-student">Ella Kjellman</div>
+                </article>
+                <article class="group-card">
+                  <h3>Grupp 2</h3>
+                  <div class="group-student">Alexander Klemets</div>
+                  <div class="group-student">Julia Axelsson</div>
+                </article>
+                <article class="group-card">
+                  <h3>Grupp 3</h3>
+                  <div class="group-student">Alma Winald</div>
+                  <div class="group-student">Leo Svartling</div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario-target]"));
+      const scenes = Array.from(document.querySelectorAll("[data-scenario]"));
+      const workspaceHint = document.querySelector("[data-role='workspace-hint']");
+
+      const rulesHint = "Här ställer du in regler som påverkar hur sittschemat skapas.";
+      const groupsHint = "Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.";
+
+      function showScenario(target) {
+        for (const button of scenarioButtons) {
+          button.classList.toggle("is-active", button.dataset.scenarioTarget === target);
+        }
+
+        for (const scene of scenes) {
+          scene.classList.toggle("is-visible", scene.dataset.scenario === target);
+        }
+
+        if (workspaceHint) {
+          workspaceHint.textContent = target === "groups-hint" ? groupsHint : rulesHint;
+        }
+
+        const workspaceOptions = Array.from(document.querySelectorAll(".workspace-option"));
+        workspaceOptions.forEach((option) => {
+          const isGroups = target === "groups-hint" && option.textContent.trim() === "Grupper";
+          const isRules = target !== "groups-hint" && option.textContent.trim() === "Regler";
+          option.classList.toggle("is-active", isGroups || isRules);
+        });
+
+        if (window.location.hash !== `#${target}`) {
+          window.history.replaceState(null, "", `#${target}`);
+        }
+      }
+
+      for (const button of scenarioButtons) {
+        button.addEventListener("click", () => showScenario(button.dataset.scenarioTarget));
+      }
+
+      const initialScenario = window.location.hash.replace("#", "");
+      const knownScenarios = new Set(["rules-idle", "rules-selection", "groups-hint"]);
+      showScenario(knownScenarios.has(initialScenario) ? initialScenario : "rules-idle");
+    </script>
+  </body>
+</html>

@@ -19,7 +19,7 @@ export const plannerHelpSections: Record<string, string> = {
 <ol><li>Gå till <strong>Översikt</strong>.</li><li>Klicka <strong>skapa nytt klassrum</strong> och ge det ett namn (t.ex. "B214").</li></ol>
 <h4>Verktyg</h4>
 <p>När du skapar ditt klassrum har du en verktygsmeny till vänster:</p>
-<ul><li><strong>Placera plats</strong> -- sätter ut stolar. Det här är det enda du <em>måste</em> använda.</li><li><strong>Möbler</strong> -- kateder, whiteboard, bord, bänk, fönster, dörr. Valfritt, men gör det lättare att se hur rummet är möblerat.</li><li><strong>Sudda</strong> -- ta bort enstaka objekt genom att klicka på dem.</li><li><strong>Rensa</strong> -- töm hela klassrummet.</li></ul>
+<ul><li><strong>Sittplats</strong> -- sätter ut stolar. Det här är det enda du <em>måste</em> använda.</li><li><strong>Möbler</strong> -- kateder, whiteboard, bord, bänk, fönster, dörr. Valfritt, men gör det lättare att se hur rummet är möblerat.</li><li><strong>Sudda</strong> -- ta bort enstaka objekt genom att klicka på dem.</li><li><strong>Rensa</strong> -- töm hela klassrummet.</li></ul>
 <p>Grundprincipen: välj ett verktyg, klicka i rutnätet för att placera. Vill du ångra? Klicka på samma ruta igen så försvinner objektet.</p>
 <h4>Varför möbler spelar roll</h4>
 <p>Du <em>behöver</em> inga möbler -- bara stolar räcker. Men om du lägger till en <strong>kateder</strong> och en <strong>whiteboard</strong> så vet programmet ungefär var du som lärare brukar stå. Det använder den informationen när du låter programmet göra smarta placeringar (till exempel "nära läraren").</p>

@@ -294,7 +294,7 @@ def _assert_room_editor_feedback(page: Page) -> None:
         timeout=60000
     )
     expect(page.locator('[data-test="room-template-selected-tool-meta"]')).to_contain_text(
-        "Placera plats"
+        "Sittplats"
     )
     page.locator('[data-test="room-template-tool-whiteboard"]').click()
     expect(page.locator('[data-test="room-template-selected-tool-meta"]')).to_contain_text(

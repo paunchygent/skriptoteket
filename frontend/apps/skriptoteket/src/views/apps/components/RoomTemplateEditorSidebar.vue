@@ -38,7 +38,7 @@ type RoomEditorToolEntry = {
 const toolEntries = computed<RoomEditorToolEntry[]>(() => [
   {
     id: "seat",
-    label: "Placera plats",
+    label: "Sittplats",
     helpText: "Klicka i rutnätet för att lägga till eller ta bort en sittplats.",
   },
   ...props.roomFixturePalette.map((fixture) => ({

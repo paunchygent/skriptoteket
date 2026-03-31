@@ -4,8 +4,8 @@
  *
  * This component renders one mutable draft-scoped group inside the classroom
  * planner. It keeps drag-and-drop assignment local to the card while exposing
- * explicit controls for rename, reorder, removal, and student selection so the
- * metadata drawer can stay outside the card grid.
+ * explicit controls for rename, reorder, and removal without reintroducing a
+ * dead click-selection state for students already placed in groups.
  */
 
 import { ref, watch } from "vue";
@@ -19,7 +19,6 @@ const props = defineProps<{
   students: Student[];
   canMoveUp: boolean;
   canMoveDown: boolean;
-  selectedStudentId?: string | null;
   smartRuleMarkersByStudentId?: Record<string, string[]>;
   disabled?: boolean;
 }>();
@@ -30,7 +29,6 @@ const emit = defineEmits<{
   (e: "group-renamed", groupId: string, name: string): void;
   (e: "group-moved", groupId: string, offset: number): void;
   (e: "group-removed", groupId: string): void;
-  (e: "student-selected", studentId: string): void;
 }>();
 
 const editableName = ref(props.group.name);
@@ -141,16 +139,14 @@ function commitName(): void {
       <div
         v-for="student in students"
         :key="student.id"
+        :data-test="`group-student-row-${student.id}`"
         class="flex min-h-[44px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
-        :class="selectedStudentId === student.id ? 'border-burgundy bg-burgundy/10 text-burgundy' : 'border-navy bg-white text-navy hover:bg-canvas'"
+        :class="'border-navy bg-white text-navy hover:bg-canvas'"
         :draggable="!props.disabled"
         @dragstart="onDragStart($event, student)"
       >
-        <button
-          type="button"
+        <div
           class="planner-row-select-button"
-          :disabled="props.disabled"
-          @click="emit('student-selected', student.id)"
         >
           <div class="space-y-1">
             <div
@@ -164,7 +160,7 @@ function commitName(): void {
               :root-test-id="`group-student-markers-${student.id}`"
             />
           </div>
-        </button>
+        </div>
         <button
           type="button"
           class="planner-row-remove-button"

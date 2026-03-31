@@ -130,7 +130,10 @@ watch(canShowSeatingArrangement, (nextValue) => {
       @delete-rule="plannerState.deleteRelationshipRule($event)"
     />
 
-    <div class="grid gap-3 xl:grid-cols-[176px_minmax(0,1fr)]">
+    <div
+      class="grid gap-3 xl:grid-cols-[176px_minmax(0,1fr)] xl:items-stretch"
+      data-test="rules-workspace-layout"
+    >
       <PlannerRulesToolRail
         :active-tool="plannerState.activeSeatingSmartTool"
         :can-edit="plannerState.canEditSeatingSmartRules"

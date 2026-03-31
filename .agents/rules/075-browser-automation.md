@@ -24,8 +24,11 @@ scope: "testing"
 ## Codex Quick UI Checks (REQUIRED)
 
 - REQUIRED: For quick UI fixes, patches, and visual checkups inside Codex, use headed Playwright MCP Chrome before headless scripts.
-- REQUIRED: The canonical Codex Playwright MCP config is `npx -y @playwright/mcp@latest --browser chrome --isolated`.
+- REQUIRED: The canonical Codex Playwright MCP config is `npx -y @playwright/mcp@latest --browser chrome --isolated --output-dir /Users/olofs_mba/.codex/playwright-mcp`.
 - REQUIRED: `--isolated` is the default because Codex can leave multiple MCP sessions alive at once, and persistent Playwright Chrome profiles will then conflict.
+- REQUIRED: Always pin `--output-dir` to a stable writable path outside the repo checkout. Do not rely on the MCP server's
+  current working directory for output files, because cwd drift can make the server try to write to `/.playwright-mcp`
+  instead of the intended project-local scratch directory.
 - REQUIRED: If Playwright MCP reports `Browser is already in use ...`, do not switch to headless. First terminate lingering `playwright-mcp` launchers and Chrome processes using `~/Library/Caches/ms-playwright/mcp-chrome*`, then retry the MCP browser.
 
 Canonical recovery commands:

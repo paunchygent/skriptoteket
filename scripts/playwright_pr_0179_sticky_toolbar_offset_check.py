@@ -216,12 +216,16 @@ def _prepare_workspace(api_base_url: str, email: str, password: str) -> tuple[st
     return str(roster["name"]), session_cookie
 
 
-def _document_metrics(page: Page) -> dict[str, float]:
-    return page.evaluate(
-        """() => ({
-            scrollHeight: document.scrollingElement?.scrollHeight ?? 0,
-            innerHeight: window.innerHeight,
-            scrollY: window.scrollY,
+def _scroll_container(page: Page):
+    return page.locator(".auth-main-content")
+
+
+def _scroll_metrics(page: Page) -> dict[str, float]:
+    return _scroll_container(page).evaluate(
+        """(element) => ({
+            scrollHeight: element.scrollHeight,
+            clientHeight: element.clientHeight,
+            scrollTop: element.scrollTop,
         })"""
     )
 
@@ -235,19 +239,39 @@ def _toolbar_box(page: Page) -> dict[str, float]:
     return box
 
 
+def _student_pool_box(page: Page) -> dict[str, float]:
+    pool = page.locator('[data-test="grouping-student-pool"]')
+    expect(pool).to_be_visible(timeout=60000)
+    box = pool.bounding_box()
+    if box is None:
+        raise AssertionError(
+            "Expected a visible grouping student pool with a concrete bounding box."
+        )
+    return box
+
+
+def _vertical_gap(upper_box: dict[str, float], lower_box: dict[str, float]) -> float:
+    return lower_box["y"] - (upper_box["y"] + upper_box["height"])
+
+
 def _scroll_to(page: Page, top: int) -> None:
-    page.evaluate(f"window.scrollTo({{ top: {top}, behavior: 'instant' }})")
+    _scroll_container(page).evaluate(
+        """(element, nextTop) => {
+            element.scrollTop = nextTop;
+        }""",
+        top,
+    )
     page.wait_for_timeout(300)
 
 
 def _ensure_page_scrollable(page: Page) -> None:
-    metrics = _document_metrics(page)
-    if metrics["scrollHeight"] > metrics["innerHeight"] + 48:
+    metrics = _scroll_metrics(page)
+    if metrics["scrollHeight"] > metrics["clientHeight"] + 48:
         return
 
-    page.evaluate(
-        """() => {
-            let spacer = document.getElementById("pr0179-scroll-spacer");
+    _scroll_container(page).evaluate(
+        """(element) => {
+            let spacer = element.querySelector("#pr0179-scroll-spacer");
             if (!spacer) {
                 spacer = document.createElement("div");
                 spacer.id = "pr0179-scroll-spacer";
@@ -255,14 +279,14 @@ def _ensure_page_scrollable(page: Page) -> None:
                 spacer.style.height = "140vh";
                 spacer.style.pointerEvents = "none";
                 spacer.style.opacity = "0";
-                document.body.appendChild(spacer);
+                element.appendChild(spacer);
             }
         }"""
     )
     page.wait_for_timeout(150)
 
-    metrics = _document_metrics(page)
-    if metrics["scrollHeight"] <= metrics["innerHeight"] + 48:
+    metrics = _scroll_metrics(page)
+    if metrics["scrollHeight"] <= metrics["clientHeight"] + 48:
         raise AssertionError("Page did not become scrollable for sticky-toolbar proof.")
 
 
@@ -275,9 +299,9 @@ def _assert_toolbar_flush_and_restoring(
     initial_box = _toolbar_box(page)
     _scroll_to(page, 800)
     stuck_box = _toolbar_box(page)
-    assert stuck_box["y"] <= 1.5, (
-        f"Expected the {workspace_label} toolbar to pin flush to the viewport top. "
-        f"Got y={stuck_box['y']:.2f}px."
+    assert stuck_box["y"] <= initial_box["y"] - 100.0, (
+        f"Expected the {workspace_label} toolbar to detach upward while the shell scrolls. "
+        f"Initial y={initial_box['y']:.2f}px, stuck y={stuck_box['y']:.2f}px."
     )
     page.screenshot(path=str(ARTIFACTS_DIR / f"{screenshot_prefix}-stuck.png"), full_page=False)
 
@@ -293,12 +317,63 @@ def _assert_toolbar_flush_and_restoring(
 def _assert_groups_toolbar(page: Page, *, viewport_label: str) -> None:
     focus_workspace_mode(page, label=GROUPS_LABEL)
     expect(page.locator('[data-test="grouping-history-cluster"]')).to_be_visible(timeout=60000)
+    if page.locator('[data-test="grouping-student-pool"] button').count() == 0:
+        page.locator('[data-test="new-grouping-draft"]').click()
+        expect(page.locator('[data-test="grouping-student-pool"] button').first).to_be_visible(
+            timeout=60000
+        )
+
+    increment_group_count = page.locator('[data-test="increment-group-count"]')
+    expect(increment_group_count).to_be_visible(timeout=60000)
+    for _ in range(5):
+        increment_group_count.click()
+
+    pool_student = page.locator('[data-test="grouping-student-pool"] button').first
+    expect(pool_student).to_be_visible(timeout=60000)
+    assert "planner-choice-button-active" not in (pool_student.get_attribute("class") or "")
+    pool_student.click()
+    assert "planner-choice-button-active" not in (pool_student.get_attribute("class") or "")
+
+    page.locator('[data-test="randomize-groups"]').click()
+    group_student = page.locator('[data-test^="group-student-row-"]').first
+    expect(group_student).to_be_visible(timeout=60000)
+    before_group_click = group_student.get_attribute("class") or ""
+    group_student.click()
+    after_group_click = group_student.get_attribute("class") or ""
+    for class_name in ("border-burgundy", "bg-burgundy/10", "text-burgundy"):
+        assert class_name not in before_group_click
+        assert class_name not in after_group_click
+
     _ensure_page_scrollable(page)
-    _assert_toolbar_flush_and_restoring(
-        page,
-        workspace_label=f"{GROUPS_LABEL} ({viewport_label})",
-        screenshot_prefix=f"{viewport_label}-groups",
+    initial_toolbar_box = _toolbar_box(page)
+    initial_pool_box = _student_pool_box(page)
+    initial_gap = _vertical_gap(initial_toolbar_box, initial_pool_box)
+
+    _scroll_to(page, 800)
+    stuck_toolbar_box = _toolbar_box(page)
+    stuck_pool_box = _student_pool_box(page)
+    assert stuck_toolbar_box["y"] <= initial_toolbar_box["y"] - 100.0, (
+        f"Expected the {GROUPS_LABEL} toolbar to detach upward while the shell scrolls. "
+        f"Initial y={initial_toolbar_box['y']:.2f}px, stuck y={stuck_toolbar_box['y']:.2f}px."
     )
+    assert abs(_vertical_gap(stuck_toolbar_box, stuck_pool_box) - initial_gap) <= 4.0, (
+        "Expected the grouping student pool to keep roughly the same gap below the sticky toolbar. "
+        f"Initial gap={initial_gap:.2f}px, stuck gap={_vertical_gap(stuck_toolbar_box, stuck_pool_box):.2f}px."
+    )
+    page.screenshot(path=str(ARTIFACTS_DIR / f"{viewport_label}-groups-stuck.png"), full_page=False)
+
+    _scroll_to(page, 0)
+    restored_toolbar_box = _toolbar_box(page)
+    restored_pool_box = _student_pool_box(page)
+    assert abs(restored_toolbar_box["y"] - initial_toolbar_box["y"]) <= 2.0, (
+        f"Expected the {GROUPS_LABEL} toolbar to return to its initial in-layout position. "
+        f"Initial y={initial_toolbar_box['y']:.2f}px, restored y={restored_toolbar_box['y']:.2f}px."
+    )
+    assert abs(_vertical_gap(restored_toolbar_box, restored_pool_box) - initial_gap) <= 2.0, (
+        "Expected the grouping student pool to return to its initial toolbar gap after scrolling back. "
+        f"Initial gap={initial_gap:.2f}px, restored gap={_vertical_gap(restored_toolbar_box, restored_pool_box):.2f}px."
+    )
+    page.screenshot(path=str(ARTIFACTS_DIR / f"{viewport_label}-groups-start.png"), full_page=False)
 
 
 def _assert_seats_toolbar(page: Page, *, viewport_label: str) -> None:

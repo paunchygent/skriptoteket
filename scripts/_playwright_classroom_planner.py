@@ -149,7 +149,7 @@ def create_template(page: Page, *, template_name: str) -> None:
         builder_viewport.get_by_text(re.compile(r"^(seat|plats)-2$", re.IGNORECASE))
     ).not_to_be_visible()
 
-    page.get_by_role("button", name=re.compile(r"Placera plats", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Sittplats", re.IGNORECASE)).click()
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
     expect(

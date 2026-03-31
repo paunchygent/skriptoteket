@@ -25,7 +25,6 @@ vi.mock("../useClassroomState", () => ({
 function mountBoard() {
   return mount(GroupBoard, {
     props: {
-      selectedStudentId: "student-2",
       smartRuleMarkersByStudentId: {
         "student-2": ["Isär A"],
       },
@@ -36,23 +35,19 @@ function mountBoard() {
           props: [
             "group",
             "students",
-            "selectedStudentId",
             "smartRuleMarkersByStudentId",
             "disabled",
             "canMoveUp",
             "canMoveDown",
           ],
           template: `
-            <button
-              type="button"
+            <div
               data-test="group-card"
               :data-disabled="String(disabled)"
               :data-marker-count="String((smartRuleMarkersByStudentId?.['student-2'] ?? []).length)"
-              :data-selected-student-id="selectedStudentId ?? ''"
-              @click="$emit('student-selected', 'student-2')"
             >
               {{ group.name }} · {{ students.length }}
-            </button>
+            </div>
           `,
         },
       },
@@ -83,7 +78,7 @@ describe("GroupBoard", () => {
     expect(wrapper.text()).not.toContain("seat-2");
   });
 
-  it("renders ordered group cards and forwards student selection", async () => {
+  it("renders ordered group cards without wiring a dead selected-student state", () => {
     stateMocks.plannerState.groups = [
       { id: "group-b", name: "Grupp B", sort_order: 1, name_is_custom: false },
       { id: "group-a", name: "Grupp A", sort_order: 0, name_is_custom: false },
@@ -99,10 +94,6 @@ describe("GroupBoard", () => {
     expect(cards).toHaveLength(2);
     expect(cards[0]?.text()).toContain("Grupp A");
     expect(cards[1]?.text()).toContain("Grupp B");
-
-    await cards[0]!.trigger("click");
-
-    expect(wrapper.emitted("student-selected")).toEqual([["student-2"]]);
   });
 
   it("passes the workspace busy state down to group cards", () => {
@@ -111,7 +102,6 @@ describe("GroupBoard", () => {
     const wrapper = mountBoard();
 
     expect(wrapper.get('[data-test="group-card"]').attributes("data-disabled")).toBe("true");
-    expect(wrapper.get('[data-test="group-card"]').attributes("data-selected-student-id")).toBe("student-2");
   });
 
   it("forwards smart-rule markers to the rendered group cards", () => {

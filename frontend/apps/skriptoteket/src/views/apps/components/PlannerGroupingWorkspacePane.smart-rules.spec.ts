@@ -91,4 +91,34 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
       "Isär A",
     );
   });
+
+  it("keeps the ungrouped pool as a stretched desktop column with an internal list scroller", () => {
+    const wrapper = mount(PlannerGroupingWorkspacePane);
+    const pool = wrapper.get('[data-test="grouping-student-pool"]');
+    const scrollBody = wrapper.get('[data-test="grouping-student-pool-scroll-body"]');
+    const layoutLane = pool.element.parentElement;
+
+    expect(pool.classes()).toEqual(
+      expect.arrayContaining([
+        "min-h-0",
+        "xl:h-full",
+        "xl:flex-1",
+        "xl:overflow-hidden",
+      ]),
+    );
+    expect(pool.attributes("style")).toBeUndefined();
+    expect(layoutLane?.className).toContain("xl:w-[240px]");
+    expect(layoutLane?.className).toContain("xl:flex");
+    expect(layoutLane?.className).toContain("xl:min-h-0");
+    expect(layoutLane?.className).toContain("xl:flex-none");
+    expect(layoutLane?.className).toContain("xl:self-stretch");
+    expect(layoutLane?.className).toContain("xl:[contain:size]");
+    expect(scrollBody.classes()).toEqual(
+      expect.arrayContaining([
+        "min-h-0",
+        "flex-1",
+        "overflow-y-auto",
+      ]),
+    );
+  });
 });

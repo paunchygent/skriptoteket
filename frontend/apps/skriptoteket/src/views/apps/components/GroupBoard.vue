@@ -13,12 +13,7 @@ import GroupCard from "./GroupCard.vue";
 import { useClassroomState } from "../useClassroomState";
 
 const props = defineProps<{
-  selectedStudentId?: string | null;
   smartRuleMarkersByStudentId?: Record<string, string[]>;
-}>();
-
-const emit = defineEmits<{
-  (e: "student-selected", studentId: string): void;
 }>();
 
 const state = useClassroomState();
@@ -34,7 +29,6 @@ const orderedGroups = computed(() => [...state.groups].sort((left, right) => lef
       :students="state.studentsByGroupId[group.id] ?? []"
       :can-move-up="index > 0"
       :can-move-down="index < orderedGroups.length - 1"
-      :selected-student-id="props.selectedStudentId"
       :smart-rule-markers-by-student-id="props.smartRuleMarkersByStudentId"
       :disabled="state.isWorkspaceBusy"
       @student-dropped="state.assignStudentToGroup"
@@ -42,7 +36,6 @@ const orderedGroups = computed(() => [...state.groups].sort((left, right) => lef
       @group-renamed="state.renameGroup"
       @group-moved="state.moveGroup"
       @group-removed="state.removeGroup"
-      @student-selected="emit('student-selected', $event)"
     />
   </div>
 </template>

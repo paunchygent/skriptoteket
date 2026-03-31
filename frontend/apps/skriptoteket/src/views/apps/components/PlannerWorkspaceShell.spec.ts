@@ -8,8 +8,6 @@
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import PlannerGroupingWorkspaceToolbar from "./PlannerGroupingWorkspaceToolbar.vue";
-import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
 import PlannerWorkspaceShell from "./PlannerWorkspaceShell.vue";
 import type { ClassWorkspaceSummary, PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
 
@@ -326,7 +324,7 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.text()).toContain("Slumpa");
     expect(wrapper.text()).toContain("Nytt utkast");
     expect(wrapper.text()).toContain(
-      "Dra elever mellan grupperna tills grupparbetet sitter.",
+      "Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.",
     );
   });
 
@@ -373,13 +371,17 @@ describe("PlannerWorkspaceShell", () => {
     });
 
     expect(wrapper.text()).toContain("Öppnar Regler...");
-    expect(wrapper.text()).toContain("Dra elever mellan grupperna tills grupparbetet sitter.");
+    expect(wrapper.text()).toContain(
+      "Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.",
+    );
     expect(wrapper.find("[data-test='grouping-toolbar']").exists()).toBe(false);
     expect(wrapper.find("[data-test='grouping-pane']").exists()).toBe(false);
 
     await wrapper.setProps({ initialView: "rules" });
 
-    expect(wrapper.text()).toContain("Dra elever mellan grupperna tills grupparbetet sitter.");
+    expect(wrapper.text()).toContain(
+      "Slumpa eller placera eleverna och dra dem mellan grupperna tills du är nöjd.",
+    );
     expect(wrapper.find("[data-test='rules-pane']").exists()).toBe(false);
 
     await wrapper.setProps({ transitionLabel: null });
@@ -411,10 +413,14 @@ describe("PlannerWorkspaceShell", () => {
       global: commonGlobal,
     });
 
-    expect(groupingWrapper.getComponent(PlannerGroupingWorkspaceToolbar).classes()).toEqual(
+    expect(
+      groupingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
+    ).toEqual(
       expect.arrayContaining(["sticky", "top-0", "z-20", "md:-top-4"]),
     );
-    expect(groupingWrapper.getComponent(PlannerGroupingWorkspaceToolbar).classes()).not.toContain(
+    expect(
+      groupingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="groups"]').classes(),
+    ).not.toContain(
       "top-3",
     );
 
@@ -433,11 +439,64 @@ describe("PlannerWorkspaceShell", () => {
       global: commonGlobal,
     });
 
-    expect(seatingWrapper.getComponent(PlannerSeatingWorkspaceToolbar).classes()).toEqual(
+    expect(
+      seatingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
+    ).toEqual(
       expect.arrayContaining(["sticky", "top-0", "z-20", "md:-top-4"]),
     );
-    expect(seatingWrapper.getComponent(PlannerSeatingWorkspaceToolbar).classes()).not.toContain(
+    expect(
+      seatingWrapper.get('[data-ui="planner-workspace-toolbar-shell"][data-view="seats"]').classes(),
+    ).not.toContain(
       "top-3",
+    );
+  });
+
+  it("wraps grouping and seating workspaces in bounded desktop pane shells", () => {
+    const commonGlobal = {
+      stubs: {
+        GroupBoard: { template: "<div data-test='group-board' />" },
+        RoomCanvas: { template: "<div data-test='room-canvas' />" },
+        PlannerMetadataDrawer: {
+          props: ["open"],
+          template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+        },
+      },
+    };
+
+    const groupingWrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableRosters: buildRosters(),
+        selectedRosterId: "roster-1",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: commonGlobal,
+    });
+
+    expect(
+      groupingWrapper.get('[data-ui="planner-workspace-pane-shell"][data-view="groups"]').classes(),
+    ).toEqual(
+      expect.arrayContaining(["xl:min-h-0", "xl:max-h-full", "xl:overflow-y-auto"]),
+    );
+
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+
+    const seatingWrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: commonGlobal,
+    });
+
+    expect(
+      seatingWrapper.get('[data-ui="planner-workspace-pane-shell"][data-view="seats"]').classes(),
+    ).toEqual(
+      expect.arrayContaining(["xl:min-h-0", "xl:max-h-full", "xl:overflow-y-auto"]),
     );
   });
 
@@ -464,7 +523,15 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.text()).toContain("Sittplatser");
     expect(wrapper.text()).toContain("Utan klassrum");
 
-    await wrapper.get("[data-test='grouping-student-pool'] button").trigger("click");
+    const groupingPoolStudent = wrapper.get("[data-test='grouping-student-pool'] button");
+
+    expect(groupingPoolStudent.classes()).toContain("planner-choice-button-strong");
+    expect(groupingPoolStudent.classes()).not.toContain("planner-choice-button-active");
+
+    await groupingPoolStudent.trigger("click");
+
+    expect(groupingPoolStudent.classes()).toContain("planner-choice-button-strong");
+    expect(groupingPoolStudent.classes()).not.toContain("planner-choice-button-active");
     expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
@@ -534,6 +601,51 @@ describe("PlannerWorkspaceShell", () => {
     expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith(
       "student-1",
     );
+    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
+  });
+
+  it("ignores Regler student clicks when no smart tool is active", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+    stateMocks.plannerState.activeSeatingSmartTool = null;
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "rules",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerRulesWorkspacePane: {
+            props: ["selectedStudentId"],
+            template: `
+              <div>
+                <span data-test="rules-selected-id">{{ selectedStudentId ?? 'none' }}</span>
+                <button
+                  data-test="rules-student"
+                  @click="$emit('student-selected', 'student-1')"
+                />
+              </div>
+            `,
+          },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    await wrapper.get("[data-test='rules-student']").trigger("click");
+
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
+    expect(wrapper.get("[data-test='rules-selected-id']").text()).toBe("none");
     expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 

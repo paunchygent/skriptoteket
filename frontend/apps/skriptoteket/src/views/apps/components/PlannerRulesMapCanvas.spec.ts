@@ -49,4 +49,33 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.find('[data-test="rules-map-canvas"]').exists()).toBe(true);
     expect(wrapper.findAll('[data-test="rules-seat-node"]')).toHaveLength(1);
   });
+
+  it("uses the approved no-classroom copy and organized off-map roster when no template exists", () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "planning_map",
+        template: null,
+        students: [
+          { id: "student-1", display_name: "Ada Lovelace" },
+          { id: "student-2", display_name: "Alan Turing" },
+        ],
+        pendingSelectedStudentIds: ["student-2"],
+      },
+    });
+
+    expect(wrapper.get('[data-test="rules-map-empty-state"]').text()).toContain(
+      "Välj ett klassrum i arbetsytan Sittplatser och placera ut eleverna om du vill arbeta med regler direkt utifrån klassrummets möblering.",
+    );
+    expect(wrapper.get('[data-test="rules-map-unplaced"]').text()).toContain("Ej på karta");
+    expect(wrapper.get('[data-test="rules-map-unplaced-count"]').text()).toContain("2 elever");
+    expect(wrapper.get('[data-test="rules-map-unplaced-selected-count"]').text()).toContain(
+      "1 valda",
+    );
+    expect(wrapper.find('[data-test="rules-map-unplaced-grid"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-1"]').attributes("aria-pressed"))
+      .toBe("false");
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-2"]').attributes("aria-pressed"))
+      .toBe("true");
+    expect(wrapper.get('[data-test="rules-unplaced-student-order-student-2"]').text()).toBe("1");
+  });
 });

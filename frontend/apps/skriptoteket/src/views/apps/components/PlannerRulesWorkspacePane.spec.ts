@@ -228,4 +228,27 @@ describe("PlannerRulesWorkspacePane", () => {
 
     expect(stateMocks.plannerState.clearNearTeacherRule).toHaveBeenCalledWith();
   });
+
+  it("stretches the tool rail beside the map and reserves the summary panel height before rules exist", () => {
+    stateMocks.plannerState.seatingPreferences = [];
+    stateMocks.plannerState.relationshipRules = [];
+    stateMocks.plannerState.pendingRelationshipStudentIds = [];
+    stateMocks.plannerState.activeSeatingSmartTool = null;
+
+    const wrapper = mount(PlannerRulesWorkspacePane, {
+      global: {
+        stubs: {
+          PlannerRulesMapCanvas: {
+            template: "<div data-test='rules-map-canvas-stub' />",
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get('[data-test="rules-workspace-layout"]').classes()).toContain("xl:items-stretch");
+    expect(wrapper.get('[data-test="rules-tool-rail"]').classes()).toEqual(
+      expect.arrayContaining(["flex", "h-full", "flex-col"]),
+    );
+    expect(wrapper.get('[data-test="rules-summary-empty-state"]').classes()).toContain("min-h-full");
+  });
 });

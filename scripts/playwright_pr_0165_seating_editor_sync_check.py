@@ -101,7 +101,7 @@ def _verify_seating_overflow_actions(page: Page) -> None:
 def _add_two_seats_and_save(page: Page) -> None:
     """Add two seats in the live classroom editor, then save the room."""
 
-    page.get_by_role("button", name=re.compile(r"Placera plats", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Sittplats", re.IGNORECASE)).click()
     grid_buttons = page.locator("section .relative.grid.gap-1 button[type='button']")
     grid_buttons.nth(2).click()
     grid_buttons.nth(3).click()

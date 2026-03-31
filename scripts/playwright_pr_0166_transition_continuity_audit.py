@@ -239,7 +239,7 @@ def _create_template_loose(page: Page, *, template_name: str) -> None:
     page.get_by_placeholder(re.compile(r"Sal 304", re.IGNORECASE)).fill(template_name)
 
     grid_buttons = page.locator("section .relative.grid.gap-1 button[type='button']")
-    page.get_by_role("button", name=re.compile(r"Placera plats", re.IGNORECASE)).click()
+    page.get_by_role("button", name=re.compile(r"Sittplats", re.IGNORECASE)).click()
     grid_buttons.nth(0).click()
     grid_buttons.nth(1).click()
     page.get_by_role("button", name=re.compile(r"Skapa klassrum", re.IGNORECASE)).click()

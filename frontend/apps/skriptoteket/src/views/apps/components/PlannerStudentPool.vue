@@ -42,7 +42,7 @@ const emit = defineEmits<{
 
 <template>
   <aside
-    class="flex flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:sticky xl:top-20 xl:max-h-[calc(100svh-9rem)]"
+    class="flex min-h-0 flex-col border border-navy bg-white p-3 shadow-brutal-sm xl:h-full xl:flex-1 xl:overflow-hidden"
     :data-test="rootTestId"
     :aria-label="title"
     @dragover="emit('pool-dragover', $event)"
@@ -59,7 +59,10 @@ const emit = defineEmits<{
       </span>
     </div>
 
-    <div class="mt-3 flex flex-1 flex-col gap-1.5 overflow-y-auto">
+    <div
+      class="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto"
+      :data-test="rootTestId ? `${rootTestId}-scroll-body` : undefined"
+    >
       <button
         v-for="student in students"
         :key="student.id"

@@ -65,7 +65,8 @@ function relationshipRuleHeading(rule: RelationshipRule, index: number): string 
     >
       <div
         v-if="nearTeacherStudents.length === 0 && relationshipRules.length === 0"
-        class="w-full border border-dashed border-navy/20 bg-white px-3 py-3 text-sm text-navy/55"
+        class="flex min-h-full w-full items-center border border-dashed border-navy/20 bg-white px-3 py-3 text-sm text-navy/55"
+        data-test="rules-summary-empty-state"
       >
         Inga smarta regler ännu.
       </div>

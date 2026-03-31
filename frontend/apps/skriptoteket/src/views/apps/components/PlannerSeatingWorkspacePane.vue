@@ -84,7 +84,7 @@ function onDragOver(event: DragEvent): void {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-3 xl:min-h-0">
     <div
       v-if="plannerState.smartRuleHydrationStatus === 'error'"
       class="border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-brutal-sm"
@@ -105,22 +105,27 @@ function onDragOver(event: DragEvent): void {
       </div>
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-stretch">
-      <PlannerStudentPool
-        title="Ej placerade"
-        :students="plannerState.unseatedStudents"
-        :selected-student-id="selectedStudentId"
-        :selected-student-ids="plannerState.pendingRelationshipStudentIds"
-        :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
-        empty-label="Alla elever har fått plats"
-        root-test-id="seating-student-pool"
-        @student-selected="emit('student-selected', $event)"
-        @student-dragstart="onStudentDragStart($event.event, $event.studentId)"
-        @pool-dragover="onDragOver"
-        @pool-drop="onDropToPool"
-      />
+    <div class="flex flex-col gap-3 xl:min-h-0 xl:flex-row xl:items-stretch">
+      <div class="xl:flex xl:min-h-0 xl:w-[240px] xl:flex-none xl:self-stretch xl:[contain:size]">
+        <PlannerStudentPool
+          title="Ej placerade"
+          :students="plannerState.unseatedStudents"
+          :selected-student-id="selectedStudentId"
+          :selected-student-ids="plannerState.pendingRelationshipStudentIds"
+          :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
+          empty-label="Alla elever har fått plats"
+          root-test-id="seating-student-pool"
+          @student-selected="emit('student-selected', $event)"
+          @student-dragstart="onStudentDragStart($event.event, $event.studentId)"
+          @pool-dragover="onDragOver"
+          @pool-drop="onDropToPool"
+        />
+      </div>
 
-      <div>
+      <div
+        class="min-w-0 flex-1"
+        data-test="seating-workspace-lane"
+      >
         <RoomCanvas
           v-if="!isSeatWorkspaceWithoutTemplate"
           data-test="seating-workspace"
