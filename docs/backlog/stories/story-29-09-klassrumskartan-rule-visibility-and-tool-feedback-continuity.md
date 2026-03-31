@@ -2,9 +2,10 @@
 type: story
 id: ST-29-09
 title: "Klassrumskartan — Rule visibility and tool-feedback continuity"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
+updated: 2026-03-31
 epic: "EPIC-29"
 dependencies:
   - "ST-27-07"
@@ -40,6 +41,13 @@ trustworthy than it should:
   inventing a second summary format for group cards.
 - The room-editor tool palette should follow the shared dense-tool control language from
   `ST-29-01`, not create a modal-only affordance dialect.
+
+## Implementation Summary (as of 2026-03-31)
+
+- `PR-0177` shipped the continuity cleanup:
+  - removed the redundant active-rule pill from `Sittplatser`
+  - aligned room-editor tool feedback with the established rules-rail language
+  - kept smart-rule markers visible on grouped student cards as well as the student pools
 
 ## Planned PR slices
 

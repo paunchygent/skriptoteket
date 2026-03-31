@@ -103,6 +103,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md`
 - ST-29-02 shell compression + sticky shared toolbar cutover:
   `docs/backlog/prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md`
+- ST-29-02 sticky toolbar topbar-gap follow-up:
+  `docs/backlog/prs/pr-0180-st-29-02-sticky-toolbar-topbar-gap-collapse.md`
 - ST-29-09 rule visibility + tool-feedback continuity:
   `docs/backlog/prs/pr-0177-st-29-09-rule-visibility-and-tool-feedback-continuity.md`
 - Dishka/FastAPI public-API cutover foundation:
@@ -145,6 +147,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0176-review-remediation-for-recovery-email-hardening-and-resend-verification-ux.md`
 - Klassrumskartan class-list import drag/drop slice:
   `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
+- Smart-inställningar sittschemat wording fix slice:
+  `docs/backlog/prs/pr-0181-st-27-04-smart-settings-sittschemat-wording-fix.md`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -489,6 +493,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0173-home-messaging-registration-feedback-and-default-klassrumskartan-bookmark.md`
 - `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
 - `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
+- `docs/backlog/prs/pr-0179-st-29-02-sticky-toolbar-offset-gap-collapse.md`
 - `docs/backlog/prs/pr-0177-st-29-09-rule-visibility-and-tool-feedback-continuity.md`
 - `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md`
 - `docs/backlog/prs/pr-0002-tool-run-composable-srp-modularization.md`

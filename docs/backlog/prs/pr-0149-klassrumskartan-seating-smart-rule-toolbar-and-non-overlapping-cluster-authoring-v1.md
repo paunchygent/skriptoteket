@@ -2,10 +2,10 @@
 type: pr
 id: PR-0149
 title: "Klassrumskartan: seating smart-rule toolbar and non-overlapping cluster authoring v1"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-31
 stories:
   - "ST-27-03"
 tags: ["frontend", "api-contract", "state", "ux", "klassrumskartan", "smart-assignment"]

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0177
 title: "ST-29-09: rule visibility and tool-feedback continuity"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 stories:
   - "ST-29-09"
 tags: ["frontend", "ux", "klassrumskartan", "smart-rules", "room-editor"]

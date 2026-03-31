@@ -5,7 +5,7 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-30
+updated: 2026-03-31
 outcome: "Teachers use a denser, desktop-first Klassrumskartan workspace with a canonical symbol system, compressed shell chrome, clearer task hierarchy, and intentionally reduced mobile companion layouts without changing the planner's core logic or data contracts."
 dependencies:
   [
@@ -87,6 +87,7 @@ into the `laptop` proof width.
   alternatives.
 - This epic requires review approval before implementation begins per the repo review workflow.
 
-## Implementation Summary (as of 2026-03-29)
+## Implementation Summary (as of 2026-03-31)
 
-- `ST-29-02` is now implemented locally through `PR-0161`: the planner shell is compressed, grouping and seating use detached sticky workspace toolbars, low-value full-width helper/status bands are removed or localized, and recovered export completion now announces once via toast with `Mina filer` copy instead of reappearing workspace bands.
+- `ST-29-02` is now implemented locally through `PR-0161`, `PR-0179`, and `PR-0180`: the planner shell is compressed, grouping and seating use detached sticky workspace toolbars that now hug the authenticated topbar seam while scrolling, low-value full-width helper/status bands are removed or localized, and recovered export completion now announces once via toast with `Mina filer` copy instead of reappearing workspace bands.
+- `ST-29-09` shipped through `PR-0177`: seating no longer repeats active-rule state through a redundant pill, the room-editor tool palette now exposes clearer active-tool feedback, and grouped student cards preserve the shared smart-rule marker language after assignment.

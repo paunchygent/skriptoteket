@@ -5,7 +5,7 @@ title: "Full Vue/Vite SPA migration"
 status: active
 owners: "agents"
 created: 2025-12-21
-updated: 2026-03-30
+updated: 2026-03-31
 outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admin), backed by /api/v1 with generated TypeScript types, with legacy Jinja2/HTMX removed."
 ---
 
@@ -62,13 +62,15 @@ outcome: "Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admi
 - [ST-11-21: Unified landing page (auth-adaptive home view)](../stories/story-11-21-unified-landing-page.md) (done)
 - [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done)
 - [ST-11-23: Tool owner + maintainer permission hardening](../stories/story-11-23-tool-owner-and-maintainer-permissions.md) (done)
-- [ST-11-24: Home view messaging reset for curated library](../stories/story-11-24-home-view-messaging-reset-for-curated-library.md) (in_progress)
+- [ST-11-24: Home view messaging reset for curated library](../stories/story-11-24-home-view-messaging-reset-for-curated-library.md) (done)
 
-## Implementation Summary (as of 2026-01-01)
+## Implementation Summary (as of 2026-03-31)
 
 - Full SPA cutover complete; legacy SSR/HTMX routes removed and FastAPI serves built SPA with history fallback.
 - API v1 + OpenAPI-to-TypeScript types are the source of truth for SPA integration.
 - Route parity delivered across user, contributor, admin, and superuser flows (browse, run, my-runs, my-tools, editor).
+- `ST-11-24` shipped through `PR-0173`:
+  - the unauthenticated home view now speaks to the curated-library reality instead of implying open self-service authoring for ordinary users
 
 ## Risks
 

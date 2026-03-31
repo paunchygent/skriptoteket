@@ -2,10 +2,10 @@
 type: pr
 id: PR-0157
 title: "ST-29-01: shared dense-tool primitives and canonical symbol assets"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-29
+updated: 2026-03-31
 stories:
   - "ST-29-01"
 tags: ["frontend", "design-system", "components", "klassrumskartan", "editor"]

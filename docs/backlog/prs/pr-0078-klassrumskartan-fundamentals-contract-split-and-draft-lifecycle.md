@@ -54,6 +54,12 @@ Define the enabling technical contract for the fundamentals-reset implementation
 ship ST-24-01 through ST-24-04 without reintroducing one giant planner shell, one blended draft
 kind, or a whole-workspace save model.
 
+## Status note (2026-03-31)
+
+`EPIC-24` and `ST-24-01` through `ST-24-04` are already closed through later narrower slices, so
+this document now reads more like an umbrella contract than a clearly pending implementation task.
+Its `ready` status is left unchanged here pending an explicit close-or-supersede decision.
+
 ## Non-goals
 
 - Implementing the visible advanced solver UI.

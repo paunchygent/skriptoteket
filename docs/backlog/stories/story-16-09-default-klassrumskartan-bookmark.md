@@ -2,10 +2,10 @@
 type: story
 id: ST-16-09
 title: "Default Klassrumskartan bookmark"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 epic: "EPIC-16"
 acceptance_criteria:
   - "Given an existing user account when this slice is applied, then `Klassrumskartan` appears as a bookmarked curated app in the user's favorites surfaces without requiring a manual first bookmark."

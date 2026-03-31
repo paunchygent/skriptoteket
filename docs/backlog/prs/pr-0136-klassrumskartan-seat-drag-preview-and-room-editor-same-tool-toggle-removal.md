@@ -38,6 +38,12 @@ more laborious than the seat tool already proves they need to be.
 Polish the seating and classroom-editing interactions so drag/drop previews and repeated same-tool
 clicks behave like one coherent classroom-planning system.
 
+## Status note (2026-03-31)
+
+`ST-24-04` is already closed, but this PR id is not called out in the story close-out or handoff.
+Its status is intentionally left unchanged until someone confirms whether this slice shipped under a
+different PR or should be marked superseded/dropped.
+
 ## Locked design decisions
 
 - Keep this as one PR slice: the seating drag-preview polish and the classroom-editor toggle-off

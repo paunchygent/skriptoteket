@@ -83,7 +83,7 @@ describe("useSmartGroupingRun", () => {
       workspace: createWorkspace(6),
       used_history: true,
       used_live_seating: true,
-      message: "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+      message: "Smart gruppindelning klar med historik och stöd från klassens sittschema.",
     });
 
     const smartRun = useSmartGroupingRun({
@@ -100,7 +100,7 @@ describe("useSmartGroupingRun", () => {
 
     expect(result).toEqual({
       status: "applied",
-      message: "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+      message: "Smart gruppindelning klar med historik och stöd från klassens sittschema.",
     });
     expect(clientMocks.apiPost).toHaveBeenCalledWith(
       "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/draft-1/smart-run",
@@ -108,7 +108,7 @@ describe("useSmartGroupingRun", () => {
     );
     expect(applyWorkspace).toHaveBeenCalledWith(createWorkspace(6));
     expect(smartRun.message.value).toBe(
-      "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+      "Smart gruppindelning klar med historik och stöd från klassens sittschema.",
     );
     expect(smartRun.tone.value).toBe("success");
   });

@@ -37,6 +37,12 @@ shared create/edit roster modal so teachers can import by dropping a file direct
 supported-file guidance, without changing the backend contract or the rest of the preview-first
 workflow.
 
+## Status note (2026-03-31)
+
+Focused Vitest coverage and a live Playwright proof are already recorded in `.agents/handoff.md`,
+but this doc still stops short of an explicit shipped/done callout. Its `in_progress` status is
+left unchanged for now so that a human can decide whether the slice is fully closed.
+
 ## Non-goals
 
 - Introducing a new backend API or changing the `import-preview` contract.

@@ -2,10 +2,10 @@
 type: pr
 id: PR-0174
 title: "Recovery email hardening and verification resend discoverability"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 stories:
   - "ST-02-10"
 tags: ["identity", "email", "frontend", "production-bugfix"]

@@ -53,7 +53,7 @@ from .workspace_builders import ensure_active_draft
 NO_HISTORY_BLOCK_MESSAGE = (
     "För att använda historik behöver du först exportera en gruppindelning för den här klassen."
 )
-NO_CLASSROOM_SIGNAL_MESSAGE = "Ingen användbar sittning fanns för valt klassrum."
+NO_CLASSROOM_SIGNAL_MESSAGE = "Inget användbart sittschema fanns för valt klassrum."
 
 
 @dataclass(frozen=True)
@@ -310,11 +310,11 @@ def _build_run_message(
     if has_tradeoffs:
         base_message = "Smart gruppindelning klar med bästa möjliga kompromiss."
     elif used_history and used_live_seating:
-        base_message = "Smart gruppindelning klar med historik och stöd från klassens sittning."
+        base_message = "Smart gruppindelning klar med historik och stöd från klassens sittschema."
     elif used_history:
         base_message = "Smart gruppindelning klar med stöd av tidigare gruppindelningar."
     elif used_live_seating:
-        base_message = "Smart gruppindelning klar med stöd från klassens sittning."
+        base_message = "Smart gruppindelning klar med stöd från klassens sittschema."
     else:
         base_message = "Smart gruppindelning klar."
     if requested_live_seating and not used_live_seating:

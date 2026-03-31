@@ -2,10 +2,10 @@
 type: pr
 id: PR-0142
 title: "Klassrumskartan: seating XLSX menu option, local export contract, and flow"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-31
 stories:
   - "ST-26-03"
 tags: ["frontend", "backend", "xlsx", "klassrumskartan", "export", "seating"]

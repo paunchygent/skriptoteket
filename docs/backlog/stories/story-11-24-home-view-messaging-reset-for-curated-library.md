@@ -2,10 +2,10 @@
 type: story
 id: ST-11-24
 title: "Home view messaging reset for curated library"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 epic: "EPIC-11"
 acceptance_criteria:
   - "Given an unauthenticated visitor opens `/`, when the page renders, then the copy presents Skriptoteket as a professional app and tool library for teachers instead of implying that ordinary users can create their own scripts immediately."

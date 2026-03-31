@@ -5,6 +5,7 @@ title: "Klassrumskartan — Workspace shell compression and low-value feedback b
 status: done
 owners: "agents"
 created: 2026-03-28
+updated: 2026-03-31
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -32,6 +33,8 @@ workspace redesign begins.
 ## Planned PR slices
 
 - [PR-0161: ST-29-02 shared sticky workspace toolbar and transient feedback cutover](../prs/pr-0161-st-29-02-shared-sticky-workspace-toolbar-and-transient-feedback-cutover.md)
+- [PR-0179: ST-29-02 follow-up sticky toolbar offset gap collapse](../prs/pr-0179-st-29-02-sticky-toolbar-offset-gap-collapse.md)
+- [PR-0180: ST-29-02 follow-up sticky toolbar topbar gap collapse](../prs/pr-0180-st-29-02-sticky-toolbar-topbar-gap-collapse.md)
 
 ## References
 

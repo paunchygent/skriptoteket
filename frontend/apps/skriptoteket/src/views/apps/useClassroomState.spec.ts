@@ -500,7 +500,7 @@ describe("useClassroomState", () => {
       },
       used_history: true,
       used_live_seating: true,
-      message: "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+      message: "Smart gruppindelning klar med historik och stöd från klassens sittschema.",
     });
 
     await state.runGroupingShuffle();
@@ -514,7 +514,7 @@ describe("useClassroomState", () => {
       s2: "group-a",
     });
     expect(state.smartGroupingRunMessage).toBe(
-      "Smart gruppindelning klar med historik och stöd från klassens sittning.",
+      "Smart gruppindelning klar med historik och stöd från klassens sittschema.",
     );
     expect(state.smartGroupingRunTone).toBe("success");
   });

@@ -67,7 +67,7 @@ function openRules(): void {
             @update:model-value="state.setDraftUseHistoryEnabled($event)"
           />
           <p class="text-sm leading-relaxed text-navy/65">
-            Låt Smart väga in tidigare exporterat sittschema för bättre rotation över tid.
+            Om du tidigare har exporterat ett sittschema kan Smart använda det för att variera placeringen över tid.
           </p>
         </section>
 
@@ -77,7 +77,7 @@ function openRules(): void {
               Regler
             </h4>
             <p class="text-sm leading-relaxed text-navy/65">
-              Regler redigeras i arbetsytan Regler.
+              Du lägger till och ändrar regler i arbetsytan Regler.
             </p>
           </div>
           <UiDenseActionButton

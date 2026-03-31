@@ -2,10 +2,10 @@
 type: pr
 id: PR-0161
 title: "ST-29-02: shared sticky workspace toolbar and transient feedback cutover"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-03-31
 stories:
   - "ST-29-02"
 tags: ["frontend", "ux", "klassrumskartan", "toolbar", "shell", "playwright"]

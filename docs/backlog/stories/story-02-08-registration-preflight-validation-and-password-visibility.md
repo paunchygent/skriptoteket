@@ -2,10 +2,10 @@
 type: story
 id: ST-02-08
 title: "Registration preflight validation and password visibility"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 epic: "EPIC-02"
 acceptance_criteria:
   - "Given a visitor types an email address on `/register`, when the address becomes syntactically valid, then the UI validates it before submit against the current registration rules and shows a clear inline message if the domain is blocked, unknown, or already registered."

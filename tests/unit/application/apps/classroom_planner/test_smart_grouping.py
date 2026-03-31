@@ -302,7 +302,7 @@ async def test_run_smart_grouping_uses_active_seating_draft_before_diversity() -
     assert result.status == "applied"
     assert result.used_history is False
     assert result.used_live_seating is True
-    assert result.message == "Smart gruppindelning klar med stöd från klassens sittning."
+    assert result.message == "Smart gruppindelning klar med stöd från klassens sittschema."
     assignments_by_student = {
         assignment.student_id: assignment.group_id
         for assignment in result.workspace.group_assignments
@@ -362,7 +362,7 @@ async def test_run_smart_grouping_falls_back_to_latest_seating_checkpoint() -> N
 
     assert isinstance(result, SmartGroupingAppliedResult)
     assert result.used_live_seating is True
-    assert result.message == "Smart gruppindelning klar med stöd från klassens sittning."
+    assert result.message == "Smart gruppindelning klar med stöd från klassens sittschema."
     assignments_by_student = {
         assignment.student_id: assignment.group_id
         for assignment in result.workspace.group_assignments

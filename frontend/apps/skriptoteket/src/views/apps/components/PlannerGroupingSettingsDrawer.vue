@@ -45,13 +45,13 @@ const classroomHelpText = computed(() => {
   if (props.availableTemplates.length === 0) {
     return "Det finns inga klassrum att välja ännu.";
   }
-  return "Välj ett klassrum om Smart ska kunna väga in sittningen.";
+  return "Välj ett klassrum om Smart ska ta hänsyn till sittschemat.";
 });
 const seatingHelpText = computed(() => {
   if (!hasSelectedTemplate.value) {
-    return "Välj ett klassrum först om Smart ska kunna väga in sittningen.";
+    return "Välj först ett klassrum för att använda sittschemat.";
   }
-  return "När klassens sittning matchar valt klassrum väger Smart in den. Saknas en matchande sittning har det ingen effekt.";
+  return "Om det finns ett sittschema för det valda klassrummet kan Smart ta hänsyn till det. Finns inget sittschema påverkas inte grupperingen.";
 });
 
 function changeGroupingTemplate(event: Event): void {
@@ -110,7 +110,7 @@ function openRules(): void {
             @update:model-value="state.setDraftUseHistoryEnabled($event)"
           />
           <p class="text-sm leading-relaxed text-navy/65">
-            Undvik att samma elever hamnar i samma grupp gång på gång.
+            Minskar risken att samma elever hamnar i samma grupp igen.
           </p>
         </section>
 
@@ -149,7 +149,7 @@ function openRules(): void {
         <section class="space-y-2 border border-navy/20 bg-canvas p-4">
           <UiDenseToggle
             data-test="grouping-settings-seating-toggle"
-            label="Sittning"
+            label="Sittschemat"
             :model-value="state.draft?.grouping_seating_distance_enabled ?? false"
             :disabled="state.isWorkspaceBusy || !hasSelectedTemplate"
             @update:model-value="state.setDraftGroupingSeatingDistanceEnabled($event)"
@@ -165,7 +165,7 @@ function openRules(): void {
               Regler
             </h4>
             <p class="text-sm leading-relaxed text-navy/65">
-              Regler redigeras i arbetsytan Regler.
+              Du lägger till och ändrar regler i arbetsytan Regler.
             </p>
           </div>
           <UiDenseActionButton

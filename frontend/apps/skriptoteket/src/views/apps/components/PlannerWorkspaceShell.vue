@@ -469,7 +469,7 @@ watch(
     <template v-if="!isTransitioningBetweenWorkspaces">
       <PlannerGroupingWorkspaceToolbar
         v-if="currentView === 'groups'"
-        class="sticky top-3 z-20"
+        class="sticky top-0 z-20 md:-top-4"
         :available-rosters="availableRosters"
         :selected-roster-id="selectedRosterId"
         :smart-settings-open="isGroupingSettingsDrawerOpen"
@@ -488,7 +488,7 @@ watch(
 
       <PlannerSeatingWorkspaceToolbar
         v-if="currentView === 'seats'"
-        class="sticky top-3 z-20"
+        class="sticky top-0 z-20 md:-top-4"
         :available-templates="availableTemplates"
         :selected-template-id="pendingSeatingTemplateId"
         :smart-settings-open="isSeatingSettingsDrawerOpen"

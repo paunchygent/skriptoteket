@@ -2,10 +2,10 @@
 type: story
 id: ST-02-10
 title: "Recovery email hardening and verification resend discoverability"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 epic: "EPIC-02"
 acceptance_criteria:
   - "Given a verified local account requests `Glömt lösenord`, when the app renders and sends the reset email, then the reset template satisfies the email renderer contract and a password-reset token can result in a real outbound email attempt instead of failing before send."
@@ -78,3 +78,15 @@ credentials for an account that still is not verified.
   `docs/backlog/prs/pr-0174-recovery-email-hardening-and-verification-resend-discoverability.md`
 - Review remediation:
   `docs/backlog/prs/pr-0176-review-remediation-for-recovery-email-hardening-and-resend-verification-ux.md`
+
+## Implementation Summary (as of 2026-03-31)
+
+- `PR-0174` fixed the reset email template contract, removed the broken verification-email image
+  dependency, and exposed resend-verification from both `Glömt lösenord` and the
+  `EMAIL_NOT_VERIFIED` login path.
+- `PR-0176` completed the follow-up review remediation by removing frontend-only resend cooldown
+  truth, mapping `EMAIL_NOT_VERIFIED` to the intended auth status, and recording a rerunnable live
+  proof script.
+- Local verification now includes focused backend/frontend regression runs plus
+  `pdm run python -m scripts.playwright_pr_0176_auth_recovery_check --base-url http://127.0.0.1:5173`
+  with artifacts under `.artifacts/pr-0176-auth-recovery-check/`.

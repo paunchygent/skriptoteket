@@ -8,6 +8,8 @@
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import PlannerGroupingWorkspaceToolbar from "./PlannerGroupingWorkspaceToolbar.vue";
+import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue";
 import PlannerWorkspaceShell from "./PlannerWorkspaceShell.vue";
 import type { ClassWorkspaceSummary, PlanDraft, RoomTemplate, Roster } from "../classroomPlannerTypes";
 
@@ -375,6 +377,57 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.find("[data-test='rules-pane']").exists()).toBe(true);
   });
 
+  it("pulls grouping and seating toolbars up against the authenticated topbar once they become sticky", () => {
+    const commonGlobal = {
+      stubs: {
+        GroupBoard: { template: "<div data-test='group-board' />" },
+        RoomCanvas: { template: "<div data-test='room-canvas' />" },
+        PlannerMetadataDrawer: {
+          props: ["open"],
+          template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+        },
+      },
+    };
+
+    const groupingWrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableRosters: buildRosters(),
+        selectedRosterId: "roster-1",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: commonGlobal,
+    });
+
+    expect(groupingWrapper.getComponent(PlannerGroupingWorkspaceToolbar).classes()).toEqual(
+      expect.arrayContaining(["sticky", "top-0", "z-20", "md:-top-4"]),
+    );
+    expect(groupingWrapper.getComponent(PlannerGroupingWorkspaceToolbar).classes()).not.toContain(
+      "top-3",
+    );
+
+    stateMocks.plannerState.draft = {
+      id: "draft-2",
+      draft_kind: "seating",
+      revision: 5,
+    };
+
+    const seatingWrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-1", name: "Sal 101", seats: [], fixtures: [] }],
+        initialView: "seats",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: commonGlobal,
+    });
+
+    expect(seatingWrapper.getComponent(PlannerSeatingWorkspaceToolbar).classes()).toEqual(
+      expect.arrayContaining(["sticky", "top-0", "z-20", "md:-top-4"]),
+    );
+    expect(seatingWrapper.getComponent(PlannerSeatingWorkspaceToolbar).classes()).not.toContain(
+      "top-3",
+    );
+  });
+
   it("keeps grouping drafts on the grouping surface only", async () => {
     stateMocks.plannerState.template = null;
     const wrapper = mount(PlannerWorkspaceShell, {
@@ -514,7 +567,13 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Smart-inställningar");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Historik");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Klassrum");
-    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Sittning");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Sittschemat");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
+      "Minskar risken att samma elever hamnar i samma grupp igen.",
+    );
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
+      "Du lägger till och ändrar regler i arbetsytan Regler.",
+    );
 
     await wrapper.get('[data-test="grouping-settings-template-select"]').setValue("template-2");
 
@@ -562,6 +621,12 @@ describe("PlannerWorkspaceShell", () => {
 
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Smart-inställningar");
     expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain("Historik");
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain(
+      "Om du tidigare har exporterat ett sittschema kan Smart använda det för att variera placeringen över tid.",
+    );
+    expect(wrapper.get('[data-test="seating-settings-drawer"]').text()).toContain(
+      "Du lägger till och ändrar regler i arbetsytan Regler.",
+    );
 
     await wrapper.get('[data-test="seating-settings-history-toggle"]').trigger("click");
     expect(stateMocks.plannerState.setDraftUseHistoryEnabled).toHaveBeenCalledWith(false);

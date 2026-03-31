@@ -2,10 +2,10 @@
 type: pr
 id: PR-0137
 title: "Klassrumskartan: class-list import remediation for example corpus, overview reconciliation, and runnable tests"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-31
 stories:
   - "ST-26-02"
 tags: ["backend", "frontend", "klassrumskartan", "import", "remediation", "tests"]

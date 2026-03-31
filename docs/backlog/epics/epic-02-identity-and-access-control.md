@@ -5,7 +5,7 @@ title: "Identity and access control (RBAC)"
 status: active
 owners: "agents"
 created: 2025-12-13
-updated: 2026-03-30
+updated: 2026-03-31
 outcome: "Users can authenticate, self-register, verify email, recover local-account access, manage their profiles, and role checks reliably gate contributor/admin/superuser capabilities."
 dependencies: ["ADR-0006", "ADR-0011", "ADR-0034", "ADR-0078"]
 ---
@@ -38,9 +38,18 @@ dependencies: ["ADR-0006", "ADR-0011", "ADR-0034", "ADR-0078"]
 - [ST-02-05: Brute-force lockout](../stories/story-02-05-brute-force-lockout.md) (done)
 - [ST-02-06: Swedish school domain allowlist for registration](../stories/story-02-06-swedish-school-domain-allowlist-registration.md) (ready)
 - [ST-02-07: Local password reset via emailed token](../stories/story-02-07-local-password-reset-via-emailed-token.md) (ready)
-- [ST-02-08: Registration preflight validation and password visibility](../stories/story-02-08-registration-preflight-validation-and-password-visibility.md) (in_progress)
+- [ST-02-08: Registration preflight validation and password visibility](../stories/story-02-08-registration-preflight-validation-and-password-visibility.md) (done)
 - [ST-02-09: Distributed password-reset hardening for scaled auth](../stories/story-02-09-distributed-password-reset-hardening-for-scaled-auth.md) (ready)
-- [ST-02-10: Recovery email hardening and verification resend discoverability](../stories/story-02-10-recovery-email-hardening-and-verification-resend-discoverability.md) (in_progress)
+- [ST-02-10: Recovery email hardening and verification resend discoverability](../stories/story-02-10-recovery-email-hardening-and-verification-resend-discoverability.md) (done)
+
+## Implementation Summary (as of 2026-03-31)
+
+- `ST-02-08` shipped through `PR-0173`:
+  - `/register` now does preflight validation for email-domain, duplicate-email, and password-policy feedback before submit
+  - password fields now expose visible/hidden toggle controls without losing field state
+- `ST-02-10` shipped through `PR-0174` and `PR-0176`:
+  - password-reset email rendering now satisfies the template contract and no longer fails before outbound send
+  - verification emails no longer depend on the broken header image asset, and resend-verification is discoverable from both forgot-password and `EMAIL_NOT_VERIFIED` login failures
 
 ## Dependencies
 

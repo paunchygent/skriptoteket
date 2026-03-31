@@ -5,7 +5,7 @@ title: "Catalog discovery and personalization"
 status: active
 owners: "agents"
 created: 2025-12-26
-updated: 2026-03-30
+updated: 2026-03-31
 outcome: "Teachers can discover tools via flat browsing with filters, search, and access personalized favorites/recently-used lists"
 ---
 
@@ -57,7 +57,12 @@ outcome: "Teachers can discover tools via flat browsing with filters, search, an
 | ST-16-06 | Tool card favorites toggle (star icon) | done |
 | ST-16-07 | Home view favorites and recently used sections | done |
 | ST-16-08 | Catalog cleanup: curated-apps-only filter + final EPIC-16 review | ready |
-| ST-16-09 | Default Klassrumskartan bookmark | in_progress |
+| ST-16-09 | Default Klassrumskartan bookmark | done |
+
+## Implementation Summary (as of 2026-03-31)
+
+- `ST-16-09` shipped through `PR-0173`:
+  - `classroom.group-seating-studio` is now backfilled as a default favorite for existing users and created as a removable default favorite for new registrations
 
 ## Success criteria
 

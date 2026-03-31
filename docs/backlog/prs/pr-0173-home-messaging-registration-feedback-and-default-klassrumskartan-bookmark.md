@@ -2,10 +2,10 @@
 type: pr
 id: PR-0173
 title: "Home messaging, registration feedback, and default Klassrumskartan bookmark"
-status: in_progress
+status: done
 owners: "agents"
 created: 2026-03-30
-updated: 2026-03-30
+updated: 2026-03-31
 stories:
   - "ST-02-08"
   - "ST-11-24"
