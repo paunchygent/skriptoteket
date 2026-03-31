@@ -113,7 +113,16 @@ def main() -> None:
 
         email, password = _register_unverified_user(context.request, base_url=api_base_url)
 
-        page.goto(f"{base_url}/forgot-password", wait_until="domcontentloaded")
+        page.goto(f"{base_url}/browse", wait_until="domcontentloaded")
+        forgot_password_dialog = page.get_by_role(
+            "dialog", name=re.compile(r"Logga in", re.IGNORECASE)
+        )
+        expect(forgot_password_dialog).to_be_visible()
+        forgot_password_dialog.get_by_role("link", name="Glömt lösenord?").click()
+        page.wait_for_url(f"{base_url}/forgot-password")
+        expect(page.get_by_role("heading", name="Glömt lösenord")).to_be_visible()
+        expect(forgot_password_dialog).not_to_be_visible()
+
         page.get_by_label("E-post").fill(email)
         with page.expect_response(
             lambda response: response.url.endswith("/api/v1/auth/forgot-password")

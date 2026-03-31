@@ -6,6 +6,7 @@
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
+import { createMemoryHistory, createRouter } from "vue-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import LoginModal from "./LoginModal.vue";
@@ -52,6 +53,41 @@ describe("LoginModal", () => {
 
     expect(wrapper.text()).toContain("Glömt lösenord?");
     expect(wrapper.html()).toContain('href="/forgot-password"');
+  });
+
+  it("navigates to forgot-password without emitting close first", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/", component: { template: "<div>home</div>" } },
+        { path: "/forgot-password", component: { template: "<div>forgot</div>" } },
+        { path: "/register", component: { template: "<div>register</div>" } },
+      ],
+    });
+    await router.push("/");
+    await router.isReady();
+
+    const wrapper = mount(LoginModal, {
+      props: { isOpen: true },
+      global: {
+        plugins: [router],
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    wrapper.get('a[href="/forgot-password"]').element.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+      }),
+    );
+    await flushPromises();
+
+    expect(router.currentRoute.value.fullPath).toBe("/forgot-password");
+    expect(wrapper.emitted("close")).toBeUndefined();
   });
 
   it("keeps resend-verification available without a client cooldown after EMAIL_NOT_VERIFIED", async () => {

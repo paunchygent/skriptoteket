@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * Public registration view.
+ *
+ * This route owns the early-release account-creation form and the follow-up
+ * verify-email confirmation state used by the public auth flow.
+ */
+
 import { computed, onMounted, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
@@ -114,7 +121,8 @@ async function submit(): Promise<void> {
     <header class="space-y-2">
       <h1 class="page-title">Skapa konto</h1>
       <p class="page-description">
-        Registrering är öppen för kommuner och enskilda huvudmän i den tidiga releasen.
+        Just nu är registrering endast öppen för anställda hos kommuner och enskilda
+        skolhuvudmän.
       </p>
     </header>
 

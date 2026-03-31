@@ -200,4 +200,32 @@ describe("App", () => {
       },
     });
   });
+
+  it("closes the login modal after route navigation succeeds", async () => {
+    if (!routerMocks.loginModal || !routerMocks.route) {
+      throw new Error("Expected route and login modal mocks to be initialized.");
+    }
+    routerMocks.loginModal.isOpen.value = true;
+
+    mount(App, {
+      global: {
+        stubs: {
+          LandingLayout: { template: "<div><slot /></div>" },
+          AuthLayout: { template: "<div><slot /></div>" },
+          LoginModal: { template: "<div />" },
+          ToastHost: { template: "<div />" },
+          RouterView: { template: "<div />" },
+        },
+      },
+    });
+
+    routerMocks.route.fullPath = "/forgot-password";
+    routerMocks.route.path = "/forgot-password";
+    routerMocks.route.name = "forgot-password";
+    routerMocks.route.matched = [{ meta: {} }];
+    await nextTick();
+    await nextTick();
+
+    expect(routerMocks.loginModal.close).toHaveBeenCalled();
+  });
 });

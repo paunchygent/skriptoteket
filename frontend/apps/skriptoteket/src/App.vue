@@ -94,12 +94,15 @@ function onLoginSuccess(): void {
 
 watch(
   () => route.fullPath,
-  async () => {
-    if (!pageTransition.suppressNextPageTransition.value) {
-      return;
+  async (nextPath, previousPath) => {
+    if (loginModal.isOpen.value && nextPath !== previousPath) {
+      closeLoginModal();
     }
-    await nextTick();
-    pageTransition.reset();
+
+    if (pageTransition.suppressNextPageTransition.value) {
+      await nextTick();
+      pageTransition.reset();
+    }
   },
   { flush: "post" },
 );

@@ -1,4 +1,12 @@
 <script setup lang="ts">
+/**
+ * Login modal dialog.
+ *
+ * This component owns local-password sign-in plus public recovery links, while
+ * route-driven shell state decides when the modal should close after SPA
+ * navigation succeeds.
+ */
+
 import { computed, ref } from "vue";
 
 import { isApiError } from "../../api/client";
@@ -187,7 +195,6 @@ async function resendVerification(): Promise<void> {
             <RouterLink
               to="/forgot-password"
               class="text-navy underline hover:text-burgundy"
-              @click="closeModal"
             >
               Glömt lösenord?
             </RouterLink>
@@ -198,7 +205,6 @@ async function resendVerification(): Promise<void> {
             <RouterLink
               to="/register"
               class="text-navy underline hover:text-burgundy"
-              @click="closeModal"
             >
               Skapa konto
             </RouterLink>
