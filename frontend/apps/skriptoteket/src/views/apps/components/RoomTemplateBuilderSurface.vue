@@ -8,13 +8,17 @@
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
-import { getRoomSurfaceStyle, getWallFixtureFrameStyle } from "../roomFixturePresentation";
+import {
+  getRoomSurfaceStyle,
+  getWallFixtureFrameStyle,
+} from "../roomFixturePresentation";
 import { getSeatGhostFrameStyle } from "../roomSeatPresentation";
 import {
   ROOM_GRID_UNIT,
   isWallFixtureType,
   type RoomGridDimensions,
 } from "../roomFixtureLayout";
+import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
 import type { RoomTemplateGhostPlacement } from "../useRoomTemplateEditorState";
 import type { RoomFixture, Seat } from "../classroomPlannerTypes";
 import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
@@ -116,8 +120,9 @@ const builderSurfaceTransformStyle = computed(() => {
   };
 });
 const shouldCenterSurface = computed(() => {
-  const scaledWidth = Number.parseFloat(props.builderScaledSurfaceStyle.width ?? "0");
-  return viewportWidth.value <= 0 || scaledWidth <= viewportWidth.value;
+  const paddedWidth = Number.parseFloat(props.builderScaledSurfaceStyle.width ?? "0")
+    + (ROOM_VIEWPORT_FRAME_PADDING * 2);
+  return viewportWidth.value <= 0 || paddedWidth <= viewportWidth.value;
 });
 </script>
 
@@ -175,97 +180,102 @@ const shouldCenterSurface = computed(() => {
         :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
       >
         <div
-          class="relative shrink-0"
-          :style="builderScaledSurfaceStyle"
+          class="shrink-0 px-6 py-6"
+          data-test="room-builder-surface-shell"
         >
           <div
-            class="absolute left-0 top-0"
-            :style="builderSurfaceTransformStyle"
-            @mouseleave="emit('clear-hover')"
+            class="relative"
+            :style="builderScaledSurfaceStyle"
           >
-            <RoomSceneSurface
-              :grid="roomGrid"
-              :seats="seats"
-              :fixtures="fixtures"
-              :normalize-presentation="false"
-              fixture-surface="builder-grid"
+            <div
+              class="absolute left-0 top-0"
+              :style="builderSurfaceTransformStyle"
+              @mouseleave="emit('clear-hover')"
             >
-              <template #floor-base>
-                <div
-                  class="relative grid h-full w-full gap-1"
-                  :style="{ gridTemplateColumns: `repeat(${roomGrid.cols}, minmax(0, 1fr))` }"
-                >
-                  <template
-                    v-for="row in roomGrid.rows"
-                    :key="`row-${row}`"
+              <RoomSceneSurface
+                :grid="roomGrid"
+                :seats="seats"
+                :fixtures="fixtures"
+                :normalize-presentation="false"
+                fixture-surface="builder-grid"
+              >
+                <template #floor-base>
+                  <div
+                    class="relative grid h-full w-full gap-1"
+                    :style="{ gridTemplateColumns: `repeat(${roomGrid.cols}, minmax(0, 1fr))` }"
                   >
-                    <button
-                      v-for="col in roomGrid.cols"
-                      :key="`cell-${row}-${col}`"
-                      type="button"
-                      class="planner-grid-node-button"
-                      @mousemove="emit('cell-hover', $event, row - 1, col - 1)"
-                      @focus="emit('cell-focus', row - 1, col - 1)"
-                      @click="emit('cell-click', row - 1, col - 1, $event)"
-                    />
-                  </template>
-                </div>
-              </template>
+                    <template
+                      v-for="row in roomGrid.rows"
+                      :key="`row-${row}`"
+                    >
+                      <button
+                        v-for="col in roomGrid.cols"
+                        :key="`cell-${row}-${col}`"
+                        type="button"
+                        class="planner-grid-node-button"
+                        @mousemove="emit('cell-hover', $event, row - 1, col - 1)"
+                        @focus="emit('cell-focus', row - 1, col - 1)"
+                        @click="emit('cell-click', row - 1, col - 1, $event)"
+                      />
+                    </template>
+                  </div>
+                </template>
 
-              <template #floor-overlay>
-                <div
-                  v-if="showFloorGhost"
-                  class="pointer-events-none absolute inset-0 z-20"
-                >
+                <template #floor-overlay>
                   <div
-                    v-if="ghostPlacement?.type === 'seat'"
-                    class="absolute"
-                    :style="getSeatGhostFrameStyle(ghostPlacement.row, ghostPlacement.col)"
+                    v-if="showFloorGhost"
+                    class="pointer-events-none absolute inset-0 z-20"
                   >
-                    <RoomSeatToken
-                      :seat-id="`seat-${ghostPlacement.row + 1}-${ghostPlacement.col + 1}`"
-                      ghost
-                    />
+                    <div
+                      v-if="ghostPlacement?.type === 'seat'"
+                      class="absolute"
+                      :style="getSeatGhostFrameStyle(ghostPlacement.row, ghostPlacement.col)"
+                    >
+                      <RoomSeatToken
+                        :seat-id="`seat-${ghostPlacement.row + 1}-${ghostPlacement.col + 1}`"
+                        ghost
+                      />
+                    </div>
+                    <div
+                      v-else-if="ghostRenderableFixture && ghostPlacement"
+                      class="absolute rounded-sm border-2 border-dashed"
+                      :class="ghostPlacementClass(ghostPlacement.canPlace, ghostPlacement.type)"
+                      :style="{
+                        left: `${ghostPlacement.col * ROOM_GRID_UNIT}px`,
+                        top: `${ghostPlacement.row * ROOM_GRID_UNIT}px`,
+                        width: `${ghostPlacement.width * ROOM_GRID_UNIT}px`,
+                        height: `${ghostPlacement.height * ROOM_GRID_UNIT}px`,
+                      }"
+                    >
+                      <RoomFixtureArtwork
+                        :fixture="ghostRenderableFixture"
+                        :grid="roomGrid"
+                        surface="ghost"
+                      />
+                    </div>
                   </div>
-                  <div
-                    v-else-if="ghostRenderableFixture && ghostPlacement"
-                    class="absolute rounded-sm border-2 border-dashed"
-                    :class="ghostPlacementClass(ghostPlacement.canPlace, ghostPlacement.type)"
-                    :style="{
-                      left: `${ghostPlacement.col * ROOM_GRID_UNIT}px`,
-                      top: `${ghostPlacement.row * ROOM_GRID_UNIT}px`,
-                      width: `${ghostPlacement.width * ROOM_GRID_UNIT}px`,
-                      height: `${ghostPlacement.height * ROOM_GRID_UNIT}px`,
-                    }"
-                  >
-                    <RoomFixtureArtwork
-                      :fixture="ghostRenderableFixture"
-                      :grid="roomGrid"
-                      surface="ghost"
-                    />
-                  </div>
-                </div>
-              </template>
+                </template>
 
-              <template #wall-overlay>
-                <div
-                  v-if="showWallGhost && ghostRenderableFixture && ghostPlacement"
-                  class="pointer-events-none absolute inset-0 z-20"
-                >
+                <template #wall-overlay>
                   <div
-                    class="absolute rounded-sm border-2 border-dashed"
-                    :class="ghostPlacementClass(ghostPlacement.canPlace, ghostPlacement.type)"
-                    :style="getWallFixtureFrameStyle(ghostRenderableFixture, roomGrid)"
+                    v-if="showWallGhost && ghostRenderableFixture && ghostPlacement"
+                    class="pointer-events-none absolute inset-0 z-20"
                   >
-                    <RoomFixtureArtwork
-                      :fixture="ghostRenderableFixture"
-                      :grid="roomGrid"
-                      surface="ghost"
-                    />
+                    <div
+                      class="absolute rounded-sm border-2 border-dashed"
+                      :class="ghostPlacementClass(ghostPlacement.canPlace, ghostPlacement.type)"
+                      :style="getWallFixtureFrameStyle(ghostRenderableFixture, roomGrid)"
+                    >
+                      <RoomFixtureArtwork
+                        :fixture="ghostRenderableFixture"
+                        :grid="roomGrid"
+                        surface="ghost"
+                      />
+                    </div>
                   </div>
-                </div>
-              </template>
-            </RoomSceneSurface>
+                </template>
+              </RoomSceneSurface>
+            </div>
           </div>
         </div>
       </div>

@@ -1,9 +1,9 @@
 """SQLAlchemy models for classroom planner drafts.
 
 This module persists the mutable classroom-planner workspace used by the
-active fundamentals flow. Draft child tables capture group structure, seating
-assignments, and teacher notes scoped to one plan draft, while roster-global
-smart rules live in separate roster-owned tables.
+active fundamentals flow. Draft child tables capture group structure and
+seating assignments scoped to one plan draft, while roster-global smart rules
+live in separate roster-owned tables.
 """
 
 from __future__ import annotations
@@ -120,12 +120,6 @@ class PlanDraftModel(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    student_planning_meta: Mapped[list[StudentPlanningMetaModel]] = relationship(
-        "StudentPlanningMetaModel",
-        back_populates="draft",
-        cascade="all, delete-orphan",
-        lazy="selectin",
-    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -202,25 +196,4 @@ class SeatAssignmentModel(Base):
 
     draft: Mapped[PlanDraftModel] = relationship(
         "PlanDraftModel", back_populates="seat_assignments"
-    )
-
-
-class StudentPlanningMetaModel(Base):
-    """Persist teacher-only student notes for a draft."""
-
-    __tablename__ = "classroom_planner_student_planning_meta"
-    __table_args__ = (UniqueConstraint("draft_id", "student_id", name="uq_cp_student_meta"),)
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    draft_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("classroom_planner_plan_drafts.id", ondelete="CASCADE"),
-        index=True,
-        nullable=False,
-    )
-    student_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
-
-    draft: Mapped[PlanDraftModel] = relationship(
-        "PlanDraftModel", back_populates="student_planning_meta"
     )

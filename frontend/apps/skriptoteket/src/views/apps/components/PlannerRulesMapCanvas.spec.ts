@@ -1,7 +1,24 @@
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import PlannerRulesMapCanvas from "./PlannerRulesMapCanvas.vue";
+
+class ResizeObserverMock {
+  observe(): void {}
+  disconnect(): void {}
+}
+
+function setViewportSize(width: number, height: number): void {
+  Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+    configurable: true,
+    get: () => width,
+  });
+  Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+    configurable: true,
+    get: () => height,
+  });
+}
 
 describe("PlannerRulesMapCanvas", () => {
   const template = {
@@ -15,15 +32,22 @@ describe("PlannerRulesMapCanvas", () => {
 
   const students = [
     { id: "student-1", display_name: "Ada Lovelace" },
+    { id: "student-2", display_name: "Alan Turing" },
   ];
 
-  it("keeps a keyed surface when switching between planning map and seating arrangement", async () => {
+  beforeEach(() => {
+    vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+    setViewportSize(1200, 800);
+  });
+
+  it("keeps Planeringskarta as an abstract alphabetical roster even when a template exists", () => {
     const wrapper = mount(PlannerRulesMapCanvas, {
       props: {
         mapView: "planning_map",
         template,
         students,
-        studentsById: { "student-1": students[0] },
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        pendingSelectedStudentIds: ["student-2"],
         seatAssignments: [],
       },
       global: {
@@ -38,22 +62,72 @@ describe("PlannerRulesMapCanvas", () => {
       },
     });
 
-    expect(wrapper.find('[data-test="rules-map-canvas"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="rules-map-empty-state"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="rules-map-canvas"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="rules-map-unplaced-count"]').text()).toContain("2 elever");
+    expect(wrapper.findAll('button[data-test^="rules-unplaced-student-"]')).toHaveLength(2);
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-1"]').text()).toContain(
+      "Ada Lovelace",
+    );
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-2"]').text()).toContain(
+      "Alan Turing",
+    );
+    expect(wrapper.get('[data-test="rules-map-unplaced-selected-count"]').text()).toContain(
+      "1 valda",
+    );
+    expect(wrapper.get('[data-test="rules-unplaced-student-order-student-2"]').text()).toBe("1");
+    expect(wrapper.get('[data-test="rules-zoom-out"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="rules-zoom-in"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="rules-zoom-fit"]').attributes("disabled")).toBeDefined();
+  });
+
+  it("switches to the seating canvas when Sittschema is active", async () => {
+    setViewportSize(800, 600);
+
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "planning_map",
+        template,
+        students,
+        studentsById: { "student-1": students[0], "student-2": students[1] },
+        seatAssignments: [],
+      },
+      global: {
+        stubs: {
+          RoomSceneSurface: {
+            template: "<div data-test='room-scene-surface'><slot name='floor-overlay' /></div>",
+          },
+          PlannerRulesSeatNode: {
+            template: "<button data-test='rules-seat-node' />",
+          },
+        },
+      },
+    });
 
     await wrapper.setProps({
       mapView: "seating_arrangement",
       seatAssignments: [{ seat_id: "seat-1", student_id: "student-1" }],
       canShowSeatingArrangement: true,
     });
+    await nextTick();
+    await nextTick();
 
     expect(wrapper.find('[data-test="rules-map-canvas"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="rules-map-empty-state"]').exists()).toBe(false);
     expect(wrapper.findAll('[data-test="rules-seat-node"]')).toHaveLength(1);
+    expect(Number.parseInt(wrapper.get('[data-test="rules-zoom-percent"]').text(), 10)).not.toBe(100);
+    expect(wrapper.get('[data-test="rules-map-scroll-frame"]').attributes("data-overflow-anchor")).toBe(
+      "center",
+    );
+    expect(wrapper.get('[data-test="rules-map-scroll-frame"]').attributes("style")).toBeUndefined();
+    expect(wrapper.get('[data-test="rules-map-surface-shell"]').classes()).toContain("px-6");
+    expect(wrapper.get('[data-test="rules-map-surface-shell"]').classes()).toContain("py-6");
   });
 
-  it("uses the approved no-classroom copy and organized off-map roster when no template exists", () => {
+  it("shows the seating guidance only when Sittschema has no template to project", () => {
     const wrapper = mount(PlannerRulesMapCanvas, {
       props: {
-        mapView: "planning_map",
+        mapView: "seating_arrangement",
         template: null,
         students: [
           { id: "student-1", display_name: "Ada Lovelace" },

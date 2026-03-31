@@ -43,7 +43,6 @@ import type {
   Roster,
   SeatAssignment,
   Student,
-  StudentPlanningMeta,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
@@ -61,7 +60,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
   const groups = ref<DraftGroup[]>([]);
   const groupAssignmentsByStudentId = ref<Record<string, string | null>>({});
   const seatAssignmentsByStudentId = ref<Record<string, string | null>>({});
-  const studentPlanningMetaByStudentId = ref<Record<string, StudentPlanningMeta>>({});
   const seatingPreferences = ref<StudentSeatingPreference[]>([]);
   const relationshipRules = ref<RelationshipRule[]>([]);
   const smartRulesRevision = ref(0);
@@ -101,12 +99,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
   ): entry is [string, string] => {
     return typeof entry[1] === "string" && entry[1].length > 0;
   };
-
-  const studentPlanningMeta = computed(() => {
-    return students.value
-      .map((student) => studentPlanningMetaByStudentId.value[student.id] ?? null)
-      .filter((meta): meta is StudentPlanningMeta => meta !== null);
-  });
 
   const groupAssignments = computed<GroupAssignment[]>(() => {
     return Object.entries(groupAssignmentsByStudentId.value)
@@ -248,13 +240,11 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groups,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
-    studentPlanningMetaByStudentId,
     seatingPreferences,
     relationshipRules,
     smartRulesRevision,
     historyStatus,
     historyActionInFlight,
-    studentPlanningMeta,
     groupAssignments,
     seatAssignments,
     sessionController,
@@ -342,7 +332,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groups,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
-    studentPlanningMetaByStudentId,
     canMutate: () => !isWorkspaceBusy.value,
     markDirty: () => {
       stateSupport.syncVisibleSessionBindings();
@@ -409,7 +398,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     groupsById,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
-    studentPlanningMetaByStudentId,
     seatingPreferences,
     relationshipRules,
     smartRulesRevision,
@@ -419,7 +407,6 @@ export const useClassroomState = defineStore("classroom-state", () => {
     editingRelationshipRuleId: smartRuleUiState.editingRelationshipRuleId,
     editingNearTeacherRule: smartRuleUiState.editingNearTeacherRule,
     smartRuleFeedbackMessage: smartRuleUiState.feedbackMessage,
-    studentPlanningMeta,
     groupAssignments,
     seatAssignments,
     ungroupedStudents,
@@ -486,7 +473,5 @@ export const useClassroomState = defineStore("classroom-state", () => {
     runGroupingShuffle,
     randomizeSeating: mutationActions.randomizeSeating,
     runSeatingShuffle,
-    setStudentPlanningMeta: mutationActions.setStudentPlanningMeta,
-    resetStudentPlanningMeta: mutationActions.resetStudentPlanningMeta,
   };
 });

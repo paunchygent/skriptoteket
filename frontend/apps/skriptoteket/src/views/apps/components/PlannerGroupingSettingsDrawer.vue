@@ -51,7 +51,7 @@ const seatingHelpText = computed(() => {
   if (!hasSelectedTemplate.value) {
     return "Välj först ett klassrum för att använda sittschemat.";
   }
-  return "Om det finns ett sittschema för det valda klassrummet kan Smart ta hänsyn till det. Finns inget sittschema påverkas inte grupperingen.";
+  return "Med Tillämpa sittschema aktiverat försöker algoritmen skapa grupper av de elever som sitter nära varandra samtidigt som den respekterar dina övriga regler, som \"håll ihop\" och \"håll isär\".";
 });
 
 function changeGroupingTemplate(event: Event): void {
@@ -149,7 +149,7 @@ function openRules(): void {
         <section class="space-y-2 border border-navy/20 bg-canvas p-4">
           <UiDenseToggle
             data-test="grouping-settings-seating-toggle"
-            label="Sittschemat"
+            label="Tillämpa sittschema"
             :model-value="state.draft?.grouping_seating_distance_enabled ?? false"
             :disabled="state.isWorkspaceBusy || !hasSelectedTemplate"
             @update:model-value="state.setDraftGroupingSeatingDistanceEnabled($event)"

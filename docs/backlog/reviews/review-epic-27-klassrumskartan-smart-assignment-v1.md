@@ -153,6 +153,11 @@ re-coupling it through one shared save contract.
     exact-current-arrangement view
   - `Sittplatser` and `Grupper` now keep only compact smart summaries plus a small settings-link
     affordance near `Smart`; drawers may summarize but not edit rules
+- 2026-04-01 planning-map product correction:
+  - `Planeringskarta` is no longer allowed to reuse classroom geometry once seating/classroom
+    context exists
+  - `ST-27-07`, `PR-0155`, `ADR-0074`, and `EPIC-27` are refined so the canonical behavior is now
+    one permanent abstract alphabetical planning layout plus one separate exact `Sittschema` view
 - 2026-03-29/2026-03-30 smart-grouping precedence refinement before `ST-27-04` implementation:
   - grouping history is now explicitly separate from classroom-aware compactness
   - grouping `Use history` now means label-insensitive grouping anti-repeat memory based on

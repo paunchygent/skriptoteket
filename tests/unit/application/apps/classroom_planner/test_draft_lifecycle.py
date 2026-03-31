@@ -253,7 +253,6 @@ async def test_resolve_seating_draft_updates_active_draft_in_place_when_room_cha
         groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
         group_assignments=[GroupAssignment(student_id="student-1", group_id="group-1")],
         seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-1")],
-        student_planning_meta=[],
     )
 
     result = await handler.handle(
@@ -410,7 +409,6 @@ async def test_patch_draft_returns_hydrated_workspace_with_backend_history_statu
         groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0, name_is_custom=False)],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
         history_status=DraftHistoryStatus(can_undo=False, can_redo=False),
     )
     persisted_workspace = DraftWorkspace(
@@ -418,7 +416,6 @@ async def test_patch_draft_returns_hydrated_workspace_with_backend_history_statu
         groups=[DraftGroup(id="group-1", name="Handledargrupp", sort_order=0, name_is_custom=True)],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
         history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
 
@@ -638,7 +635,6 @@ async def test_undo_draft_allows_active_seating_drafts(uow, drafts, now):
         groups=[],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
     drafts.get_by_id.return_value = draft
     drafts.undo.return_value = workspace

@@ -50,6 +50,7 @@ COVERED_REVISION_IDS: tuple[str, ...] = (
     "4d2c6b8e1a9f",
     "8f3d2c1b4a6e",
     "a1e4d6c8b2f0",
+    "b7f9c2d4e1a6",
 )
 
 
@@ -206,6 +207,12 @@ async def _assert_a1e4_default_klassrumskartan_favorite(engine: AsyncEngine) -> 
     await _assert_8f3d_password_reset_tokens(engine)
     tables = await _table_names(engine)
     assert "user_favorite_apps" in tables
+
+
+async def _assert_b7f9_drop_legacy_student_notes(engine: AsyncEngine) -> None:
+    await _assert_a1e4_default_klassrumskartan_favorite(engine)
+    tables = await _table_names(engine)
+    assert "classroom_planner_student_planning_meta" not in tables
 
 
 async def _assert_0032_user_file_vault(engine: AsyncEngine) -> None:
@@ -544,6 +551,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "4d2c6b8e1a9f": _assert_4d2c_grouping_export_checkpoints,
     "8f3d2c1b4a6e": _assert_8f3d_password_reset_tokens,
     "a1e4d6c8b2f0": _assert_a1e4_default_klassrumskartan_favorite,
+    "b7f9c2d4e1a6": _assert_b7f9_drop_legacy_student_notes,
 }
 
 

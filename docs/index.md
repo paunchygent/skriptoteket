@@ -91,6 +91,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0154-klassrumskartan-smart-seating-v1-backend-run-use-history-and-teacher-edge-placement.md`
 - Rules workspace + dual-map smart authoring follow-up:
   `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`
+- Smart-assignment drawer retirement story:
+  `docs/backlog/stories/story-27-08-klassrumskartan-retire-student-notes-drawer-and-seating-mode-student-activation.md`
+- Smart-assignment drawer retirement implementation slice:
+  `docs/backlog/prs/pr-0186-st-27-08-retire-student-notes-drawer-and-seating-mode-student-activation.md`
 - Smart grouping v1 implementation slice:
   `docs/backlog/prs/pr-0167-st-27-04-smart-grouping-v1-grouping-history-and-live-seating-influence.md`
 - Smart grouping compactness simulation + overlay tuning slice:

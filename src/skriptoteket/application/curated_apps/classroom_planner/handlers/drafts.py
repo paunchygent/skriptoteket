@@ -23,7 +23,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RoomTemplate,
     Roster,
     SeatAssignment,
-    StudentPlanningMeta,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.classroom_planner import (
@@ -63,7 +62,6 @@ def _validate_workspace_structure(
     seat_ids = [seat.id for seat in template.seats] if template else []
     group_ids = [group.id for group in workspace.groups]
     group_sort_orders = [str(group.sort_order) for group in workspace.groups]
-    meta_student_ids = [meta.student_id for meta in workspace.student_planning_meta]
     group_assignment_student_ids = [
         assignment.student_id for assignment in workspace.group_assignments
     ]
@@ -76,7 +74,6 @@ def _validate_workspace_structure(
     _ensure_unique(seat_ids, label="Room seat IDs")
     _ensure_unique(group_ids, label="Group IDs")
     _ensure_unique(group_sort_orders, label="Group sort orders")
-    _ensure_unique(meta_student_ids, label="Student notes rows")
     _ensure_unique(group_assignment_student_ids, label="Group assignment students")
     _ensure_unique(seat_assignment_student_ids, label="Seat assignment students")
     _ensure_unique(seat_assignment_seat_ids, label="Seat assignment seats")
@@ -98,10 +95,6 @@ def _validate_workspace_structure(
             raise validation_error("Seat assignments must reference roster students.")
         if seat_assignment.seat_id not in valid_seat_ids:
             raise validation_error("Seat assignments must reference room seats.")
-
-    for meta in workspace.student_planning_meta:
-        if meta.student_id not in valid_student_ids:
-            raise validation_error("Student notes must reference roster students.")
 
 
 async def _get_owned_active_draft(
@@ -348,7 +341,6 @@ class GetDraftWorkspaceHandler:
             groups=workspace.groups,
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
             history_status=workspace.history_status,
         )
 
@@ -401,7 +393,6 @@ class PatchDraftHandler:
         groups: list[DraftGroup] | None = None,
         group_assignments: list[GroupAssignment] | None = None,
         seat_assignments: list[SeatAssignment] | None = None,
-        student_planning_meta: list[StudentPlanningMeta] | None = None,
     ) -> ClassroomPlannerWorkspace:
         workspace = await self._drafts.get_workspace(draft_id=draft_id)
         if not workspace or workspace.draft.owner_user_id != owner_user_id:
@@ -443,11 +434,6 @@ class PatchDraftHandler:
             seat_assignments=(
                 seat_assignments if seat_assignments is not None else workspace.seat_assignments
             ),
-            student_planning_meta=(
-                student_planning_meta
-                if student_planning_meta is not None
-                else workspace.student_planning_meta
-            ),
         )
         roster = await self._rosters.get_by_id(roster_id=updated_workspace.draft.roster_id)
         template = None
@@ -482,6 +468,5 @@ class PatchDraftHandler:
             groups=persisted_workspace.groups,
             group_assignments=persisted_workspace.group_assignments,
             seat_assignments=persisted_workspace.seat_assignments,
-            student_planning_meta=persisted_workspace.student_planning_meta,
             history_status=persisted_workspace.history_status,
         )

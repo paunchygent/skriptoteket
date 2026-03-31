@@ -44,7 +44,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Seat,
     SeatAssignment,
     Student,
-    StudentPlanningMeta,
 )
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.web.api.v1 import apps_classroom_planner as api
@@ -549,7 +548,6 @@ async def test_update_draft_calls_handler():
         grouping_seating_distance_enabled=True,
         group_assignments=[api.GroupAssignmentDto(student_id="s1", group_id="g2")],
         seat_assignments=[api.SeatAssignmentDto(student_id="s1", seat_id="seat1")],
-        student_planning_meta=[api.StudentPlanningMetaDto(student_id="s1", notes="Needs support")],
     )
     now = datetime.now(timezone.utc)
     draft = PlanDraft(
@@ -589,7 +587,6 @@ async def test_update_draft_calls_handler():
         groups=[],
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
-        student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="Needs support")],
         history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
     handler.handle.return_value = workspace
@@ -615,7 +612,6 @@ async def test_update_draft_calls_handler():
         groups=None,
         group_assignments=[GroupAssignment(student_id="s1", group_id="g2")],
         seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
-        student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="Needs support")],
     )
 
 

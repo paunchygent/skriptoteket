@@ -10,7 +10,7 @@ import { computed, ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
-import type { DraftGroup, DraftHistoryStatus, PlanDraft, RelationshipRule, RoomTemplate, Roster, StudentPlanningMeta, StudentSeatingPreference } from "./classroomPlannerTypes";
+import type { DraftGroup, DraftHistoryStatus, PlanDraft, RelationshipRule, RoomTemplate, Roster, StudentSeatingPreference } from "./classroomPlannerTypes";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { usePlannerSessionController } from "./usePlannerSessionController";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
@@ -57,10 +57,6 @@ function createSupportFixture() {
     "student-1": "seat-1",
     "student-2": "seat-2",
   });
-  const studentPlanningMetaByStudentId = ref<Record<string, StudentPlanningMeta>>({
-    "student-1": { student_id: "student-1", notes: "Front row" },
-    "student-2": { student_id: "student-2", notes: "Back row" },
-  });
   const seatingPreferences = ref<StudentSeatingPreference[]>([
     { student_id: "student-1", near_teacher: true },
     { student_id: "student-2", near_teacher: true },
@@ -84,13 +80,11 @@ function createSupportFixture() {
     groups,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
-    studentPlanningMetaByStudentId,
     seatingPreferences,
     relationshipRules,
     smartRulesRevision,
     historyStatus,
     historyActionInFlight,
-    studentPlanningMeta: computed(() => Object.values(studentPlanningMetaByStudentId.value)),
     groupAssignments: computed(() => []),
     seatAssignments: computed(() => []),
     sessionController: {} as PlannerSessionController,
@@ -105,7 +99,6 @@ function createSupportFixture() {
     template,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
-    studentPlanningMetaByStudentId,
     seatingPreferences,
     relationshipRules,
     smartRuleUiState,
@@ -160,9 +153,6 @@ describe("createClassroomPlannerStateSupport", () => {
     });
     expect(fixture.seatAssignmentsByStudentId.value).toEqual({
       "student-1": "seat-1",
-    });
-    expect(fixture.studentPlanningMetaByStudentId.value).toEqual({
-      "student-1": { student_id: "student-1", notes: "Front row" },
     });
     expect(fixture.seatingPreferences.value).toEqual([
       { student_id: "student-1", near_teacher: true },

@@ -9,7 +9,7 @@
 export const MIN_ROOM_VIEWPORT_SCALE = 0.35;
 export const MAX_ROOM_VIEWPORT_SCALE = 1.6;
 export const ROOM_VIEWPORT_SCALE_STEP = 0.1;
-const ROOM_VIEWPORT_PADDING = 24;
+export const ROOM_VIEWPORT_FRAME_PADDING = 24;
 
 export type RoomViewportSize = {
   width: number;
@@ -28,10 +28,10 @@ export function computeRoomViewportFitScale(
     return 1;
   }
 
-  const widthScale = (viewport.width - ROOM_VIEWPORT_PADDING) / surface.width;
-  const heightScale = (viewport.height - ROOM_VIEWPORT_PADDING) / surface.height;
+  const widthScale = (viewport.width - (ROOM_VIEWPORT_FRAME_PADDING * 2)) / surface.width;
+  const heightScale = (viewport.height - (ROOM_VIEWPORT_FRAME_PADDING * 2)) / surface.height;
 
-  return clampRoomViewportScale(Math.min(widthScale, heightScale, 1));
+  return clampRoomViewportScale(Math.min(widthScale, heightScale));
 }
 
 export function getScaledRoomSurfaceStyle(

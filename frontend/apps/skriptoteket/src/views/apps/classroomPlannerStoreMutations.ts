@@ -10,14 +10,12 @@
 import type { ComputedRef, Ref } from "vue";
 
 import {
-  emptyStudentPlanningMeta,
   type DraftGroup,
   type GroupAssignment,
   type RoomFixture,
   type Seat,
   type SeatAssignment,
   type Student,
-  type StudentPlanningMeta,
 } from "./classroomPlannerTypes";
 
 export function buildStudentMap(students: Student[]): Record<string, Student> {
@@ -92,7 +90,6 @@ type MutationContext = {
   groups: Ref<DraftGroup[]>;
   groupAssignmentsByStudentId: Ref<Record<string, string | null>>;
   seatAssignmentsByStudentId: Ref<Record<string, string | null>>;
-  studentPlanningMetaByStudentId: Ref<Record<string, StudentPlanningMeta>>;
   canMutate: () => boolean;
   markDirty: () => void;
 };
@@ -356,35 +353,6 @@ export function createPlannerMutationActions(context: MutationContext) {
     context.markDirty();
   }
 
-  function setStudentPlanningMeta(studentId: string, patch: Partial<StudentPlanningMeta>): void {
-    if (!context.canMutate()) {
-      return;
-    }
-    if (!context.studentsById.value[studentId]) {
-      return;
-    }
-    const current =
-      context.studentPlanningMetaByStudentId.value[studentId] ?? emptyStudentPlanningMeta(studentId);
-    context.studentPlanningMetaByStudentId.value = {
-      ...context.studentPlanningMetaByStudentId.value,
-      [studentId]: { ...current, ...patch, student_id: studentId },
-    };
-    context.markDirty();
-  }
-
-  function resetStudentPlanningMeta(studentId: string): void {
-    if (!context.canMutate()) {
-      return;
-    }
-    if (!context.studentPlanningMetaByStudentId.value[studentId]) {
-      return;
-    }
-    const nextMeta = { ...context.studentPlanningMetaByStudentId.value };
-    delete nextMeta[studentId];
-    context.studentPlanningMetaByStudentId.value = nextMeta;
-    context.markDirty();
-  }
-
   return {
     assignStudentToGroup,
     removeStudentFromGroup,
@@ -399,7 +367,5 @@ export function createPlannerMutationActions(context: MutationContext) {
     removeGroup,
     randomizeGroups,
     randomizeSeating,
-    setStudentPlanningMeta,
-    resetStudentPlanningMeta,
   };
 }

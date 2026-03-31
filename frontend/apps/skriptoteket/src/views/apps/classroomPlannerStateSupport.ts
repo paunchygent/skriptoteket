@@ -30,7 +30,6 @@ import type {
   Roster,
   RosterSmartRulesResponse,
   SeatAssignment,
-  StudentPlanningMeta,
   StudentSeatingPreference,
 } from "./classroomPlannerTypes";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
@@ -50,13 +49,11 @@ type CreateClassroomPlannerStateSupportOptions = {
   groups: Ref<DraftGroup[]>;
   groupAssignmentsByStudentId: Ref<Record<string, string | null>>;
   seatAssignmentsByStudentId: Ref<Record<string, string | null>>;
-  studentPlanningMetaByStudentId: Ref<Record<string, StudentPlanningMeta>>;
   seatingPreferences: Ref<StudentSeatingPreference[]>;
   relationshipRules: Ref<RelationshipRule[]>;
   smartRulesRevision: Ref<number>;
   historyStatus: Ref<DraftHistoryStatus>;
   historyActionInFlight: Ref<boolean>;
-  studentPlanningMeta: ComputedRef<StudentPlanningMeta[]>;
   groupAssignments: ComputedRef<GroupAssignment[]>;
   seatAssignments: ComputedRef<SeatAssignment[]>;
   sessionController: PlannerSessionController;
@@ -127,9 +124,6 @@ export function createClassroomPlannerStateSupport(
       workspace.seat_assignments,
       "seat_id",
     );
-    options.studentPlanningMetaByStudentId.value = Object.fromEntries(
-      workspace.student_planning_meta.map((meta) => [meta.student_id, meta]),
-    );
     options.historyStatus.value = workspace.history_status;
     options.historyActionInFlight.value = false;
   }
@@ -198,11 +192,6 @@ export function createClassroomPlannerStateSupport(
         return studentIds.has(studentId);
       }),
     );
-    options.studentPlanningMetaByStudentId.value = Object.fromEntries(
-      Object.entries(options.studentPlanningMetaByStudentId.value).filter(([studentId]) => {
-        return studentIds.has(studentId);
-      }),
-    );
     options.seatingPreferences.value = options.seatingPreferences.value.filter((preference) => {
       return studentIds.has(preference.student_id);
     });
@@ -225,7 +214,6 @@ export function createClassroomPlannerStateSupport(
       groups: options.groups.value.map((group) => ({ ...group })),
       group_assignments: options.groupAssignments.value.map((assignment) => ({ ...assignment })),
       seat_assignments: options.seatAssignments.value.map((assignment) => ({ ...assignment })),
-      student_planning_meta: options.studentPlanningMeta.value.map((meta) => ({ ...meta })),
     };
   }
 
@@ -280,7 +268,6 @@ export function createClassroomPlannerStateSupport(
     options.groups.value = [];
     options.groupAssignmentsByStudentId.value = {};
     options.seatAssignmentsByStudentId.value = {};
-    options.studentPlanningMetaByStudentId.value = {};
     options.seatingPreferences.value = [];
     options.relationshipRules.value = [];
     options.smartRulesRevision.value = 0;

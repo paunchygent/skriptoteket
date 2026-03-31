@@ -114,7 +114,6 @@ def _workspace(
             SeatAssignment(student_id="ada", seat_id="front-left"),
             SeatAssignment(student_id="alan", seat_id="front-right"),
         ],
-        student_planning_meta=[],
         history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
 

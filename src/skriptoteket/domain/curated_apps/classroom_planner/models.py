@@ -123,15 +123,6 @@ class SeatAssignment(BaseModel):
     seat_id: str
 
 
-class StudentPlanningMeta(BaseModel):
-    """Represent teacher-only notes for a student, kept separate from smart rules."""
-
-    model_config = ConfigDict(frozen=True, from_attributes=True)
-
-    student_id: str
-    notes: str | None = None
-
-
 class StudentSeatingPreference(BaseModel):
     """Represent per-student seating-only preference inputs."""
 
@@ -220,7 +211,6 @@ class DraftWorkspace(BaseModel):
     groups: list[DraftGroup] = Field(default_factory=list)
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
-    student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
     )
@@ -237,7 +227,6 @@ class ClassroomPlannerWorkspace(BaseModel):
     groups: list[DraftGroup] = Field(default_factory=list)
     group_assignments: list[GroupAssignment] = Field(default_factory=list)
     seat_assignments: list[SeatAssignment] = Field(default_factory=list)
-    student_planning_meta: list[StudentPlanningMeta] = Field(default_factory=list)
     history_status: DraftHistoryStatus = Field(
         default_factory=lambda: DraftHistoryStatus(can_undo=False, can_redo=False)
     )

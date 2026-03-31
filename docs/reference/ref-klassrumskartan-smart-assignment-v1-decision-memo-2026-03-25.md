@@ -42,7 +42,8 @@ explicit, and the current class-first workflow intact.
     `Regler`
   - task-pane drawers or overflow menus must not become full rule editors
 - Give `Regler` two map views over the same authoring session:
-  - `Planeringskarta` is the default and maps students alphabetically onto the classroom geometry
+  - `Planeringskarta` is the default and always uses one clean alphabetical planning layout that
+    does not inherit classroom geometry or the current seating draft
   - `Sittschema` mirrors the current seating draft when it exists
 - Add one seating-only rule:
   - `Närmare läraren`

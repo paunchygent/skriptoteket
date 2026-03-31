@@ -2,7 +2,7 @@
 
 These protocols let application handlers depend on typed planner aggregates
 without coupling to SQLAlchemy. They separate roster-owned smart-rule storage
-from the mutable draft workspaces used for grouping, seating, and notes.
+from the mutable draft workspaces used for grouping and seating.
 """
 
 from __future__ import annotations

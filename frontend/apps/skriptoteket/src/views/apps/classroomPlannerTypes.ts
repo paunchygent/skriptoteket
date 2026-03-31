@@ -70,11 +70,6 @@ export type SeatAssignment = {
   seat_id: string;
 };
 
-export type StudentPlanningMeta = {
-  student_id: string;
-  notes?: string | null;
-};
-
 export type PlanDraftKind = "grouping" | "seating";
 export type ClassroomSelectionMode = "optional" | "required";
 
@@ -150,7 +145,6 @@ export type DraftWorkspaceResponse = {
   groups: DraftGroup[];
   group_assignments: GroupAssignment[];
   seat_assignments: SeatAssignment[];
-  student_planning_meta: StudentPlanningMeta[];
   history_status: {
     can_undo: boolean;
     can_redo: boolean;
@@ -207,8 +201,3 @@ export type RosterSmartRulesResponse = {
 export type DraftHistoryStatus = DraftWorkspaceResponse["history_status"];
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
-
-export const emptyStudentPlanningMeta = (studentId: string): StudentPlanningMeta => ({
-  student_id: studentId,
-  notes: null,
-});

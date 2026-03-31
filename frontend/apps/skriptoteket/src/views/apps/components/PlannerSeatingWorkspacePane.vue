@@ -20,15 +20,9 @@ import RoomCanvas from "./RoomCanvas.vue";
 import { useClassroomState } from "../useClassroomState";
 
 const {
-  selectedStudentId = null,
   selectedTemplateId = null,
 } = defineProps<{
-  selectedStudentId?: string | null;
   selectedTemplateId?: string | null;
-}>();
-
-const emit = defineEmits<{
-  (e: "student-selected", studentId: string): void;
 }>();
 
 const plannerState = useClassroomState();
@@ -110,12 +104,9 @@ function onDragOver(event: DragEvent): void {
         <PlannerStudentPool
           title="Ej placerade"
           :students="plannerState.unseatedStudents"
-          :selected-student-id="selectedStudentId"
-          :selected-student-ids="plannerState.pendingRelationshipStudentIds"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           empty-label="Alla elever har fått plats"
           root-test-id="seating-student-pool"
-          @student-selected="emit('student-selected', $event)"
           @student-dragstart="onStudentDragStart($event.event, $event.studentId)"
           @pool-dragover="onDragOver"
           @pool-drop="onDropToPool"
@@ -131,11 +122,8 @@ function onDragOver(event: DragEvent): void {
           data-test="seating-workspace"
           :scale-percent="seatingCanvasScalePercent"
           :scaled-surface-style="seatingCanvasScaledSurfaceStyle"
-          :selected-student-id="selectedStudentId"
-          :selected-student-ids="plannerState.pendingRelationshipStudentIds"
           :smart-rule-markers-by-student-id="smartRuleMarkersByStudentId"
           :surface-scale="seatingCanvasScale"
-          @student-selected="emit('student-selected', $event)"
           @viewport-size="setSeatingCanvasViewportSize"
           @zoom-fit="resetSeatingCanvasZoom"
           @zoom-in="zoomInSeatingCanvas"

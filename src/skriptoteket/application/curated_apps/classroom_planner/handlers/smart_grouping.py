@@ -271,7 +271,6 @@ class RunSmartGroupingHandler:
             groups=workspace.groups,
             group_assignments=group_assignments.group_assignments,
             seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
             history_status=workspace.history_status,
         )
         async with self._uow:
@@ -295,7 +294,6 @@ class RunSmartGroupingHandler:
             groups=workspace.groups,
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
             history_status=workspace.history_status,
         )
 

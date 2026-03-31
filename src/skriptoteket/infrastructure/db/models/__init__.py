@@ -13,7 +13,6 @@ from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     GroupAssignmentModel,
     PlanDraftModel,
     SeatAssignmentModel,
-    StudentPlanningMetaModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -61,7 +60,6 @@ __all__ = [
     "SeatingExportCheckpointModel",
     "SeatingExportJobModel",
     "SeatingExportWebhookBindingModel",
-    "StudentPlanningMetaModel",
     "UserFavoriteAppModel",
     "UserFavoriteToolModel",
 ]

@@ -30,7 +30,6 @@ export type DraftLanePatchPayload = {
   groups: DraftWorkspaceResponse["groups"];
   group_assignments: DraftWorkspaceResponse["group_assignments"];
   seat_assignments: DraftWorkspaceResponse["seat_assignments"];
-  student_planning_meta: DraftWorkspaceResponse["student_planning_meta"];
 };
 
 export type DraftPersistenceLaneResult =

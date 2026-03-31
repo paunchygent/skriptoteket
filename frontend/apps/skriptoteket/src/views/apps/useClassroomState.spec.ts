@@ -84,7 +84,6 @@ function createWorkspaceResponse(
     ],
     group_assignments: [],
     seat_assignments: [],
-    student_planning_meta: [],
     history_status: historyStatus,
   };
 }
@@ -173,7 +172,6 @@ function seedWorkspace() {
   ];
   state.groupAssignmentsByStudentId = {};
   state.seatAssignmentsByStudentId = {};
-  state.studentPlanningMetaByStudentId = {};
   state.smartRulesRevision = 0;
   state.smartRuleHydrationStatus = "ready";
   return state;
@@ -519,7 +517,7 @@ describe("useClassroomState", () => {
     expect(state.smartGroupingRunTone).toBe("success");
   });
 
-  it("clears grouping assignments in place without touching group structure or metadata", () => {
+  it("clears grouping assignments in place without touching group structure", () => {
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "grouping");
     state.groupAssignmentsByStudentId = {
@@ -527,13 +525,6 @@ describe("useClassroomState", () => {
       s2: null,
       s3: "group-b",
     };
-    state.studentPlanningMetaByStudentId = {
-      s1: {
-        student_id: "s1",
-        notes: "Behåll anteckningen",
-      },
-    };
-
     state.clearGroupingAssignments();
 
     expect(state.draft?.id).toBe("draft-1");
@@ -543,7 +534,6 @@ describe("useClassroomState", () => {
       s2: null,
       s3: null,
     });
-    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Behåll anteckningen");
     expect(state.hasPendingAutosave).toBe(true);
   });
 
@@ -555,13 +545,6 @@ describe("useClassroomState", () => {
       s2: null,
       s3: "seat-2",
     };
-    state.studentPlanningMetaByStudentId = {
-      s2: {
-        student_id: "s2",
-        notes: "Behåll anteckningen",
-      },
-    };
-
     state.clearSeatingAssignments();
 
     expect(state.template?.id).toBe("template-1");
@@ -570,7 +553,6 @@ describe("useClassroomState", () => {
       s2: null,
       s3: null,
     });
-    expect(state.studentPlanningMetaByStudentId["s2"]?.notes).toBe("Behåll anteckningen");
     expect(state.hasPendingAutosave).toBe(true);
   });
 
@@ -583,16 +565,6 @@ describe("useClassroomState", () => {
 
     expect(state.hasPendingAutosave).toBe(false);
     expect(state.draftPersistenceStatus).toBe("idle");
-  });
-
-  it("stores student planning metadata", () => {
-    const state = seedWorkspace();
-
-    state.setStudentPlanningMeta("s1", {
-      notes: "Behöver lugn plats",
-    });
-
-    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Behöver lugn plats");
   });
 
   it("tracks the active seating smart tool and clears pending relation selections on tool change", () => {
@@ -1011,7 +983,7 @@ describe("useClassroomState", () => {
     clientMocks.apiPatch.mockReturnValueOnce(draftPatchDeferred.promise);
     vi.useFakeTimers();
 
-    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "Needs support" });
+    state.assignStudentToSeat("s1", "seat-1");
     await vi.advanceTimersByTimeAsync(900);
     await Promise.resolve();
     state.clearWorkspace();
@@ -1046,7 +1018,7 @@ describe("useClassroomState", () => {
       seating_preferences: [{ student_id: "s2", near_teacher: true }],
     });
 
-    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "Old workspace edit" });
+    state.assignStudentToSeat("s1", "seat-1");
     await vi.advanceTimersByTimeAsync(900);
     await Promise.resolve();
 
@@ -1065,7 +1037,7 @@ describe("useClassroomState", () => {
     expect(state.draft?.id).toBe("draft-2");
     expect(state.roster?.id).toBe("roster-2");
     expect(state.seatingPreferences).toEqual([{ student_id: "s2", near_teacher: true }]);
-    expect(state.studentPlanningMetaByStudentId).toEqual({});
+    expect(state.seatAssignmentsByStudentId).toEqual({});
   });
 
   it("keeps newer draft edits dirty when an older draft autosave succeeds first", async () => {
@@ -1081,25 +1053,25 @@ describe("useClassroomState", () => {
           ...createWorkspaceVariant().draft,
           revision: 6,
         },
-        student_planning_meta: [{ student_id: "s1", notes: "Second note" }],
+        seat_assignments: [{ student_id: "s1", seat_id: "seat-2" }],
       });
 
-    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "First note" });
+    state.assignStudentToSeat("s1", "seat-1");
     await vi.advanceTimersByTimeAsync(900);
     await Promise.resolve();
 
-    state.setStudentPlanningMeta("s1", { student_id: "s1", notes: "Second note" });
+    state.assignStudentToSeat("s1", "seat-2");
     firstDraftSave.resolve({
       ...createWorkspaceVariant(),
       draft: {
         ...createWorkspaceVariant().draft,
         revision: 5,
       },
-      student_planning_meta: [{ student_id: "s1", notes: "First note" }],
+      seat_assignments: [{ student_id: "s1", seat_id: "seat-1" }],
     });
     await Promise.resolve();
 
-    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Second note");
+    expect(state.seatAssignmentsByStudentId["s1"]).toBe("seat-2");
     expect(state.hasPendingAutosave).toBe(true);
 
     await vi.advanceTimersByTimeAsync(900);
@@ -1110,10 +1082,10 @@ describe("useClassroomState", () => {
       "/api/v1/apps/classroom.group-seating-studio/drafts/draft-1",
       expect.objectContaining({
         expected_revision: 5,
-        student_planning_meta: [{ student_id: "s1", notes: "Second note" }],
+        seat_assignments: [{ student_id: "s1", seat_id: "seat-2" }],
       }),
     );
-    expect(state.studentPlanningMetaByStudentId["s1"]?.notes).toBe("Second note");
+    expect(state.seatAssignmentsByStudentId["s1"]).toBe("seat-2");
     expect(state.draft?.revision).toBe(6);
     expect(state.hasPendingAutosave).toBe(false);
   });
@@ -1568,7 +1540,7 @@ describe("useClassroomState", () => {
     await state.loadWorkspace("draft-1");
     clientMocks.apiPatch.mockClear();
 
-    state.setStudentPlanningMeta("s1", { notes: "Fokusera nära fönstret" });
+    state.assignStudentToSeat("s1", "seat-1");
     await vi.advanceTimersByTimeAsync(900);
 
     expect(clientMocks.apiPatch).toHaveBeenCalledTimes(1);
@@ -1577,13 +1549,7 @@ describe("useClassroomState", () => {
       expected_revision: 4,
       groups: state.groups,
       group_assignments: [],
-      seat_assignments: [],
-      student_planning_meta: [
-        expect.objectContaining({
-          student_id: "s1",
-          notes: "Fokusera nära fönstret",
-        }),
-      ],
+      seat_assignments: [{ student_id: "s1", seat_id: "seat-1" }],
     });
     expect(payload).not.toHaveProperty("seating_preferences");
     expect(payload).not.toHaveProperty("relationship_rules");
@@ -1620,7 +1586,7 @@ describe("useClassroomState", () => {
       throw new Error(`Unexpected patch url: ${url}`);
     });
 
-    state.setStudentPlanningMeta("s1", { notes: "Behåll längst fram" });
+    state.assignStudentToSeat("s1", "seat-1");
     state.setActiveSeatingSmartTool("near_teacher");
     state.handleSeatingSmartToolStudentSelection("s1");
     state.commitPendingRelationshipRule();

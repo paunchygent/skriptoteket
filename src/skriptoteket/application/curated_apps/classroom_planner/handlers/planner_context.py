@@ -82,6 +82,5 @@ async def load_hydrated_workspace_for_owner(
         groups=workspace.groups,
         group_assignments=workspace.group_assignments,
         seat_assignments=workspace.seat_assignments,
-        student_planning_meta=workspace.student_planning_meta,
         history_status=workspace.history_status,
     )

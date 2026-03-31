@@ -3,9 +3,8 @@
  * Seat node renderer.
  *
  * This component renders one seat on the classroom canvas and keeps seat-level
- * drag-and-drop interaction local. It also emits student selection so the
- * planner shell can open the metadata drawer without coupling the seat visuals
- * to the form logic.
+ * drag-and-drop interaction local. In the seating workspace, student tokens are
+ * draggable and removable, but no longer support click activation.
  */
 
 import RoomSeatToken from "./RoomSeatToken.vue";
@@ -23,7 +22,6 @@ const emit = defineEmits<{
   (e: "student-dropped", studentId: string, seatId: string): void;
   (e: "student-removed", studentId: string): void;
   (e: "swap-requested", studentIdA: string, studentIdB: string): void;
-  (e: "student-selected", studentId: string): void;
 }>();
 
 function onDrop(event: DragEvent): void {
@@ -107,18 +105,16 @@ function onDragStart(event: DragEvent): void {
       </span>
     </div>
 
-    <button
+    <div
       v-if="student"
-      type="button"
       class="h-full w-full"
-      @click="emit('student-selected', student.id)"
     >
       <RoomSeatToken
         :seat-id="seat.id"
         :student-name="student.display_name"
         :selected="selected"
       />
-    </button>
+    </div>
     <RoomSeatToken
       v-else
       :seat-id="seat.id"

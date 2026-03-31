@@ -47,7 +47,6 @@ def build_initial_workspace(
         groups=build_default_groups(id_generator=id_generator),
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
 
 

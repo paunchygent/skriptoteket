@@ -2,24 +2,24 @@
 /**
  * Rules-workspace map canvas.
  *
- * This component renders the classroom geometry for both `Planeringskarta`
- * and `Sittschema`, mapping rule selection by `studentId` while leaving all
- * persistence and rule mutation logic to the planner store.
+ * This component renders the two rule-authoring views:
+ * `Planeringskarta` as a stable abstract alphabetical planning layout and
+ * `Sittschema` as the classroom-faithful seating projection. Rule selection
+ * stays keyed by `studentId`, while persistence and mutation remain in the
+ * planner store.
  */
 
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import type { RoomTemplate, SeatAssignment, Student } from "../classroomPlannerTypes";
 import UiSegmentedToggle, {
   type UiSegmentedToggleOption,
 } from "../../../components/ui/UiSegmentedToggle.vue";
-import {
-  sortSeatsByReadingOrder,
-  sortStudentsAlphabetically,
-} from "../classroomPlannerSmartRulePresentation";
+import { sortStudentsAlphabetically } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
 import { useRoomViewportZoom } from "../useRoomViewportZoom";
+import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
 import RoomSceneSurface from "./RoomSceneSurface.vue";
 import PlannerRulesSeatNode from "./PlannerRulesSeatNode.vue";
 
@@ -69,15 +69,8 @@ const {
 const canvasViewport = ref<HTMLElement | null>(null);
 const viewportWidth = ref(0);
 
-const orderedSeats = computed(() => sortSeatsByReadingOrder(props.template?.seats ?? []));
+const isPlanningMap = computed(() => props.mapView === "planning_map");
 const orderedPlanningStudents = computed(() => sortStudentsAlphabetically(props.students));
-const planningStudentsBySeatId = computed<Record<string, Student | null>>(() => {
-  const projected: Record<string, Student | null> = {};
-  orderedSeats.value.forEach((seat, index) => {
-    projected[seat.id] = orderedPlanningStudents.value[index] ?? null;
-  });
-  return projected;
-});
 const seatingStudentsBySeatId = computed<Record<string, Student | null>>(() => {
   const projected: Record<string, Student | null> = {};
   for (const seat of props.template?.seats ?? []) {
@@ -91,14 +84,9 @@ const seatingStudentsBySeatId = computed<Record<string, Student | null>>(() => {
   }
   return projected;
 });
-const projectedStudentsBySeatId = computed<Record<string, Student | null>>(() => {
-  return props.mapView === "planning_map"
-    ? planningStudentsBySeatId.value
-    : seatingStudentsBySeatId.value;
-});
-const unplacedStudents = computed(() => {
-  if (props.mapView === "planning_map") {
-    return orderedPlanningStudents.value.slice(orderedSeats.value.length);
+const surfaceStudents = computed(() => {
+  if (isPlanningMap.value) {
+    return orderedPlanningStudents.value;
   }
 
   const placedStudentIds = new Set(props.seatAssignments.map((assignment) => assignment.student_id));
@@ -107,11 +95,12 @@ const unplacedStudents = computed(() => {
   );
 });
 const selectedUnplacedStudentsCount = computed(() => {
-  return unplacedStudents.value.filter((student) => isStudentSelected(student.id)).length;
+  return surfaceStudents.value.filter((student) => isStudentSelected(student.id)).length;
 });
 const shouldCenterSurface = computed(() => {
-  const scaledWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0");
-  return viewportWidth.value <= 0 || scaledWidth <= viewportWidth.value;
+  const paddedWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0")
+    + (ROOM_VIEWPORT_FRAME_PADDING * 2);
+  return viewportWidth.value <= 0 || paddedWidth <= viewportWidth.value;
 });
 const mapViewOptions = computed<UiSegmentedToggleOption[]>(() => {
   return [
@@ -136,6 +125,7 @@ function syncViewportSize(): void {
   const element = canvasViewport.value;
   if (!element) {
     setViewportSize({ width: 0, height: 0 });
+    viewportWidth.value = 0;
     return;
   }
 
@@ -148,9 +138,11 @@ function syncViewportSize(): void {
 
 let canvasViewportObserver: ResizeObserver | null = null;
 
-onMounted(() => {
+function bindCanvasViewportObserver(): void {
+  canvasViewportObserver?.disconnect();
+  canvasViewportObserver = null;
   syncViewportSize();
-  if (typeof ResizeObserver === "undefined") {
+  if (typeof ResizeObserver === "undefined" || !canvasViewport.value) {
     return;
   }
 
@@ -158,10 +150,24 @@ onMounted(() => {
     syncViewportSize();
   });
 
-  if (canvasViewport.value) {
-    canvasViewportObserver.observe(canvasViewport.value);
-  }
+  canvasViewportObserver.observe(canvasViewport.value);
+}
+
+onMounted(() => {
+  void nextTick(() => {
+    bindCanvasViewportObserver();
+  });
 });
+
+watch(
+  [canvasViewport, () => props.mapView, () => props.template?.id ?? null],
+  () => {
+    void nextTick(() => {
+      bindCanvasViewportObserver();
+    });
+  },
+  { flush: "post" },
+);
 
 onBeforeUnmount(() => {
   canvasViewportObserver?.disconnect();
@@ -210,13 +216,17 @@ function updateMapView(value: string): void {
       />
 
       <div class="flex flex-wrap items-center gap-2">
-        <span class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
+        <span
+          data-test="rules-zoom-percent"
+          class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+        >
           {{ scalePercent }}%
         </span>
         <button
           type="button"
           class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           data-test="rules-zoom-out"
+          :disabled="isPlanningMap"
           @click="zoomOut"
         >
           −
@@ -225,6 +235,7 @@ function updateMapView(value: string): void {
           type="button"
           class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           data-test="rules-zoom-in"
+          :disabled="isPlanningMap"
           @click="zoomIn"
         >
           +
@@ -233,6 +244,7 @@ function updateMapView(value: string): void {
           type="button"
           class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           data-test="rules-zoom-fit"
+          :disabled="isPlanningMap"
           @click="resetZoom"
         >
           Anpassa
@@ -247,7 +259,7 @@ function updateMapView(value: string): void {
           class="rules-map-view-surface"
         >
           <div
-            v-if="!template"
+            v-if="!isPlanningMap && !template"
             class="mt-3 border border-dashed border-navy/30 bg-canvas px-5 py-6 text-center text-sm leading-relaxed text-navy/70"
             data-test="rules-map-empty-state"
           >
@@ -256,63 +268,70 @@ function updateMapView(value: string): void {
           </div>
 
           <div
-            v-else
+            v-else-if="!isPlanningMap && template"
             ref="canvasViewport"
             data-test="rules-map-canvas"
             class="mt-3 min-h-[480px] overflow-auto border border-navy/20 bg-white p-3"
           >
             <div
+              data-test="rules-map-scroll-frame"
               class="flex min-h-full min-w-full items-start"
+              :data-overflow-anchor="shouldCenterSurface ? 'center' : 'start'"
               :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
             >
               <div
-                class="relative shrink-0"
-                :style="scaledSurfaceStyle"
+                class="shrink-0 px-6 py-6"
+                data-test="rules-map-surface-shell"
               >
                 <div
-                  class="absolute left-0 top-0"
-                  :style="{
-                    transform: `scale(${canvasScale})`,
-                    transformOrigin: 'top left',
-                  }"
+                  class="relative"
+                  :style="scaledSurfaceStyle"
                 >
-                  <RoomSceneSurface
-                    :grid="roomGrid"
-                    :seats="template.seats"
-                    :fixtures="template.fixtures"
-                    :show-backdrop-grid="true"
-                    :render-seat-tokens="false"
+                  <div
+                    class="absolute left-0 top-0"
+                    :style="{
+                      transform: `scale(${canvasScale})`,
+                      transformOrigin: 'top left',
+                    }"
                   >
-                    <template #floor-overlay>
-                      <PlannerRulesSeatNode
-                        v-for="seat in template.seats"
-                        :key="seat.id"
-                        :seat="seat"
-                        :student="projectedStudentsBySeatId[seat.id]"
-                        :selected="
-                          projectedStudentsBySeatId[seat.id] !== null
-                            && isStudentSelected(projectedStudentsBySeatId[seat.id]?.id ?? '')
-                        "
-                        :selection-order="
-                          projectedStudentsBySeatId[seat.id] !== null
-                            ? selectionOrder(projectedStudentsBySeatId[seat.id]?.id ?? '')
-                            : null
-                        "
-                        :markers="
-                          smartRuleMarkersByStudentId[projectedStudentsBySeatId[seat.id]?.id ?? ''] ?? []
-                        "
-                        :interactive="projectedStudentsBySeatId[seat.id] !== null"
-                        @student-selected="emit('student-selected', $event)"
-                      />
-                    </template>
-                  </RoomSceneSurface>
+                    <RoomSceneSurface
+                      :grid="roomGrid"
+                      :seats="template.seats"
+                      :fixtures="template.fixtures"
+                      :show-backdrop-grid="true"
+                      :render-seat-tokens="false"
+                    >
+                      <template #floor-overlay>
+                        <PlannerRulesSeatNode
+                          v-for="seat in template.seats"
+                          :key="seat.id"
+                          :seat="seat"
+                          :student="seatingStudentsBySeatId[seat.id]"
+                          :selected="
+                            seatingStudentsBySeatId[seat.id] !== null
+                              && isStudentSelected(seatingStudentsBySeatId[seat.id]?.id ?? '')
+                          "
+                          :selection-order="
+                            seatingStudentsBySeatId[seat.id] !== null
+                              ? selectionOrder(seatingStudentsBySeatId[seat.id]?.id ?? '')
+                              : null
+                          "
+                          :markers="
+                            smartRuleMarkersByStudentId[seatingStudentsBySeatId[seat.id]?.id ?? ''] ?? []
+                          "
+                          :interactive="seatingStudentsBySeatId[seat.id] !== null"
+                          @student-selected="emit('student-selected', $event)"
+                        />
+                      </template>
+                    </RoomSceneSurface>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <div
-            v-if="unplacedStudents.length > 0"
+            v-if="surfaceStudents.length > 0"
             class="rules-unplaced-panel mt-3 border border-navy/20 bg-canvas px-3 py-3"
             data-test="rules-map-unplaced"
           >
@@ -325,7 +344,7 @@ function updateMapView(value: string): void {
                   class="text-[11px] font-medium text-navy/55"
                   data-test="rules-map-unplaced-count"
                 >
-                  {{ unplacedStudents.length }} elever
+                  {{ surfaceStudents.length }} elever
                 </p>
               </div>
               <p
@@ -341,7 +360,7 @@ function updateMapView(value: string): void {
               data-test="rules-map-unplaced-grid"
             >
               <button
-                v-for="student in unplacedStudents"
+                v-for="student in surfaceStudents"
                 :key="student.id"
                 type="button"
                 class="rules-unplaced-student border text-left"

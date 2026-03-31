@@ -60,7 +60,6 @@ function createWorkspace(revision = 5): DraftWorkspaceResponse {
       { student_id: "alan", group_id: "group-a" },
     ],
     seat_assignments: [],
-    student_planning_meta: [],
     history_status: {
       can_undo: true,
       can_redo: false,

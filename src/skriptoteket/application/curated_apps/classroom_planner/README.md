@@ -33,7 +33,8 @@ Standardized workspace configurations that pre-define geometry constraints: `Sta
 
 ### Dual-Map Authoring
 The `Regler` (Rules) workspace provides a split interaction model:
-- **Planning Map**: An alphabetical/ordered projection for student-based rule assignment.
+- **Planning Map**: A stable abstract alphabetical grid for student-based rule assignment; it does
+  not inherit classroom geometry or the current seating draft.
 - **Seating Map**: A spatial projection mirroring the physical classroom geometry.
 
 ## Technical Specification

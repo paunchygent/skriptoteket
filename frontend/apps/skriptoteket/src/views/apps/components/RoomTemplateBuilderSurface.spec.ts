@@ -50,6 +50,9 @@ describe("RoomTemplateBuilderSurface", () => {
     await nextTick();
 
     expect(wrapper.get('[data-test="room-builder-scroll-frame"]').attributes("data-overflow-anchor")).toBe("start");
+    expect(wrapper.get('[data-test="room-builder-scroll-frame"]').attributes("style")).toBeUndefined();
+    expect(wrapper.get('[data-test="room-builder-surface-shell"]').classes()).toContain("px-6");
+    expect(wrapper.get('[data-test="room-builder-surface-shell"]').classes()).toContain("py-6");
   });
 
   it("keeps the builder heading but removes the incorrect geometry helper copy", () => {

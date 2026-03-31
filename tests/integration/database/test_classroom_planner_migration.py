@@ -25,14 +25,14 @@ from tests.fixtures.database_fixtures import _to_async_database_url
 @pytest.mark.docker
 @pytest.mark.asyncio
 async def test_classroom_planner_migration_idempotency(postgres_container):
-    """Verify Slice 2 head migration, backfill behavior, and clean re-upgrades."""
+    """Verify planner migrations reach the current head cleanly and stay re-runnable."""
     database_url = _to_async_database_url(postgres_container.get_connection_url())
     os.environ["DATABASE_URL"] = database_url
 
     alembic_cfg = Config(str(Path("alembic.ini")))
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
 
-    target_revision = "91f6c4a7b2d1"
+    target_revision = "b7f9c2d4e1a6"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
@@ -304,8 +304,8 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
             "classroom_planner_group_assignments",
             "classroom_planner_seat_assignments",
             "classroom_planner_draft_groups",
-            "classroom_planner_student_planning_meta",
         }.issubset(tables)
+        assert "classroom_planner_student_planning_meta" not in tables
         assert "classroom_planner_pair_constraints" not in tables
         assert "classroom_planner_planning_profiles" not in tables
         assert "classroom_planner_arrangement_snapshots" not in tables
@@ -317,9 +317,6 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
         assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
         assert "group_count" not in await get_columns("classroom_planner_plan_drafts")
-        assert "independent_focus_support" not in await get_columns(
-            "classroom_planner_student_planning_meta"
-        )
         assert "uq_cp_active_draft_roster_kind" in await get_index_names(
             "classroom_planner_plan_drafts"
         )
@@ -468,6 +465,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         run_alembic_cmd(command.upgrade, target_revision)
         tables_after_reupgrade = await get_tables()
         assert "classroom_planner_draft_groups" in tables_after_reupgrade
+        assert "classroom_planner_student_planning_meta" not in tables_after_reupgrade
         assert "classroom_planner_arrangement_snapshots" not in tables_after_reupgrade
         assert "classroom_planner_pair_constraints" not in tables_after_reupgrade
         assert "classroom_planner_planning_profiles" not in tables_after_reupgrade

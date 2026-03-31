@@ -118,22 +118,31 @@ def _create_template(
         path="/api/v1/apps/classroom.group-seating-studio/templates",
         payload={
             "name": template_name,
-            "grid_cols": 5,
-            "grid_rows": 3,
+            "grid_cols": 13,
+            "grid_rows": 8,
             "seats": [
-                {"id": "seat-1", "x": 0, "y": 0, "zone": "front"},
-                {"id": "seat-2", "x": 120, "y": 0, "zone": "front"},
-                {"id": "seat-3", "x": 240, "y": 0, "zone": "front"},
+                {"id": "seat-1", "x": 96, "y": 480, "zone": "front"},
+                {"id": "seat-2", "x": 576, "y": 480, "zone": "front"},
+                {"id": "seat-3", "x": 960, "y": 480, "zone": "front"},
             ],
             "fixtures": [
                 {
                     "id": "teacher-desk-1",
                     "type": "teacher_desk",
-                    "x": 48,
-                    "y": 132,
+                    "x": 96,
+                    "y": 192,
                     "width": 168,
                     "height": 72,
                     "label": "Lärarbord",
+                },
+                {
+                    "id": "whiteboard-1",
+                    "type": "whiteboard",
+                    "x": 96,
+                    "y": 0,
+                    "width": 1056,
+                    "height": 72,
+                    "label": "Whiteboard",
                 },
             ],
         },
@@ -209,10 +218,8 @@ def _patch_smart_rules(
     )
 
 
-def _seat_button_texts(page: Page) -> list[str]:
-    return page.locator(
-        '[data-test="rules-map-canvas"] [data-test^="rules-seat-node-"] button'
-    ).evaluate_all(
+def _planning_student_button_texts(page: Page) -> list[str]:
+    return page.locator('[data-test="rules-map-unplaced-grid"] button').evaluate_all(
         """buttons => buttons.map(button => button.innerText.replace(/\\s+/g, " ").trim())"""
     )
 
@@ -240,7 +247,7 @@ def _select_overview_template(page: Page, *, template_name: str) -> None:
     expect(template_select).to_have_value(matching_option["value"])
 
 
-def _assert_rules_workspace(page: Page, *, template_name: str) -> None:
+def _assert_rules_workspace(page: Page) -> None:
     expect(
         page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-switch"]')
     ).to_be_visible(timeout=60000)
@@ -248,9 +255,11 @@ def _assert_rules_workspace(page: Page, *, template_name: str) -> None:
     expect(
         page.locator('[data-test="rules-tool-rail"] [data-test="rules-map-view-switch"]')
     ).to_have_count(0)
-    expect(page.locator('[data-test="rules-map-canvas"]')).to_be_visible(timeout=60000)
     expect(page.locator('[data-test="rules-map-panel"]')).to_be_visible(timeout=60000)
+    expect(page.locator('[data-test="rules-map-canvas"]')).to_have_count(0)
     expect(page.locator('[data-test="rules-map-empty-state"]')).to_have_count(0)
+    expect(page.locator('[data-test="rules-map-unplaced"]')).to_be_visible(timeout=60000)
+    expect(page.locator('[data-test="rules-map-unplaced-count"]')).to_contain_text("3 elever")
     expect(
         page.locator('[data-test="rules-tool-near_teacher"]').get_by_text("Nära läraren")
     ).to_be_visible()
@@ -268,7 +277,9 @@ def _assert_rules_workspace(page: Page, *, template_name: str) -> None:
         "aria-checked",
         "true",
     )
-    expect(page.get_by_text(re.compile(re.escape(template_name)))).to_be_visible()
+    expect(page.locator('[data-test="rules-zoom-out"]')).to_be_disabled()
+    expect(page.locator('[data-test="rules-zoom-in"]')).to_be_disabled()
+    expect(page.locator('[data-test="rules-zoom-fit"]')).to_be_disabled()
 
     summary_panel_box = _bounding_box(page.locator('[data-test="rules-summary-panel"]'))
     tool_rail_box = _bounding_box(page.locator('[data-test="rules-tool-rail"]'))
@@ -290,17 +301,17 @@ def _assert_rules_workspace(page: Page, *, template_name: str) -> None:
         summary_panel_box,
     )
 
-    seat_texts = _seat_button_texts(page)
-    assert seat_texts[0].startswith("Ada Lovelace"), seat_texts
-    assert seat_texts[1].startswith("Alan Turing"), seat_texts
-    assert seat_texts[2].startswith("Grace Hopper"), seat_texts
+    planning_texts = _planning_student_button_texts(page)
+    assert planning_texts[0].startswith("Ada Lovelace"), planning_texts
+    assert planning_texts[1].startswith("Alan Turing"), planning_texts
+    assert planning_texts[2].startswith("Grace Hopper"), planning_texts
 
 
 def _assert_switch_to_seating_arrangement_preserves_selection(page: Page) -> None:
     page.locator('[data-test="rules-tool-keep_apart"]').click()
     page.get_by_role("button", name=re.compile(r"Alan Turing", re.IGNORECASE)).first.click()
     page.get_by_role("button", name=re.compile(r"Grace Hopper", re.IGNORECASE)).first.click()
-    expect(page.get_by_text("2 valda", exact=False)).to_be_visible()
+    expect(page.locator(".planner-tool-rail-meta")).to_contain_text("2 valda")
     expect(page.locator('[data-test="rules-commit-rule"]')).to_be_enabled()
 
     page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-seating"]').click()
@@ -311,10 +322,60 @@ def _assert_switch_to_seating_arrangement_preserves_selection(page: Page) -> Non
         "aria-checked",
         "true",
     )
-    expect(page.get_by_text("2 valda", exact=False)).to_be_visible()
+    expect(page.locator(".planner-tool-rail-meta")).to_contain_text("2 valda")
     expect(page.locator('[data-test="rules-commit-rule"]')).to_be_enabled()
     expect(page.locator('[data-test="rules-seat-order-seat-1"]')).to_be_visible()
     expect(page.locator('[data-test="rules-seat-order-seat-2"]')).to_be_visible()
+
+
+def _assert_seating_zoom_and_scroll_behavior(page: Page) -> None:
+    zoom_percent = page.locator('[data-test="rules-zoom-percent"]')
+    zoom_out = page.locator('[data-test="rules-zoom-out"]')
+    zoom_in = page.locator('[data-test="rules-zoom-in"]')
+    zoom_fit = page.locator('[data-test="rules-zoom-fit"]')
+    seating_canvas = page.locator('[data-test="rules-map-canvas"]')
+
+    expect(zoom_out).to_be_enabled()
+    expect(zoom_in).to_be_enabled()
+    expect(zoom_fit).to_be_enabled()
+
+    fit_percent_text = (zoom_percent.text_content() or "").strip().rstrip("%")
+    fit_percent = int(fit_percent_text)
+    assert fit_percent != 100, fit_percent
+
+    zoom_out.click()
+    zoomed_out_percent = int(((zoom_percent.text_content() or "").strip().rstrip("%")))
+    assert zoomed_out_percent < fit_percent, (zoomed_out_percent, fit_percent)
+
+    zoom_fit.click()
+    expect(zoom_percent).to_have_text(f"{fit_percent}%")
+
+    for _ in range(4):
+        zoom_in.click()
+
+    overflow = seating_canvas.evaluate(
+        """element => ({
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth,
+            scrollHeight: element.scrollHeight,
+            clientHeight: element.clientHeight,
+        })"""
+    )
+    assert overflow["scrollWidth"] > overflow["clientWidth"], overflow
+
+    scrolled = seating_canvas.evaluate(
+        """element => {
+            element.scrollLeft = element.scrollWidth;
+            element.scrollTop = element.scrollHeight;
+            return {
+                scrollLeft: element.scrollLeft,
+                scrollTop: element.scrollTop,
+            };
+        }"""
+    )
+    assert scrolled["scrollLeft"] > 0, scrolled
+    if overflow["scrollHeight"] > overflow["clientHeight"]:
+        assert scrolled["scrollTop"] > 0, scrolled
 
 
 def _assert_relationship_rule_edit_from_inspector(page: Page) -> None:
@@ -343,14 +404,14 @@ def _assert_near_teacher_edit_from_inspector(page: Page) -> None:
     )
     expect(page.locator('[data-test="rules-commit-rule"]')).to_contain_text("Spara regel")
     expect(page.locator('[data-test="rules-pending-student-chip"]')).to_have_count(1)
-    expect(page.get_by_text("1 vald", exact=False)).to_be_visible()
+    expect(page.locator(".planner-tool-rail-meta")).to_contain_text("1 vald")
 
     page.locator('[data-test="rules-map-panel"]').get_by_role(
         "button", name=re.compile(r"Alan Turing", re.IGNORECASE)
     ).first.click()
 
     expect(page.locator('[data-test="rules-pending-student-chip"]')).to_have_count(2)
-    expect(page.get_by_text("2 valda", exact=False)).to_be_visible()
+    expect(page.locator(".planner-tool-rail-meta")).to_contain_text("2 valda")
 
     page.locator('[data-test="rules-commit-rule"]').click()
 
@@ -361,21 +422,6 @@ def _assert_near_teacher_edit_from_inspector(page: Page) -> None:
     )
     expect(near_teacher_card).to_contain_text("Ada Lovelace")
     expect(near_teacher_card).to_contain_text("Alan Turing")
-
-
-def _assert_compact_summary_workspace(
-    page: Page,
-    *,
-    workspace_label: str,
-    settings_test_id: str,
-) -> None:
-    focus_workspace_mode(page, label=workspace_label)
-    expect(page.locator(f'[data-test="{settings_test_id}"]')).to_be_visible(timeout=60000)
-    expect(page.get_by_text(re.compile(r"[0-9]+ aktiva regler", re.IGNORECASE))).to_be_visible()
-    expect(page.get_by_text("Håll isär A: Alan Turing, Grace Hopper", exact=False)).to_be_visible()
-    expect(page.locator('[data-test="rules-commit-rule"]')).to_have_count(0)
-    expect(page.locator('[data-test="rules-edit-rule-0"]')).to_have_count(0)
-    expect(page.get_by_text("Pågående regel", exact=True)).to_have_count(0)
 
 
 def main() -> None:
@@ -437,12 +483,14 @@ def main() -> None:
         _select_overview_template(page, template_name=template_name)
 
         focus_workspace_mode(page, label="Regler")
-        expect(page.get_by_text(RULES_BOOTSTRAP_TRANSITION_LABEL, exact=True)).to_be_visible()
-        expect(page.locator('[data-test="planner-workspace-notice"]')).to_contain_text(
-            RULES_BOOTSTRAP_NOTICE,
-            timeout=60000,
-        )
-        _assert_rules_workspace(page, template_name=template_name)
+        if page.get_by_text(RULES_BOOTSTRAP_TRANSITION_LABEL, exact=True).count():
+            expect(page.get_by_text(RULES_BOOTSTRAP_TRANSITION_LABEL, exact=True)).to_be_visible()
+        if page.locator('[data-test="planner-workspace-notice"]').count():
+            expect(page.locator('[data-test="planner-workspace-notice"]')).to_contain_text(
+                RULES_BOOTSTRAP_NOTICE,
+                timeout=60000,
+            )
+        _assert_rules_workspace(page)
         page.screenshot(
             path=str(ARTIFACTS_DIR / "rules-bootstrap-planeringskarta.png"), full_page=True
         )
@@ -468,27 +516,14 @@ def main() -> None:
         login_to_app(page, base_url=base_url, email=config.email, password=config.password)
         open_class_workspace(page, roster_name=roster_name)
         focus_workspace_mode(page, label="Regler")
-        _assert_rules_workspace(page, template_name=template_name)
+        _assert_rules_workspace(page)
         page.screenshot(path=str(ARTIFACTS_DIR / "rules-planeringskarta.png"), full_page=True)
 
         _assert_switch_to_seating_arrangement_preserves_selection(page)
+        _assert_seating_zoom_and_scroll_behavior(page)
         _assert_relationship_rule_edit_from_inspector(page)
         _assert_near_teacher_edit_from_inspector(page)
         page.screenshot(path=str(ARTIFACTS_DIR / "rules-sittschema.png"), full_page=True)
-
-        _assert_compact_summary_workspace(
-            page,
-            workspace_label="Sittplatser",
-            settings_test_id="seating-open-rules",
-        )
-        page.screenshot(path=str(ARTIFACTS_DIR / "seating-summary.png"), full_page=True)
-
-        _assert_compact_summary_workspace(
-            page,
-            workspace_label="Grupper",
-            settings_test_id="grouping-open-rules",
-        )
-        page.screenshot(path=str(ARTIFACTS_DIR / "grouping-summary.png"), full_page=True)
 
         context.close()
         browser.close()

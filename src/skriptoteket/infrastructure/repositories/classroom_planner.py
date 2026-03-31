@@ -2,8 +2,8 @@
 
 This module maps SQLAlchemy models to the active classroom-planner domain
 models. It persists reusable teacher assets plus the mutable draft workspace
-for grouping, seating, and draft-scoped notes/history, while roster-owned
-smart rules live behind a separate repository seam.
+for grouping, seating, and bounded in-draft history, while roster-owned smart
+rules live behind a separate repository seam.
 """
 
 from __future__ import annotations
@@ -34,14 +34,12 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Seat,
     SeatAssignment,
     Student,
-    StudentPlanningMeta,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
     DraftGroupModel,
     GroupAssignmentModel,
     PlanDraftModel,
     SeatAssignmentModel,
-    StudentPlanningMetaModel,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_room_template import (
     RoomTemplateModel,
@@ -125,13 +123,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 SeatAssignment(student_id=assignment.student_id, seat_id=assignment.seat_id)
                 for assignment in model.seat_assignments
             ],
-            student_planning_meta=[
-                StudentPlanningMeta(
-                    student_id=meta.student_id,
-                    notes=meta.notes,
-                )
-                for meta in model.student_planning_meta
-            ],
             history_status=history_status,
         )
 
@@ -165,7 +156,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.groups),
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
-                selectinload(PlanDraftModel.student_planning_meta),
             )
             .where(PlanDraftModel.id == draft_id)
         )
@@ -411,10 +401,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
             workspace.seat_assignments,
             key=lambda assignment: (assignment.student_id, assignment.seat_id),
         )
-        ordered_student_planning_meta = sorted(
-            workspace.student_planning_meta,
-            key=lambda meta: meta.student_id,
-        )
         snapshot = {
             "smart_enabled": workspace.draft.smart_enabled,
             "use_history": workspace.draft.use_history,
@@ -436,13 +422,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 {"student_id": assignment.student_id, "seat_id": assignment.seat_id}
                 for assignment in ordered_seat_assignments
             ],
-            "student_planning_meta": [
-                {
-                    "student_id": meta.student_id,
-                    "notes": meta.notes,
-                }
-                for meta in ordered_student_planning_meta
-            ],
         }
         if workspace.draft.draft_kind == PlanDraftKind.GROUPING:
             snapshot["template_id"] = (
@@ -459,7 +438,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.groups),
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
-                selectinload(PlanDraftModel.student_planning_meta),
             ),
         )
 
@@ -530,17 +508,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 for assignment in workspace.seat_assignments
             ],
         )
-        await self._replace_related_collection(
-            model=model,
-            attribute_name="student_planning_meta",
-            new_items=[
-                StudentPlanningMetaModel(
-                    student_id=meta.student_id,
-                    notes=meta.notes,
-                )
-                for meta in workspace.student_planning_meta
-            ],
-        )
         if reset_history_for_seating_context:
             model.history_stack = []
             model.undo_index = 0
@@ -577,7 +544,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.groups),
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
-                selectinload(PlanDraftModel.student_planning_meta),
             ),
         )
         if model is None or not model.history_stack or model.undo_index <= 0:
@@ -601,7 +567,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 selectinload(PlanDraftModel.groups),
                 selectinload(PlanDraftModel.group_assignments),
                 selectinload(PlanDraftModel.seat_assignments),
-                selectinload(PlanDraftModel.student_planning_meta),
             ),
         )
         if (
@@ -665,18 +630,6 @@ class PostgreSQLPlanDraftRepository(PlanDraftRepositoryProtocol):
                 for a in snapshot.get("seat_assignments", [])
             ],
         )
-        if "student_planning_meta" in snapshot:
-            await self._replace_related_collection(
-                model=model,
-                attribute_name="student_planning_meta",
-                new_items=[
-                    StudentPlanningMetaModel(
-                        student_id=meta["student_id"],
-                        notes=meta.get("notes"),
-                    )
-                    for meta in snapshot["student_planning_meta"]
-                ],
-            )
         if model.revision is None:
             model.revision = 1
         else:

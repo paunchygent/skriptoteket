@@ -2,7 +2,7 @@
 This router exposes the bespoke classroom-planner contract used by the SPA. It
 keeps reusable roster and room assets separate from draft-scoped workspace
 state and only publishes the current fundamentals workflow for grouping,
-seating, student planning notes, and draft-local run controls.
+seating, and draft-local run controls.
 """
 
 from uuid import UUID
@@ -51,7 +51,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     Seat,
     SeatAssignment,
     Student,
-    StudentPlanningMeta,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.classroom_planner import (
@@ -195,14 +194,6 @@ class SeatAssignmentDto(BaseModel):
     seat_id: str
 
 
-class StudentPlanningMetaDto(BaseModel):
-    """Serialize teacher-only student notes."""
-
-    model_config = ConfigDict(frozen=True, from_attributes=True, extra="forbid")
-    student_id: str
-    notes: str | None = None
-
-
 class StudentSeatingPreferenceDto(BaseModel):
     """Serialize per-student seating-only preferences."""
 
@@ -247,7 +238,6 @@ class DraftWorkspaceResponse(BaseModel):
     groups: list[DraftGroupDto]
     group_assignments: list[GroupAssignmentDto]
     seat_assignments: list[SeatAssignmentDto]
-    student_planning_meta: list[StudentPlanningMetaDto]
     history_status: DraftHistoryStatusDto
 
 
@@ -270,16 +260,11 @@ class UpdatePlanDraftRequest(BaseModel):
     groups: list[DraftGroupDto] | None = None
     group_assignments: list[GroupAssignmentDto] | None = None
     seat_assignments: list[SeatAssignmentDto] | None = None
-    student_planning_meta: list[StudentPlanningMetaDto] | None = None
 
     @model_validator(mode="after")
     def validate_unique_collections(self) -> "UpdatePlanDraftRequest":
         if self.groups is not None:
             _assert_unique([group.id for group in self.groups], label="Group")
-        if self.student_planning_meta is not None:
-            _assert_unique(
-                [meta.student_id for meta in self.student_planning_meta], label="Student metadata"
-            )
         if self.group_assignments is not None:
             _assert_unique(
                 [assignment.student_id for assignment in self.group_assignments],
@@ -342,9 +327,6 @@ def _serialize_workspace(workspace: ClassroomPlannerWorkspace) -> DraftWorkspace
             SeatAssignmentDto.model_validate(assignment)
             for assignment in workspace.seat_assignments
         ],
-        student_planning_meta=[
-            StudentPlanningMetaDto.model_validate(meta) for meta in workspace.student_planning_meta
-        ],
         history_status=DraftHistoryStatusDto.model_validate(workspace.history_status),
     )
 
@@ -369,7 +351,6 @@ async def undo_draft(
             groups=workspace.groups,
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
             history_status=workspace.history_status,
         )
     )
@@ -395,7 +376,6 @@ async def redo_draft(
             groups=workspace.groups,
             group_assignments=workspace.group_assignments,
             seat_assignments=workspace.seat_assignments,
-            student_planning_meta=workspace.student_planning_meta,
             history_status=workspace.history_status,
         )
     )
@@ -644,14 +624,6 @@ async def update_draft(
                 for assignment in request.seat_assignments
             ]
             if request.seat_assignments is not None
-            else None
-        ),
-        student_planning_meta=(
-            [
-                StudentPlanningMeta.model_validate(meta.model_dump())
-                for meta in request.student_planning_meta
-            ]
-            if request.student_planning_meta is not None
             else None
         ),
     )

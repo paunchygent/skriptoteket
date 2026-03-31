@@ -125,7 +125,6 @@ def _grouping_workspace(
             GroupAssignment(student_id="cai", group_id="group-b"),
         ],
         seat_assignments=[],
-        student_planning_meta=[],
         history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
 
@@ -154,7 +153,6 @@ def _seating_workspace(*, owner_user_id, roster_id, template_id) -> DraftWorkspa
             SeatAssignment(student_id="bea", seat_id="seat-3"),
             SeatAssignment(student_id="cai", seat_id="seat-4"),
         ],
-        student_planning_meta=[],
         history_status=DraftHistoryStatus(can_undo=False, can_redo=False),
     )
 

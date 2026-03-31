@@ -14,7 +14,6 @@ from skriptoteket.domain.curated_apps.classroom_planner.models import (
     PlanDraftKind,
     PlanDraftStatus,
     SeatAssignment,
-    StudentPlanningMeta,
 )
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import PlanDraftModel
 from skriptoteket.infrastructure.repositories.classroom_planner import (
@@ -95,7 +94,6 @@ def _make_draft_model(
         groups=[],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
 
 
@@ -143,7 +141,6 @@ async def test_first_step_undo_seeds_blank_grouping_state() -> None:
         groups=[DraftGroup(id="g1", name="G1", sort_order=0)],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
 
     await repo.save_workspace(workspace=edited_workspace)
@@ -160,8 +157,8 @@ async def test_first_step_undo_seeds_blank_grouping_state() -> None:
 
 
 @pytest.mark.asyncio
-async def test_snapshot_coverage_includes_meta_and_template() -> None:
-    """Grouping history snapshots should capture context and student planning metadata."""
+async def test_snapshot_coverage_includes_template_and_flags() -> None:
+    """Grouping history snapshots should capture template and draft flag context."""
 
     session = AsyncMock()
     repo = PostgreSQLPlanDraftRepository(session)
@@ -187,7 +184,6 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
         groups=[],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[StudentPlanningMeta(student_id="s1", notes="test")],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -199,12 +195,6 @@ async def test_snapshot_coverage_includes_meta_and_template() -> None:
     assert snapshot["use_history"] is True
     assert snapshot["grouping_seating_distance_enabled"] is True
     assert snapshot["template_id"] == str(template_id)
-    assert snapshot["student_planning_meta"] == [
-        {
-            "student_id": "s1",
-            "notes": "test",
-        }
-    ]
 
 
 @pytest.mark.asyncio
@@ -230,21 +220,18 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
             "template_id": None,
             "groups": [{"id": "g1", "name": "G1", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
-            "student_planning_meta": [],
         },
         {
             "smart_enabled": False,
             "template_id": None,
             "groups": [{"id": "g2", "name": "G2", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
-            "student_planning_meta": [],
         },
         {
             "smart_enabled": False,
             "template_id": None,
             "groups": [{"id": "g3", "name": "G3", "sort_order": 0, "name_is_custom": False}],
             "group_assignments": [],
-            "student_planning_meta": [],
         },
     ]
     model = _make_draft_model(draft=draft, now=now, history_stack=history, undo_index=0)
@@ -255,7 +242,6 @@ async def test_redo_branch_truncation_clears_forward_history() -> None:
         groups=[DraftGroup(id="new", name="New", sort_order=0)],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -297,10 +283,6 @@ async def test_logically_identical_snapshots_do_not_append_history() -> None:
             GroupAssignment(student_id="student-1", group_id="group-a"),
         ],
         seat_assignments=[],
-        student_planning_meta=[
-            StudentPlanningMeta(student_id="student-2", notes="b"),
-            StudentPlanningMeta(student_id="student-1", notes="a"),
-        ],
     )
 
     await repo.save_workspace(workspace=first_workspace)
@@ -310,7 +292,6 @@ async def test_logically_identical_snapshots_do_not_append_history() -> None:
         groups=list(reversed(first_workspace.groups)),
         group_assignments=list(reversed(first_workspace.group_assignments)),
         seat_assignments=[],
-        student_planning_meta=list(reversed(first_workspace.student_planning_meta)),
     )
 
     await repo.save_workspace(workspace=second_workspace)
@@ -355,7 +336,6 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
         groups=[],
         group_assignments=[],
         seat_assignments=[SeatAssignment(student_id="student-1", seat_id="seat-2")],
-        student_planning_meta=[StudentPlanningMeta(student_id="student-1", notes="front row")],
     )
 
     await repo.save_workspace(workspace=workspace)
@@ -367,12 +347,6 @@ async def test_seating_template_switch_resets_history_to_the_new_classroom_conte
     assert history[0]["grouping_seating_distance_enabled"] is True
     assert "template_id" not in history[0]
     assert history[0]["seat_assignments"] == [{"student_id": "student-1", "seat_id": "seat-2"}]
-    assert history[0]["student_planning_meta"] == [
-        {
-            "student_id": "student-1",
-            "notes": "front row",
-        }
-    ]
     assert model.undo_index == 0
 
 
@@ -437,14 +411,12 @@ async def test_seating_undo_restores_assignments_without_restoring_template_id()
             "groups": [],
             "group_assignments": [],
             "seat_assignments": [],
-            "student_planning_meta": [],
         },
         {
             "smart_enabled": False,
             "groups": [],
             "group_assignments": [],
             "seat_assignments": [{"student_id": "student-1", "seat_id": "seat-2"}],
-            "student_planning_meta": [],
         },
     ]
     model = _make_draft_model(draft=draft, now=now, history_stack=history, undo_index=1)

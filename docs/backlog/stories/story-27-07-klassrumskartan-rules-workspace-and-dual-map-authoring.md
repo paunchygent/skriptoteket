@@ -1,7 +1,7 @@
 ---
 type: story
 id: ST-27-07
-title: "Klassrumskartan — Dedicated rules workspace and dual-map authoring"
+title: "Klassrumskartan — Dedicated rules workspace with separate planning and seating maps"
 status: done
 owners: "agents"
 created: 2026-03-27
@@ -10,7 +10,8 @@ dependencies: ["ST-27-01", "ST-27-06"]
 acceptance_criteria:
   - "Given the planner shell is visible, when the teacher wants to work with smart rules, then `Regler` exists as a first-class workspace beside `Översikt`, `Grupper`, and `Sittplatser`."
   - "Given the teacher opens `Regler`, when the desktop workspace loads, then it presents one dedicated rule-authoring layout with a tool rail, one central classroom map, and one rule summary/inspector rather than an always-open seating or grouping side panel."
-  - "Given `Planeringskarta` is active in `Regler`, when the map renders, then it preserves the real classroom geometry while ordering students alphabetically onto seats sorted in simple reading order."
+  - "Given `Planeringskarta` is active in `Regler`, when the map renders, then it always shows one normalized planning surface where students are ordered alphabetically from left to right and row by row, without inheriting classroom geometry, seat positions, or the current seating arrangement."
+  - "Given a classroom is selected or a seating arrangement already exists, when the teacher stays in `Planeringskarta`, then that view still keeps the same clean alphabetical planning layout rather than switching into the classroom canvas."
   - "Given `Sittschema` is active in `Regler` and a current seating arrangement exists, when the teacher switches to that view, then the map mirrors the current seating draft without resetting the active tool or current temporary selection."
   - "Given no current seating arrangement exists, when the teacher tries to use `Sittschema`, then the workspace keeps that view unavailable with one short teacher-facing explanation instead of showing a misleading empty projection."
   - "Given the teacher uses one smart rule tool, when they hover or select students, then active-tool state, cursor state, hover state, and ordered selection feedback are all clearly visible before they commit the rule."
@@ -32,10 +33,12 @@ rule editing feels like its own whole-class planning task rather than a clunky s
 
 - `Regler` is now the only primary rule-authoring home in the planner shell.
 - The default authoring view is `Planeringskarta`, not `Sittschema`.
-- `Planeringskarta` should feel spatial, but still be easy to scan:
-  - keep the room geometry
-  - map students alphabetically onto seats in reading order
-- `Sittschema` is a user preference view, not a separate workflow.
+- `Planeringskarta` is the stable planning abstraction:
+  - it always keeps the same clean alphabetical layout
+  - it is meant for fast scanning, selection, and rule planning without classroom-layout clutter
+- `Sittschema` is the classroom-faithful alternative:
+  - it mirrors the current seating draft when one exists
+  - it is the view for reasoning about how students actually sit right now
 - The interaction model is shared across both map views:
   - selection is student-based, not seat-based
   - switching view does not clear the active tool or pending selection
@@ -50,3 +53,5 @@ rule editing feels like its own whole-class planning task rather than a clunky s
   relationship rules, even though it remains one seating-only rule at the data level.
 - `Sittplatser` and `Grupper` may keep compact smart summaries and mode-local toggles, but they
   must not keep or introduce full rule-editing drawers.
+- This story is the canonical source of truth for planning-map behavior; older wording about
+  `Planeringskarta` reusing classroom geometry is superseded and should not be followed.

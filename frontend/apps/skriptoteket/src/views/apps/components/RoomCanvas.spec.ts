@@ -199,5 +199,8 @@ describe("RoomCanvas", () => {
     await nextTick();
 
     expect(wrapper.get('[data-test="room-canvas-scroll-frame"]').attributes("data-overflow-anchor")).toBe("start");
+    expect(wrapper.get('[data-test="room-canvas-scroll-frame"]').attributes("style")).toBeUndefined();
+    expect(wrapper.get('[data-test="room-canvas-surface-shell"]').classes()).toContain("px-6");
+    expect(wrapper.get('[data-test="room-canvas-surface-shell"]').classes()).toContain("py-6");
   });
 });

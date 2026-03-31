@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DraftWorkspaceResponse } from "./classroomPlannerTypes";
 import { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 
-function createWorkspaceResponse(revision: number, notes = "first"): DraftWorkspaceResponse {
+function createWorkspaceResponse(revision: number): DraftWorkspaceResponse {
   return {
     draft: {
       id: "draft-1",
@@ -23,7 +23,6 @@ function createWorkspaceResponse(revision: number, notes = "first"): DraftWorksp
     groups: [],
     group_assignments: [],
     seat_assignments: [],
-    student_planning_meta: [{ student_id: "s1", notes }],
     history_status: {
       can_undo: revision > 4,
       can_redo: false,
@@ -64,7 +63,6 @@ describe("useDraftPersistenceLane", () => {
         groups: [],
         group_assignments: [],
         seat_assignments: [],
-        student_planning_meta: [],
       }),
       applyCommittedWorkspace,
       applyAcknowledgement,
@@ -104,7 +102,6 @@ describe("useDraftPersistenceLane", () => {
         groups: [],
         group_assignments: [],
         seat_assignments: [],
-        student_planning_meta: [],
       }),
       applyCommittedWorkspace,
       applyAcknowledgement,
@@ -115,19 +112,19 @@ describe("useDraftPersistenceLane", () => {
     await vi.advanceTimersByTimeAsync(900);
 
     lane.markDirty();
-    firstSave.resolve(createWorkspaceResponse(5, "first"));
+    firstSave.resolve(createWorkspaceResponse(5));
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(applyAcknowledgement).toHaveBeenCalledWith(createWorkspaceResponse(5, "first"));
+    expect(applyAcknowledgement).toHaveBeenCalledWith(createWorkspaceResponse(5));
     expect(lane.hasPendingChanges.value).toBe(true);
 
-    secondSave.resolve(createWorkspaceResponse(6, "second"));
+    secondSave.resolve(createWorkspaceResponse(6));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(persistDraft).toHaveBeenCalledTimes(2);
-    expect(applyCommittedWorkspace).toHaveBeenCalledWith(createWorkspaceResponse(6, "second"));
+    expect(applyCommittedWorkspace).toHaveBeenCalledWith(createWorkspaceResponse(6));
     expect(lane.hasPendingChanges.value).toBe(false);
   });
 
@@ -149,7 +146,6 @@ describe("useDraftPersistenceLane", () => {
         groups: [],
         group_assignments: [],
         seat_assignments: [],
-        student_planning_meta: [],
       }),
       applyCommittedWorkspace,
       applyAcknowledgement: vi.fn(),

@@ -15,7 +15,6 @@ import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
 import PlannerGroupingSettingsDrawer from "./PlannerGroupingSettingsDrawer.vue";
 import PlannerGroupingWorkspaceToolbar from "./PlannerGroupingWorkspaceToolbar.vue";
 import PlannerHistoryDrawer from "./PlannerHistoryDrawer.vue";
-import PlannerMetadataDrawer from "./PlannerMetadataDrawer.vue";
 import PlannerRulesWorkspacePane from "./PlannerRulesWorkspacePane.vue";
 import PlannerSeatingSettingsDrawer from "./PlannerSeatingSettingsDrawer.vue";
 import PlannerSeatingWorkspacePane from "./PlannerSeatingWorkspacePane.vue";
@@ -109,7 +108,6 @@ function resolvePlannerView(requestedView: PlannerView): PlannerView {
 
 const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
 const selectedStudentId = ref<string | null>(null);
-const isMetadataDrawerOpen = ref(false);
 const isGroupingSettingsDrawerOpen = ref(false);
 const isSeatingSettingsDrawerOpen = ref(false);
 const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
@@ -245,7 +243,6 @@ watch(
 function selectStudent(studentId: string): void {
   if (currentView.value === "groups") {
     selectedStudentId.value = null;
-    isMetadataDrawerOpen.value = false;
     return;
   }
 
@@ -254,12 +251,10 @@ function selectStudent(studentId: string): void {
       plannerState.handleSeatingSmartToolStudentSelection(studentId);
     }
     selectedStudentId.value = null;
-    isMetadataDrawerOpen.value = false;
     return;
   }
 
-  selectedStudentId.value = studentId;
-  isMetadataDrawerOpen.value = currentView.value === "seats";
+  selectedStudentId.value = null;
 }
 
 async function reloadAfterConflict(): Promise<void> {
@@ -358,7 +353,6 @@ watch(
     isGroupingSettingsDrawerOpen.value = false;
     isSeatingSettingsDrawerOpen.value = false;
     openHistoryDrawerKind.value = null;
-    isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
   },
 );
@@ -370,7 +364,6 @@ watch(
     isGroupingSettingsDrawerOpen.value = false;
     isSeatingSettingsDrawerOpen.value = false;
     openHistoryDrawerKind.value = null;
-    isMetadataDrawerOpen.value = false;
     selectedStudentId.value = null;
     pendingGroupingTemplateId.value = plannerState.template?.id ?? "";
     pendingSeatingTemplateId.value = plannerState.template?.id ?? "";
@@ -562,9 +555,7 @@ watch(
           data-view="seats"
         >
           <PlannerSeatingWorkspacePane
-            :selected-student-id="selectedStudentId"
             :selected-template-id="pendingSeatingTemplateId"
-            @student-selected="selectStudent"
           />
         </div>
       </div>
@@ -573,12 +564,6 @@ watch(
         v-if="currentView === 'rules'"
         :selected-student-id="selectedStudentId"
         @student-selected="selectStudent"
-      />
-
-      <PlannerMetadataDrawer
-        :selected-student-id="selectedStudentId"
-        :open="isMetadataDrawerOpen"
-        @close="isMetadataDrawerOpen = false"
       />
 
       <PlannerGroupingSettingsDrawer

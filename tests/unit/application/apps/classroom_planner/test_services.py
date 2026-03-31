@@ -409,7 +409,6 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
             groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
             group_assignments=[GroupAssignment(student_id="s1", group_id="group-1")],
             seat_assignments=[],
-            student_planning_meta=[],
         ),
         DraftWorkspace(
             draft=old_draft.model_copy(update={"revision": 1, "updated_at": new_now}),
@@ -419,7 +418,6 @@ async def test_patch_draft_updates_and_saves(uow, drafts, rosters, templates, no
             ],
             group_assignments=[GroupAssignment(student_id="s1", group_id="group-2")],
             seat_assignments=[SeatAssignment(student_id="s1", seat_id="seat1")],
-            student_planning_meta=[],
         ),
     ]
     rosters.get_by_id.return_value = Roster(
@@ -483,7 +481,6 @@ async def test_patch_draft_rejects_inactive_draft(uow, drafts, rosters, template
         groups=[],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
 
     with pytest.raises(DomainError) as exc:
@@ -517,7 +514,6 @@ async def test_patch_draft_raises_conflict_if_revision_mismatch(
         groups=[DraftGroup(id="group-1", name="Grupp 1", sort_order=0)],
         group_assignments=[],
         seat_assignments=[],
-        student_planning_meta=[],
     )
 
     with pytest.raises(DomainError) as exc:

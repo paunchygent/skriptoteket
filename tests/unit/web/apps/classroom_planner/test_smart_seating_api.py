@@ -213,7 +213,6 @@ def _workspace(*, owner_user_id, roster_id, draft_id=None) -> ClassroomPlannerWo
             SeatAssignment(student_id="ada", seat_id="front-right"),
             SeatAssignment(student_id="alan", seat_id="front-left"),
         ],
-        student_planning_meta=[],
         history_status=DraftHistoryStatus(can_undo=True, can_redo=False),
     )
 

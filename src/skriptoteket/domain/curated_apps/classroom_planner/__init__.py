@@ -14,7 +14,6 @@ from .models import (
     Seat,
     SeatAssignment,
     Student,
-    StudentPlanningMeta,
 )
 
 __all__ = [
@@ -31,5 +30,4 @@ __all__ = [
     "Seat",
     "SeatAssignment",
     "Student",
-    "StudentPlanningMeta",
 ]

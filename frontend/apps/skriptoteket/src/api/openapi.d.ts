@@ -2957,8 +2957,6 @@ export interface components {
             roster: components["schemas"]["RosterDto"];
             /** Seat Assignments */
             seat_assignments: components["schemas"]["SeatAssignmentDto"][];
-            /** Student Planning Meta */
-            student_planning_meta: components["schemas"]["StudentPlanningMetaDto"][];
             template?: components["schemas"]["RoomTemplateDto"] | null;
         };
         /** EditorBootResponse */
@@ -5179,16 +5177,6 @@ export interface components {
             id: string;
         };
         /**
-         * StudentPlanningMetaDto
-         * @description Serialize teacher-only student notes.
-         */
-        StudentPlanningMetaDto: {
-            /** Notes */
-            notes?: string | null;
-            /** Student Id */
-            student_id: string;
-        };
-        /**
          * StudentSeatingPreferenceDto
          * @description Serialize per-student seating-only preferences.
          */
@@ -5790,8 +5778,6 @@ export interface components {
             seat_assignments?: components["schemas"]["SeatAssignmentDto"][] | null;
             /** Smart Enabled */
             smart_enabled?: boolean | null;
-            /** Student Planning Meta */
-            student_planning_meta?: components["schemas"]["StudentPlanningMetaDto"][] | null;
             /** Use History */
             use_history?: boolean | null;
         };

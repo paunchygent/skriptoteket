@@ -20,23 +20,21 @@ import {
   normalizePresentedFixtures,
 } from "../roomFixturePresentation";
 import { isWallFixtureType, normalizeRoomGrid } from "../roomFixtureLayout";
+import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
 import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(defineProps<{
-  selectedStudentId?: string | null;
   selectedStudentIds?: string[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
   scalePercent: number;
   scaledSurfaceStyle: Record<string, string>;
   surfaceScale: number;
 }>(), {
-  selectedStudentId: null,
   selectedStudentIds: () => [],
   smartRuleMarkersByStudentId: () => ({}),
 });
 
 const emit = defineEmits<{
-  (e: "student-selected", studentId: string): void;
   (e: "viewport-size", size: { width: number; height: number }): void;
   (e: "zoom-out"): void;
   (e: "zoom-in"): void;
@@ -64,8 +62,9 @@ const wallFixtures = computed(() => {
   return presentedFixtures.value.filter((fixture) => isWallFixtureType(fixture.type));
 });
 const shouldCenterSurface = computed(() => {
-  const scaledWidth = Number.parseFloat(props.scaledSurfaceStyle.width ?? "0");
-  return viewportWidth.value <= 0 || scaledWidth <= viewportWidth.value;
+  const paddedWidth = Number.parseFloat(props.scaledSurfaceStyle.width ?? "0")
+    + (ROOM_VIEWPORT_FRAME_PADDING * 2);
+  return viewportWidth.value <= 0 || paddedWidth <= viewportWidth.value;
 });
 
 function floorFixtureStyle(fixture: RoomFixture): Record<string, string> {
@@ -170,31 +169,61 @@ onBeforeUnmount(() => {
         :class="shouldCenterSurface ? 'justify-center' : 'justify-start'"
       >
         <div
-          class="relative shrink-0"
-          :style="scaledSurfaceStyle"
+          class="shrink-0 px-6 py-6"
+          data-test="room-canvas-surface-shell"
         >
           <div
-            class="absolute left-0 top-0 room-canvas-surface"
-            :style="roomSurfaceTransformStyle"
+            class="relative"
+            :style="scaledSurfaceStyle"
           >
             <div
-              class="absolute inset-0 border border-navy/40 bg-white"
-            />
-
-            <div
-              class="absolute"
-              :style="roomFloorLayerStyle"
+              class="absolute left-0 top-0 room-canvas-surface"
+              :style="roomSurfaceTransformStyle"
             >
-              <div class="absolute inset-0 border border-navy bg-white" />
               <div
-                class="absolute inset-0 room-canvas-grid opacity-15"
+                class="absolute inset-0 border border-navy/40 bg-white"
               />
 
               <div
-                v-for="fixture in floorFixtures"
+                class="absolute"
+                :style="roomFloorLayerStyle"
+              >
+                <div class="absolute inset-0 border border-navy bg-white" />
+                <div
+                  class="absolute inset-0 room-canvas-grid opacity-15"
+                />
+
+                <div
+                  v-for="fixture in floorFixtures"
+                  :key="fixture.id"
+                  class="absolute overflow-visible"
+                  :style="floorFixtureStyle(fixture)"
+                >
+                  <RoomFixtureArtwork
+                    :fixture="fixture"
+                    :fixtures="presentedFixtures"
+                    :grid="roomGrid"
+                  />
+                </div>
+
+                <SeatNode
+                  v-for="seat in state.seats"
+                  :key="seat.id"
+                  :seat="seat"
+                  :student="state.studentBySeatId[seat.id]"
+                  :markers="props.smartRuleMarkersByStudentId[state.studentBySeatId[seat.id]?.id ?? ''] ?? []"
+                  :selected="props.selectedStudentIds.includes(state.studentBySeatId[seat.id]?.id ?? '')"
+                  @student-dropped="state.assignStudentToSeat"
+                  @student-removed="state.clearSeatAssignment"
+                  @swap-requested="state.swapSeatAssignments"
+                />
+              </div>
+
+              <div
+                v-for="fixture in wallFixtures"
                 :key="fixture.id"
                 class="absolute overflow-visible"
-                :style="floorFixtureStyle(fixture)"
+                :style="wallFixtureStyle(fixture)"
               >
                 <RoomFixtureArtwork
                   :fixture="fixture"
@@ -202,32 +231,6 @@ onBeforeUnmount(() => {
                   :grid="roomGrid"
                 />
               </div>
-
-              <SeatNode
-                v-for="seat in state.seats"
-                :key="seat.id"
-                :seat="seat"
-                :student="state.studentBySeatId[seat.id]"
-                :markers="props.smartRuleMarkersByStudentId[state.studentBySeatId[seat.id]?.id ?? ''] ?? []"
-                :selected="props.selectedStudentId === state.studentBySeatId[seat.id]?.id || props.selectedStudentIds.includes(state.studentBySeatId[seat.id]?.id ?? '')"
-                @student-dropped="state.assignStudentToSeat"
-                @student-removed="state.clearSeatAssignment"
-                @swap-requested="state.swapSeatAssignments"
-                @student-selected="emit('student-selected', $event)"
-              />
-            </div>
-
-            <div
-              v-for="fixture in wallFixtures"
-              :key="fixture.id"
-              class="absolute overflow-visible"
-              :style="wallFixtureStyle(fixture)"
-            >
-              <RoomFixtureArtwork
-                :fixture="fixture"
-                :fixtures="presentedFixtures"
-                :grid="roomGrid"
-              />
             </div>
           </div>
         </div>

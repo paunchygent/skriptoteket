@@ -518,7 +518,6 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
-    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
     expect(wrapper.text()).toContain("Översikt");
     expect(wrapper.text()).toContain("Sittplatser");
     expect(wrapper.text()).toContain("Utan klassrum");
@@ -532,10 +531,9 @@ describe("PlannerWorkspaceShell", () => {
 
     expect(groupingPoolStudent.classes()).toContain("planner-choice-button-strong");
     expect(groupingPoolStudent.classes()).not.toContain("planner-choice-button-active");
-    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
-  it("opens the notes drawer when a seating student is selected", async () => {
+  it("treats seating student clicks as a true no-op", async () => {
     stateMocks.plannerState.draft = {
       id: "draft-2",
       draft_kind: "seating",
@@ -559,11 +557,9 @@ describe("PlannerWorkspaceShell", () => {
       },
     });
 
-    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
-
     await wrapper.get("[data-test='seating-student-pool'] button").trigger("click");
 
-    expect(wrapper.get("[data-test='drawer']").text()).toBe("open");
+    expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
   });
 
   it("routes Regler clicks through the active smart tool instead of opening the drawer", async () => {
@@ -601,7 +597,6 @@ describe("PlannerWorkspaceShell", () => {
     expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).toHaveBeenCalledWith(
       "student-1",
     );
-    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
   it("ignores Regler student clicks when no smart tool is active", async () => {
@@ -646,7 +641,6 @@ describe("PlannerWorkspaceShell", () => {
 
     expect(stateMocks.plannerState.handleSeatingSmartToolStudentSelection).not.toHaveBeenCalled();
     expect(wrapper.get("[data-test='rules-selected-id']").text()).toBe("none");
-    expect(wrapper.get("[data-test='drawer']").text()).toBe("closed");
   });
 
   it("keeps the grouping toolbar focused on actions and moves Smart tuning into the drawer", async () => {
@@ -692,9 +686,14 @@ describe("PlannerWorkspaceShell", () => {
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Smart-inställningar");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Historik");
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Klassrum");
-    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain("Sittschemat");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
+      "Tillämpa sittschema",
+    );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
       "Minskar risken att samma elever hamnar i samma grupp igen.",
+    );
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
+      "Välj först ett klassrum för att använda sittschemat.",
     );
     expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
       "Du lägger till och ändrar regler i arbetsytan Regler.",
@@ -704,6 +703,9 @@ describe("PlannerWorkspaceShell", () => {
 
     expect(wrapper.emitted("change-grouping-template")).toEqual([[{ templateId: "template-2" }]]);
     expect((wrapper.get('[data-test="grouping-settings-template-select"]').element as HTMLSelectElement).value).toBe("template-2");
+    expect(wrapper.get('[data-test="grouping-settings-drawer"]').text()).toContain(
+      "Med Tillämpa sittschema aktiverat försöker algoritmen skapa grupper av de elever som sitter nära varandra samtidigt som den respekterar dina övriga regler, som \"håll ihop\" och \"håll isär\".",
+    );
 
     await wrapper.get('[data-test="grouping-settings-open-rules"]').trigger("click");
     expect(wrapper.emitted("open-rules")).toEqual([[]]);

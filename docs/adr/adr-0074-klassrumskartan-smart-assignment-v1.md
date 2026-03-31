@@ -6,7 +6,7 @@ status: accepted
 owners: "agents"
 deciders: ["architect"]
 created: 2026-03-25
-updated: 2026-03-30
+updated: 2026-04-01
 links: ["PRD-group-seating-studio-v0.3", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-26", "EPIC-27", "REV-EPIC-27", "REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25", "ST-27-06", "ST-27-07"]
 ---
 
@@ -101,10 +101,11 @@ forms are exposed in the default V1 surface.
 The dedicated `Regler` workspace must offer two map views over the same rule-selection model:
 
 - `Planeringskarta` as the default:
-  - keep the real classroom geometry
-  - sort seats in simple reading order
-  - place students alphabetically on that geometry so the teacher gets a spatial feel without
-    inheriting the current draft arrangement
+  - always use one clean abstract planning layout
+  - order students alphabetically left to right and row by row
+  - never inherit classroom geometry, seat positions, or the current seating draft
+  - stay stable before and after classroom/seating context exists so teachers can scan and find
+    students quickly
 - `Sittschema` as an optional alternative:
   - mirror the current seating draft arrangement when one exists
   - stay unavailable when no current seating arrangement exists yet

@@ -24,7 +24,7 @@ describe("roomBuilderViewport", () => {
     expect(computeRoomViewportFitScale(
       { width: 2000, height: 1400 },
       { width: 600, height: 400 },
-    )).toBe(1);
+    )).toBe(MAX_ROOM_VIEWPORT_SCALE);
   });
 
   it("returns scaled frame sizes for the zoomed room surface", () => {

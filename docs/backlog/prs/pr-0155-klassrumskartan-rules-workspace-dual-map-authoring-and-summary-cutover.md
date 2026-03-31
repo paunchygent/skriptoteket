@@ -1,11 +1,11 @@
 ---
 type: pr
 id: PR-0155
-title: "Klassrumskartan: rules workspace, dual-map authoring, and summary-link cutover"
+title: "Klassrumskartan: rules workspace with separate planning and seating maps"
 status: done
 owners: "agents"
 created: 2026-03-27
-updated: 2026-03-29
+updated: 2026-04-01
 stories:
   - "ST-27-07"
 tags:
@@ -26,7 +26,8 @@ dependencies:
 acceptance_criteria:
   - "Given the planner shell renders its workspace navigation, when the teacher works with smart rules, then `Regler` appears as a dedicated top-level workspace rather than keeping primary rule editing inside `Sittplatser` or `Grupper`."
   - "Given the teacher opens `Regler`, when the desktop layout loads, then it provides one vertical tool rail, one central rules map surface, and one rule summary/inspector rather than an embedded seating-panel editor."
-  - "Given `Planeringskarta` is selected, when the map renders, then it preserves room geometry while assigning students alphabetically onto seats sorted in reading order."
+  - "Given `Planeringskarta` is selected, when the map renders, then it always uses one normalized alphabetical planning layout rather than classroom geometry or the current seating arrangement."
+  - "Given a classroom or seating arrangement exists, when the teacher remains in `Planeringskarta`, then that view does not switch into the classroom canvas and still keeps the same left-to-right, row-by-row alphabetical planning layout."
   - "Given `Sittschema` is selected and a current seating arrangement exists, when the teacher toggles views, then the map switches projections without resetting the active tool, temporary selection, or current edit session."
   - "Given smart tools are visible, when the teacher changes tools or selects students, then icon-based active-tool state, cursor state, hover state, and ordered selection feedback are all clear before rule commit."
   - "Given a saved smart rule is listed in the inspector, when the teacher chooses to edit it, then the correct tool and student selection are restored and saving updates the existing rule; `Nära läraren` uses the same rail-owned pending/create-save feedback as the relationship rules while still persisting as one consolidated rule."
@@ -42,6 +43,8 @@ too much rule-editing weight inside `Sittplatser`. That creates three UX problem
 - the seating task pane feels heavier than the teacher task at hand
 - grouping risks inheriting the same always-open rule-panel pattern
 - the current selection/tool feedback is too weak for a tool-based authoring workflow
+- the current `Planeringskarta` stops being a true planning abstraction once seating/classroom
+  context exists, so it becomes cluttered and too close to `Sittschema`
 
 Without a deliberate cut-over, later smart seating/grouping work would keep accreting around the
 wrong editing home.
@@ -53,7 +56,8 @@ while keeping `Sittplatser` and `Grupper` calm:
 
 - add `Regler` as a first-class planner workspace
 - provide the desktop-first three-part authoring layout
-- support `Planeringskarta` and `Sittschema` as two projections of the same rule-selection model
+- support `Planeringskarta` and `Sittschema` as two clearly separated teacher mental models over
+  the same rule-selection state
 - strengthen tool identity and selection feedback
 - make existing rules editable from the main summary surface
 - replace task-pane rule editors with compact smart summaries and a small settings-link affordance
@@ -84,9 +88,10 @@ while keeping `Sittplatser` and `Grupper` calm:
 
 3. Introduce the dual-map projection model.
    - `Planeringskarta`:
-     - preserve classroom geometry
-     - sort seats by reading order
-     - place students alphabetically onto those seat positions
+     - never inherit classroom geometry, seat positions, or the current seating draft
+     - always render one normalized planning grid
+     - sort students alphabetically
+     - place them left to right and row by row in that abstract planning layout
    - `Sittschema`:
      - mirror the current seating draft
    - Keep one shared interaction model keyed by `studentId` so view switches do not reset
@@ -113,12 +118,16 @@ while keeping `Sittplatser` and `Grupper` calm:
 - Add or update focused Vitest coverage for:
   - rules workspace shell switching
   - `Planeringskarta` / `Sittschema` view retention
+  - `Planeringskarta` staying unchanged before and after classroom/seating context exists
   - rule edit rehydration
   - compact task-pane smart summaries
 - `pdm run fe-type-check`
 - `pdm run docs-validate`
 - Live proof against `http://127.0.0.1:5173` covering:
   - open `Regler`
+  - verify `Planeringskarta` before any seating/classroom context exists
+  - add classroom/seating context and confirm `Planeringskarta` still keeps the same abstract
+    alphabetical layout
   - switch between `Planeringskarta` and `Sittschema`
   - create and edit one rule
   - verify seating/grouping task panes expose compact summary + settings-link affordance only
