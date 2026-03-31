@@ -97,4 +97,29 @@ describe("UiSegmentedToggle", () => {
     expect(wrapper.get('[data-test="workspace-overview"]').classes()).toContain("uppercase");
     expect(wrapper.get('[data-test="workspace-overview"]').classes()).toContain("h-[40px]");
   });
+
+  it("keeps disabled option guidance available beyond the disabled button title", () => {
+    const wrapper = mount(UiSegmentedToggle, {
+      props: {
+        modelValue: "overview",
+        variant: "workspace",
+        options: [
+          { value: "overview", label: "Översikt", dataTest: "workspace-overview" },
+          {
+            value: "grouping",
+            label: "Grupper",
+            disabled: true,
+            title: "Skapa först en klasslista.",
+            dataTest: "workspace-grouping",
+          },
+        ],
+      },
+    });
+
+    const groupingButton = wrapper.get('[data-test="workspace-grouping"]');
+    expect(groupingButton.attributes("disabled")).toBeDefined();
+    expect(groupingButton.attributes("aria-describedby")).toBe("segmented-toggle-option-hint-1");
+    expect(wrapper.find('[title="Skapa först en klasslista."]').exists()).toBe(true);
+    expect(wrapper.get("#segmented-toggle-option-hint-1").text()).toBe("Skapa först en klasslista.");
+  });
 });

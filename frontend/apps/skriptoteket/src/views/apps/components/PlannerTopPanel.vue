@@ -22,6 +22,9 @@ const props = withDefaults(
     title: string;
     contextLabel?: string | null;
     modeValue: WorkspaceMode;
+    groupingDisabledReason?: string | null;
+    seatingDisabledReason?: string | null;
+    rulesDisabledReason?: string | null;
     supportingText?: string | null;
     statusLabel?: string | null;
     statusMessage?: string | null;
@@ -30,6 +33,9 @@ const props = withDefaults(
   }>(),
   {
     contextLabel: null,
+    groupingDisabledReason: null,
+    seatingDisabledReason: null,
+    rulesDisabledReason: null,
     supportingText: null,
     statusLabel: null,
     statusMessage: null,
@@ -45,9 +51,27 @@ const emit = defineEmits<{
 
 const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => [
   { value: "overview", label: "Översikt", dataTest: "planner-mode-overview" },
-  { value: "grouping", label: "Grupper", dataTest: "planner-mode-grouping" },
-  { value: "seating", label: "Sittplatser", dataTest: "planner-mode-seating" },
-  { value: "rules", label: "Regler", dataTest: "planner-mode-rules" },
+  {
+    value: "grouping",
+    label: "Grupper",
+    disabled: Boolean(props.groupingDisabledReason),
+    title: props.groupingDisabledReason ?? undefined,
+    dataTest: "planner-mode-grouping",
+  },
+  {
+    value: "seating",
+    label: "Sittplatser",
+    disabled: Boolean(props.seatingDisabledReason),
+    title: props.seatingDisabledReason ?? undefined,
+    dataTest: "planner-mode-seating",
+  },
+  {
+    value: "rules",
+    label: "Regler",
+    disabled: Boolean(props.rulesDisabledReason),
+    title: props.rulesDisabledReason ?? undefined,
+    dataTest: "planner-mode-rules",
+  },
 ]);
 
 const statusToneClass = computed(() => {
@@ -133,12 +157,14 @@ function selectWorkspaceMode(value: string): void {
       </span>
       <span
         v-if="statusMessage"
+        data-test="planner-top-panel-status-message"
         class="text-[11px] text-navy/55"
       >
         {{ statusMessage }}
       </span>
       <span
         v-if="supportingText"
+        data-test="planner-top-panel-supporting-text"
         class="text-[11px] text-navy/55"
       >
         {{ supportingText }}

@@ -17,6 +17,10 @@ import type {
   RoomTemplate,
   Roster,
 } from "../classroomPlannerTypes";
+import {
+  resolvePlannerOverviewPrerequisiteCopy,
+  resolvePlannerWorkspaceDisabledReasons,
+} from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
 import PlannerRosterOverviewPanel from "./PlannerRosterOverviewPanel.vue";
 import PlannerTemplateOverviewPanel from "./PlannerTemplateOverviewPanel.vue";
@@ -110,6 +114,18 @@ const selectedRosterCountLabel = computed(() => {
   }
   return "Välj en klasslista";
 });
+const workspaceDisabledReasons = computed(() => {
+  return resolvePlannerWorkspaceDisabledReasons({
+    hasRoster: props.selectedRosterId !== null,
+    hasTemplate: props.selectedTemplateId !== null,
+  });
+});
+const overviewPrerequisiteCopy = computed(() => {
+  return resolvePlannerOverviewPrerequisiteCopy({
+    hasRoster: props.selectedRosterId !== null,
+    hasTemplate: props.selectedTemplateId !== null,
+  });
+});
 
 function selectWorkspaceMode(value: string): void {
   if (value === "overview") {
@@ -140,6 +156,11 @@ function selectWorkspaceMode(value: string): void {
       :title="workspaceHomeTitle"
       :context-label="workspaceContextLabel"
       :mode-value="workspaceMode"
+      :grouping-disabled-reason="workspaceDisabledReasons.grouping"
+      :seating-disabled-reason="workspaceDisabledReasons.seating"
+      :rules-disabled-reason="workspaceDisabledReasons.rules"
+      :status-message="overviewPrerequisiteCopy.guidance"
+      :supporting-text="overviewPrerequisiteCopy.help"
       status-tone="neutral"
       @update:mode-value="selectWorkspaceMode"
       @exit="emit('exit-app')"

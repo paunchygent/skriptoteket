@@ -23,6 +23,7 @@ import PlannerSeatingWorkspaceToolbar from "./PlannerSeatingWorkspaceToolbar.vue
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 import type { GroupingExportOption, SeatingExportOption } from "../classroomPlannerExportApi";
 import { useClassroomState } from "../useClassroomState";
+import { resolvePlannerWorkspaceDisabledReasons } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
 import { useToast } from "../../../composables/useToast";
 
@@ -34,6 +35,7 @@ const props = withDefaults(
     availableRosters?: Roster[];
     availableTemplates?: RoomTemplate[];
     selectedRosterId?: string | null;
+    selectedWorkspaceTemplateId?: string | null;
     initialView?: PlannerView;
     workspaceSummary?: ClassWorkspaceSummary | null;
     seatingLifecycleBusy?: boolean;
@@ -51,6 +53,7 @@ const props = withDefaults(
     availableRosters: () => [],
     availableTemplates: () => [],
     selectedRosterId: null,
+    selectedWorkspaceTemplateId: null,
     initialView: "groups",
     workspaceSummary: null,
     seatingLifecycleBusy: false,
@@ -121,6 +124,20 @@ const workspaceModeValue = computed<"overview" | "grouping" | "seating" | "rules
     return "rules";
   }
   return "seating";
+});
+const resolvedWorkspaceTemplateId = computed(() => {
+  return (
+    props.selectedWorkspaceTemplateId
+    ?? plannerState.template?.id
+    ?? props.workspaceSummary?.active_seating_draft?.template_id
+    ?? null
+  );
+});
+const workspaceDisabledReasons = computed(() => {
+  return resolvePlannerWorkspaceDisabledReasons({
+    hasRoster: plannerState.roster !== null,
+    hasTemplate: resolvedWorkspaceTemplateId.value !== null,
+  });
 });
 
 // Keep the global help panel in sync with the active planner mode.
@@ -450,6 +467,9 @@ watch(
       :title="displayedPlannerTitle"
       :context-label="displayedContextLabel"
       :mode-value="workspaceModeValue"
+      :grouping-disabled-reason="workspaceDisabledReasons.grouping"
+      :seating-disabled-reason="workspaceDisabledReasons.seating"
+      :rules-disabled-reason="workspaceDisabledReasons.rules"
       :supporting-text="displayedSupportingText"
       :status-label="displayedStatusLabel"
       :status-message="displayedStatusMessage"

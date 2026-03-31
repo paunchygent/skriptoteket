@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ST-29-10 mockup — Klassrumskartan first-run workspace gating</title>
+    <style>
+      :root {
+        --canvas: #f4f1e8;
+        --paper: #ffffff;
+        --navy: #1d2340;
+        --navy-soft: rgba(29, 35, 64, 0.68);
+        --navy-faint: rgba(29, 35, 64, 0.16);
+        --navy-muted: rgba(29, 35, 64, 0.08);
+        --disabled-bg: #ece8dc;
+        --disabled-text: rgba(29, 35, 64, 0.35);
+        --accent: #d84f34;
+        --success: #2f7d5b;
+        --shadow: 4px 4px 0 rgba(29, 35, 64, 0.9);
+        --radius: 18px;
+        --border: 2px solid var(--navy);
+        --transition: 160ms ease;
+        font-family:
+          "IBM Plex Sans",
+          "Avenir Next",
+          "Segoe UI",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(216, 79, 52, 0.08), transparent 28rem),
+          linear-gradient(180deg, #fbf8f0 0%, var(--canvas) 100%);
+        color: var(--navy);
+      }
+
+      .page {
+        width: min(1320px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0 48px;
+      }
+
+      .control-strip,
+      .planner-shell,
+      .panel {
+        border: var(--border);
+        background: var(--paper);
+        box-shadow: var(--shadow);
+      }
+
+      .control-strip {
+        padding: 18px 20px;
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--navy-soft);
+      }
+
+      .control-strip h1 {
+        margin: 0 0 12px;
+        font-size: 1.55rem;
+        line-height: 1.15;
+      }
+
+      .control-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .scenario-button {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          background var(--transition),
+          color var(--transition),
+          transform var(--transition);
+      }
+
+      .scenario-button:hover {
+        transform: translate(-1px, -1px);
+      }
+
+      .scenario-button.is-active {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .helper-copy {
+        margin-top: 12px;
+        color: var(--navy-soft);
+        font-size: 0.96rem;
+        line-height: 1.45;
+        max-width: 70ch;
+      }
+
+      .planner-shell {
+        padding: 22px;
+      }
+
+      .shell-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--navy-faint);
+      }
+
+      .shell-title {
+        margin: 0;
+        font-size: 1.9rem;
+        line-height: 1.05;
+      }
+
+      .shell-context {
+        margin: 8px 0 0;
+        color: var(--navy-soft);
+        font-size: 1rem;
+      }
+
+      .ghost-button {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      .workspace-toggle {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .workspace-option {
+        border: var(--border);
+        background: var(--canvas);
+        color: var(--navy);
+        min-height: 52px;
+        padding: 12px 10px;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        line-height: 1.1;
+        text-transform: uppercase;
+        transition:
+          background var(--transition),
+          color var(--transition),
+          border-color var(--transition);
+      }
+
+      .workspace-option.is-active {
+        background: var(--navy);
+        color: #fff;
+      }
+
+      .workspace-option.is-disabled {
+        background: var(--disabled-bg);
+        color: var(--disabled-text);
+        border-color: rgba(29, 35, 64, 0.28);
+        cursor: not-allowed;
+      }
+
+      .status-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        min-height: 34px;
+        margin-top: 14px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(29, 35, 64, 0.18);
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: rgba(29, 35, 64, 0.05);
+        color: var(--navy-soft);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .status-pill::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .guidance {
+        font-size: 0.95rem;
+        color: var(--navy-soft);
+      }
+
+      .guidance a {
+        color: var(--navy);
+        font-weight: 700;
+        text-decoration-thickness: 2px;
+      }
+
+      .hint-line {
+        min-height: 24px;
+        margin-top: 10px;
+        color: var(--accent);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .panel {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 390px;
+        padding: 18px;
+      }
+
+      .panel-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 10px;
+      }
+
+      .panel-heading h2 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      .panel-count {
+        color: var(--navy-soft);
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .field-label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+
+      .field {
+        border: var(--border);
+        background: #fbfaf6;
+        padding: 12px 14px;
+        color: var(--navy);
+      }
+
+      .field.is-empty {
+        color: var(--navy-soft);
+      }
+
+      .preview {
+        flex: 1;
+        border: 2px solid var(--navy-faint);
+        background:
+          linear-gradient(180deg, rgba(29, 35, 64, 0.02), rgba(29, 35, 64, 0.05)),
+          #faf8f1;
+        padding: 14px;
+        overflow: hidden;
+      }
+
+      .student-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px 12px;
+        font-size: 0.88rem;
+        color: var(--navy-soft);
+      }
+
+      .room-preview {
+        position: relative;
+        height: 100%;
+        min-height: 182px;
+        border: 2px dashed rgba(29, 35, 64, 0.2);
+      }
+
+      .seat,
+      .fixture {
+        position: absolute;
+        border: 2px solid var(--navy);
+        background: #fff;
+      }
+
+      .seat {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+      }
+
+      .fixture {
+        display: grid;
+        place-items: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--navy-soft);
+        background: rgba(29, 35, 64, 0.06);
+      }
+
+      .panel-empty {
+        display: grid;
+        place-items: center;
+        height: 100%;
+        color: var(--navy-soft);
+        font-size: 0.95rem;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .panel-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .primary-button,
+      .secondary-button {
+        border: var(--border);
+        padding: 11px 14px;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      .primary-button {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .secondary-button {
+        background: var(--canvas);
+        color: var(--navy);
+      }
+
+      .mockup-note {
+        margin-top: 18px;
+        color: var(--navy-soft);
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 980px) {
+        .workspace-toggle,
+        .overview-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="control-strip">
+        <p class="eyebrow">Mockup / ST-29-10</p>
+        <h1>Klassrumskartan — first-run workspace gating</h1>
+        <div class="control-row">
+          <button class="scenario-button is-active" data-scenario="no-class">Ingen klass</button>
+          <button class="scenario-button" data-scenario="class-no-room">Klass utan klassrum</button>
+          <button class="scenario-button" data-scenario="class-room">Klass + klassrum</button>
+        </div>
+        <p class="helper-copy">
+          Självbärande mockup för att jämföra tre lägen i samma översiktsyta. Fokus ligger på
+          sanningsenliga arbetsyteknappar, godkänd svensk copy och ett lugnt first-run-beteende.
+        </p>
+      </section>
+
+      <section class="planner-shell">
+        <div class="shell-header">
+          <div>
+            <h2 class="shell-title">Klassrumskartan</h2>
+            <p class="shell-context" id="shell-context">Inget klassrum valt</p>
+          </div>
+          <button class="ghost-button" type="button">Avsluta</button>
+        </div>
+
+        <div class="workspace-toggle" id="workspace-toggle"></div>
+
+        <div class="status-line">
+          <span class="status-pill">Översikt</span>
+          <span class="guidance" id="guidance-line"></span>
+        </div>
+
+        <div class="hint-line" id="hint-line"></div>
+
+        <section class="overview-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <h2 id="class-title">Ingen klass vald</h2>
+              <span class="panel-count" id="class-count">Välj en klasslista</span>
+            </div>
+
+            <label class="field-label">
+              Byt klass
+              <div class="field is-empty" id="class-select">Välj klasslista</div>
+            </label>
+
+            <div class="preview">
+              <div class="student-grid" id="student-preview"></div>
+              <div class="panel-empty" id="student-empty">Välj en klasslista för att visa en kompakt elevöversikt här.</div>
+            </div>
+
+            <div class="panel-actions">
+              <button class="primary-button" type="button">Ny klasslista</button>
+              <button class="secondary-button" type="button">Redigera</button>
+              <button class="secondary-button" type="button">Ta bort klasslista</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <h2 id="room-title">Inget klassrum valt</h2>
+              <span class="panel-count" id="room-count"></span>
+            </div>
+
+            <label class="field-label">
+              Välj klassrum
+              <div class="field is-empty" id="room-select">Utan klassrum</div>
+            </label>
+
+            <div class="preview">
+              <div class="room-preview" id="room-preview">
+                <div class="panel-empty" id="room-empty">Välj ett klassrum i listan ovan för att visa en kompakt förhandsgranskning här.</div>
+              </div>
+            </div>
+
+            <div class="panel-actions">
+              <button class="primary-button" type="button">Nytt klassrum</button>
+              <button class="secondary-button" type="button">Redigera</button>
+              <button class="secondary-button" type="button">Ta bort klassrum</button>
+            </div>
+          </article>
+        </section>
+
+        <p class="mockup-note">
+          `Regler` blir tillgängligt så snart en klass finns. Bara `Sittplatser` väntar på ett valt
+          klassrum i den här föreslagna beteendemodellen.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const scenarios = {
+        "no-class": {
+          shellContext: "Inget klassrum valt",
+          classTitle: "Ingen klass vald",
+          classCount: "Välj en klasslista",
+          classSelect: "Välj klasslista",
+          roomTitle: "Inget klassrum valt",
+          roomCount: "",
+          roomSelect: "Utan klassrum",
+          guidance: 'Börja med att skapa en klasslista. <a href="#" onclick="return false;">Behöver du mer vägledning kan du trycka på Hjälp.</a>',
+          students: [],
+          room: false,
+          workspaceOptions: [
+            { label: "Översikt", active: true, disabled: false, hint: "" },
+            { label: "Grupper", active: false, disabled: true, hint: "Skapa först en klasslista." },
+            { label: "Sittplatser", active: false, disabled: true, hint: "Skapa först en klasslista." },
+            { label: "Regler", active: false, disabled: true, hint: "Skapa först en klasslista." },
+          ],
+        },
+        "class-no-room": {
+          shellContext: "Inget klassrum valt",
+          classTitle: "SA24D",
+          classCount: "28 elever",
+          classSelect: "SA24D",
+          roomTitle: "Inget klassrum valt",
+          roomCount: "",
+          roomSelect: "Utan klassrum",
+          guidance: 'Nu har du skapat din klass. Skapa eller välj ett klassrum för att använda Sittplatser. <a href="#" onclick="return false;">Behöver du mer vägledning kan du trycka på Hjälp.</a>',
+          students: [
+            "Ada Lovelace",
+            "Alan Turing",
+            "Karin Berg",
+            "Leo Sand",
+            "Mona Lind",
+            "Nils Holm",
+            "Sara Ek",
+            "Vera Alm",
+            "Yusuf Noor",
+          ],
+          room: false,
+          workspaceOptions: [
+            { label: "Översikt", active: true, disabled: false, hint: "" },
+            { label: "Grupper", active: false, disabled: false, hint: "" },
+            { label: "Sittplatser", active: false, disabled: true, hint: "Skapa eller välj först ett klassrum." },
+            { label: "Regler", active: false, disabled: false, hint: "" },
+          ],
+        },
+        "class-room": {
+          shellContext: "Klassrum: Sal 101",
+          classTitle: "SA24D",
+          classCount: "28 elever",
+          classSelect: "SA24D",
+          roomTitle: "Sal 101",
+          roomCount: "24 platser",
+          roomSelect: "Sal 101",
+          guidance: "",
+          students: [
+            "Ada Lovelace",
+            "Alan Turing",
+            "Karin Berg",
+            "Leo Sand",
+            "Mona Lind",
+            "Nils Holm",
+            "Sara Ek",
+            "Vera Alm",
+            "Yusuf Noor",
+          ],
+          room: true,
+          workspaceOptions: [
+            { label: "Översikt", active: true, disabled: false, hint: "" },
+            { label: "Grupper", active: false, disabled: false, hint: "" },
+            { label: "Sittplatser", active: false, disabled: false, hint: "" },
+            { label: "Regler", active: false, disabled: false, hint: "" },
+          ],
+        },
+      };
+
+      const shellContext = document.getElementById("shell-context");
+      const classTitle = document.getElementById("class-title");
+      const classCount = document.getElementById("class-count");
+      const classSelect = document.getElementById("class-select");
+      const roomTitle = document.getElementById("room-title");
+      const roomCount = document.getElementById("room-count");
+      const roomSelect = document.getElementById("room-select");
+      const guidanceLine = document.getElementById("guidance-line");
+      const hintLine = document.getElementById("hint-line");
+      const workspaceToggle = document.getElementById("workspace-toggle");
+      const studentPreview = document.getElementById("student-preview");
+      const studentEmpty = document.getElementById("student-empty");
+      const roomPreview = document.getElementById("room-preview");
+      const roomEmpty = document.getElementById("room-empty");
+      const scenarioButtons = document.querySelectorAll(".scenario-button");
+
+      function renderRoom(showRoom) {
+        roomPreview.querySelectorAll(".seat, .fixture").forEach((node) => node.remove());
+        roomEmpty.style.display = showRoom ? "none" : "grid";
+        if (!showRoom) return;
+
+        const fixtures = [
+          { className: "fixture", left: 10, top: 12, width: 70, height: 24, label: "Dörr" },
+          { className: "fixture", left: 116, top: 12, width: 82, height: 24, label: "Kateder" },
+          { className: "fixture", left: 214, top: 12, width: 94, height: 24, label: "Whiteboard" },
+        ];
+
+        const seats = [
+          [40, 84], [98, 84], [156, 84], [214, 84],
+          [40, 138], [98, 138], [156, 138], [214, 138],
+          [40, 192], [98, 192], [156, 192], [214, 192],
+        ];
+
+        fixtures.forEach((fixture) => {
+          const node = document.createElement("div");
+          node.className = fixture.className;
+          node.style.left = fixture.left + "px";
+          node.style.top = fixture.top + "px";
+          node.style.width = fixture.width + "px";
+          node.style.height = fixture.height + "px";
+          node.textContent = fixture.label;
+          roomPreview.appendChild(node);
+        });
+
+        seats.forEach(([left, top]) => {
+          const node = document.createElement("div");
+          node.className = "seat";
+          node.style.left = left + "px";
+          node.style.top = top + "px";
+          roomPreview.appendChild(node);
+        });
+      }
+
+      function renderStudents(students) {
+        studentPreview.innerHTML = "";
+        studentEmpty.style.display = students.length > 0 ? "none" : "grid";
+        students.forEach((name) => {
+          const item = document.createElement("span");
+          item.textContent = name;
+          studentPreview.appendChild(item);
+        });
+      }
+
+      function renderWorkspaceOptions(options) {
+        workspaceToggle.innerHTML = "";
+        hintLine.textContent = "";
+
+        options.forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "workspace-option";
+          button.textContent = option.label;
+
+          if (option.active) {
+            button.classList.add("is-active");
+          }
+
+          if (option.disabled) {
+            button.classList.add("is-disabled");
+            button.setAttribute("aria-disabled", "true");
+            button.addEventListener("mouseenter", () => {
+              hintLine.textContent = option.hint;
+            });
+            button.addEventListener("mouseleave", () => {
+              hintLine.textContent = "";
+            });
+          }
+
+          workspaceToggle.appendChild(button);
+        });
+      }
+
+      function applyScenario(key) {
+        const scenario = scenarios[key];
+        shellContext.textContent = scenario.shellContext;
+        classTitle.textContent = scenario.classTitle;
+        classCount.textContent = scenario.classCount;
+        classSelect.textContent = scenario.classSelect;
+        roomTitle.textContent = scenario.roomTitle;
+        roomCount.textContent = scenario.roomCount;
+        roomSelect.textContent = scenario.roomSelect;
+        guidanceLine.innerHTML = scenario.guidance;
+        renderStudents(scenario.students);
+        renderRoom(scenario.room);
+        renderWorkspaceOptions(scenario.workspaceOptions);
+
+        scenarioButtons.forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.scenario === key);
+        });
+      }
+
+      scenarioButtons.forEach((button) => {
+        button.addEventListener("click", () => applyScenario(button.dataset.scenario));
+      });
+
+      applyScenario("no-class");
+    </script>
+  </body>
+</html>

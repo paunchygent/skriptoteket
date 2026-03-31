@@ -76,12 +76,15 @@ into the `laptop` proof width.
 - [ST-29-07: Reduced mobile companion layouts and breakpoint cutover](../stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md)
 - [ST-29-08: Shared custom tooltip system and global hover contract](../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
 - [ST-29-09: Rule visibility and tool-feedback continuity](../stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
+- [ST-29-10: First-run workspace gating and prerequisite guidance](../stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md)
 
 ## Notes
 
 - `EPIC-29` is the canonical story/task hub for the Klassrumskartan UI overhaul.
 - `ST-29-08` is intentionally an enhancement follow-up after the current core `ST-29-01`..`ST-29-07`
   stack and should not delay the main desktop-first redesign sequence.
+- `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
+  and approved Swedish guidance without adding walkthroughs, modals, or extra onboarding chrome.
 - Applicable task decomposition from the earlier EPIC-26 redesign drafts is reassigned here and
   any conflicting story-level backlog docs should be removed rather than left around as dormant
   alternatives.

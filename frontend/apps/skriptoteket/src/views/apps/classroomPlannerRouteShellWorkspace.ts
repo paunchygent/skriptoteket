@@ -98,6 +98,19 @@ function resolveRulesWorkspaceTemplateId(options: {
   );
 }
 
+function resolveSeatingWorkspaceTemplateId(options: {
+  plannerTemplateId: string | null;
+  activeSeatingTemplateId: string | null;
+  selectedWorkspaceTemplateId: string | null;
+}): string | null {
+  return (
+    options.plannerTemplateId
+    ?? options.activeSeatingTemplateId
+    ?? options.selectedWorkspaceTemplateId
+    ?? null
+  );
+}
+
 export function createClassroomPlannerWorkspaceFlow(
   state: PlannerRouteShellWorkspaceState,
   actions: PlannerRouteShellWorkspaceActions,
@@ -500,8 +513,17 @@ export function createClassroomPlannerWorkspaceFlow(
       return;
     }
 
+    const seatingTemplateId = resolveSeatingWorkspaceTemplateId({
+      plannerTemplateId: plannerState.template?.id ?? null,
+      activeSeatingTemplateId: state.classWorkspaceSummary.value?.active_seating_draft?.template_id ?? null,
+      selectedWorkspaceTemplateId: state.selectedWorkspaceTemplateId.value,
+    });
+    if (!seatingTemplateId) {
+      return;
+    }
+
     await openSeatingWorkspace(
-      { templateId: null },
+      { templateId: seatingTemplateId },
       state.plannerInitialView.value === "rules"
         ? { transitionLabel: "Öppnar Sittplatser..." }
         : undefined,

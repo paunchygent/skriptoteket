@@ -207,6 +207,86 @@ describe("createClassroomPlannerWorkspaceFlow", () => {
     expect(plannerActionError.value).toBeNull();
   });
 
+  it("uses the overview-selected classroom when the live shell switches from groups to seating", async () => {
+    const selectedRosterId = ref("roster-1");
+    const selectedWorkspaceTemplateId = ref<string | null>("template-overview-2");
+    const currentScreen = ref<"class-workspace" | "planner">("planner");
+    const plannerInitialView = ref<"groups" | "seats" | "rules">("groups");
+    const plannerActionError = ref<string | null>(null);
+    const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>({
+      roster: { id: "roster-1", name: "SA24D", student_count: 28 },
+      task_entry_options: [
+        { draft_kind: "grouping" as const, classroom_selection_mode: "optional" as const },
+        { draft_kind: "seating" as const, classroom_selection_mode: "optional" as const },
+      ],
+      active_grouping_draft: null,
+      active_seating_draft: null,
+      grouping_history: [],
+      seating_history: [],
+    });
+    const isSeatingLifecycleBusy = ref(false);
+    const busySeatingHistoryDraftId = ref<string | null>(null);
+    const workspaceTransitionLabel = ref<string | null>(null);
+    const workspaceNotice = ref<string | null>(null);
+
+    const plannerState = {
+      draft: {
+        id: "draft-grouping-1",
+        roster_id: "roster-1",
+        draft_kind: "grouping" as const,
+        status: "active" as const,
+        revision: 3,
+        last_opened_at: "2026-03-31T08:00:00Z",
+      },
+      roster: { id: "roster-1" },
+      template: null,
+      prepareForPlannerExit: vi.fn().mockResolvedValue({ status: "saved" }),
+      prepareForWorkspaceSwitch: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      loadWorkspace: vi.fn(),
+      resolveDraft: vi.fn().mockResolvedValue(undefined),
+      clearWorkspace: vi.fn(),
+      startNewGroupingDraft: vi.fn(),
+      startNewSeatingDraft: vi.fn(),
+      activateGroupingHistoryDraft: vi.fn(),
+      activateSeatingHistoryDraft: vi.fn(),
+      deleteGroupingHistoryDraft: vi.fn(),
+      deleteSeatingHistoryDraft: vi.fn(),
+    };
+
+    const flow = createClassroomPlannerWorkspaceFlow(
+      {
+        selectedRosterId,
+        selectedWorkspaceTemplateId,
+        currentScreen,
+        plannerInitialView,
+        plannerActionError,
+        classWorkspaceSummary,
+        isSeatingLifecycleBusy,
+        busySeatingHistoryDraftId,
+        workspaceTransitionLabel,
+        workspaceNotice,
+      },
+      {
+        loadClassWorkspaceSummary: vi.fn(),
+        refreshClassWorkspaceSummaryForSelectedRoster: vi.fn().mockResolvedValue(undefined),
+        openInitialHomeWorkspace: vi.fn(),
+        syncWorkspaceTemplateSelection: vi.fn(),
+      },
+      plannerState,
+    );
+
+    await flow.selectPlannerWorkspaceMode("seating");
+
+    expect(plannerState.resolveDraft).toHaveBeenCalledWith(
+      "roster-1",
+      "template-overview-2",
+      "seating",
+    );
+    expect(plannerInitialView.value).toBe("seats");
+    expect(currentScreen.value).toBe("planner");
+    expect(plannerActionError.value).toBeNull();
+  });
+
   it("switches grouping class from the toolbar selector after flushing the current draft", async () => {
     const selectedRosterId = ref("roster-1");
     const selectedWorkspaceTemplateId = ref<string | null>("template-overview-1");

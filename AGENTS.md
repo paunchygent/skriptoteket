@@ -126,6 +126,7 @@ Playwright is the default for browser automation. Follow `.agents/rules/075-brow
 
 Repo-specific reminders:
 
+- For quick UI fixes/checkups in Codex, use headed Playwright MCP Chrome first and follow the rule/skill recovery flow exactly. Do not fall back to headless because of a profile-lock error; the canonical MCP config is `--browser chrome --isolated`.
 - Reuse the bootstrap superuser from `.env` for local UI checks; do not create ad hoc dev accounts.
 - Seed required Playwright tool fixtures through `src/skriptoteket/script_bank/` instead of creating demo tools in the DB.
 

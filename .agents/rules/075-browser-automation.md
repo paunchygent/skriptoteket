@@ -21,6 +21,23 @@ scope: "testing"
   existing demo tool’s source code. Add a dedicated entry to the **repo script bank** (`src/skriptoteket/script_bank/`)
   and seed it to the DB before running Playwright (see “Script bank fixtures” below).
 
+## Codex Quick UI Checks (REQUIRED)
+
+- REQUIRED: For quick UI fixes, patches, and visual checkups inside Codex, use headed Playwright MCP Chrome before headless scripts.
+- REQUIRED: The canonical Codex Playwright MCP config is `npx -y @playwright/mcp@latest --browser chrome --isolated`.
+- REQUIRED: `--isolated` is the default because Codex can leave multiple MCP sessions alive at once, and persistent Playwright Chrome profiles will then conflict.
+- REQUIRED: If Playwright MCP reports `Browser is already in use ...`, do not switch to headless. First terminate lingering `playwright-mcp` launchers and Chrome processes using `~/Library/Caches/ms-playwright/mcp-chrome*`, then retry the MCP browser.
+
+Canonical recovery commands:
+
+```bash
+ps aux | rg 'playwright-mcp|@playwright/mcp|ms-playwright/mcp-chrome|Google Chrome.*ms-playwright/mcp-chrome'
+pkill -TERM -f 'playwright-mcp|@playwright/mcp@latest|playwright-mcp-server' || true
+pkill -TERM -f 'Google Chrome.*ms-playwright/mcp-chrome' || true
+```
+
+- REQUIRED: If you terminate the MCP server that backs the current thread, start a fresh Codex session/thread before retrying the Playwright browser tools.
+
 ## Repo Smoke Scripts
 
 - `pdm run ui-smoke` → screenshots in `.artifacts/ui-smoke/`

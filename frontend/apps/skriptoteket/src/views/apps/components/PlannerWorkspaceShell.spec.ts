@@ -222,6 +222,19 @@ function buildRosters(): Roster[] {
   ];
 }
 
+function findWorkspaceModeToggle(
+  wrapper: ReturnType<typeof mount>,
+  label: "Översikt" | "Grupper" | "Sittplatser" | "Regler",
+) {
+  const button = wrapper.findAll('[data-ui="segmented-toggle"] button').find(
+    (candidate) => candidate.text() === label,
+  );
+  if (!button) {
+    throw new Error(`Expected the planner top panel to expose ${label}.`);
+  }
+  return button;
+}
+
 describe("PlannerWorkspaceShell", () => {
   beforeEach(() => {
     toastMocks.info.mockReset();
@@ -724,6 +737,86 @@ describe("PlannerWorkspaceShell", () => {
     await wrapper.get("select").setValue("template-2");
 
     expect(wrapper.emitted("change-seating-template")).toEqual([[{ templateId: "template-2" }]]);
+  });
+
+  it("disables Sittplatser in the live shell until a classroom context exists", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "grouping",
+      revision: 3,
+    };
+    stateMocks.plannerState.template = null;
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-2", name: "Sal 202", seats: [], fixtures: [] }],
+        initialView: "groups",
+        selectedWorkspaceTemplateId: null,
+        workspaceSummary: {
+          ...buildWorkspaceSummary(),
+          active_seating_draft: null,
+        },
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    const groupingToggle = findWorkspaceModeToggle(wrapper, "Grupper");
+    const seatingToggle = findWorkspaceModeToggle(wrapper, "Sittplatser");
+    const rulesToggle = findWorkspaceModeToggle(wrapper, "Regler");
+
+    expect(groupingToggle.attributes("disabled")).toBeUndefined();
+    expect(seatingToggle.attributes("disabled")).toBeDefined();
+    expect(seatingToggle.attributes("title")).toBe("Skapa eller välj först ett klassrum.");
+    expect(rulesToggle.attributes("disabled")).toBeUndefined();
+
+    await groupingToggle.trigger("click");
+    await seatingToggle.trigger("click");
+    await rulesToggle.trigger("click");
+
+    expect(wrapper.emitted("select-workspace-mode")).toEqual([["rules"]]);
+  });
+
+  it("keeps Sittplatser available in the live shell when overview already has a selected classroom", async () => {
+    stateMocks.plannerState.draft = {
+      id: "draft-1",
+      draft_kind: "grouping",
+      revision: 3,
+    };
+    stateMocks.plannerState.template = null;
+
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: {
+        availableTemplates: [{ id: "template-2", name: "Sal 202", seats: [], fixtures: [] }],
+        initialView: "groups",
+        selectedWorkspaceTemplateId: "template-2",
+        workspaceSummary: buildWorkspaceSummary(),
+      },
+      global: {
+        stubs: {
+          GroupBoard: { template: "<div data-test='group-board' />" },
+          RoomCanvas: { template: "<div data-test='room-canvas' />" },
+          PlannerMetadataDrawer: {
+            props: ["open"],
+            template: "<div data-test='drawer'>{{ open ? 'open' : 'closed' }}</div>",
+          },
+        },
+      },
+    });
+
+    const seatingToggle = findWorkspaceModeToggle(wrapper, "Sittplatser");
+    expect(seatingToggle.attributes("disabled")).toBeUndefined();
+
+    await seatingToggle.trigger("click");
+    expect(wrapper.emitted("select-workspace-mode")).toEqual([["seating"]]);
   });
 
   it("respects the initial planner view when seating already has a classroom", () => {

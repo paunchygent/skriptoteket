@@ -107,6 +107,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0180-st-29-02-sticky-toolbar-topbar-gap-collapse.md`
 - ST-29-09 rule visibility + tool-feedback continuity:
   `docs/backlog/prs/pr-0177-st-29-09-rule-visibility-and-tool-feedback-continuity.md`
+- ST-29-10 canonical mockup folder + first-run preview:
+  `docs/backlog/prs/pr-0184-st-29-10-canonical-mockup-folder-and-first-run-preview.md`
+- ST-29-10 workspace selector reachability + disabled-state copy:
+  `docs/backlog/prs/pr-0182-st-29-10-workspace-selector-reachability-and-locked-disabled-state-copy.md`
+- ST-29-10 overview prerequisite guidance + help-affordance copy:
+  `docs/backlog/prs/pr-0183-st-29-10-overview-prerequisite-guidance-and-help-affordance-copy.md`
 - Dishka/FastAPI public-API cutover foundation:
   `docs/backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md`
 - Hemma kernel lane recovery + `6.14` freeze / `6.17` cutover task:
@@ -149,6 +155,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md`
 - Smart-inställningar sittschemat wording fix slice:
   `docs/backlog/prs/pr-0181-st-27-04-smart-settings-sittschemat-wording-fix.md`
+- Klassrumskartan first-run workspace gating story:
+  `docs/backlog/stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md`
+- Klassrumskartan ST-29-10 mockup:
+  `docs/mockups/st-29-10-first-run-workspace-gating/index.html`
 - Proposed auth-cutover review:
   `docs/backlog/reviews/review-epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`
 - Proposed Klassrumskartan desktop-first workspace-overhaul epic:
@@ -375,6 +385,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-29-07-klassrumskartan-reduced-mobile-companion-layouts-and-breakpoint-cutover.md`
 - `docs/backlog/stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md`
 - `docs/backlog/stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md`
+- `docs/backlog/stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md`
 - `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md`
 - `docs/backlog/stories/story-30-02-adopt-transition-continuity-across-editor-and-selector-shells.md`
 

@@ -165,6 +165,7 @@ const {
           :available-rosters="availableRosters"
           :available-templates="availableTemplates"
           :selected-roster-id="selectedRosterId"
+          :selected-workspace-template-id="selectedWorkspaceTemplateId"
           :initial-view="plannerInitialView"
           :workspace-summary="classWorkspaceSummary"
           :seating-lifecycle-busy="isSeatingLifecycleBusy"

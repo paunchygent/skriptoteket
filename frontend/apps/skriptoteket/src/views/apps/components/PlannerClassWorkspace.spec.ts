@@ -80,6 +80,19 @@ function mountWorkspace(props?: Record<string, unknown>) {
   });
 }
 
+function findWorkspaceToggle(
+  wrapper: ReturnType<typeof mountWorkspace>,
+  label: "Grupper" | "Sittplatser" | "Regler",
+) {
+  const button = wrapper.findAll('[data-ui="segmented-toggle"] button').find(
+    (candidate) => candidate.text() === label,
+  );
+  if (!button) {
+    throw new Error(`Expected the segmented toggle to expose ${label}.`);
+  }
+  return button;
+}
+
 describe("PlannerClassWorkspace", () => {
   it("opens in a neutral overview instead of expanding both task surfaces", () => {
     const wrapper = mountWorkspace();
@@ -133,25 +146,81 @@ describe("PlannerClassWorkspace", () => {
       selectedTemplateId: "template-2",
     });
 
-    const groupingToggle = wrapper.findAll('[data-ui="segmented-toggle"] button').find(
-      (button) => button.text() === "Grupper",
-    );
-    if (!groupingToggle) {
-      throw new Error("Expected the segmented toggle to expose Grupper.");
-    }
+    const groupingToggle = findWorkspaceToggle(wrapper, "Grupper");
     await groupingToggle.trigger("click");
     expect(groupingToggle.attributes("aria-checked")).toBe("false");
     expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
 
-    const seatingToggle = wrapper.findAll('[data-ui="segmented-toggle"] button').find(
-      (button) => button.text() === "Sittplatser",
-    );
-    if (!seatingToggle) {
-      throw new Error("Expected the segmented toggle to expose Sittplatser.");
-    }
+    const seatingToggle = findWorkspaceToggle(wrapper, "Sittplatser");
     await seatingToggle.trigger("click");
     expect(seatingToggle.attributes("aria-checked")).toBe("false");
     expect(wrapper.emitted("open-seating")).toEqual([[{ templateId: "template-2" }]]);
+  });
+
+  it("locks every task workspace until a classlist has been selected", async () => {
+    const wrapper = mountWorkspace({
+      workspaceSummary: null,
+      availableRosters: [],
+      availableTemplates: [],
+      selectedRosterId: null,
+      selectedTemplateId: null,
+    });
+
+    expect(wrapper.get("[data-test='planner-top-panel-status-message']").text()).toBe(
+      "Börja med att skapa en klasslista.",
+    );
+    expect(wrapper.get("[data-test='planner-top-panel-supporting-text']").text()).toBe(
+      "Behöver du mer vägledning kan du trycka på Hjälp.",
+    );
+
+    const groupingToggle = findWorkspaceToggle(wrapper, "Grupper");
+    const seatingToggle = findWorkspaceToggle(wrapper, "Sittplatser");
+    const rulesToggle = findWorkspaceToggle(wrapper, "Regler");
+
+    expect(groupingToggle.attributes("disabled")).toBeDefined();
+    expect(groupingToggle.attributes("title")).toBe("Skapa först en klasslista.");
+    expect(seatingToggle.attributes("disabled")).toBeDefined();
+    expect(seatingToggle.attributes("title")).toBe("Skapa först en klasslista.");
+    expect(rulesToggle.attributes("disabled")).toBeDefined();
+    expect(rulesToggle.attributes("title")).toBe("Skapa först en klasslista.");
+
+    await groupingToggle.trigger("click");
+    await seatingToggle.trigger("click");
+    await rulesToggle.trigger("click");
+
+    expect(wrapper.emitted("open-grouping")).toBeUndefined();
+    expect(wrapper.emitted("open-seating")).toBeUndefined();
+    expect(wrapper.emitted("open-rules")).toBeUndefined();
+  });
+
+  it("keeps Grupper and Regler available while Sittplatser waits for a classroom", async () => {
+    const wrapper = mountWorkspace({
+      selectedTemplateId: null,
+    });
+
+    expect(wrapper.get("[data-test='planner-top-panel-status-message']").text()).toBe(
+      "Nu har du skapat din klass. Skapa eller välj ett klassrum för att använda Sittplatser.",
+    );
+    expect(wrapper.get("[data-test='planner-top-panel-supporting-text']").text()).toBe(
+      "Behöver du mer vägledning kan du trycka på Hjälp.",
+    );
+
+    const groupingToggle = findWorkspaceToggle(wrapper, "Grupper");
+    const seatingToggle = findWorkspaceToggle(wrapper, "Sittplatser");
+    const rulesToggle = findWorkspaceToggle(wrapper, "Regler");
+
+    expect(groupingToggle.attributes("disabled")).toBeUndefined();
+    expect(seatingToggle.attributes("disabled")).toBeDefined();
+    expect(seatingToggle.attributes("title")).toBe("Skapa eller välj först ett klassrum.");
+    expect(rulesToggle.attributes("disabled")).toBeUndefined();
+
+    await groupingToggle.trigger("click");
+    await seatingToggle.trigger("click");
+    await rulesToggle.trigger("click");
+
+    expect(wrapper.emitted("open-grouping")).toEqual([[{ templateId: null }]]);
+    expect(wrapper.emitted("open-seating")).toBeUndefined();
+    expect(wrapper.emitted("open-rules")).toEqual([[]]);
   });
 
   it("keeps overview free of duplicate resume cards even when active drafts exist", () => {

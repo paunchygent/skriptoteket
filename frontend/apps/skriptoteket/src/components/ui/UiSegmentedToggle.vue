@@ -219,6 +219,14 @@ function lastEnabledIndex(): number {
   return -1;
 }
 
+function optionDescriptionId(index: number): string | undefined {
+  const option = props.options[index];
+  if (!option?.title) {
+    return undefined;
+  }
+  return `segmented-toggle-option-hint-${index}`;
+}
+
 function onOptionKeydown(event: KeyboardEvent, index: number): void {
   if (props.disabled || props.options[index]?.disabled || enabledOptions().length === 0) {
     return;
@@ -341,28 +349,42 @@ onScopeDispose(() => {
       :style="sliderStyle"
     />
 
-    <button
+    <div
       v-for="(option, index) in props.options"
       :key="option.value"
-      :ref="(el) => setButtonRef(index, el as HTMLButtonElement | null)"
-      type="button"
-      :disabled="props.disabled || option.disabled"
-      role="radio"
-      :aria-checked="option.value === props.modelValue"
-      :tabindex="tabindexForOption(index)"
-      :title="option.title || undefined"
-      :data-test="option.dataTest"
-      class="relative z-[2] inline-flex w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 transition-colors duration-200"
-      :class="[
-        optionClass,
-        index > 0 ? 'border-l border-navy/20' : '',
-        option.value === props.modelValue ? 'text-canvas' : 'text-navy/70 hover:text-navy',
-        props.disabled || option.disabled ? 'opacity-40 cursor-not-allowed hover:text-navy/70' : '',
-      ]"
-      @click="selectOption(option)"
-      @keydown="onOptionKeydown($event, index)"
+      class="relative flex"
+      :title="props.disabled || option.disabled ? option.title || undefined : undefined"
+      data-ui-option="segmented-toggle-option"
     >
-      {{ option.label }}
-    </button>
+      <button
+        :ref="(el) => setButtonRef(index, el as HTMLButtonElement | null)"
+        type="button"
+        :disabled="props.disabled || option.disabled"
+        role="radio"
+        :aria-checked="option.value === props.modelValue"
+        :tabindex="tabindexForOption(index)"
+        :aria-describedby="optionDescriptionId(index)"
+        :title="option.title || undefined"
+        :data-test="option.dataTest"
+        class="relative z-[2] inline-flex w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 transition-colors duration-200"
+        :class="[
+          optionClass,
+          index > 0 ? 'border-l border-navy/20' : '',
+          option.value === props.modelValue ? 'text-canvas' : 'text-navy/70 hover:text-navy',
+          props.disabled || option.disabled ? 'opacity-40 cursor-not-allowed hover:text-navy/70' : '',
+        ]"
+        @click="selectOption(option)"
+        @keydown="onOptionKeydown($event, index)"
+      >
+        {{ option.label }}
+      </button>
+      <span
+        v-if="option.title"
+        :id="optionDescriptionId(index)"
+        class="sr-only"
+      >
+        {{ option.title }}
+      </span>
+    </div>
   </div>
 </template>
