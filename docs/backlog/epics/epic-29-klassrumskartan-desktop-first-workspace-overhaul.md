@@ -5,8 +5,8 @@ title: "Klassrumskartan — desktop-first workspace overhaul"
 status: active
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-31
-outcome: "Teachers use a denser, desktop-first Klassrumskartan workspace with a canonical symbol system, compressed shell chrome, clearer task hierarchy, and intentionally reduced mobile companion layouts without changing the planner's core logic or data contracts."
+updated: 2026-04-01
+outcome: "Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, and coherent grouping/seating/rules work surfaces; the remaining EPIC-29 lane is shared site/app primitive, symbol, and discoverability tightening rather than unfinished workspace layout execution."
 dependencies:
   [
     "ADR-0069",
@@ -27,12 +27,13 @@ dependencies:
   export-era hardening drafts so the planner does not carry two parallel ready redesign lanes.
 - Design desktop and laptop layouts as the canonical product composition for workspace-heavy
   planner flows.
-- Introduce a canonical symbol system and shared planner control primitives before deeper workspace
-  layout changes.
+- Introduce and then harden a canonical symbol system and shared planner/site-app control
+  primitives around the already-shipped desktop-first workspace.
 - Compress the planner shell and remove low-value status/helper bands that delay access to the live
   work surface.
-- Redesign `Översikt`, `Grupper`, `Sittplatser`, and `Regler` in paced slices that build on shared
-  primitives instead of each workspace inventing its own layout language.
+- Record the now-shipped `Översikt`, `Grupper`, `Sittplatser`, and `Regler` desktop-first behavior
+  in one canonical epic and keep any remaining work focused on shared primitive, symbol, and
+  discoverability tightening instead of reopening the core workspace layouts.
 - Define reduced mobile companion layouts only after the desktop composition is settled.
 
 ## Out of Scope
@@ -77,12 +78,17 @@ into the `laptop` proof width.
 - [ST-29-08: Shared custom tooltip system and global hover contract](../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
 - [ST-29-09: Rule visibility and tool-feedback continuity](../stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
 - [ST-29-10: First-run workspace gating and prerequisite guidance](../stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md)
+- [ST-29-11: Shared site/app dense-control primitive tightening](../stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+- [ST-29-12: Canonical symbol language and discoverability contract completion](../stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md)
 
 ## Notes
 
 - `EPIC-29` is the canonical story/task hub for the Klassrumskartan UI overhaul.
-- `ST-29-08` is intentionally an enhancement follow-up after the current core `ST-29-01`..`ST-29-07`
-  stack and should not delay the main desktop-first redesign sequence.
+- The core desktop-first workspace/layout lane is now represented by shipped behavior in practice;
+  the main remaining active follow-on work is the shared primitive/symbol/discoverability set now
+  tracked in `ST-29-08`, `ST-29-11`, and `ST-29-12`.
+- `ST-29-08` is intentionally an enhancement follow-up after the remaining primitive and symbol
+  definition/tightening lane rather than a blocker on the already-shipped workspace layouts.
 - `ST-29-10` is a bounded reachability-and-copy slice only; it locks prerequisite-state affordances
   and approved Swedish guidance without adding walkthroughs, modals, or extra onboarding chrome.
 - Applicable task decomposition from the earlier EPIC-26 redesign drafts is reassigned here and
@@ -90,9 +96,13 @@ into the `laptop` proof width.
   alternatives.
 - This epic requires review approval before implementation begins per the repo review workflow.
 
-## Implementation Summary (as of 2026-03-31)
+## Implementation Summary (as of 2026-04-01)
 
+- `ST-29-01` is now done through `PR-0156` and `PR-0157`: the shared control-language freeze, frontend design-system codemap, dense-tool primitive layer, and first canonical symbol assets are all now present in the SPA and already underpin later planner slices. The old `PR-0158` seating-first follow-up is canceled as stale planning and replaced by the broader follow-on stories `ST-29-11` and `ST-29-12`.
 - `ST-29-02` is now implemented locally through `PR-0161`, `PR-0179`, and `PR-0180`: the planner shell is compressed, grouping and seating use detached sticky workspace toolbars that now hug the authenticated topbar seam while scrolling, low-value full-width helper/status bands are removed or localized, and recovered export completion now announces once via toast with `Mina filer` copy instead of reappearing workspace bands.
 - `ST-29-09` shipped through `PR-0177`: seating no longer repeats active-rule state through a redundant pill, the room-editor tool palette now exposes clearer active-tool feedback, and grouped student cards preserve the shared smart-rule marker language after assignment.
 - `ST-29-03` is now done: `PR-0128` remains the shipped split-pane/local-scroll lane, `PR-0130` remains the shipped seating-toolbar stability lane, and `PR-0129` now codifies the shared zoned `PlannerWorkspaceActionBar` contract with reusable `primary`, `context`, and `secondary` wrappers that grouping, seating, and later `ST-29-06` can share.
+- `ST-29-04` is now done through `PR-0127`, `PR-0131`, and `PR-0132`: `Översikt` now behaves as the class-first dashboard the doctrine called for, with bounded roster overflow, clearer management hierarchy, and normalized resume/history affordances.
+- `ST-29-05` is now done in practice through the current `ST-29-03`, `ST-29-02`, and `ST-29-09` behavior set: grouping and seating read as desktop work instruments with stable split-pane composition, compact local chrome, detached sticky action surfaces, and less stacked-card overhead.
 - `ST-29-06` is now done through `PR-0185`: the no-classroom `Regler` planning-map state now uses the approved classroom guidance copy, off-map students render as an organized selectable roster with visible pending-selection order instead of a loose chip cloud, `Grupper` now uses the approved calmer helper copy, and the live proof is locked at `1366x768` and `1440x900` through `scripts/playwright_pr_0185_rules_no_classroom_fallback_check.py`.
+- `ST-29-10` is now done through `PR-0182`, `PR-0183`, and `PR-0184`: first-run workspace reachability is now truthful in the shared selector, `Översikt` shows the approved compact prerequisite guidance plus `Hjälp` affordance copy, and `docs/mockups/st-29-10-first-run-workspace-gating/index.html` remains the canonical mockup/preview path that grounded the slice before the live shell changes.

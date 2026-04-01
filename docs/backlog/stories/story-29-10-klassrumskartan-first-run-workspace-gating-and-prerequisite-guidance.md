@@ -2,10 +2,10 @@
 type: story
 id: ST-29-10
 title: "Klassrumskartan — First-run workspace gating and prerequisite guidance"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-31
-updated: 2026-03-31
+updated: 2026-04-01
 epic: "EPIC-29"
 dependencies:
   - "ST-24-07"
@@ -40,6 +40,8 @@ onboarding feature. The scope is explicit affordance truthfulness plus approved 
   modal, toast, walkthrough, or animation-led onboarding layer here.
 - `ST-08-34` and the existing help drawer remain the follow-on guidance path; this story only adds
   the small in-context pointer to `Hjälp`.
+- The story is now implemented locally through `PR-0182` and `PR-0183`, with `PR-0184` providing
+  the canonical planning mockup and preview path that preceded the live shell changes.
 
 ## Planned PR slices
 

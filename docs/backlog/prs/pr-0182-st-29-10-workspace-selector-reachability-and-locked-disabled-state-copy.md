@@ -2,10 +2,10 @@
 type: pr
 id: PR-0182
 title: "ST-29-10: workspace selector reachability and locked disabled-state copy"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-31
-updated: 2026-03-31
+updated: 2026-04-01
 stories:
   - "ST-29-10"
 tags: ["frontend", "ux", "klassrumskartan", "planner-shell", "swedish"]

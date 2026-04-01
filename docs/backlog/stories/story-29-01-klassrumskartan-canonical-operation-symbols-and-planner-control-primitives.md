@@ -2,9 +2,10 @@
 type: story
 id: ST-29-01
 title: "Klassrumskartan — Canonical operation symbols and planner control primitives"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
+updated: 2026-04-01
 epic: "EPIC-29"
 dependencies:
   - "EPIC-24"
@@ -22,9 +23,9 @@ data_impact: "No"
 
 ## Context
 
-The current planner uses a mix of strong symbols, text-only buttons, and one-off control language.
-That inconsistency costs both space and trust. Before reshaping the workspace layout, the redesign
-needs one canonical operation vocabulary.
+This story now represents the shipped foundation layer for the later EPIC-29 workspace work. The
+control-language freeze, frontend codemap, shared dense-tool primitives, and first canonical symbol
+assets are now present in the repo and underpin the current desktop-first Klassrumskartan shell.
 
 ## Notes
 
@@ -34,12 +35,21 @@ needs one canonical operation vocabulary.
 - Implementation should start from the `V1 freeze` section in `REF-shared-tool-control-language-v1`
   before consulting the longer worked topologies.
 - Use the workspace doctrine and design-system rule as the planning baseline.
+- `PR-0156` and `PR-0157` are now the canonical shipped slices for this story: the repo has the
+  design-system codemap, explicit primitive planning sequence, shared dense-tool primitives, and
+  canonical symbol assets that later EPIC-29 slices already consume in practice.
+- The original `PR-0158` seating-first proving-ground plan is canceled as stale planning. The
+  remaining follow-on work is no longer "finish ST-29-01 in seating" and is now tracked explicitly
+  as broader post-core tightening in `ST-29-11`, `ST-29-12`, and the later tooltip enhancement
+  story `ST-29-08`.
 
 ## Planned PR slices
 
-- [PR-0156: ST-29-01 control-language freeze, primitive contract, and frontend codemap](../prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md)
-- [PR-0157: ST-29-01 shared dense-tool primitives and canonical symbol assets](../prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md)
-- [PR-0158: ST-29-01 seating workspace adoption of shared dense-tool primitives](../prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md)
+- [PR-0156: ST-29-01 control-language freeze, primitive contract, and frontend codemap](../prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md) — `done`
+- [PR-0157: ST-29-01 shared dense-tool primitives and canonical symbol assets](../prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md) — `done`
+- [PR-0158: ST-29-01 seating workspace adoption of shared dense-tool primitives](../prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md) — `canceled`
+- Follow-on story: [ST-29-11: Shared site/app dense-control primitive tightening](story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+- Follow-on story: [ST-29-12: Canonical symbol language and discoverability contract completion](story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md)
 
 ## References
 

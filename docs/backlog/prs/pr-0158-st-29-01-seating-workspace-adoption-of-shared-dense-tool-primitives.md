@@ -2,10 +2,10 @@
 type: pr
 id: PR-0158
 title: "ST-29-01: seating workspace adoption of shared dense-tool primitives"
-status: ready
+status: canceled
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-04-01
 stories:
   - "ST-29-01"
 tags: ["frontend", "klassrumskartan", "design-system", "workspace", "ux"]
@@ -24,6 +24,15 @@ acceptance_criteria:
 The primitive layer only becomes real when one dense workspace consumes it end to end. `Sittplatser`
 is the best first proving ground because it exercises repeated actions, viewport controls, split
 export behavior, and the `Smart` to `Regler` relationship in one place.
+
+## Status note (2026-04-01)
+
+This slice is canceled as originally framed. The later shipped planner work validated and adopted
+the shared desktop/control direction through a broader mix of overview, grouping, seating, rules,
+and Smart-settings changes than this older "first proving ground in `Sittplatser`" plan assumed.
+
+The remaining backlog need is no longer a seating-first primitive adoption pass. It is the
+cross-surface follow-on tightening now tracked in `ST-29-11`, `ST-29-12`, and later `ST-29-08`.
 
 ## Goal
 

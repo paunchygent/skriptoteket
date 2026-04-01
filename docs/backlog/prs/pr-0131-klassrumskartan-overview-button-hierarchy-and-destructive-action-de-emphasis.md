@@ -2,10 +2,10 @@
 type: pr
 id: PR-0131
 title: "Klassrumskartan: overview button hierarchy and destructive-action de-emphasis"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-04-01
 stories:
   - "ST-29-04"
 tags: ["frontend", "ux", "klassrumskartan", "overview", "buttons"]

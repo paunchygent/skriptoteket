@@ -2,10 +2,10 @@
 type: pr
 id: PR-0156
 title: "ST-29-01: control-language freeze, primitive contract, and frontend codemap"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
-updated: 2026-03-28
+updated: 2026-04-01
 stories:
   - "ST-29-01"
 tags: ["frontend", "docs", "design-system", "klassrumskartan", "editor"]

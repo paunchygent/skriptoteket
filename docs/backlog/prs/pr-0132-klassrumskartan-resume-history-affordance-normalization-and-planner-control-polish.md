@@ -2,10 +2,10 @@
 type: pr
 id: PR-0132
 title: "Klassrumskartan: resume/history affordance normalization and planner control polish"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-04-01
 stories:
   - "ST-29-04"
 tags: ["frontend", "ux", "klassrumskartan", "affordances", "playwright"]

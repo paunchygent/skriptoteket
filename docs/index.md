@@ -37,6 +37,12 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - Curated app spec: `docs/reference/ref-curated-app-reagent-prep-chef.md`
 - Competitive games + Flunk-Out Frenzy reference:
   `docs/reference/ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md`
+- Flunk-Out Frenzy mechanics-port foundation story:
+  `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`
+- Flunk-Out Frenzy mechanics-port PR backlog starts here:
+  `docs/backlog/prs/pr-0188-flunk-out-frenzy-machine-event-contract-expansion-and-physicsworld-decomposition.md`
+- Flunk-Out Frenzy mechanics reassessment gate:
+  `docs/backlog/prs/pr-0191-flunk-out-frenzy-mechanics-foundation-reassessment-and-go-no-go.md`
 - Seating continuity follow-up:
   `docs/backlog/prs/pr-0105-klassrumskartan-seating-draft-continuity-and-new-seating-draft-lifecycle.md`
 - Seating undo/redo follow-up:
@@ -117,6 +123,10 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/prs/pr-0182-st-29-10-workspace-selector-reachability-and-locked-disabled-state-copy.md`
 - ST-29-10 overview prerequisite guidance + help-affordance copy:
   `docs/backlog/prs/pr-0183-st-29-10-overview-prerequisite-guidance-and-help-affordance-copy.md`
+- EPIC-29 shared site/app dense-control primitive tightening story:
+  `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`
+- EPIC-29 canonical symbol language + discoverability completion story:
+  `docs/backlog/stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md`
 - Dishka/FastAPI public-API cutover foundation:
   `docs/backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md`
 - Hemma kernel lane recovery + `6.14` freeze / `6.17` cutover task:
@@ -370,6 +380,7 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`
 - `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`
 - `docs/backlog/stories/story-25-04-competitive-play-replay-validation-and-official-score-promotion.md`
+- `docs/backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md`
 - `docs/backlog/stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md`
 - `docs/backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md`
 - `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`
@@ -587,6 +598,14 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
 - `docs/backlog/prs/pr-0104-flunk-out-frenzy-post-review-runtime-and-shell-remediation.md`
 - `docs/backlog/prs/pr-0107-flunk-out-frenzy-canvas-warning-cleanup-and-test-renderer-boundaries.md`
 - `docs/backlog/prs/pr-0108-flunk-out-frenzy-runtime-lazy-load-and-game-bundle-splitting.md`
+- `docs/backlog/prs/pr-0188-flunk-out-frenzy-machine-event-contract-expansion-and-physicsworld-decomposition.md`
+- `docs/backlog/prs/pr-0189-flunk-out-frenzy-lanes-targets-and-tripwire-devices.md`
+- `docs/backlog/prs/pr-0190-flunk-out-frenzy-bonus-jackpot-and-ball-lifecycle-rule-state.md`
+- `docs/backlog/prs/pr-0191-flunk-out-frenzy-mechanics-foundation-reassessment-and-go-no-go.md`
+- `docs/backlog/prs/pr-0192-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md`
+- `docs/backlog/prs/pr-0193-flunk-out-frenzy-capture-eject-and-save-devices.md`
+- `docs/backlog/prs/pr-0194-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md`
+- `docs/backlog/prs/pr-0195-flunk-out-frenzy-objective-controllers-and-bank-progression.md`
 - `docs/backlog/prs/pr-0101-klassrumskartan-seating-room-builder-resize-ghost-preview-and-wall-anchoring.md`
 - `docs/backlog/prs/pr-0102-klassrumskartan-seating-room-builder-object-visuals-labels-and-bench-coalescing.md`
 - `docs/backlog/prs/pr-0103-klassrumskartan-seating-room-builder-viewport-zoom-reset-and-circular-seats.md`

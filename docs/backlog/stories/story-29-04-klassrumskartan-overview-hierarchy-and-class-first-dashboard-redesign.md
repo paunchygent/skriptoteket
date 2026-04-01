@@ -2,9 +2,10 @@
 type: story
 id: ST-29-04
 title: "Klassrumskartan — Overview hierarchy and class-first dashboard redesign"
-status: ready
+status: done
 owners: "agents"
 created: 2026-03-28
+updated: 2026-04-01
 epic: "EPIC-29"
 dependencies:
   - "ST-29-01"
@@ -22,14 +23,20 @@ data_impact: "No"
 
 ## Context
 
-The overview currently works, but its hierarchy is still too card-heavy and too even in visual
-weight. This story turns it into a real desktop dashboard aligned with the planner doctrine.
+This story now records the shipped class-first overview/dashboard behavior. The current `Översikt`
+surface already presents active class work and continuation affordances as the primary teacher
+entry path, keeps the roster preview bounded with internal scrolling, and uses calmer management
+action hierarchy than the earlier equal-weight card presentation.
 
 ## Notes
 
 - This is not a workflow-direction change; class-first remains the accepted product anchor.
 - This story absorbs the overview hierarchy and fixed-preview overflow scope from the older
   export-era redesign drafts and is now the only canonical planning surface for that work.
+- In practice this story is implemented through `PR-0127`, `PR-0131`, and `PR-0132`, plus the
+  earlier overview-first baseline from `ST-24-07`.
+- Remaining EPIC-29 work should not reopen the overview layout. The follow-on lane now lives in
+  shared primitive, symbol, and discoverability tightening stories instead.
 
 ## References
 
