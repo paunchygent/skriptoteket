@@ -10,7 +10,17 @@ import { computed, ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
 import { createClassroomPlannerStateSupport } from "./classroomPlannerStateSupport";
-import type { DraftGroup, DraftHistoryStatus, PlanDraft, RelationshipRule, RoomTemplate, Roster, StudentSeatingPreference } from "./classroomPlannerTypes";
+import type {
+  DraftGroup,
+  DraftHistoryStatus,
+  DraftWorkspaceResponse,
+  PlanDraft,
+  RelationshipRule,
+  RoomTemplate,
+  Roster,
+  RosterSmartRulesResponse,
+  StudentSeatingPreference,
+} from "./classroomPlannerTypes";
 import type { useDraftPersistenceLane } from "./useDraftPersistenceLane";
 import type { usePlannerSessionController } from "./usePlannerSessionController";
 import type { useRosterSmartRuleLane } from "./useRosterSmartRuleLane";
@@ -97,10 +107,14 @@ function createSupportFixture() {
     draft,
     roster,
     template,
+    groups,
     groupAssignmentsByStudentId,
     seatAssignmentsByStudentId,
     seatingPreferences,
     relationshipRules,
+    smartRulesRevision,
+    historyStatus,
+    historyActionInFlight,
     smartRuleUiState,
     support,
   };
@@ -159,5 +173,103 @@ describe("createClassroomPlannerStateSupport", () => {
     ]);
     expect(fixture.relationshipRules.value).toEqual([]);
     expect(fixture.smartRuleUiState.reset).toHaveBeenCalledTimes(1);
+  });
+
+  it("defaults missing workspace collections to empty arrays during hydration", () => {
+    const fixture = createSupportFixture();
+
+    fixture.support.applyWorkspace({
+      draft: {
+        id: "draft-2",
+        roster_id: "roster-1",
+        draft_kind: "seating",
+        template_id: null,
+        status: "active",
+        revision: 5,
+        last_opened_at: "2026-04-01T09:00:00Z",
+      },
+      roster: {
+        id: "roster-1",
+        name: "SA24D",
+        students: [
+          { id: "student-1", display_name: "Ada Lovelace" },
+          { id: "student-2", display_name: "Alan Turing" },
+        ],
+      },
+      template: {
+        id: "template-2",
+        name: "Utan stolar i payloaden",
+        seats: undefined,
+        fixtures: undefined,
+      },
+      groups: undefined,
+      group_assignments: undefined,
+      seat_assignments: undefined,
+      history_status: {
+        can_undo: false,
+        can_redo: false,
+      },
+    } as unknown as DraftWorkspaceResponse);
+
+    expect(fixture.groups.value).toEqual([]);
+    expect(fixture.groupAssignmentsByStudentId.value).toEqual({});
+    expect(fixture.seatAssignmentsByStudentId.value).toEqual({});
+    expect(fixture.template.value).toEqual({
+      id: "template-2",
+      name: "Utan stolar i payloaden",
+      seats: [],
+      fixtures: [],
+    });
+    expect(fixture.historyStatus.value).toEqual({ can_undo: false, can_redo: false });
+  });
+
+  it("defaults missing smart-rule collections to empty arrays during hydration", () => {
+    const fixture = createSupportFixture();
+
+    fixture.support.applyRosterSmartRules({
+      roster_id: "roster-1",
+      revision: 7,
+      seating_preferences: undefined,
+      relationship_rules: undefined,
+    } as unknown as RosterSmartRulesResponse);
+
+    expect(fixture.seatingPreferences.value).toEqual([]);
+    expect(fixture.relationshipRules.value).toEqual([]);
+    expect(fixture.smartRulesRevision.value).toBe(7);
+  });
+
+  it("defaults missing history status during draft-save acknowledgement normalization", () => {
+    const fixture = createSupportFixture();
+    fixture.historyActionInFlight.value = true;
+
+    fixture.support.applyDraftSaveAcknowledgement({
+      draft: {
+        id: "draft-1",
+        roster_id: "roster-1",
+        draft_kind: "seating",
+        template_id: null,
+        status: "active",
+        revision: 6,
+        last_opened_at: "2026-04-01T09:30:00Z",
+      },
+      roster: {
+        id: "roster-1",
+        name: "SA24D",
+        students: [
+          { id: "student-1", display_name: "Ada Lovelace" },
+          { id: "student-2", display_name: "Alan Turing" },
+        ],
+      },
+      template: null,
+      groups: undefined,
+      group_assignments: undefined,
+      seat_assignments: undefined,
+      history_status: undefined,
+    } as unknown as DraftWorkspaceResponse);
+
+    expect(fixture.draft.value?.revision).toBe(6);
+    expect(fixture.draft.value?.last_opened_at).toBe("2026-04-01T09:30:00Z");
+    expect(fixture.historyStatus.value).toEqual({ can_undo: false, can_redo: false });
+    expect(fixture.historyActionInFlight.value).toBe(false);
   });
 });

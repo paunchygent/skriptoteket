@@ -13,6 +13,7 @@ import PlannerRulesWorkspacePane from "./PlannerRulesWorkspacePane.vue";
 import type { RelationshipRule, RoomTemplate, Student } from "../classroomPlannerTypes";
 
 type PlannerStateMock = {
+  roster: { id: string; name: string; students: Student[] } | null;
   template: RoomTemplate | null;
   students: Student[];
   studentsById: Record<string, Student | undefined>;
@@ -41,6 +42,15 @@ type PlannerStateMock = {
 
 const stateMocks = vi.hoisted(() => ({
   plannerState: ((): PlannerStateMock => ({
+    roster: {
+      id: "roster-1",
+      name: "SR24D",
+      students: [
+        { id: "student-1", display_name: "Ada Lovelace" },
+        { id: "student-2", display_name: "Alan Turing" },
+        { id: "student-3", display_name: "Grace Hopper" },
+      ],
+    },
     template: {
       id: "template-1",
       name: "Sal 101",
@@ -95,6 +105,15 @@ vi.mock("../useClassroomState", () => ({
 
 describe("PlannerRulesWorkspacePane", () => {
   beforeEach(() => {
+    stateMocks.plannerState.roster = {
+      id: "roster-1",
+      name: "SR24D",
+      students: [
+        { id: "student-1", display_name: "Ada Lovelace" },
+        { id: "student-2", display_name: "Alan Turing" },
+        { id: "student-3", display_name: "Grace Hopper" },
+      ],
+    };
     stateMocks.plannerState.seatAssignments = [{ student_id: "student-1", seat_id: "seat-1" }];
     stateMocks.plannerState.seatingPreferences = [
       { student_id: "student-1", near_teacher: true },

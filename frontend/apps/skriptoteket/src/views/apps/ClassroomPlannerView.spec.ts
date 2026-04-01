@@ -204,6 +204,33 @@ describe("ClassroomPlannerView", () => {
     wrapper.unmount();
   });
 
+  it("shows fallback copy instead of raw runtime errors during bootstrap", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    clientMocks.apiGet.mockRejectedValueOnce(
+      new TypeError("Cannot read properties of undefined (reading 'map')"),
+    );
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
+
+    const wrapper = mount(ClassroomPlannerView, {
+      global: {
+        stubs: {
+          CreateRosterModal: true,
+          CreateRoomTemplateModal: true,
+          PlannerClassWorkspace: true,
+          PlannerWorkspaceShell: true,
+        },
+      },
+    });
+    await flushPromises();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Kunde inte ladda Klassrumskartan.");
+    expect(wrapper.text()).not.toContain("Cannot read properties of undefined");
+    expect(consoleError).toHaveBeenCalledOnce();
+
+    wrapper.unmount();
+  });
+
   it("prefers the persisted workspace selection over an older resumable draft on reload", async () => {
     localStorage.setItem("skriptoteket:classroom-planner:selected-roster-id", "roster-2");
     localStorage.setItem("skriptoteket:classroom-planner:selected-template-id", "template-2");

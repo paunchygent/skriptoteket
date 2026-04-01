@@ -12,6 +12,7 @@ import {
   deleteClassroomPlannerRoster,
   deleteClassroomPlannerTemplate,
 } from "./classroomPlannerCatalogApi";
+import { normalizeClassroomPlannerSummary } from "./classroomPlannerPayloadNormalization";
 import type { PlannerScreen } from "./classroomPlannerOverviewStore";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
 import type { ClassWorkspaceSummary, RoomTemplate, Roster } from "./classroomPlannerTypes";
@@ -53,6 +54,7 @@ export function createClassroomPlannerOverviewCrudFlow(
     if (!state.classWorkspaceSummary.value) {
       return;
     }
+    const normalizedSummary = normalizeClassroomPlannerSummary(state.classWorkspaceSummary.value);
 
     const syncSummary = (summary: ClassWorkspaceSummary["active_seating_draft"]) => {
       if (!summary || summary.template_id !== template.id) {
@@ -65,10 +67,10 @@ export function createClassroomPlannerOverviewCrudFlow(
     };
 
     state.classWorkspaceSummary.value = {
-      ...state.classWorkspaceSummary.value,
-      active_grouping_draft: syncSummary(state.classWorkspaceSummary.value.active_grouping_draft),
-      active_seating_draft: syncSummary(state.classWorkspaceSummary.value.active_seating_draft),
-      grouping_history: state.classWorkspaceSummary.value.grouping_history.map((summary) => {
+      ...normalizedSummary,
+      active_grouping_draft: syncSummary(normalizedSummary.active_grouping_draft),
+      active_seating_draft: syncSummary(normalizedSummary.active_seating_draft),
+      grouping_history: normalizedSummary.grouping_history.map((summary) => {
         if (summary.template_id !== template.id) {
           return summary;
         }
@@ -77,7 +79,7 @@ export function createClassroomPlannerOverviewCrudFlow(
           template_name: template.name,
         };
       }),
-      seating_history: state.classWorkspaceSummary.value.seating_history.map((summary) => {
+      seating_history: normalizedSummary.seating_history.map((summary) => {
         if (summary.template_id !== template.id) {
           return summary;
         }

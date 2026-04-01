@@ -45,6 +45,7 @@ Verification:
 
 Ruthless review loop:
 - Before reporting back to the parent thread, launch the skriptoteket reviewer agent defined in .codex/agents/skriptoteket-reviewer.toml.
+- In every reviewer prompt, explicitly state that the reviewer is the only reviewer for the task and must not delegate or rely on any second subagent or external reviewer.
 - Address the reviewer's findings, rerun the relevant verification, and then run the reviewer a second time if the first pass produced actionable findings.
 - Cap this loop at two reviewer passes before returning to the parent thread.
 - Report back with: implemented scope, docs updated, verification evidence, reviewer findings addressed, and any residual risks or open questions.

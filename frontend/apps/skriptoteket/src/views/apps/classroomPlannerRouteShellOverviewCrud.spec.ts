@@ -108,4 +108,43 @@ describe("createClassroomPlannerOverviewCrudFlow", () => {
       students: [{ id: "student-1", display_name: "Ada Lovelace" }],
     });
   });
+
+  it("does not crash when older summary state is missing history arrays", () => {
+    const classWorkspaceSummary = ref<ClassWorkspaceSummary | null>({
+      ...createSummary(),
+      grouping_history: undefined,
+      seating_history: undefined,
+    } as unknown as ClassWorkspaceSummary);
+    const flow = createClassroomPlannerOverviewCrudFlow(
+      {
+        availableRosters: ref<Roster[]>([]),
+        availableTemplates: ref<RoomTemplate[]>([
+          { id: "template-1", name: "Sal 101", seats: [], fixtures: [] },
+        ]),
+        selectedRosterId: ref<string | null>("roster-1"),
+        selectedWorkspaceTemplateId: ref<string | null>("template-1"),
+        currentScreen: ref<"class-workspace" | "planner">("planner"),
+        classWorkspaceSummary,
+        plannerActionError: ref<string | null>(null),
+      },
+      {
+        openClassWorkspace: vi.fn(),
+        openInitialHomeWorkspace: vi.fn(),
+        syncWorkspaceTemplateSelection: vi.fn(),
+        replaceActivePlannerRoster: vi.fn(),
+        replaceActivePlannerTemplate: vi.fn(),
+      },
+    );
+
+    expect(() => {
+      flow.upsertTemplate({
+        id: "template-1",
+        name: "Sal 101 uppdaterad",
+        seats: [],
+        fixtures: [],
+      });
+    }).not.toThrow();
+    expect(classWorkspaceSummary.value?.grouping_history).toEqual([]);
+    expect(classWorkspaceSummary.value?.seating_history).toEqual([]);
+  });
 });

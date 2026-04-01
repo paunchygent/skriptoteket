@@ -151,6 +151,7 @@ watch(canShowSeatingArrangement, (nextValue) => {
 
       <PlannerRulesMapPanel
         :map-view="mapView"
+        :roster-name="plannerState.roster?.name ?? null"
         :can-show-seating-arrangement="canShowSeatingArrangement"
         :seating-arrangement-unavailable-message="seatingArrangementUnavailableMessage"
         :template="plannerState.template"

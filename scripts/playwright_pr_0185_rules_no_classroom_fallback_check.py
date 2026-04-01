@@ -125,10 +125,10 @@ def _bounding_box(locator: Locator) -> dict[str, float]:
     return box
 
 
-def _assert_organized_roster(page: Page) -> None:
+def _assert_organized_roster(page: Page, *, roster_name: str) -> None:
     panel = page.locator('[data-test="rules-map-unplaced"]')
     expect(panel).to_be_visible(timeout=60_000)
-    expect(panel.get_by_text("Ej på karta", exact=True)).to_be_visible()
+    expect(panel.get_by_text(roster_name, exact=True)).to_be_visible()
     expect(page.locator('[data-test="rules-map-unplaced-count"]')).to_have_text(
         f"{len(STUDENTS)} elever"
     )
@@ -220,7 +220,7 @@ def _assert_rules_no_classroom_state(
     expect(page.locator('[data-test="rules-map-panel"]')).to_be_visible(timeout=60_000)
     expect(page.locator('[data-test="rules-map-empty-state"]')).to_have_text(EMPTY_STATE_COPY)
 
-    _assert_organized_roster(page)
+    _assert_organized_roster(page, roster_name=roster_name)
     _assert_selection_feedback(page)
     _create_rule_and_assert_summary_height(page)
 

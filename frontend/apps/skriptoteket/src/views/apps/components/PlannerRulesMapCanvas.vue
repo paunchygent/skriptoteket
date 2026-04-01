@@ -27,6 +27,7 @@ type RulesMapView = "planning_map" | "seating_arrangement";
 
 const props = withDefaults(defineProps<{
   mapView: RulesMapView;
+  rosterName?: string | null;
   canShowSeatingArrangement?: boolean;
   seatingArrangementUnavailableMessage?: string | null;
   template?: RoomTemplate | null;
@@ -37,6 +38,7 @@ const props = withDefaults(defineProps<{
   pendingSelectedStudentIds?: string[];
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
+  rosterName: null,
   canShowSeatingArrangement: false,
   seatingArrangementUnavailableMessage: null,
   template: null,
@@ -70,6 +72,7 @@ const canvasViewport = ref<HTMLElement | null>(null);
 const viewportWidth = ref(0);
 
 const isPlanningMap = computed(() => props.mapView === "planning_map");
+const isNoClassroomState = computed(() => props.template === null);
 const orderedPlanningStudents = computed(() => sortStudentsAlphabetically(props.students));
 const seatingStudentsBySeatId = computed<Record<string, Student | null>>(() => {
   const projected: Record<string, Student | null> = {};
@@ -97,6 +100,12 @@ const surfaceStudents = computed(() => {
 const selectedUnplacedStudentsCount = computed(() => {
   return surfaceStudents.value.filter((student) => isStudentSelected(student.id)).length;
 });
+const surfaceHeadingLabel = computed(() => {
+  if (isPlanningMap.value) {
+    return props.rosterName ?? "Klass";
+  }
+  return "Ej på karta";
+});
 const shouldCenterSurface = computed(() => {
   const paddedWidth = Number.parseFloat(scaledSurfaceStyle.value.width ?? "0")
     + (ROOM_VIEWPORT_FRAME_PADDING * 2);
@@ -106,12 +115,12 @@ const mapViewOptions = computed<UiSegmentedToggleOption[]>(() => {
   return [
     {
       value: "planning_map",
-      label: "Planeringskarta",
+      label: "Planeringsvy",
       dataTest: "rules-map-view-planning",
     },
     {
       value: "seating_arrangement",
-      label: "Sittschema",
+      label: "Klassrumsvy",
       dataTest: "rules-map-view-seating",
       disabled: !props.canShowSeatingArrangement,
       title: !props.canShowSeatingArrangement
@@ -210,6 +219,7 @@ function updateMapView(value: string): void {
         density="compact"
         variant="subrail"
         width="auto"
+        equalize-option-width
         :columns="2"
         data-test="rules-map-view-switch"
         @update:model-value="updateMapView"
@@ -259,7 +269,7 @@ function updateMapView(value: string): void {
           class="rules-map-view-surface"
         >
           <div
-            v-if="!isPlanningMap && !template"
+            v-if="isNoClassroomState"
             class="mt-3 border border-dashed border-navy/30 bg-canvas px-5 py-6 text-center text-sm leading-relaxed text-navy/70"
             data-test="rules-map-empty-state"
           >
@@ -337,11 +347,14 @@ function updateMapView(value: string): void {
           >
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-navy/15 pb-2">
               <div class="space-y-1">
-                <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                  Ej på karta
+                <p
+                  class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/70"
+                  data-test="rules-map-surface-heading"
+                >
+                  {{ surfaceHeadingLabel }}
                 </p>
                 <p
-                  class="text-[11px] font-medium text-navy/55"
+                  class="text-xs font-medium text-navy/55"
                   data-test="rules-map-unplaced-count"
                 >
                   {{ surfaceStudents.length }} elever

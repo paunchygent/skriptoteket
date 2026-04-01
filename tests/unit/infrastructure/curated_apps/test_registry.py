@@ -61,3 +61,6 @@ def test_registry_marks_klassrumskartan_as_default_favorite() -> None:
 
     assert app is not None
     assert app.default_favorite is True
+    assert app.summary == (
+        "Skapa sittplatsscheman och grupper automatiskt och finjustera med drag-and-drop."
+    )

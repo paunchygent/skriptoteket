@@ -166,7 +166,10 @@ export function useClassroomPlannerRouteShell() {
       ]);
       await openInitialHomeWorkspace(selectedRosterId.value ?? resumableDraft?.draft.roster_id ?? null);
     } catch (error: unknown) {
-      bootstrapError.value = error instanceof Error ? error.message : "Kunde inte ladda Klassrumskartan.";
+      bootstrapError.value = normalizeClassroomPlannerUiError(
+        error,
+        "Kunde inte ladda Klassrumskartan.",
+      );
     } finally {
       isBootstrapping.value = false;
     }

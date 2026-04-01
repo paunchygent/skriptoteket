@@ -1,3 +1,11 @@
+/**
+ * Rules map canvas tests.
+ *
+ * These tests lock the map-surface contract for `Regler`, especially the
+ * no-classroom branch where the default planning view still needs to show the
+ * approved guidance copy and an actionable off-map roster.
+ */
+
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -44,6 +52,7 @@ describe("PlannerRulesMapCanvas", () => {
     const wrapper = mount(PlannerRulesMapCanvas, {
       props: {
         mapView: "planning_map",
+        rosterName: "SR24D",
         template,
         students,
         studentsById: { "student-1": students[0], "student-2": students[1] },
@@ -64,8 +73,17 @@ describe("PlannerRulesMapCanvas", () => {
 
     expect(wrapper.find('[data-test="rules-map-empty-state"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="rules-map-canvas"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="rules-map-surface-heading"]').text()).toBe("SR24D");
     expect(wrapper.get('[data-test="rules-map-unplaced-count"]').text()).toContain("2 elever");
     expect(wrapper.findAll('button[data-test^="rules-unplaced-student-"]')).toHaveLength(2);
+    expect(wrapper.get('[data-test="rules-map-view-planning"]').text()).toContain("Planeringsvy");
+    expect(wrapper.get('[data-test="rules-map-view-seating"]').text()).toContain("Klassrumsvy");
+    expect(wrapper.get('[data-test="rules-map-view-planning"]').attributes("style")).toContain(
+      "min-width:",
+    );
+    expect(wrapper.get('[data-test="rules-map-view-seating"]').attributes("style")).toContain(
+      "min-width:",
+    );
     expect(wrapper.get('[data-test="rules-unplaced-student-student-1"]').text()).toContain(
       "Ada Lovelace",
     );
@@ -87,6 +105,7 @@ describe("PlannerRulesMapCanvas", () => {
     const wrapper = mount(PlannerRulesMapCanvas, {
       props: {
         mapView: "planning_map",
+        rosterName: "SR24D",
         template,
         students,
         studentsById: { "student-1": students[0], "student-2": students[1] },
@@ -128,6 +147,7 @@ describe("PlannerRulesMapCanvas", () => {
     const wrapper = mount(PlannerRulesMapCanvas, {
       props: {
         mapView: "seating_arrangement",
+        rosterName: "SR24D",
         template: null,
         students: [
           { id: "student-1", display_name: "Ada Lovelace" },
@@ -140,7 +160,7 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.get('[data-test="rules-map-empty-state"]').text()).toContain(
       "Välj ett klassrum i arbetsytan Sittplatser och placera ut eleverna om du vill arbeta med regler direkt utifrån klassrummets möblering.",
     );
-    expect(wrapper.get('[data-test="rules-map-unplaced"]').text()).toContain("Ej på karta");
+    expect(wrapper.get('[data-test="rules-map-surface-heading"]').text()).toBe("Ej på karta");
     expect(wrapper.get('[data-test="rules-map-unplaced-count"]').text()).toContain("2 elever");
     expect(wrapper.get('[data-test="rules-map-unplaced-selected-count"]').text()).toContain(
       "1 valda",
@@ -151,5 +171,35 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.get('[data-test="rules-unplaced-student-student-2"]').attributes("aria-pressed"))
       .toBe("true");
     expect(wrapper.get('[data-test="rules-unplaced-student-order-student-2"]').text()).toBe("1");
+  });
+
+  it("shows the no-classroom guidance in the default planning view and keeps the roster actionable", () => {
+    const wrapper = mount(PlannerRulesMapCanvas, {
+      props: {
+        mapView: "planning_map",
+        rosterName: "SR24D",
+        template: null,
+        students: [
+          { id: "student-1", display_name: "Ada Lovelace" },
+          { id: "student-2", display_name: "Alan Turing" },
+        ],
+        pendingSelectedStudentIds: ["student-2"],
+      },
+    });
+
+    expect(wrapper.get('[data-test="rules-map-empty-state"]').text()).toContain(
+      "Välj ett klassrum i arbetsytan Sittplatser och placera ut eleverna om du vill arbeta med regler direkt utifrån klassrummets möblering.",
+    );
+    expect(wrapper.find('[data-test="rules-map-canvas"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="rules-map-surface-heading"]').text()).toBe("SR24D");
+    expect(wrapper.get('[data-test="rules-map-unplaced-count"]').text()).toContain("2 elever");
+    expect(wrapper.get('[data-test="rules-map-unplaced-selected-count"]').text()).toContain(
+      "1 valda",
+    );
+    expect(wrapper.find('[data-test="rules-map-unplaced-grid"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-1"]').attributes("aria-pressed"))
+      .toBe("false");
+    expect(wrapper.get('[data-test="rules-unplaced-student-student-2"]').attributes("aria-pressed"))
+      .toBe("true");
   });
 });

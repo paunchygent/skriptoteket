@@ -247,7 +247,7 @@ def _select_overview_template(page: Page, *, template_name: str) -> None:
     expect(template_select).to_have_value(matching_option["value"])
 
 
-def _assert_rules_workspace(page: Page) -> None:
+def _assert_rules_workspace(page: Page, *, roster_name: str) -> None:
     expect(
         page.locator('[data-test="rules-map-toolbar"] [data-test="rules-map-view-switch"]')
     ).to_be_visible(timeout=60000)
@@ -259,7 +259,10 @@ def _assert_rules_workspace(page: Page) -> None:
     expect(page.locator('[data-test="rules-map-canvas"]')).to_have_count(0)
     expect(page.locator('[data-test="rules-map-empty-state"]')).to_have_count(0)
     expect(page.locator('[data-test="rules-map-unplaced"]')).to_be_visible(timeout=60000)
+    expect(page.locator('[data-test="rules-map-surface-heading"]')).to_have_text(roster_name)
     expect(page.locator('[data-test="rules-map-unplaced-count"]')).to_contain_text("3 elever")
+    expect(page.locator('[data-test="rules-map-view-planning"]')).to_contain_text("Planeringsvy")
+    expect(page.locator('[data-test="rules-map-view-seating"]')).to_contain_text("Klassrumsvy")
     expect(
         page.locator('[data-test="rules-tool-near_teacher"]').get_by_text("Nära läraren")
     ).to_be_visible()
@@ -490,7 +493,7 @@ def main() -> None:
                 RULES_BOOTSTRAP_NOTICE,
                 timeout=60000,
             )
-        _assert_rules_workspace(page)
+        _assert_rules_workspace(page, roster_name=roster_name)
         page.screenshot(
             path=str(ARTIFACTS_DIR / "rules-bootstrap-planeringskarta.png"), full_page=True
         )
@@ -516,7 +519,7 @@ def main() -> None:
         login_to_app(page, base_url=base_url, email=config.email, password=config.password)
         open_class_workspace(page, roster_name=roster_name)
         focus_workspace_mode(page, label="Regler")
-        _assert_rules_workspace(page)
+        _assert_rules_workspace(page, roster_name=roster_name)
         page.screenshot(path=str(ARTIFACTS_DIR / "rules-planeringskarta.png"), full_page=True)
 
         _assert_switch_to_seating_arrangement_preserves_selection(page)

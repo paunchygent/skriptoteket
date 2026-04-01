@@ -19,6 +19,13 @@ import type { ComputedRef, Ref } from "vue";
 import { isApiError } from "../../api/client";
 import { discardPlannerSession } from "./plannerTransitionPolicies";
 import { normalizeAssignments, reindexGroups } from "./classroomPlannerStoreMutations";
+import {
+  normalizeClassroomPlannerRoster,
+  normalizeClassroomPlannerSmartRules,
+  normalizeClassroomPlannerTemplate,
+  normalizeClassroomPlannerWorkspace,
+} from "./classroomPlannerPayloadNormalization";
+import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
 import type {
   DraftHistoryStatus,
   DraftGroup,
@@ -66,28 +73,18 @@ export function createClassroomPlannerStateSupport(
   options: CreateClassroomPlannerStateSupportOptions,
 ) {
   function cloneRoster(nextRoster: Roster): Roster {
-    return {
-      ...nextRoster,
-      students: nextRoster.students.map((student) => ({ ...student })),
-    };
+    return normalizeClassroomPlannerRoster(nextRoster);
   }
 
   function cloneTemplate(nextTemplate: RoomTemplate): RoomTemplate {
-    return {
-      ...nextTemplate,
-      seats: nextTemplate.seats.map((seat) => ({ ...seat })),
-      fixtures: nextTemplate.fixtures.map((fixture) => ({ ...fixture })),
-    };
+    return normalizeClassroomPlannerTemplate(nextTemplate);
   }
 
   function normalizeMutationError(error: unknown, fallbackMessage: string): string {
     if (isApiError(error)) {
       return error.message || fallbackMessage;
     }
-    if (error instanceof Error && error.message) {
-      return error.message;
-    }
-    return fallbackMessage;
+    return normalizeClassroomPlannerUiError(error, fallbackMessage);
   }
 
   function normalizeSeatingPreferencesCollection(
@@ -110,46 +107,52 @@ export function createClassroomPlannerStateSupport(
   }
 
   function applyWorkspace(workspace: DraftWorkspaceResponse): void {
-    options.draft.value = workspace.draft;
-    options.roster.value = cloneRoster(workspace.roster);
-    options.template.value = workspace.template ? cloneTemplate(workspace.template) : null;
+    const normalizedWorkspace = normalizeClassroomPlannerWorkspace(workspace);
+
+    options.draft.value = normalizedWorkspace.draft;
+    options.roster.value = normalizedWorkspace.roster;
+    options.template.value = normalizedWorkspace.template ?? null;
     options.groups.value = reindexGroups(
-      [...workspace.groups].sort((left, right) => left.sort_order - right.sort_order),
+      [...normalizedWorkspace.groups].sort((left, right) => left.sort_order - right.sort_order),
     );
     options.groupAssignmentsByStudentId.value = normalizeAssignments(
-      workspace.group_assignments,
+      normalizedWorkspace.group_assignments,
       "group_id",
     );
     options.seatAssignmentsByStudentId.value = normalizeAssignments(
-      workspace.seat_assignments,
+      normalizedWorkspace.seat_assignments,
       "seat_id",
     );
-    options.historyStatus.value = workspace.history_status;
+    options.historyStatus.value = normalizedWorkspace.history_status;
     options.historyActionInFlight.value = false;
   }
 
   function applyRosterSmartRules(rules: RosterSmartRulesResponse): void {
+    const normalizedRules = normalizeClassroomPlannerSmartRules(rules);
+
     options.seatingPreferences.value = normalizeSeatingPreferencesCollection(
-      rules.seating_preferences,
+      normalizedRules.seating_preferences,
     );
-    options.relationshipRules.value = rules.relationship_rules.map((rule) => ({
+    options.relationshipRules.value = normalizedRules.relationship_rules.map((rule) => ({
       ...rule,
       student_ids: [...rule.student_ids],
     }));
-    options.smartRulesRevision.value = rules.revision;
+    options.smartRulesRevision.value = normalizedRules.revision;
     options.smartRuleLane.applyHydratedRules();
   }
 
   function applyDraftSaveAcknowledgement(workspace: DraftWorkspaceResponse): void {
-    if (!options.draft.value || options.draft.value.id !== workspace.draft.id) {
+    const normalizedWorkspace = normalizeClassroomPlannerWorkspace(workspace);
+
+    if (!options.draft.value || options.draft.value.id !== normalizedWorkspace.draft.id) {
       return;
     }
     options.draft.value = {
       ...options.draft.value,
-      revision: workspace.draft.revision,
-      last_opened_at: workspace.draft.last_opened_at,
+      revision: normalizedWorkspace.draft.revision,
+      last_opened_at: normalizedWorkspace.draft.last_opened_at,
     };
-    options.historyStatus.value = workspace.history_status;
+    options.historyStatus.value = normalizedWorkspace.history_status;
     options.historyActionInFlight.value = false;
   }
 
@@ -162,12 +165,14 @@ export function createClassroomPlannerStateSupport(
   }
 
   function replaceCurrentTemplate(nextTemplate: RoomTemplate): void {
-    if (options.template.value?.id !== nextTemplate.id) {
+    const normalizedTemplate = cloneTemplate(nextTemplate);
+
+    if (options.template.value?.id !== normalizedTemplate.id) {
       return;
     }
 
-    const seatIds = new Set(nextTemplate.seats.map((seat) => seat.id));
-    options.template.value = cloneTemplate(nextTemplate);
+    const seatIds = new Set(normalizedTemplate.seats.map((seat) => seat.id));
+    options.template.value = normalizedTemplate;
     options.seatAssignmentsByStudentId.value = Object.fromEntries(
       Object.entries(options.seatAssignmentsByStudentId.value).filter(([, seatId]) => {
         return typeof seatId === "string" && seatIds.has(seatId);
@@ -176,12 +181,14 @@ export function createClassroomPlannerStateSupport(
   }
 
   function replaceCurrentRoster(nextRoster: Roster): void {
-    if (options.roster.value?.id !== nextRoster.id) {
+    const normalizedRoster = cloneRoster(nextRoster);
+
+    if (options.roster.value?.id !== normalizedRoster.id) {
       return;
     }
 
-    const studentIds = new Set(nextRoster.students.map((student) => student.id));
-    options.roster.value = cloneRoster(nextRoster);
+    const studentIds = new Set(normalizedRoster.students.map((student) => student.id));
+    options.roster.value = normalizedRoster;
     options.groupAssignmentsByStudentId.value = Object.fromEntries(
       Object.entries(options.groupAssignmentsByStudentId.value).filter(([studentId]) => {
         return studentIds.has(studentId);

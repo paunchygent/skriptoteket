@@ -13,6 +13,7 @@ type RulesMapView = "planning_map" | "seating_arrangement";
 
 withDefaults(defineProps<{
   mapView: RulesMapView;
+  rosterName?: string | null;
   canShowSeatingArrangement?: boolean;
   seatingArrangementUnavailableMessage?: string | null;
   template?: RoomTemplate | null;
@@ -24,6 +25,7 @@ withDefaults(defineProps<{
   smartRuleMarkersByStudentId?: Record<string, string[]>;
 }>(), {
   canShowSeatingArrangement: false,
+  rosterName: null,
   seatingArrangementUnavailableMessage: null,
   template: null,
   students: () => [],
@@ -44,6 +46,7 @@ const emit = defineEmits<{
   <div>
     <PlannerRulesMapCanvas
       :map-view="mapView"
+      :roster-name="rosterName"
       :can-show-seating-arrangement="canShowSeatingArrangement"
       :seating-arrangement-unavailable-message="seatingArrangementUnavailableMessage"
       :template="template"

@@ -163,6 +163,8 @@ This repo uses a **Docs-as-Code** contract to keep documentation consistent and 
   `docs/backlog/stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md`
 - Klassrumskartan ST-29-06 no-classroom rules fallback slice:
   `docs/backlog/prs/pr-0185-st-29-06-rules-no-classroom-fallback-and-organized-off-map-roster.md`
+- Klassrumskartan ST-29-06 root-cause remediation slice:
+  `docs/backlog/prs/pr-0187-st-29-06-planner-no-classroom-root-cause-hardening-and-error-boundary-remediation.md`
 - Klassrumskartan ST-29-10 mockup:
   `docs/mockups/st-29-10-first-run-workspace-gating/index.html`
 - Klassrumskartan ST-29-06 mockup:

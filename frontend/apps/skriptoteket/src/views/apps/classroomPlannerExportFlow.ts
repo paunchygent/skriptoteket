@@ -12,6 +12,7 @@ import { computed, ref, watch } from "vue";
 import { isApiError } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { PlanDraft, PlanDraftKind } from "./classroomPlannerTypes";
+import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
 import {
   hasAcknowledgedRecoveredExportNotice,
   markRecoveredExportNoticeAcknowledged,
@@ -93,10 +94,7 @@ function normalizeExportError(error: unknown, fallbackMessage: string): string {
   if (isApiError(error)) {
     return error.message || fallbackMessage;
   }
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallbackMessage;
+  return normalizeClassroomPlannerUiError(error, fallbackMessage);
 }
 
 class ExportPollingTimeoutError extends Error {

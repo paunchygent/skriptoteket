@@ -33,6 +33,7 @@ const props = withDefaults(
     disabled?: boolean;
     columns?: number;
     width?: "responsive" | "full" | "auto";
+    equalizeOptionWidth?: boolean;
   }>(),
   {
     ariaLabel: undefined,
@@ -41,6 +42,7 @@ const props = withDefaults(
     disabled: false,
     columns: undefined,
     width: "responsive",
+    equalizeOptionWidth: false,
   },
 );
 
@@ -79,6 +81,16 @@ const containerStyle = computed(() => {
 
   return {
     gridTemplateColumns: `repeat(${columnCount.value}, minmax(0, 1fr))`,
+  };
+});
+const equalizedButtonStyle = computed<Record<string, string> | undefined>(() => {
+  if (!props.equalizeOptionWidth || props.options.length === 0) {
+    return undefined;
+  }
+
+  const longestLabelLength = Math.max(...props.options.map((option) => option.label.length));
+  return {
+    minWidth: `${longestLabelLength + 2}ch`,
   };
 });
 
@@ -373,6 +385,7 @@ onScopeDispose(() => {
           option.value === props.modelValue ? 'text-canvas' : 'text-navy/70 hover:text-navy',
           props.disabled || option.disabled ? 'opacity-40 cursor-not-allowed hover:text-navy/70' : '',
         ]"
+        :style="equalizedButtonStyle"
         @click="selectOption(option)"
         @keydown="onOptionKeydown($event, index)"
       >

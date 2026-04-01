@@ -83,8 +83,8 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED,
                 title="Klassrumskartan",
                 summary=(
-                    "Planera elevplaceringar och grupper med drag-and-drop. "
-                    "Innehåller stöd för olika lektionslägen."
+                    "Skapa sittplatsscheman och grupper automatiskt och "
+                    "finjustera med drag-and-drop."
                 ),
                 min_role=Role.USER,
                 default_favorite=True,

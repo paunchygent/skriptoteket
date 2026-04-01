@@ -16,6 +16,9 @@
 import type { Ref } from "vue";
 
 import {
+  normalizeClassroomPlannerSummary,
+} from "./classroomPlannerPayloadNormalization";
+import {
   preparePlannerAbandonDraft,
   preparePlannerExit,
   preparePlannerExport,
@@ -307,9 +310,10 @@ export function createClassroomPlannerLifecycle(
   }
 
   async function getClassWorkspaceSummary(rosterId: string): Promise<ClassWorkspaceSummary> {
-    return await options.apiGet<ClassWorkspaceSummary>(
+    const summary = await options.apiGet<ClassWorkspaceSummary>(
       `/api/v1/apps/classroom.group-seating-studio/rosters/${rosterId}/workspace-summary`,
     );
+    return normalizeClassroomPlannerSummary(summary);
   }
 
   async function abandonDraft(
