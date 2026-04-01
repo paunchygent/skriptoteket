@@ -18,6 +18,7 @@ import {
   type GameRuntimeLoadState,
   type GameRuntimeFactory,
 } from "../../components/apps/flunk-out-frenzy/gameHostTypes";
+import { createInitialHudSnapshot } from "../../components/apps/flunk-out-frenzy/game/core/runtimeTypes";
 import { useFlunkOutFrenzyBootstrap } from "./useFlunkOutFrenzyBootstrap";
 
 const props = defineProps<{
@@ -46,13 +47,7 @@ const isSettingsOpen = ref(false);
 const runtimeBootError = ref<string | null>(null);
 const runtimeLoadState = ref<GameRuntimeLoadState>("idle");
 const runtimeHostKey = ref(0);
-const hud = ref<GameHudSnapshot>({
-  score: 0,
-  ballsRemaining: 3,
-  multiplier: 1,
-  status: "ready",
-  muted: false,
-});
+const hud = ref<GameHudSnapshot>(createInitialHudSnapshot());
 const hostFrame = ref<{
   width: number | null;
   height: number | null;
@@ -148,13 +143,7 @@ function onRuntimeBootError(message: string | null): void {
 
   if (message) {
     runtimeLoadState.value = "error";
-    hud.value = {
-      score: 0,
-      ballsRemaining: 3,
-      multiplier: 1,
-      status: "ready",
-      muted: false,
-    };
+    hud.value = createInitialHudSnapshot();
   }
 }
 
@@ -202,13 +191,7 @@ function onToggleMute(): void {
 function retryRuntimeHost(): void {
   runtimeBootError.value = null;
   runtimeLoadState.value = "idle";
-  hud.value = {
-    score: 0,
-    ballsRemaining: 3,
-    multiplier: 1,
-    status: "ready",
-    muted: false,
-  };
+  hud.value = createInitialHudSnapshot();
   runtimeHostKey.value += 1;
 }
 
@@ -339,6 +322,21 @@ onBeforeUnmount(() => {
           <div class="fof-plaque">
             <span>Multiplikator</span>
             <strong>x{{ hud.multiplier }}</strong>
+          </div>
+          <div class="fof-plaque">
+            <span>Bonus</span>
+            <strong>{{ hud.bonus.points.toLocaleString("sv-SE") }}</strong>
+          </div>
+          <div class="fof-plaque">
+            <span>Jackpot</span>
+            <strong>
+              {{ hud.jackpot.points.toLocaleString("sv-SE") }}
+              {{ hud.jackpot.lit ? "• Tänd" : "• Släckt" }}
+            </strong>
+          </div>
+          <div class="fof-plaque">
+            <span>Shoot again</span>
+            <strong>{{ hud.ballLifecycle.shootAgainLit ? "Tänd" : "Släckt" }}</strong>
           </div>
         </aside>
 

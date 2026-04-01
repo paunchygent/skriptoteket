@@ -17,7 +17,15 @@ type CueName =
   | "bumper-hit"
   | "sling-hit"
   | "rollover-lit"
+  | "tripwire-crossed"
+  | "standup-target-hit"
+  | "popup-target-hit"
+  | "gate-passed"
   | "late-bank-complete"
+  | "bonus-awarded"
+  | "jackpot-lit"
+  | "jackpot-awarded"
+  | "shoot-again-lit"
   | "ball-drained"
   | "game-over";
 
@@ -40,7 +48,15 @@ export class AudioDirector implements RuntimeAudioDirector {
     this.cues.set("bumper-hit", this.createCue(660, 120, 0.16));
     this.cues.set("sling-hit", this.createCue(430, 96, 0.1, "triangle"));
     this.cues.set("rollover-lit", this.createCue(570, 76, 0.08, "triangle"));
+    this.cues.set("tripwire-crossed", this.createCue(390, 60, 0.07, "triangle"));
+    this.cues.set("standup-target-hit", this.createCue(520, 92, 0.09, "square"));
+    this.cues.set("popup-target-hit", this.createCue(720, 105, 0.1));
+    this.cues.set("gate-passed", this.createCue(470, 55, 0.06, "triangle"));
     this.cues.set("late-bank-complete", this.createCue(880, 240, 0.18));
+    this.cues.set("bonus-awarded", this.createCue(760, 210, 0.16, "triangle"));
+    this.cues.set("jackpot-lit", this.createCue(940, 120, 0.14));
+    this.cues.set("jackpot-awarded", this.createCue(1_060, 280, 0.2));
+    this.cues.set("shoot-again-lit", this.createCue(640, 170, 0.14, "square"));
     this.cues.set("ball-drained", this.createCue(180, 240, 0.16, "triangle"));
     this.cues.set("game-over", this.createCue(120, 360, 0.18, "sawtooth"));
   }
@@ -70,8 +86,32 @@ export class AudioDirector implements RuntimeAudioDirector {
         case "rollover-lit":
           this.playCue("rollover-lit");
           break;
+        case "tripwire-crossed":
+          this.playCue("tripwire-crossed");
+          break;
+        case "standup-target-hit":
+          this.playCue("standup-target-hit");
+          break;
+        case "popup-target-hit":
+          this.playCue("popup-target-hit");
+          break;
+        case "gate-passed":
+          this.playCue("gate-passed");
+          break;
         case "late-bank-complete":
           this.playCue("late-bank-complete");
+          break;
+        case "bonus-awarded":
+          this.playCue("bonus-awarded");
+          break;
+        case "jackpot-lit":
+          this.playCue("jackpot-lit");
+          break;
+        case "jackpot-awarded":
+          this.playCue("jackpot-awarded");
+          break;
+        case "shoot-again-lit":
+          this.playCue("shoot-again-lit");
           break;
         case "ball-drained":
           this.playCue("ball-drained");

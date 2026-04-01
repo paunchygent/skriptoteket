@@ -261,8 +261,48 @@ export class PixiRenderer implements RuntimeRenderer {
           }
           break;
         }
+        case "tripwire-crossed": {
+          const tripwire = PROTOTYPE_ALPHA_TABLE.tripwires.find((item) => item.tag === effect.tag);
+          if (tripwire) {
+            this.spawnPulse(tripwire.x, tripwire.y, 28, 0x6be9ff, 140);
+          }
+          break;
+        }
+        case "standup-target-hit": {
+          const target = PROTOTYPE_ALPHA_TABLE.standupTargets.find((item) => item.tag === effect.tag);
+          if (target) {
+            this.spawnPulse(target.x, target.y, 24, 0xffc769, 155);
+          }
+          break;
+        }
+        case "popup-target-hit": {
+          const target = PROTOTYPE_ALPHA_TABLE.popupTargets.find((item) => item.tag === effect.tag);
+          if (target) {
+            this.spawnPulse(target.x, target.y, target.radius + 10, 0xff8df0, 165);
+          }
+          break;
+        }
+        case "gate-passed": {
+          const gate = PROTOTYPE_ALPHA_TABLE.gates.find((item) => item.tag === effect.tag);
+          if (gate) {
+            this.spawnPulse(gate.x, gate.y, 22, 0x9ee081, 130);
+          }
+          break;
+        }
         case "late-bank-complete":
           this.spawnPulse(300, 146, 110, 0xffee8d, 280);
+          break;
+        case "bonus-awarded":
+          this.spawnPulse(300, 1030, 72, 0xffcf7c, 240);
+          break;
+        case "jackpot-lit":
+          this.spawnPulse(300, 250, 48, 0xff8df0, 200);
+          break;
+        case "jackpot-awarded":
+          this.spawnPulse(300, 420, 126, 0xff8df0, 300);
+          break;
+        case "shoot-again-lit":
+          this.spawnPulse(PROTOTYPE_ALPHA_TABLE.ball.spawn.x, 930, 42, 0x8dffcf, 220);
           break;
         case "ball-drained":
           this.spawnPulse(300, 1136, 54, 0xff5d92, 200);

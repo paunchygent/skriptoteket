@@ -15,6 +15,7 @@ import type {
   GameHudSnapshot,
   GameRuntimeFactoryOptions,
 } from "../../components/apps/flunk-out-frenzy/gameHostTypes";
+import { createInitialHudSnapshot } from "../../components/apps/flunk-out-frenzy/game/core/runtimeTypes";
 
 const { apiGet } = vi.hoisted(() => ({
   apiGet: vi.fn(),
@@ -47,13 +48,7 @@ class FakeRuntime {
   private hostElement: HTMLElement | null = null;
   private hudListener: ((payload: GameHudSnapshot) => void) | null = null;
   private readonly canvas = document.createElement("canvas");
-  private hud: GameHudSnapshot = {
-    score: 0,
-    ballsRemaining: 3,
-    multiplier: 1,
-    status: "ready",
-    muted: false,
-  };
+  private hud: GameHudSnapshot = createInitialHudSnapshot();
 
   mount(hostElement: HTMLElement): void {
     this.hostElement = hostElement;
@@ -91,9 +86,7 @@ class FakeRuntime {
 
   restart(): void {
     this.hud = {
-      score: 0,
-      ballsRemaining: 3,
-      multiplier: 1,
+      ...createInitialHudSnapshot(),
       status: "running",
       muted: this.hud.muted,
     };

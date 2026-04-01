@@ -2,7 +2,7 @@
 type: pr
 id: PR-0191
 title: "Flunk-Out Frenzy: mechanics foundation reassessment and go/no-go"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-01
 updated: 2026-04-01
@@ -16,6 +16,28 @@ acceptance_criteria:
   - "The reassessment records whether the runtime, physics, and rules boundaries stayed within file-size and responsibility targets after `PR-0188` through `PR-0190`."
   - "The follow-on mechanics backlog is either confirmed as-is or explicitly resoped before `PR-0192` through `PR-0195` are allowed to proceed."
 ---
+
+## Decision: GO (2026-04-01)
+
+The reassessment of the foundation tranche (`PR-0188` through `PR-0190`) confirms
+that the modular architecture for Flunk-Out Frenzy is stable, performant, and
+correctly decoupled.
+
+### Architectural findings:
+- **Module Boundaries**: The separation between `PhysicsWorld` (Rapier),
+  `RuleEngine` (pure state transitions), and `GameRuntime` (host integration) is
+  strictly enforced.
+- **File Sizes**: All critical modules remain under the 500 LOC target
+  (`PhysicsWorld.ts` is at 426 LOC).
+- **Event Surface**: The `MachineEvent` and `GameEffectEvent` vocabularies are
+  rich enough to describe complex pinball mechanics without leaking
+  implementation details.
+- **Verification**: End-to-end live checks via the `__FOF_DEBUG__` interface
+  confirmed that semantic events (e.g., target hits) correctly trigger complex
+  rule outcomes (e.g., jackpot lit and awarded) and HUD updates.
+
+The tranche-two physical-fidelity and advanced-device work (`PR-0192` through
+`PR-0195`) is cleared to proceed as planned.
 
 ## Problem
 

@@ -2,7 +2,7 @@
 type: pr
 id: PR-0188
 title: "Flunk-Out Frenzy: machine-event contract expansion and PhysicsWorld decomposition"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-01
 updated: 2026-04-01
@@ -85,3 +85,24 @@ Manual/live:
 - Collapse event translation back into `PhysicsWorld.ts`.
 - Restore the previous `MachineEvent` union if downstream modules are not yet
   consuming the richer surface.
+
+## Implementation summary
+
+- Expanded
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/physicsTypes.ts`
+  so the machine-event contract can already represent tripwires, targets,
+  gates, launch-lane entry, capture or eject, and save semantics without
+  exposing Rapier details.
+- Added
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/colliderMeta.ts`
+  for typed collider metadata and
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/machineEventEmitter.ts`
+  for contact-to-event translation and authored impulse handling.
+- Reduced
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts`
+  from 504 lines to 420 lines so the world class is back to orchestration,
+  stepping, snapshots, and command handling.
+- Updated
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.spec.ts`
+  to keep the existing authored-zone behavior locked while also compile-checking
+  the widened future-facing event surface.

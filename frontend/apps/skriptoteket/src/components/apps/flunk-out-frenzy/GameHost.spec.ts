@@ -11,18 +11,13 @@ import { describe, expect, it, vi } from "vitest";
 
 import GameHost from "./GameHost.vue";
 import type { GameHostApi, GameHudSnapshot } from "./gameHostTypes";
+import { createInitialHudSnapshot } from "./game/core/runtimeTypes";
 
 class FakeRuntime {
   private hostElement: HTMLElement | null = null;
   private hudListener: ((hud: GameHudSnapshot) => void) | null = null;
   private readonly canvas = document.createElement("canvas");
-  private hud: GameHudSnapshot = {
-    score: 0,
-    ballsRemaining: 3,
-    multiplier: 1,
-    status: "ready",
-    muted: false,
-  };
+  private hud: GameHudSnapshot = createInitialHudSnapshot();
 
   public readonly dispose = vi.fn(() => {
     this.canvas.remove();
@@ -64,9 +59,7 @@ class FakeRuntime {
 
   restart(): void {
     this.hud = {
-      score: 0,
-      ballsRemaining: 3,
-      multiplier: 1,
+      ...createInitialHudSnapshot(),
       status: "running",
       muted: this.hud.muted,
     };

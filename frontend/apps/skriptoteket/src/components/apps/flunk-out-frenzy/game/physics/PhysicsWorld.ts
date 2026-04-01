@@ -12,19 +12,18 @@ import type { RuntimeCommand } from "../core/runtimeTypes";
 import {
   PROTOTYPE_ALPHA_TABLE,
   type PrototypeAlphaTable,
-  type TableBumperDefinition,
-  type TableFlipperDefinition,
-  type TablePoint,
-  type TableSlingDefinition,
 } from "../table/prototypeAlphaTable";
+import type {
+  TableBumperDefinition,
+  TableFlipperDefinition,
+  TablePoint,
+  TableSlingDefinition,
+} from "../table/tableDefinitionTypes";
+import type { ColliderMeta } from "./colliderMeta";
+import { createLaneDevices } from "./createLaneDevices";
+import { createTargetDevices } from "./createTargetDevices";
+import { collectMachineEvents } from "./machineEventEmitter";
 import type { MachineEvent, PhysicsSnapshot } from "./physicsTypes";
-
-type ColliderMeta =
-  | { kind: "ball"; tag: "ball/main" }
-  | { kind: "bumper"; tag: string; center: TablePoint; impulse: number }
-  | { kind: "sling"; tag: string; side: "left" | "right"; impulse: TablePoint }
-  | { kind: "rollover"; tag: string }
-  | { kind: "drain"; tag: string };
 
 export class PhysicsWorld {
   private world!: RAPIER.World;
@@ -149,11 +148,20 @@ export class PhysicsWorld {
     this.world.timestep = dtSeconds;
     this.world.step(this.eventQueue);
 
-    const events = this.collectMachineEvents();
+    const stepResult = collectMachineEvents({
+      eventQueue: this.eventQueue,
+      colliderMetaByHandle: this.colliderMetaByHandle,
+      cooldowns: this.cooldowns,
+      ballBody: this.ballBody,
+      table: this.table,
+    });
+    if (stepResult.shouldRemoveBall) {
+      this.removeBall();
+    }
     this.wasLaunchPressed = this.launchPressed;
     this.wasLeftPressed = this.leftPressed;
     this.wasRightPressed = this.rightPressed;
-    return events;
+    return stepResult.events;
   }
 
   currentSnapshot(): PhysicsSnapshot {
@@ -206,18 +214,20 @@ export class PhysicsWorld {
       this.buildSling(sling);
     }
 
-    for (const rollover of this.table.rollovers) {
-      const sensor = this.world.createCollider(
-        RAPIER.ColliderDesc.cuboid(rollover.width / 2, rollover.height / 2)
-          .setTranslation(rollover.x, rollover.y)
-          .setSensor(true)
-          .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-      );
-      this.colliderMetaByHandle.set(sensor.handle, {
-        kind: "rollover",
-        tag: rollover.tag,
-      });
-    }
+    createLaneDevices({
+      world: this.world,
+      colliderMetaByHandle: this.colliderMetaByHandle,
+      rollovers: this.table.rollovers,
+      tripwires: this.table.tripwires,
+      gates: this.table.gates,
+    });
+
+    createTargetDevices({
+      world: this.world,
+      colliderMetaByHandle: this.colliderMetaByHandle,
+      standupTargets: this.table.standupTargets,
+      popupTargets: this.table.popupTargets,
+    });
 
     const drain = this.world.createCollider(
       RAPIER.ColliderDesc.cuboid(this.table.drain.width / 2, this.table.drain.height / 2)
@@ -372,94 +382,6 @@ export class PhysicsWorld {
     }
 
     this.launchChargeMs = 0;
-  }
-
-  private collectMachineEvents(): MachineEvent[] {
-    const events: MachineEvent[] = [];
-    let shouldRemoveBall = false;
-
-    this.eventQueue.drainCollisionEvents((handle1, handle2, started) => {
-      if (!started) {
-        return;
-      }
-
-      const meta1 = this.colliderMetaByHandle.get(handle1);
-      const meta2 = this.colliderMetaByHandle.get(handle2);
-      if (!meta1 || !meta2) {
-        return;
-      }
-
-      const sensorMeta = meta1.kind === "ball" ? meta2 : meta2.kind === "ball" ? meta1 : null;
-      if (!sensorMeta || !this.ballBody) {
-        return;
-      }
-
-      if (sensorMeta.kind === "bumper") {
-        if (this.cooldowns.has(sensorMeta.tag)) {
-          return;
-        }
-        this.cooldowns.set(sensorMeta.tag, 90);
-        this.fireBumperImpulse(sensorMeta.center, sensorMeta.impulse);
-        events.push({ type: "bumper-fired", tag: sensorMeta.tag });
-        return;
-      }
-
-      if (sensorMeta.kind === "sling") {
-        if (this.cooldowns.has(sensorMeta.tag)) {
-          return;
-        }
-        this.cooldowns.set(sensorMeta.tag, 110);
-        this.ballBody.applyImpulse(sensorMeta.impulse, true);
-        events.push({
-          type: "sling-fired",
-          tag: sensorMeta.tag,
-          side: sensorMeta.side,
-        });
-        return;
-      }
-
-      if (sensorMeta.kind === "rollover") {
-        events.push({ type: "rollover-enter", tag: sensorMeta.tag });
-        return;
-      }
-
-      if (sensorMeta.kind === "drain") {
-        events.push({ type: "drain-enter", tag: sensorMeta.tag });
-        shouldRemoveBall = true;
-      }
-    });
-
-    if (this.ballBody && this.ballBody.translation().y > this.table.board.height + 60) {
-      events.push({ type: "drain-enter", tag: this.table.drain.tag });
-      shouldRemoveBall = true;
-    }
-
-    if (shouldRemoveBall) {
-      this.removeBall();
-    }
-
-    return events;
-  }
-
-  private fireBumperImpulse(center: TablePoint, impulse: number): void {
-    if (!this.ballBody) {
-      return;
-    }
-
-    const ballPosition = this.ballBody.translation();
-    const direction = {
-      x: ballPosition.x - center.x,
-      y: ballPosition.y - center.y,
-    };
-    const magnitude = Math.hypot(direction.x, direction.y) || 1;
-
-    this.ballBody.applyImpulse(
-      {
-        x: (direction.x / magnitude) * impulse,
-        y: (direction.y / magnitude) * impulse,
-      },
-      true,
-    );
   }
 
   private ballIsInLaunchLane(): boolean {

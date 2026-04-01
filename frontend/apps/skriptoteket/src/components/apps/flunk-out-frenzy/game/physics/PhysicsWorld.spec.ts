@@ -11,6 +11,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import type { PrototypeAlphaTable } from "../table/prototypeAlphaTable";
 import type { PhysicsWorld as PhysicsWorldType } from "./PhysicsWorld";
+import type { MachineEvent } from "./physicsTypes";
 
 let PhysicsWorld: typeof PhysicsWorldType;
 let PROTOTYPE_ALPHA_TABLE: PrototypeAlphaTable;
@@ -124,5 +125,73 @@ describe("PhysicsWorld", () => {
     } finally {
       world.dispose();
     }
+  });
+
+  it("emits tripwire, target, and gate events from the authored device zones", async () => {
+    const world = await PhysicsWorld.create();
+
+    try {
+      world.spawnBall({
+        x: PROTOTYPE_ALPHA_TABLE.tripwires[0].x,
+        y: PROTOTYPE_ALPHA_TABLE.tripwires[0].y,
+      });
+      expect(world.step(16)).toContainEqual({
+        type: "tripwire-crossed",
+        tag: PROTOTYPE_ALPHA_TABLE.tripwires[0].tag,
+      });
+
+      world.spawnBall({
+        x: PROTOTYPE_ALPHA_TABLE.standupTargets[0].x,
+        y: PROTOTYPE_ALPHA_TABLE.standupTargets[0].y,
+      });
+      expect(world.step(16)).toContainEqual({
+        type: "standup-target-hit",
+        tag: PROTOTYPE_ALPHA_TABLE.standupTargets[0].tag,
+      });
+
+      world.spawnBall({
+        x: PROTOTYPE_ALPHA_TABLE.popupTargets[0].x,
+        y: PROTOTYPE_ALPHA_TABLE.popupTargets[0].y,
+      });
+      expect(world.step(16)).toContainEqual({
+        type: "popup-target-hit",
+        tag: PROTOTYPE_ALPHA_TABLE.popupTargets[0].tag,
+      });
+
+      world.spawnBall({
+        x: PROTOTYPE_ALPHA_TABLE.gates[0].x,
+        y: PROTOTYPE_ALPHA_TABLE.gates[0].y,
+      });
+      expect(world.step(16)).toContainEqual({
+        type: "gate-passed",
+        tag: PROTOTYPE_ALPHA_TABLE.gates[0].tag,
+      });
+    } finally {
+      world.dispose();
+    }
+  });
+
+  it("supports the expanded future-facing machine event surface", () => {
+    const futureEvents: MachineEvent[] = [
+      { type: "tripwire-crossed", tag: "tripwire/main-return" },
+      { type: "standup-target-hit", tag: "target/jock-left" },
+      { type: "popup-target-hit", tag: "target/pop-center" },
+      { type: "gate-passed", tag: "gate/orbit-return" },
+      { type: "launch-lane-enter", tag: "lane/launch" },
+      { type: "ball-captured", tag: "capture/hole-left", deviceKind: "hole" },
+      { type: "ball-ejected", tag: "capture/kickout-left", deviceKind: "kickout" },
+      { type: "ball-saved", tag: "save/right-kickback", deviceKind: "kickback" },
+    ];
+
+    expect(futureEvents.map((event) => event.type)).toEqual([
+      "tripwire-crossed",
+      "standup-target-hit",
+      "popup-target-hit",
+      "gate-passed",
+      "launch-lane-enter",
+      "ball-captured",
+      "ball-ejected",
+      "ball-saved",
+    ]);
   });
 });

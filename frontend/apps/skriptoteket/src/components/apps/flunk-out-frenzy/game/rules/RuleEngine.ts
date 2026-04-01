@@ -1,89 +1,107 @@
 /**
  * Prototype-alpha scoring and progression rules for Flunk-Out Frenzy.
  *
- * The rule engine translates semantic machine events into score, multiplier,
- * and ball-lifecycle outcomes. It stays independent from Rapier so the
- * simulation can remain a pure machine-facts layer.
+ * The rule engine translates semantic machine events into score, bonus,
+ * jackpot, and ball-lifecycle outcomes. `PR-0190` keeps this file as a thin
+ * orchestrator over smaller pure rule helpers so the simulation can grow
+ * without reintroducing a monolithic controller.
  */
 
 import type { MachineEvent } from "../physics/physicsTypes";
 import { PROTOTYPE_ALPHA_LATE_TAGS, PROTOTYPE_ALPHA_TABLE } from "../table/prototypeAlphaTable";
-
-export interface RuleSnapshot {
-  score: number;
-  ballsRemaining: number;
-  multiplier: number;
-  litLaneTags: string[];
-  roundFinished: boolean;
-}
-
-export interface RuleStepResult {
-  snapshot: RuleSnapshot;
-  shouldRespawnBall: boolean;
-}
+import {
+  createInitialBallLifecycleState,
+  lightShootAgain,
+  resolveDrain,
+} from "./ballLifecycleState";
+import {
+  createInitialBonusJackpotState,
+  currentBonusSnapshot,
+  currentJackpotSnapshot,
+  handleBonusJackpotMachineEvent,
+  settleBonusJackpotOnDrain,
+} from "./bonusJackpotState";
+import {
+  awardFlatPoints,
+  awardScaledPoints,
+  createInitialScoreState,
+  handleLaneRollover,
+  resetBallScopedScoreState,
+} from "./scoreState";
+import type {
+  RuleEvent,
+  RuleSnapshot,
+  RuleStepResult,
+} from "./ruleTypes";
 
 const SCORE_VALUES = {
   bumper: 250,
   sling: 10,
   rollover: 50,
-  lateBonus: 2000,
 } as const;
 
 export class RuleEngine {
-  private score: number = 0;
-  private ballsRemaining: number = PROTOTYPE_ALPHA_TABLE.ballsPerGame;
-  private multiplier: number = 1;
-  private roundFinished = false;
-  private readonly litLaneTags = new Set<string>();
+  private scoreState = createInitialScoreState();
+  private bonusJackpotState = createInitialBonusJackpotState();
+  private ballLifecycleState = createInitialBallLifecycleState(
+    PROTOTYPE_ALPHA_TABLE.ballsPerGame,
+  );
 
   startGame(): RuleSnapshot {
-    this.score = 0;
-    this.ballsRemaining = PROTOTYPE_ALPHA_TABLE.ballsPerGame;
-    this.multiplier = 1;
-    this.roundFinished = false;
-    this.litLaneTags.clear();
+    this.scoreState = createInitialScoreState();
+    this.bonusJackpotState = createInitialBonusJackpotState();
+    this.ballLifecycleState = createInitialBallLifecycleState(
+      PROTOTYPE_ALPHA_TABLE.ballsPerGame,
+    );
     return this.currentSnapshot();
   }
 
   currentSnapshot(): RuleSnapshot {
     return {
-      score: this.score,
-      ballsRemaining: this.ballsRemaining,
-      multiplier: this.multiplier,
-      litLaneTags: [...this.litLaneTags],
-      roundFinished: this.roundFinished,
+      score: this.scoreState.score,
+      multiplier: this.scoreState.multiplier,
+      litLaneTags: [...this.scoreState.litLaneTags],
+      bonus: currentBonusSnapshot(this.bonusJackpotState),
+      jackpot: currentJackpotSnapshot(this.bonusJackpotState),
+      ballLifecycle: this.ballLifecycleState,
     };
   }
 
   handleMachineEvents(events: MachineEvent[]): RuleStepResult {
-    if (this.roundFinished) {
+    if (this.ballLifecycleState.roundFinished) {
       return {
         snapshot: this.currentSnapshot(),
         shouldRespawnBall: false,
+        ruleEvents: [],
       };
     }
 
     let shouldRespawnBall = false;
+    const ruleEvents: RuleEvent[] = [];
 
     for (const event of events) {
       switch (event.type) {
         case "bumper-fired":
-          this.award(SCORE_VALUES.bumper);
+          this.scoreState = awardScaledPoints(this.scoreState, SCORE_VALUES.bumper);
           break;
         case "sling-fired":
-          this.award(SCORE_VALUES.sling);
+          this.scoreState = awardScaledPoints(this.scoreState, SCORE_VALUES.sling);
           break;
         case "rollover-enter":
-          this.handleRollover(event.tag);
+          this.handleRollover(event.tag, ruleEvents);
+          break;
+        case "tripwire-crossed":
+        case "standup-target-hit":
+        case "popup-target-hit":
+        case "gate-passed":
+        case "launch-lane-enter":
+        case "ball-captured":
+        case "ball-ejected":
+        case "ball-saved":
+          this.handleBonusJackpotEvent(event, ruleEvents);
           break;
         case "drain-enter":
-          if (this.ballsRemaining > 0) {
-            this.ballsRemaining -= 1;
-          }
-          this.multiplier = 1;
-          this.litLaneTags.clear();
-          shouldRespawnBall = this.ballsRemaining > 0;
-          this.roundFinished = this.ballsRemaining === 0;
+          shouldRespawnBall = this.handleDrain(ruleEvents);
           break;
       }
     }
@@ -91,28 +109,53 @@ export class RuleEngine {
     return {
       snapshot: this.currentSnapshot(),
       shouldRespawnBall,
+      ruleEvents,
     };
   }
 
-  private handleRollover(tag: string): void {
-    if (this.litLaneTags.has(tag)) {
-      return;
+  private handleRollover(tag: string, ruleEvents: RuleEvent[]): void {
+    const rolloverResult = handleLaneRollover(
+      this.scoreState,
+      tag,
+      PROTOTYPE_ALPHA_LATE_TAGS,
+      SCORE_VALUES.rollover,
+    );
+    this.scoreState = rolloverResult.nextState;
+
+    if (rolloverResult.lateBankCompleted) {
+      ruleEvents.push({
+        type: "late-bank-complete",
+        multiplier: this.scoreState.multiplier,
+      });
     }
 
-    this.litLaneTags.add(tag);
-    this.award(SCORE_VALUES.rollover);
-
-    const allLanesLit = PROTOTYPE_ALPHA_LATE_TAGS.every((laneTag) => this.litLaneTags.has(laneTag));
-    if (!allLanesLit) {
-      return;
+    if (rolloverResult.newlyLit) {
+      this.handleBonusJackpotEvent({ type: "rollover-enter", tag }, ruleEvents);
     }
-
-    this.multiplier = Math.min(this.multiplier + 1, 5);
-    this.score += SCORE_VALUES.lateBonus;
-    this.litLaneTags.clear();
   }
 
-  private award(points: number): void {
-    this.score += points * this.multiplier;
+  private handleBonusJackpotEvent(event: MachineEvent, ruleEvents: RuleEvent[]): void {
+    const result = handleBonusJackpotMachineEvent(this.bonusJackpotState, event);
+    this.bonusJackpotState = result.nextState;
+    this.scoreState = awardFlatPoints(this.scoreState, result.awardedScore);
+    ruleEvents.push(...result.ruleEvents);
+
+    if (result.completedShootAgainBank && !this.ballLifecycleState.shootAgainLit) {
+      this.ballLifecycleState = lightShootAgain(this.ballLifecycleState);
+      ruleEvents.push({ type: "shoot-again-lit" });
+    }
+  }
+
+  private handleDrain(ruleEvents: RuleEvent[]): boolean {
+    const drainSettlement = settleBonusJackpotOnDrain(this.bonusJackpotState);
+    this.bonusJackpotState = drainSettlement.nextState;
+    this.scoreState = awardFlatPoints(this.scoreState, drainSettlement.awardedScore);
+    ruleEvents.push(...drainSettlement.ruleEvents);
+
+    const drainResolution = resolveDrain(this.ballLifecycleState);
+    this.ballLifecycleState = drainResolution.nextState;
+    this.scoreState = resetBallScopedScoreState(this.scoreState);
+
+    return drainResolution.shouldRespawnBall;
   }
 }

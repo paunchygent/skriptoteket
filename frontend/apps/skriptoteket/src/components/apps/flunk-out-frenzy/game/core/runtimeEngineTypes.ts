@@ -14,6 +14,17 @@ export interface RuntimeEngineState {
   score: number;
   ballsRemaining: number;
   multiplier: number;
+  bonus: {
+    points: number;
+    collectReady: boolean;
+  };
+  jackpot: {
+    points: number;
+    lit: boolean;
+  };
+  ballLifecycle: {
+    shootAgainLit: boolean;
+  };
   roundFinished: boolean;
   view: GameViewSnapshot;
   effects: GameEffectEvent[];

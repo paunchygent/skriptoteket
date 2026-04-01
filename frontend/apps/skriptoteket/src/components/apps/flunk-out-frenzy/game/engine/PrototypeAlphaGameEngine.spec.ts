@@ -98,6 +98,17 @@ describe("PrototypeAlphaGameEngine", () => {
     expect(state.score).toBe(0);
     expect(state.ballsRemaining).toBe(3);
     expect(state.multiplier).toBe(1);
+    expect(state.bonus).toEqual({
+      points: 0,
+      collectReady: false,
+    });
+    expect(state.jackpot).toEqual({
+      points: 10_000,
+      lit: false,
+    });
+    expect(state.ballLifecycle).toEqual({
+      shootAgainLit: false,
+    });
     expect(state.roundFinished).toBe(false);
     expect(state.view.ball).not.toBeNull();
     expect(state.effects).toEqual([
@@ -121,6 +132,10 @@ describe("PrototypeAlphaGameEngine", () => {
 
     expect(lanesState.score).toBe(2200);
     expect(lanesState.multiplier).toBe(2);
+    expect(lanesState.bonus).toEqual({
+      points: 1000,
+      collectReady: true,
+    });
     expect(lanesState.effects).toEqual(
       expect.arrayContaining([
         { type: "rollover-lit", tag: "lane/top-l", label: "L" },
@@ -139,6 +154,29 @@ describe("PrototypeAlphaGameEngine", () => {
 
     expect(scoringState.score).toBe(2720);
     expect(scoringState.multiplier).toBe(2);
+  });
+
+  it("lights shoot-again from the jocks bank and keeps the current ball on the next drain", () => {
+    const physics = new FakePhysicsMachine();
+    const engine = new PrototypeAlphaGameEngine(physics, new RuleEngine());
+    engine.startGame();
+
+    physics.enqueueEvents([
+      { type: "standup-target-hit", tag: "target/jock-left" },
+      { type: "standup-target-hit", tag: "target/jock-center" },
+      { type: "standup-target-hit", tag: "target/jock-right" },
+    ]);
+    const litState = engine.step(16);
+
+    expect(litState.ballLifecycle.shootAgainLit).toBe(true);
+    expect(litState.effects).toContainEqual({ type: "shoot-again-lit" });
+
+    physics.enqueueEvents([{ type: "drain-enter", tag: "drain/main" }]);
+    const drainState = engine.step(16);
+
+    expect(drainState.ballsRemaining).toBe(3);
+    expect(drainState.ballLifecycle.shootAgainLit).toBe(false);
+    expect(drainState.view.ball).not.toBeNull();
   });
 
   it("respawns the next ball after the first two drains and ends the run on the third", () => {
@@ -169,5 +207,59 @@ describe("PrototypeAlphaGameEngine", () => {
     ]);
 
     expect(physics.spawnCount).toBe(3);
+  });
+
+  it("lights and awards jackpot via popup-target and tripwire progression", () => {
+    const physics = new FakePhysicsMachine();
+    const engine = new PrototypeAlphaGameEngine(physics, new RuleEngine());
+    engine.startGame();
+
+    physics.enqueueEvents([{ type: "popup-target-hit", tag: "target/pop-study" }]);
+    const litState = engine.step(16);
+
+    expect(litState.jackpot).toEqual({
+      points: 15000,
+      lit: true,
+    });
+    expect(litState.effects).toContainEqual({ type: "jackpot-lit", points: 15000 });
+
+    physics.enqueueEvents([{ type: "tripwire-crossed", tag: "tripwire/right-orbit-return" }]);
+    const awardedState = engine.step(16);
+
+    expect(awardedState.score).toBe(15000);
+    expect(awardedState.jackpot).toEqual({
+      points: 10000,
+      lit: false,
+    });
+    expect(awardedState.effects).toEqual(
+      expect.arrayContaining([
+        { type: "tripwire-crossed", tag: "tripwire/right-orbit-return" },
+        { type: "jackpot-awarded", points: 15000 },
+      ]),
+    );
+  });
+
+  it("surfaces target, tripwire, and gate machine events as semantic presentation effects", () => {
+    const physics = new FakePhysicsMachine();
+    const engine = new PrototypeAlphaGameEngine(physics, new RuleEngine());
+    engine.startGame();
+
+    physics.enqueueEvents([
+      { type: "tripwire-crossed", tag: "tripwire/right-orbit-return" },
+      { type: "standup-target-hit", tag: "target/jock-left" },
+      { type: "popup-target-hit", tag: "target/pop-study" },
+      { type: "gate-passed", tag: "gate/launch-lane-exit" },
+    ]);
+    const state = engine.step(16);
+
+    expect(state.score).toBe(0);
+    expect(state.multiplier).toBe(1);
+    expect(state.effects).toEqual([
+      { type: "tripwire-crossed", tag: "tripwire/right-orbit-return" },
+      { type: "standup-target-hit", tag: "target/jock-left" },
+      { type: "popup-target-hit", tag: "target/pop-study" },
+      { type: "gate-passed", tag: "gate/launch-lane-exit" },
+      { type: "jackpot-lit", points: 17500 },
+    ]);
   });
 });

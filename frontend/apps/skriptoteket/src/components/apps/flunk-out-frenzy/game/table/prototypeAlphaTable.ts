@@ -6,50 +6,17 @@
  * without introducing a JSON content pipeline yet.
  */
 
-export interface TablePoint {
-  x: number;
-  y: number;
-}
-
-export interface TableWallDefinition {
-  from: TablePoint;
-  to: TablePoint;
-}
-
-export interface TableBumperDefinition {
-  tag: string;
-  x: number;
-  y: number;
-  radius: number;
-  sensorRadius: number;
-  impulse: number;
-}
-
-export interface TableSlingDefinition {
-  tag: string;
-  side: "left" | "right";
-  vertices: [TablePoint, TablePoint, TablePoint];
-  impulse: TablePoint;
-}
-
-export interface TableRolloverDefinition {
-  tag: string;
-  label: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export interface TableFlipperDefinition {
-  side: "left" | "right";
-  pivot: TablePoint;
-  length: number;
-  thickness: number;
-  restAngleDeg: number;
-  activeAngleDeg: number;
-  assistImpulse: TablePoint;
-}
+import type {
+  TableBumperDefinition,
+  TableFlipperDefinition,
+  TableGateDefinition,
+  TablePopupTargetDefinition,
+  TableRolloverDefinition,
+  TableSlingDefinition,
+  TableStandupTargetDefinition,
+  TableTripwireDefinition,
+  TableWallDefinition,
+} from "./tableDefinitionTypes";
 
 export const PROTOTYPE_ALPHA_TABLE = {
   id: "prototype-alpha",
@@ -143,11 +110,69 @@ export const PROTOTYPE_ALPHA_TABLE = {
     },
   ] satisfies TableSlingDefinition[],
   rollovers: [
-    { tag: "lane/top-l", label: "L", x: 180, y: 150, width: 28, height: 28 },
-    { tag: "lane/top-a", label: "A", x: 260, y: 130, width: 28, height: 28 },
-    { tag: "lane/top-t", label: "T", x: 340, y: 130, width: 28, height: 28 },
-    { tag: "lane/top-e", label: "E", x: 420, y: 150, width: 28, height: 28 },
+    { tag: "lane/top-l", label: "L", x: 180, y: 150, width: 28, height: 28, bankTag: "bank/late-top" },
+    { tag: "lane/top-a", label: "A", x: 260, y: 130, width: 28, height: 28, bankTag: "bank/late-top" },
+    { tag: "lane/top-t", label: "T", x: 340, y: 130, width: 28, height: 28, bankTag: "bank/late-top" },
+    { tag: "lane/top-e", label: "E", x: 420, y: 150, width: 28, height: 28, bankTag: "bank/late-top" },
   ] satisfies TableRolloverDefinition[],
+  tripwires: [
+    {
+      tag: "tripwire/right-orbit-return",
+      x: 518,
+      y: 438,
+      width: 24,
+      height: 132,
+      laneTag: "lane/right-orbit-return",
+    },
+  ] satisfies TableTripwireDefinition[],
+  gates: [
+    {
+      tag: "gate/launch-lane-exit",
+      x: 518,
+      y: 792,
+      width: 22,
+      height: 120,
+      laneTag: "lane/launch-exit",
+    },
+  ] satisfies TableGateDefinition[],
+  standupTargets: [
+    {
+      tag: "target/jock-left",
+      x: 188,
+      y: 612,
+      width: 18,
+      height: 64,
+      angleDeg: -8,
+      bankTag: "bank/jocks",
+    },
+    {
+      tag: "target/jock-center",
+      x: 300,
+      y: 568,
+      width: 18,
+      height: 68,
+      bankTag: "bank/jocks",
+    },
+    {
+      tag: "target/jock-right",
+      x: 412,
+      y: 612,
+      width: 18,
+      height: 64,
+      angleDeg: 8,
+      bankTag: "bank/jocks",
+    },
+  ] satisfies TableStandupTargetDefinition[],
+  popupTargets: [
+    {
+      tag: "target/pop-study",
+      x: 300,
+      y: 250,
+      radius: 18,
+      sensorRadius: 26,
+      bankTag: "bank/study-pop",
+    },
+  ] satisfies TablePopupTargetDefinition[],
   drain: {
     tag: "drain/main",
     x: 300,

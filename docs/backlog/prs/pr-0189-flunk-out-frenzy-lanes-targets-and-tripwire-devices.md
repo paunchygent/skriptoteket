@@ -2,7 +2,7 @@
 type: pr
 id: PR-0189
 title: "Flunk-Out Frenzy: lanes, targets, and tripwire devices"
-status: ready
+status: done
 owners: "agents"
 created: 2026-04-01
 updated: 2026-04-01
@@ -94,3 +94,26 @@ Manual/live:
 - Revert the authored prototype table to the pre-target layout.
 - Drop the new target or lane game-effect mappings if downstream handling is
   not yet ready.
+
+## Implementation summary
+
+- Extracted shared authored table contracts into
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/tableDefinitionTypes.ts`
+  so `prototypeAlphaTable.ts` can grow without owning every geometry and
+  device interface inline.
+- Extended
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/table/prototypeAlphaTable.ts`
+  with grouped rollover metadata plus the first authored tripwire, gate,
+  standup-target bank, and popup-target device definitions.
+- Added
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/createLaneDevices.ts`
+  and
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/createTargetDevices.ts`
+  so lane and target construction no longer has to be bolted directly into
+  `PhysicsWorld.ts`.
+- Wired the new machine events through
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.ts`
+  and
+  `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/presentation/gameEffectTypes.ts`,
+  then added minimal renderer/audio handling so the new device hits produce
+  visible and audible feedback during play.

@@ -2,7 +2,7 @@
 type: story
 id: ST-25-05
 title: "Flunk-Out Frenzy mechanics-port foundation"
-status: ready
+status: in_progress
 owners: "agents"
 created: 2026-04-01
 epic: "EPIC-25"

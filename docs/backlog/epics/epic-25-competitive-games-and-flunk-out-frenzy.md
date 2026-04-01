@@ -64,6 +64,16 @@ dependencies: ["ADR-0023", "ADR-0027", "ADR-0073"]
 - Cross-cutting sequencing beyond this epic is tracked in
   `docs/reference/ref-competitive-games-cross-cutting-programme.md`.
 
+## Implementation Summary (as of 2026-04-01)
+
+- `ST-25-05` tranche-one foundation (`PR-0188`, `PR-0189`, `PR-0190`) is
+  complete: `PhysicsWorld` and `RuleEngine` are decomposed into modular seams,
+  machine-event vocabulary is widened, and pure rule-state modules own bonus,
+  jackpot, and ball-lifecycle logic.
+- `PR-0191` reassessment returned a **GO** decision: the architecture is stable,
+  file-size targets are met, and the runtime boundary is verified as ready for
+  the higher-fidelity mechanics tranche.
+
 ## Implementation Summary (as of 2026-03-23)
 
 - `ST-25-01` shipped the Flunk-Out Frenzy curated-app registration,

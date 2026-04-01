@@ -14,6 +14,14 @@ export type GameEffectEvent =
   | { type: "bumper-hit"; tag: string }
   | { type: "sling-hit"; tag: string; side: "left" | "right" }
   | { type: "rollover-lit"; tag: string; label: string }
+  | { type: "tripwire-crossed"; tag: string }
+  | { type: "standup-target-hit"; tag: string }
+  | { type: "popup-target-hit"; tag: string }
+  | { type: "gate-passed"; tag: string }
   | { type: "late-bank-complete"; multiplier: number }
+  | { type: "bonus-awarded"; points: number }
+  | { type: "jackpot-lit"; points: number }
+  | { type: "jackpot-awarded"; points: number }
+  | { type: "shoot-again-lit" }
   | { type: "ball-drained"; ballsRemaining: number }
   | { type: "game-over"; finalScore: number };

@@ -27,6 +27,10 @@ class FakeRuntimeEngine implements RuntimeEngine {
   private score = 0;
   private ballsRemaining = 3;
   private multiplier = 1;
+  private bonusPoints = 0;
+  private jackpotPoints = 10_000;
+  private jackpotLit = false;
+  private shootAgainLit = false;
   private roundFinished = false;
   private leftAngle = 18;
   private rightAngle = 162;
@@ -36,6 +40,10 @@ class FakeRuntimeEngine implements RuntimeEngine {
     this.score = 0;
     this.ballsRemaining = 3;
     this.multiplier = 1;
+    this.bonusPoints = 0;
+    this.jackpotPoints = 10_000;
+    this.jackpotLit = false;
+    this.shootAgainLit = false;
     this.roundFinished = false;
     this.ballVisible = true;
     return {
@@ -64,6 +72,9 @@ class FakeRuntimeEngine implements RuntimeEngine {
   step(_dtMs: number): RuntimeEngineState {
     this.score += 250;
     this.multiplier = 2;
+    this.bonusPoints = 500;
+    this.jackpotPoints = 12_500;
+    this.jackpotLit = true;
 
     if (this.score >= 500) {
       this.roundFinished = true;
@@ -79,6 +90,17 @@ class FakeRuntimeEngine implements RuntimeEngine {
       score: this.score,
       ballsRemaining: this.ballsRemaining,
       multiplier: this.multiplier,
+      bonus: {
+        points: this.bonusPoints,
+        collectReady: this.bonusPoints > 0,
+      },
+      jackpot: {
+        points: this.jackpotPoints,
+        lit: this.jackpotLit,
+      },
+      ballLifecycle: {
+        shootAgainLit: this.shootAgainLit,
+      },
       roundFinished: this.roundFinished,
       effects: [],
       view: createViewSnapshot(this.leftAngle, this.rightAngle, this.ballVisible),
@@ -89,6 +111,7 @@ class FakeRuntimeEngine implements RuntimeEngine {
     for (const event of events) {
       if (event.type === "rollover-enter") {
         this.score += 50;
+        this.bonusPoints += 250;
       }
 
       if (event.type === "drain-enter") {
@@ -234,6 +257,10 @@ describe("GameRuntime", () => {
     expect(hostElement.dataset.runtimeScore).toBe("250");
     expect(hostElement.dataset.runtimeBallsRemaining).toBe("3");
     expect(hostElement.dataset.runtimeMultiplier).toBe("2");
+    expect(hostElement.dataset.runtimeBonusPoints).toBe("500");
+    expect(hostElement.dataset.runtimeJackpotPoints).toBe("12500");
+    expect(hostElement.dataset.runtimeJackpotLit).toBe("true");
+    expect(hostElement.dataset.runtimeShootAgainLit).toBe("false");
     expect(hostElement.dataset.lastCommand).toBe("Launch laddas");
     expect(engine.appliedCommands).toEqual([
       { type: "left-flip", pressed: true },
@@ -288,6 +315,17 @@ describe("GameRuntime", () => {
       score: 0,
       ballsRemaining: 3,
       multiplier: 1,
+      bonus: {
+        points: 0,
+        collectReady: false,
+      },
+      jackpot: {
+        points: 10_000,
+        lit: false,
+      },
+      ballLifecycle: {
+        shootAgainLit: false,
+      },
       status: "running",
     });
   });

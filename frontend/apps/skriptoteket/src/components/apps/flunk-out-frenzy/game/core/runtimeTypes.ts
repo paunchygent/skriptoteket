@@ -9,10 +9,27 @@
 
 export type GameSessionStatus = "ready" | "running" | "paused" | "game-over";
 
+export interface GameHudBonusSnapshot {
+  points: number;
+  collectReady: boolean;
+}
+
+export interface GameHudJackpotSnapshot {
+  points: number;
+  lit: boolean;
+}
+
+export interface GameHudBallLifecycleSnapshot {
+  shootAgainLit: boolean;
+}
+
 export interface GameHudSnapshot {
   score: number;
   ballsRemaining: number;
   multiplier: number;
+  bonus: GameHudBonusSnapshot;
+  jackpot: GameHudJackpotSnapshot;
+  ballLifecycle: GameHudBallLifecycleSnapshot;
   status: GameSessionStatus;
   muted: boolean;
 }
@@ -78,6 +95,17 @@ export function createInitialHudSnapshot(): GameHudSnapshot {
     score: 0,
     ballsRemaining: 3,
     multiplier: 1,
+    bonus: {
+      points: 0,
+      collectReady: false,
+    },
+    jackpot: {
+      points: 10_000,
+      lit: false,
+    },
+    ballLifecycle: {
+      shootAgainLit: false,
+    },
     status: "ready",
     muted: false,
   };

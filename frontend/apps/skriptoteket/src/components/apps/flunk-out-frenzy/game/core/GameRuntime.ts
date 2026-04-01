@@ -202,6 +202,11 @@ export class GameRuntime {
       delete this.hostElement.dataset.runtimeScore;
       delete this.hostElement.dataset.runtimeBallsRemaining;
       delete this.hostElement.dataset.runtimeMultiplier;
+      delete this.hostElement.dataset.runtimeBonusPoints;
+      delete this.hostElement.dataset.runtimeBonusCollectReady;
+      delete this.hostElement.dataset.runtimeJackpotPoints;
+      delete this.hostElement.dataset.runtimeJackpotLit;
+      delete this.hostElement.dataset.runtimeShootAgainLit;
     }
 
     this.hostElement = null;
@@ -295,6 +300,9 @@ export class GameRuntime {
       score: state.score,
       ballsRemaining: state.ballsRemaining,
       multiplier: state.multiplier,
+      bonus: state.bonus,
+      jackpot: state.jackpot,
+      ballLifecycle: state.ballLifecycle,
       status,
     };
   }
@@ -327,6 +335,13 @@ export class GameRuntime {
     this.hostElement.dataset.runtimeScore = String(this.hudSnapshot.score);
     this.hostElement.dataset.runtimeBallsRemaining = String(this.hudSnapshot.ballsRemaining);
     this.hostElement.dataset.runtimeMultiplier = String(this.hudSnapshot.multiplier);
+    this.hostElement.dataset.runtimeBonusPoints = String(this.hudSnapshot.bonus.points);
+    this.hostElement.dataset.runtimeBonusCollectReady = String(this.hudSnapshot.bonus.collectReady);
+    this.hostElement.dataset.runtimeJackpotPoints = String(this.hudSnapshot.jackpot.points);
+    this.hostElement.dataset.runtimeJackpotLit = String(this.hudSnapshot.jackpot.lit);
+    this.hostElement.dataset.runtimeShootAgainLit = String(
+      this.hudSnapshot.ballLifecycle.shootAgainLit,
+    );
   }
 }
 

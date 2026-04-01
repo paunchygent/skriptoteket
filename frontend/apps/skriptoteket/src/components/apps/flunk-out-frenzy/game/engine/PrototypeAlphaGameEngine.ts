@@ -11,12 +11,9 @@ import type { RuntimeCommand } from "../core/runtimeTypes";
 import type { PhysicsSnapshot, MachineEvent } from "../physics/physicsTypes";
 import type { GameEffectEvent } from "../presentation/gameEffectTypes";
 import { PhysicsWorld } from "../physics/PhysicsWorld";
-import {
-  RuleEngine,
-  type RuleSnapshot,
-  type RuleStepResult,
-} from "../rules/RuleEngine";
+import { RuleEngine } from "../rules/RuleEngine";
 import { PROTOTYPE_ALPHA_TABLE } from "../table/prototypeAlphaTable";
+import type { RuleEvent, RuleSnapshot, RuleStepResult } from "../rules/ruleTypes";
 
 export interface PrototypeAlphaPhysicsMachine {
   reset(): void;
@@ -87,7 +84,7 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
       effects.push({ type: "ball-spawned" });
     }
 
-    if (ruleStep.snapshot.roundFinished) {
+    if (ruleStep.snapshot.ballLifecycle.roundFinished) {
       effects.push({ type: "game-over", finalScore: ruleStep.snapshot.score });
     }
 
@@ -100,9 +97,14 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
 
     return {
       score: ruleSnapshot.score,
-      ballsRemaining: ruleSnapshot.ballsRemaining,
+      ballsRemaining: ruleSnapshot.ballLifecycle.ballsRemaining,
       multiplier: ruleSnapshot.multiplier,
-      roundFinished: ruleSnapshot.roundFinished,
+      bonus: ruleSnapshot.bonus,
+      jackpot: ruleSnapshot.jackpot,
+      ballLifecycle: {
+        shootAgainLit: ruleSnapshot.ballLifecycle.shootAgainLit,
+      },
+      roundFinished: ruleSnapshot.ballLifecycle.roundFinished,
       effects,
       view: {
         board: {
@@ -153,22 +155,63 @@ export class PrototypeAlphaGameEngine implements RuntimeEngine {
           }
           break;
         }
+        case "tripwire-crossed":
+          effects.push({ type: "tripwire-crossed", tag: event.tag });
+          break;
+        case "standup-target-hit":
+          effects.push({ type: "standup-target-hit", tag: event.tag });
+          break;
+        case "popup-target-hit":
+          effects.push({ type: "popup-target-hit", tag: event.tag });
+          break;
+        case "gate-passed":
+          effects.push({ type: "gate-passed", tag: event.tag });
+          break;
         case "drain-enter":
           effects.push({
             type: "ball-drained",
-            ballsRemaining: ruleStep.snapshot.ballsRemaining,
+            ballsRemaining: ruleStep.snapshot.ballLifecycle.ballsRemaining,
           });
+          break;
+        case "launch-lane-enter":
+        case "ball-captured":
+        case "ball-ejected":
+        case "ball-saved":
           break;
       }
     }
 
-    if (ruleStep.snapshot.multiplier > previousRuleSnapshot.multiplier) {
-      effects.push({
-        type: "late-bank-complete",
-        multiplier: ruleStep.snapshot.multiplier,
-      });
-    }
+    effects.push(...ruleStep.ruleEvents.map(mapRuleEventToGameEffect));
 
     return effects;
+  }
+}
+
+function mapRuleEventToGameEffect(ruleEvent: RuleEvent): GameEffectEvent {
+  switch (ruleEvent.type) {
+    case "late-bank-complete":
+      return {
+        type: "late-bank-complete",
+        multiplier: ruleEvent.multiplier,
+      };
+    case "bonus-awarded":
+      return {
+        type: "bonus-awarded",
+        points: ruleEvent.points,
+      };
+    case "jackpot-lit":
+      return {
+        type: "jackpot-lit",
+        points: ruleEvent.points,
+      };
+    case "jackpot-awarded":
+      return {
+        type: "jackpot-awarded",
+        points: ruleEvent.points,
+      };
+    case "shoot-again-lit":
+      return {
+        type: "shoot-again-lit",
+      };
   }
 }
